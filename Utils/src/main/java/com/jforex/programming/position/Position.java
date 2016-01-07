@@ -113,11 +113,17 @@ public class Position {
 
     public void submitAndMerge(final OrderParams orderParams,
                                final String mergeLabel) {
-        startTask(submitOrderObs(orderParams).concatMap(op -> mergeSequenceObs(mergeLabel)));
+        final Collection<IOrder> filledOrders = filledOrders();
+        final double restoreSL = restoreSLTPPolicy.restoreSL(filledOrders);
+        final double restoreTP = restoreSLTPPolicy.restoreTP(filledOrders);
+        startTask(submitOrderObs(orderParams).concatMap(op -> mergeSequenceObs(mergeLabel, restoreSL, restoreTP)));
     }
 
     public void merge(final String mergeLabel) {
-        startTask(mergeSequenceObs(mergeLabel));
+        final Collection<IOrder> filledOrders = filledOrders();
+        final double restoreSL = restoreSLTPPolicy.restoreSL(filledOrders);
+        final double restoreTP = restoreSLTPPolicy.restoreTP(filledOrders);
+        startTask(mergeSequenceObs(mergeLabel, restoreSL, restoreTP));
     }
 
     public void close() {
@@ -130,20 +136,17 @@ public class Position {
     private void startTask(final Observable<IOrder> observable) {
         lock.lock();
         isBusy = true;
-        observable.subscribe(item -> {} ,
-                             exc -> taskFinish(),
-                             () -> taskFinish());
+        observable.subscribe(item -> {} , exc -> taskFinish(), () -> taskFinish());
     }
 
-    private Observable<IOrder> mergeSequenceObs(final String mergeLabel) {
-        final Collection<IOrder> filledOrders = filledOrders();
-        if (filledOrders.size() <= 1)
+    private Observable<IOrder> mergeSequenceObs(final String mergeLabel,
+                                                final double restoreSL,
+                                                final double restoreTP) {
+        if (filledOrders().size() <= 1)
             return Observable.empty();
 
         final Observable<IOrder> mergeAndRestoreObs =
-                mergeOrderObs(mergeLabel).flatMap(order -> restoreSLTPObs(order,
-                                                                          restoreSLTPPolicy.restoreSL(filledOrders),
-                                                                          restoreSLTPPolicy.restoreTP(filledOrders)));
+                mergeOrderObs(mergeLabel).flatMap(order -> restoreSLTPObs(order, restoreSL, restoreTP));
         return removeTPSLObs().concatWith(mergeAndRestoreObs);
     }
 
