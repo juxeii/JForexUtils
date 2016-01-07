@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.OrderRepository;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
 
@@ -25,10 +24,8 @@ public class PositionRepository {
 
     public Position createNew(final Instrument instrument,
                               final RestoreSLTPPolicy restoreSLTPPolicy) {
-        final OrderRepository orderRepository = new OrderRepository();
         return new Position(instrument,
                             orderUtil,
-                            orderRepository,
                             orderEventObservable,
                             restoreSLTPPolicy);
     }

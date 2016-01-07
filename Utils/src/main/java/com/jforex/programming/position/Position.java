@@ -6,8 +6,10 @@ import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
+import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -21,9 +23,10 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.google.common.base.Supplier;
 import com.google.common.collect.MapMaker;
+import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderRepository;
+import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallResult;
 import com.jforex.programming.order.event.OrderEvent;
@@ -36,7 +39,7 @@ public class Position {
 
     private final Instrument instrument;
     private final OrderUtil orderUtil;
-    private final OrderRepository orderRepository;
+    private final Set<IOrder> orderRepository = Sets.newIdentityHashSet();
     private final RestoreSLTPPolicy restoreSLTPPolicy;
     private boolean isBusy = false;
     private final ConcurrentMap<IOrder, OrderProgressData> progressDataByOrder = new MapMaker().weakKeys().makeMap();
@@ -46,12 +49,10 @@ public class Position {
 
     public Position(final Instrument instrument,
                     final OrderUtil orderUtil,
-                    final OrderRepository orderRepository,
                     final Observable<OrderEvent> orderEventObservable,
                     final RestoreSLTPPolicy restoreSLTPPolicy) {
         this.instrument = instrument;
         this.orderUtil = orderUtil;
-        this.orderRepository = orderRepository;
         this.restoreSLTPPolicy = restoreSLTPPolicy;
 
         orderEventObservable.filter(orderEvent -> orderEvent.order().getInstrument() == instrument)
@@ -91,15 +92,19 @@ public class Position {
     }
 
     public OrderDirection direction() {
-        return orderRepository.direction();
+        return OrderStaticUtil.combinedDirection(filter(isFilled));
     }
 
     public double signedExposure() {
-        return orderRepository.signedExposure();
+        return filter(isFilled).stream()
+                               .mapToDouble(OrderStaticUtil::signedAmount)
+                               .sum();
     }
 
-    public Collection<IOrder> filterOrders(final Predicate<IOrder> orderPredicate) {
-        return orderRepository.filter(orderPredicate);
+    public Collection<IOrder> filter(final Predicate<IOrder> orderPredicate) {
+        return orderRepository.stream()
+                              .filter(orderPredicate)
+                              .collect(toList());
     }
 
     public void submit(final OrderParams orderParams) {
@@ -116,7 +121,7 @@ public class Position {
     }
 
     public void close() {
-        startTask(Observable.from(orderRepository.filter(isFilled.or(isOpened)))
+        startTask(Observable.from(filter(isFilled.or(isOpened)))
                             .doOnSubscribe(() -> logger.info("Starting to close " + instrument + " position"))
                             .flatMap(order -> orderObs(() -> orderUtil.close(order),
                                                        TaskEventData.closeEvents).retryWhen(this::shouldRetry)));
@@ -219,7 +224,7 @@ public class Position {
     }
 
     private Collection<IOrder> filledOrders() {
-        return orderRepository.filled();
+        return filter(isFilled);
     }
 
     private void taskFinish() {

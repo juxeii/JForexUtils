@@ -2,9 +2,7 @@ package com.jforex.programming.position.test;
 
 import static com.jforex.programming.misc.JForexUtil.pfs;
 import static com.jforex.programming.misc.JForexUtil.uss;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyDouble;
@@ -14,23 +12,16 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Spy;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
-import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderRepository;
-import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.call.OrderCallResult;
@@ -51,7 +42,6 @@ public class PositionTest extends InstrumentUtilForTest {
 
     private Position position;
 
-    @Spy private OrderRepository orderRepositorySpy;
     @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
     @Mock private OrderUtil orderUtilMock;
     private Subject<OrderEvent, OrderEvent> orderEventSubject;
@@ -61,10 +51,8 @@ public class PositionTest extends InstrumentUtilForTest {
     private final IOrderForTest buyOrderEURUSD = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest sellOrderEURUSD = IOrderForTest.sellOrderEURUSD();
     private final IOrderForTest mergeOrderEURUSD = IOrderForTest.buyOrderEURUSD();
-    private final OrderDirection orderDirection = OrderStaticUtil.direction(buyOrderEURUSD);
     private final double restoreSL = 1.12345;
     private final double restoreTP = 1.12543;
-    private final List<IOrder> filteredOrders = new ArrayList<IOrder>();
     private OrderCallResult callResultWithExceptionEURUSDBuy;
 
     @Before
@@ -80,7 +68,6 @@ public class PositionTest extends InstrumentUtilForTest {
 
         position = new Position(instrumentEURUSD,
                                 orderUtilMock,
-                                orderRepositorySpy,
                                 orderEventSubject,
                                 restoreSLTPPolicyMock);
     }
@@ -139,27 +126,17 @@ public class PositionTest extends InstrumentUtilForTest {
         orderEventSubject.onNext(new OrderEvent(order, orderEventType));
     }
 
+    private boolean isRepositoryEmpty() {
+        return position.filter(order -> true).isEmpty();
+    }
+
+    private boolean positionHasOrder(final IOrder orderToFind) {
+        return position.filter(order -> order.getLabel().equals(orderToFind.getLabel())).size() == 1;
+    }
+
     @Test
     public void testIsNotBusyForNoRunningTask() {
         assertFalse(position.isBusy());
-    }
-
-    @Test
-    public void testDirectionCallRoutesToRepository() {
-        final OrderDirection positionDirection = position.direction();
-
-        assertThat(positionDirection, equalTo(orderDirection));
-        verify(orderRepositorySpy).direction();
-    }
-
-    @Test
-    public void testFilterCallRoutesToRepository() {
-        final Predicate<IOrder> orderPredicate = order -> true;
-
-        final List<IOrder> orders = (List<IOrder>) position.filterOrders(orderPredicate);
-
-        verify(orderRepositorySpy).filter(orderPredicate);
-        assertThat(orders, equalTo(filteredOrders));
     }
 
     @Test
@@ -190,8 +167,8 @@ public class PositionTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void testRepositoryIsEmpty() {
-            assertTrue(orderRepositorySpy.isEmpty());
+        public void testPositionHasNoOrder() {
+            assertTrue(isRepositoryEmpty());
         }
     }
 
@@ -215,8 +192,8 @@ public class PositionTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void testRepositoryIsEmpty() {
-            assertTrue(orderRepositorySpy.isEmpty());
+        public void testPositionHasNoOrder() {
+            assertTrue(isRepositoryEmpty());
         }
     }
 
@@ -235,8 +212,8 @@ public class PositionTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void testRepositoryIsEmpty() {
-            assertTrue(orderRepositorySpy.isEmpty());
+        public void testPositionHasNoOrder() {
+            assertTrue(isRepositoryEmpty());
         }
 
         public class AfterSubmitOKMessage {
@@ -269,8 +246,8 @@ public class PositionTest extends InstrumentUtilForTest {
                 }
 
                 @Test
-                public void testRepositoryHoldsBuyOrder() {
-                    assertTrue(orderRepositorySpy.contains(buyOrderEURUSD));
+                public void testPositionHasBuyOrder() {
+                    assertTrue(positionHasOrder(buyOrderEURUSD));
                 }
 
                 @Test
@@ -298,8 +275,8 @@ public class PositionTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void testRepositoryIsEmpty() {
-            assertTrue(orderRepositorySpy.isEmpty());
+        public void testPositionHasNoOrder() {
+            assertTrue(isRepositoryEmpty());
         }
 
         public class AfterSubmitOKMessage {
@@ -331,8 +308,8 @@ public class PositionTest extends InstrumentUtilForTest {
                 }
 
                 @Test
-                public void testRepositoryIsEmpty() {
-                    assertTrue(orderRepositorySpy.isEmpty());
+                public void testPositionHasNoOrder() {
+                    assertTrue(isRepositoryEmpty());
                 }
             }
 
@@ -351,8 +328,8 @@ public class PositionTest extends InstrumentUtilForTest {
                 }
 
                 @Test
-                public void testRepositoryHoldsBuyOrder() {
-                    assertTrue(orderRepositorySpy.contains(buyOrderEURUSD));
+                public void testPositionHasBuyOrder() {
+                    assertTrue(positionHasOrder(buyOrderEURUSD));
                 }
 
                 public class AfterCloseOnSL {
@@ -370,8 +347,8 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
 
                     @Test
-                    public void testRepositoryIsEmpty() {
-                        assertTrue(orderRepositorySpy.isEmpty());
+                    public void testPositionHasNoOrder() {
+                        assertTrue(isRepositoryEmpty());
                     }
                 }
 
@@ -390,8 +367,8 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
 
                     @Test
-                    public void testRepositoryIsEmpty() {
-                        assertTrue(orderRepositorySpy.isEmpty());
+                    public void testPositionHasNoOrder() {
+                        assertTrue(isRepositoryEmpty());
                     }
                 }
 
@@ -426,9 +403,9 @@ public class PositionTest extends InstrumentUtilForTest {
                         }
 
                         @Test
-                        public void testRepositoryHoldsBuyAndSellOrder() {
-                            assertTrue(orderRepositorySpy.contains(buyOrderEURUSD));
-                            assertTrue(orderRepositorySpy.contains(sellOrderEURUSD));
+                        public void testPositionHasBuyAndSellOrder() {
+                            assertTrue(positionHasOrder(buyOrderEURUSD));
+                            assertTrue(positionHasOrder(sellOrderEURUSD));
                         }
                     }
                 }
@@ -466,9 +443,9 @@ public class PositionTest extends InstrumentUtilForTest {
                         }
 
                         @Test
-                        public void testRepositoryHoldsBuyAndSellOrder() {
-                            assertTrue(orderRepositorySpy.contains(buyOrderEURUSD));
-                            assertTrue(orderRepositorySpy.contains(sellOrderEURUSD));
+                        public void testPositionHasBuyAndSellOrder() {
+                            assertTrue(positionHasOrder(buyOrderEURUSD));
+                            assertTrue(positionHasOrder(sellOrderEURUSD));
                         }
 
                         public class AfterRemoveTPs {
@@ -526,8 +503,8 @@ public class PositionTest extends InstrumentUtilForTest {
                                     }
 
                                     @Test
-                                    public void testRepositoryIsEmpty() {
-                                        assertTrue(orderRepositorySpy.isEmpty());
+                                    public void testPositionHasNoOrder() {
+                                        assertTrue(isRepositoryEmpty());
                                     }
                                 }
 
@@ -551,9 +528,9 @@ public class PositionTest extends InstrumentUtilForTest {
                                     }
 
                                     @Test
-                                    public void testRepositoryHoldsOnlyMergeOrder() {
-                                        assertTrue(orderRepositorySpy.size() == 1);
-                                        assertTrue(orderRepositorySpy.contains(mergeOrderEURUSD));
+                                    public void testPositionHasOnlyMergeOrder() {
+                                        assertTrue(positionHasOrder(mergeOrderEURUSD));
+                                        assertTrue(position.filter(order -> true).size() == 1);
                                     }
 
                                     public class AfterRestoreSL {
@@ -625,7 +602,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testRepositoryHoldsStillBuyOrder() {
-                        assertTrue(orderRepositorySpy.contains(buyOrderEURUSD));
+                        assertTrue(positionHasOrder(buyOrderEURUSD));
                     }
 
                     public class AfterCloseOKMessage {
@@ -643,8 +620,8 @@ public class PositionTest extends InstrumentUtilForTest {
                         }
 
                         @Test
-                        public void testRepositoryIsEmpty() {
-                            assertTrue(orderRepositorySpy.isEmpty());
+                        public void testPositionHasNoOrder() {
+                            assertTrue(isRepositoryEmpty());
                         }
                     }
                 }
@@ -664,8 +641,8 @@ public class PositionTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void testRepositoryIsEmpty() {
-                assertTrue(orderRepositorySpy.isEmpty());
+            public void testPositionHasNoOrder() {
+                assertTrue(isRepositoryEmpty());
             }
         }
     }
