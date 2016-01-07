@@ -1,25 +1,20 @@
 package com.jforex.programming.misc;
 
+import static com.jforex.programming.misc.JForexUtil.pfs;
 import static com.jforex.programming.misc.MathUtil.isValueDivisibleByX;
 import static com.jforex.programming.misc.MathUtil.roundAmount;
 import static com.jforex.programming.misc.MathUtil.roundPips;
 import static com.jforex.programming.misc.MathUtil.roundPrice;
 
-import org.aeonbits.owner.ConfigFactory;
-
-import com.jforex.programming.instrument.InstrumentBuilder;
-import com.jforex.programming.quote.TickQuoteProvider;
-import com.jforex.programming.settings.PlatformSettings;
-
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.instrument.InstrumentBuilder;
+import com.jforex.programming.quote.TickQuoteProvider;
 
 public final class CalculationUtil {
 
     private final TickQuoteProvider tickQuoteProvider;
-
-    private final static PlatformSettings pfs = ConfigFactory.create(PlatformSettings.class);
 
     public CalculationUtil(final TickQuoteProvider tickQuoteProvider) {
         this.tickQuoteProvider = tickQuoteProvider;

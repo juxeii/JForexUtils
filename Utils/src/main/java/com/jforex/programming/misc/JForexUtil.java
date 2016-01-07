@@ -54,7 +54,6 @@ public class JForexUtil implements MessageConsumer {
 
     private final CalculationUtil calculationUtil;
     private final RiskPercentMM riskPercentMM;
-    private final ConnectionMonitor connectionMonitor = new ConnectionMonitor();
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final RestoreSLTPPolicy defaultRestorePolicy = new NoRestorePolicy();
 
@@ -97,9 +96,6 @@ public class JForexUtil implements MessageConsumer {
         orderEventGateway = new OrderEventGateway(messageDataToEventByMaps);
 
         messageObservable = Observable.create(messagePublisherForRx::subscribe);
-        connectionMonitorSubscription =
-                messageObservable.filter(message -> message.getType() == IMessage.Type.CONNECTION_STATUS)
-                                 .subscribe(connectionMonitor::onMessage);
         eventGatewaySubscription = messageObservable.filter(message -> message.getOrder() != null)
                                                     .map(OrderMessageData::new)
                                                     .subscribe(orderEventGateway::onOrderMessageData);
@@ -188,9 +184,5 @@ public class JForexUtil implements MessageConsumer {
                       final IBar askBar,
                       final IBar bidBar) {
         barQuotePublisherForRx.onJFEvent(new BarQuote(instrument, period, askBar, bidBar));
-    }
-
-    public ConnectionMonitor connectionMonitor() {
-        return connectionMonitor;
     }
 }

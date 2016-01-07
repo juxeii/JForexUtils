@@ -36,6 +36,9 @@ import com.google.common.collect.Sets;
 
 public final class OrderEventTypeSets {
 
+    private OrderEventTypeSets() {
+    }
+
     public final static ImmutableSet<OrderEventType> allEventTypes =
             Sets.immutableEnumSet(EnumSet.allOf(OrderEventType.class));
 

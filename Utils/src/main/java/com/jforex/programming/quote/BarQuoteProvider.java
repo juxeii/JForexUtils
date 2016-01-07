@@ -18,10 +18,10 @@ public class BarQuoteProvider {
 
     private final Observable<BarQuote> barObservable;
     private final IHistory history;
-    private final Map<MultiKey<Object>, BarQuote> latestBarWithPeriodByInstrument = new ConcurrentHashMap<>();
+    private final Map<MultiKey<Object>, BarQuote> lastesBarQuote = new ConcurrentHashMap<>();
 
     public BarQuoteProvider(final Observable<BarQuote> barObservable,
-                          final IHistory history) {
+                            final IHistory history) {
         this.barObservable = barObservable;
         this.history = history;
 
@@ -47,8 +47,8 @@ public class BarQuoteProvider {
     private IBar bar(final Instrument instrument,
                      final Period period,
                      final OfferSide offerSide) {
-        return latestBarWithPeriodByInstrument.containsKey(barKey(instrument, period))
-                ? barFromStore(instrument, period, offerSide)
+        return lastesBarQuote.containsKey(barQuoteKey(instrument, period))
+                ? barQuoteByOfferSide(instrument, period, offerSide)
                 : barFromHistory(instrument, period, offerSide);
     }
 
@@ -67,16 +67,16 @@ public class BarQuoteProvider {
         }
     }
 
-    private IBar barFromStore(final Instrument instrument,
-                              final Period period,
-                              final OfferSide offerSide) {
-        final BarQuote barQuote = latestBarWithPeriodByInstrument.get(barKey(instrument, period));
+    private IBar barQuoteByOfferSide(final Instrument instrument,
+                                     final Period period,
+                                     final OfferSide offerSide) {
+        final BarQuote barQuote = lastesBarQuote.get(barQuoteKey(instrument, period));
         return offerSide == OfferSide.ASK ? barQuote.askBar() : barQuote.bidBar();
     }
 
     private void onBarQuote(final BarQuote barQuote) {
-        final MultiKey<Object> multiKey = barKey(barQuote.instrument(), barQuote.period());
-        latestBarWithPeriodByInstrument.put(multiKey, barQuote);
+        final MultiKey<Object> multiKey = barQuoteKey(barQuote.instrument(), barQuote.period());
+        lastesBarQuote.put(multiKey, barQuote);
     }
 
     public void subscribe(final Instrument instrument,
@@ -90,8 +90,8 @@ public class BarQuoteProvider {
         return barObservable;
     }
 
-    private MultiKey<Object> barKey(final Instrument instrument,
-                                    final Period period) {
+    private MultiKey<Object> barQuoteKey(final Instrument instrument,
+                                         final Period period) {
         return new MultiKey<Object>(instrument, period);
     }
 }
