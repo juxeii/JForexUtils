@@ -66,7 +66,6 @@ public class JForexUtil implements MessageConsumer {
     private Observable<BarQuote> barObservable;
 
     private final OrderEventTypeEvaluator messageDataToEventByMaps = new OrderEventTypeEvaluatorByMaps();
-    private Subscription connectionMonitorSubscription;
     private Subscription eventGatewaySubscription;
 
     public final static PlatformSettings pfs = ConfigFactory.create(PlatformSettings.class);
@@ -162,7 +161,6 @@ public class JForexUtil implements MessageConsumer {
     }
 
     public void onStop() {
-        connectionMonitorSubscription.unsubscribe();
         eventGatewaySubscription.unsubscribe();
         concurrentUtil.onStop();
     }
