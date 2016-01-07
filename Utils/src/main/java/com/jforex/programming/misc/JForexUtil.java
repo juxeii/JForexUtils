@@ -42,7 +42,6 @@ public class JForexUtil implements MessageConsumer {
     private IHistory history;
 
     private ConcurrentUtil concurrentUtil;
-    private EngineCallWrapper engineCallWrapper;
 
     private TickQuoteProvider tickQuoteProvider;
     private BarQuoteProvider barQuoteProvider;
@@ -88,7 +87,6 @@ public class JForexUtil implements MessageConsumer {
     private void initContextRelated() {
         account = context.getAccount();
         history = context.getHistory();
-        engineCallWrapper = new EngineCallWrapper(context.getEngine());
         concurrentUtil = new ConcurrentUtil(context, executorService);
     }
 
@@ -112,8 +110,8 @@ public class JForexUtil implements MessageConsumer {
 
     private void initOrderRelated() {
         orderCallRunner = new OrderCallExecutor(concurrentUtil);
-        orderUtil = new OrderUtil(orderCallRunner,
-                                  engineCallWrapper,
+        orderUtil = new OrderUtil(context.getEngine(),
+                                  orderCallRunner,
                                   orderEventGateway);
         positionRepository = new PositionRepository(orderUtil, orderEventGateway.observable());
     }

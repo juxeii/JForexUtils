@@ -10,8 +10,8 @@ import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.EngineCallWrapper;
 import com.jforex.programming.order.call.OrderCall;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -26,22 +26,31 @@ import rx.Observable.Transformer;
 
 public class OrderUtil {
 
+    private final IEngine engine;
     private final OrderCallExecutor orderCallExecutor;
-    private final EngineCallWrapper engineCallWrapper;
     private final OrderEventGateway orderEventGateway;
 
     private final static Logger logger = LogManager.getLogger(OrderUtil.class);
 
-    public OrderUtil(final OrderCallExecutor orderCallExecutor,
-                     final EngineCallWrapper engineCallWrapper,
+    public OrderUtil(final IEngine engine,
+                     final OrderCallExecutor orderCallExecutor,
                      final OrderEventGateway orderEventGateway) {
+        this.engine = engine;
         this.orderCallExecutor = orderCallExecutor;
-        this.engineCallWrapper = engineCallWrapper;
         this.orderEventGateway = orderEventGateway;
     }
 
     public OrderCallResult submit(final OrderParams orderParams) {
-        final OrderCall submitCall = engineCallWrapper.submit(orderParams);
+        final OrderCall submitCall = () -> engine.submitOrder(orderParams.label(),
+                                                              orderParams.instrument(),
+                                                              orderParams.orderCommand(),
+                                                              orderParams.amount(),
+                                                              orderParams.price(),
+                                                              orderParams.slippage(),
+                                                              orderParams.stopLossPrice(),
+                                                              orderParams.takeProfitPrice(),
+                                                              orderParams.goodTillTime(),
+                                                              orderParams.comment());
         return callResultForCreate(submitCall, OrderCallRequest.SUBMIT);
     }
 
@@ -59,7 +68,7 @@ public class OrderUtil {
 
     public OrderCallResult merge(final String mergeOrderLabel,
                                  final Collection<IOrder> toMergeOrders) {
-        final OrderCall mergeCall = engineCallWrapper.merge(mergeOrderLabel, toMergeOrders);
+        final OrderCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
         return callResultForCreate(mergeCall, OrderCallRequest.MERGE);
     }
 

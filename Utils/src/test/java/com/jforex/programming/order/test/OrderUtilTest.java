@@ -14,8 +14,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
-import com.jforex.programming.misc.EngineCallWrapper;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCall;
@@ -27,14 +28,10 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
-
 public class OrderUtilTest extends InstrumentUtilForTest {
 
     private OrderUtil orderUtil;
 
-    private EngineCallWrapper engineCallWrapper;
     @Mock private OrderCallExecutor orderCallExecutorMock;
     @Mock private OrderEventGateway orderEventGatewayMock;
     @Captor private ArgumentCaptor<OrderCall> orderCallCaptor;
@@ -55,7 +52,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Before
     public void setUp() {
         initCommonTestFramework();
-        engineCallWrapper = new EngineCallWrapper(engineMock);
         mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + orderParams.label();
         ordersToMerge.add(orderToMergeA);
         ordersToMerge.add(orderToMergeB);
@@ -63,8 +59,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                                                       Optional.empty());
         setUpMocks();
 
-        orderUtil = new OrderUtil(orderCallExecutorMock,
-                                  engineCallWrapper,
+        orderUtil = new OrderUtil(engineMock,
+                                  orderCallExecutorMock,
                                   orderEventGatewayMock);
     }
 
