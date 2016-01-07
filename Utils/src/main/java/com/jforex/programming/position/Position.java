@@ -113,17 +113,13 @@ public class Position {
 
     public void submitAndMerge(final OrderParams orderParams,
                                final String mergeLabel) {
-        final Collection<IOrder> filledOrders = filledOrders();
-        final double restoreSL = restoreSLTPPolicy.restoreSL(filledOrders);
-        final double restoreTP = restoreSLTPPolicy.restoreTP(filledOrders);
-        startTask(submitOrderObs(orderParams).concatMap(op -> mergeSequenceObs(mergeLabel, restoreSL, restoreTP)));
+        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders());
+        startTask(submitOrderObs(orderParams).concatMap(op -> mergeSequenceObs(mergeLabel, restoreSLTPData)));
     }
 
     public void merge(final String mergeLabel) {
-        final Collection<IOrder> filledOrders = filledOrders();
-        final double restoreSL = restoreSLTPPolicy.restoreSL(filledOrders);
-        final double restoreTP = restoreSLTPPolicy.restoreTP(filledOrders);
-        startTask(mergeSequenceObs(mergeLabel, restoreSL, restoreTP));
+        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders());
+        startTask(mergeSequenceObs(mergeLabel, restoreSLTPData));
     }
 
     public void close() {
@@ -140,13 +136,14 @@ public class Position {
     }
 
     private Observable<IOrder> mergeSequenceObs(final String mergeLabel,
-                                                final double restoreSL,
-                                                final double restoreTP) {
+                                                final RestoreSLTPData restoreSLTPData) {
         if (filledOrders().size() <= 1)
             return Observable.empty();
 
         final Observable<IOrder> mergeAndRestoreObs =
-                mergeOrderObs(mergeLabel).flatMap(order -> restoreSLTPObs(order, restoreSL, restoreTP));
+                mergeOrderObs(mergeLabel).flatMap(order -> restoreSLTPObs(order,
+                                                                          restoreSLTPData.sl(),
+                                                                          restoreSLTPData.tp()));
         return removeTPSLObs().concatWith(mergeAndRestoreObs);
     }
 
