@@ -17,6 +17,7 @@ import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderMessageData;
 import com.jforex.programming.test.common.CommonUtilForTest;
+import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -29,20 +30,20 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
     private OrderEventGateway orderGateway;
 
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
-    private final IMessage message = someOrderMessage(orderUnderTest);
-    private final OrderMessageData orderMessageData = new OrderMessageData(message);
-    private final Optional<OrderCallRequest> orderCallRequestOpt = Optional.of(OrderCallRequest.CHANGE_AMOUNT);
-    // private final Optional<OrderCallRequest> orderCallRequestEmptyOpt =
-    // Optional.empty();
-    // private final OrderEventType orderEvent =
-    // OrderEventType.AMOUNT_CHANGE_OK;
-    private OrderCallResult orderCallResult;
     private Observable<OrderEvent> orderEventObservable;
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
+    private IMessage message;
+    private OrderMessageData orderMessageData;
+    private final Optional<OrderCallRequest> orderCallRequestOpt = Optional.of(OrderCallRequest.CHANGE_SL);
+    private OrderCallResult orderCallResult;
 
     @Before
     public void setUp() {
         initCommonTestFramework();
+        message = new IMessageForTest(orderUnderTest,
+                                      IMessage.Type.ORDER_CHANGED_REJECTED,
+                                      createSet());
+        orderMessageData = new OrderMessageData(message);
         orderCallResult = new OrderCallResult(Optional.of(orderUnderTest),
                                               Optional.empty(),
                                               orderCallRequestOpt.get());
@@ -53,7 +54,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
     }
 
     @Test
-    public void testSubscriberIsNotifiedOnOrderEvent() {
+    public void testSubscriberIsNotifiedWithourRefiningSinceNoCallResultRegistered() {
         orderGateway.onOrderMessageData(orderMessageData);
 
         subscriber.assertNoErrors();
@@ -61,7 +62,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
         final OrderEvent orderEvent = subscriber.getOnNextEvents().get(0);
 
         assertThat(orderEvent.order(), equalTo(orderUnderTest));
-        assertThat(orderEvent.type(), equalTo(OrderEventType.AMOUNT_CHANGE_OK));
+        assertThat(orderEvent.type(), equalTo(OrderEventType.CHANGE_REJECTED));
     }
 
     public class AfterCallResultRegistering {
@@ -73,13 +74,13 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
         }
 
         @Test
-        public void testSubscriberIsNotifiedOnOrderEvent() {
+        public void testSubscriberIsNotifiedForARefinedRejectEvent() {
             subscriber.assertNoErrors();
             subscriber.assertValueCount(1);
             final OrderEvent orderEvent = subscriber.getOnNextEvents().get(0);
 
             assertThat(orderEvent.order(), equalTo(orderUnderTest));
-            assertThat(orderEvent.type(), equalTo(OrderEventType.AMOUNT_CHANGE_OK));
+            assertThat(orderEvent.type(), equalTo(OrderEventType.CHANGE_SL_REJECTED));
         }
     }
 }
