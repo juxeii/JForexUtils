@@ -9,6 +9,7 @@ import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEv
 import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.MapMaker;
-import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
@@ -40,7 +40,8 @@ public class Position {
 
     private final Instrument instrument;
     private final OrderUtil orderUtil;
-    private final Set<IOrder> orderRepository = Sets.newIdentityHashSet();
+    private final Set<IOrder> orderRepository =
+            Collections.newSetFromMap(new MapMaker().weakKeys().<IOrder, Boolean> makeMap());
     private final RestoreSLTPPolicy restoreSLTPPolicy;
     private boolean isBusy = false;
     private final ConcurrentMap<IOrder, OrderProgressData> progressDataByOrder = new MapMaker().weakKeys().makeMap();
