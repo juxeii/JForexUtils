@@ -11,6 +11,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteConsumer;
@@ -18,18 +21,14 @@ import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.fakes.ITickForTest;
 
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.OfferSide;
-
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
-public class TickQuoteEngineTest extends CurrencyUtilForTest {
+public class TickQuoteProviderTest extends CurrencyUtilForTest {
 
-    private TickQuoteProvider tickQuoteEngine;
+    private TickQuoteProvider tickQuoteProvider;
 
     @Mock private TickQuoteConsumer tickQuoteConsumerEURUSDMock;
     @Mock private TickQuoteConsumer tickQuoteConsumerAUDUSDMock;
@@ -48,30 +47,30 @@ public class TickQuoteEngineTest extends CurrencyUtilForTest {
         initCommonTestFramework();
         tickObservable = PublishSubject.create();
 
-        tickQuoteEngine = new TickQuoteProvider(tickObservable, historyMock);
-        tickQuoteEngine.subscribe(instrumentEURUSD, tickQuoteConsumerEURUSDMock::onTickQuote);
+        tickQuoteProvider = new TickQuoteProvider(tickObservable, historyMock);
+        tickQuoteProvider.subscribe(instrumentEURUSD, tickQuoteConsumerEURUSDMock::onTickQuote);
     }
 
     private void verifyTickValues(final ITick tick) {
-        assertThat(tickQuoteEngine.tick(instrumentEURUSD),
+        assertThat(tickQuoteProvider.tick(instrumentEURUSD),
                    equalTo(tick));
 
-        assertThat(tickQuoteEngine.ask(instrumentEURUSD),
+        assertThat(tickQuoteProvider.ask(instrumentEURUSD),
                    equalTo(tick.getAsk()));
 
-        assertThat(tickQuoteEngine.bid(instrumentEURUSD),
+        assertThat(tickQuoteProvider.bid(instrumentEURUSD),
                    equalTo(tick.getBid()));
 
-        assertThat(tickQuoteEngine.forOfferSide(instrumentEURUSD, OfferSide.ASK),
+        assertThat(tickQuoteProvider.forOfferSide(instrumentEURUSD, OfferSide.ASK),
                    equalTo(tick.getAsk()));
 
-        assertThat(tickQuoteEngine.forOfferSide(instrumentEURUSD, OfferSide.BID),
+        assertThat(tickQuoteProvider.forOfferSide(instrumentEURUSD, OfferSide.BID),
                    equalTo(tick.getBid()));
     }
 
     @Test
     public void testObservableIsCorrectReturned() {
-        assertThat(tickQuoteEngine.observable(), equalTo(tickObservable));
+        assertThat(tickQuoteProvider.observable(), equalTo(tickObservable));
     }
 
     public class HistoryThrowsBeforeFirstTickQuoteIsReceived {
@@ -83,27 +82,27 @@ public class TickQuoteEngineTest extends CurrencyUtilForTest {
 
         @Test(expected = QuoteProviderException.class)
         public void testTickThrows() {
-            tickQuoteEngine.tick(instrumentEURUSD);
+            tickQuoteProvider.tick(instrumentEURUSD);
         }
 
         @Test(expected = QuoteProviderException.class)
         public void testAskThrows() {
-            tickQuoteEngine.ask(instrumentEURUSD);
+            tickQuoteProvider.ask(instrumentEURUSD);
         }
 
         @Test(expected = QuoteProviderException.class)
         public void testBidThrows() {
-            tickQuoteEngine.bid(instrumentEURUSD);
+            tickQuoteProvider.bid(instrumentEURUSD);
         }
 
         @Test(expected = QuoteProviderException.class)
         public void testForOfferSideAskThrows() {
-            tickQuoteEngine.forOfferSide(instrumentEURUSD, OfferSide.ASK);
+            tickQuoteProvider.forOfferSide(instrumentEURUSD, OfferSide.ASK);
         }
 
         @Test(expected = QuoteProviderException.class)
         public void testForOfferSideBidThrows() {
-            tickQuoteEngine.forOfferSide(instrumentEURUSD, OfferSide.BID);
+            tickQuoteProvider.forOfferSide(instrumentEURUSD, OfferSide.BID);
         }
     }
 
@@ -123,7 +122,8 @@ public class TickQuoteEngineTest extends CurrencyUtilForTest {
     public class AfterFirstTickQuoteIsConsumed {
 
         @Before
-        public void setUp() {
+        public void setUp() throws JFException {
+            when(historyMock.getLastTick(instrumentEURUSD)).thenReturn(tickEURUSDOfHistory);
             tickObservable.onNext(firstEURUSDTickQuote);
         }
 
@@ -172,7 +172,7 @@ public class TickQuoteEngineTest extends CurrencyUtilForTest {
 
             @Test
             public void testTickQuoteConsumerForAUDUSDReceivesTickQuote() {
-                tickQuoteEngine.subscribe(instrumentAUDUSD, tickQuoteConsumerAUDUSDMock::onTickQuote);
+                tickQuoteProvider.subscribe(instrumentAUDUSD, tickQuoteConsumerAUDUSDMock::onTickQuote);
 
                 tickObservable.onNext(firstAUDUSDTickQuote);
 

@@ -18,7 +18,7 @@ public class TickQuoteProvider {
     private final Map<Instrument, ITick> latestTickByInstrument = new ConcurrentHashMap<>();
 
     public TickQuoteProvider(final Observable<TickQuote> tickObservable,
-                           final IHistory history) {
+                             final IHistory history) {
         this.tickObservable = tickObservable;
         this.history = history;
 
@@ -26,9 +26,7 @@ public class TickQuoteProvider {
     }
 
     public ITick tick(final Instrument instrument) {
-        if (latestTickByInstrument.containsKey(instrument))
-            return latestTickByInstrument.get(instrument);
-        return tickFromHistory(instrument);
+        return latestTickByInstrument.getOrDefault(instrument, tickFromHistory(instrument));
     }
 
     private ITick tickFromHistory(final Instrument instrument) {
