@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jforex.programming.order.call.OrderCallRequest;
 
-public class OrderEventTypeEvaluator {
+public final class OrderEventTypeEvaluator {
 
     private final static Function<IOrder, OrderEventType> submitEvaluator =
             order -> isConditional.test(order)
@@ -85,8 +85,8 @@ public class OrderEventTypeEvaluator {
                                               .put(OrderCallRequest.CHANGE_TP, OrderEventType.CHANGE_TP_REJECTED)
                                               .build());
 
-    public static OrderEventType get(final OrderMessageData orderEventData,
-                                     final Optional<OrderCallRequest> orderCallRequestOpt) {
+    public final static OrderEventType get(final OrderMessageData orderEventData,
+                                           final Optional<OrderCallRequest> orderCallRequestOpt) {
         final OrderEventType orderEventType = evaluate(orderEventData);
         return orderCallRequestOpt.isPresent()
                 ? refineWithCallRequest(orderEventType, orderCallRequestOpt.get())
