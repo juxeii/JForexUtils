@@ -50,7 +50,7 @@ public class OrderEventGateway implements OrderCallResultConsumer {
         orderEventSubscriber.add(subscriber);
     }
 
-    public final OrderEventType orderEventTypeFromData(final OrderMessageData orderMessageData) {
+    private final OrderEventType orderEventTypeFromData(final OrderMessageData orderMessageData) {
         return callRequestByOrder.containsKey(orderMessageData.order())
                 ? orderEventWithQueuePresent(orderMessageData)
                 : OrderEventTypeEvaluator.get(orderMessageData, Optional.empty());
