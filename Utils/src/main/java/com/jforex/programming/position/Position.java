@@ -19,8 +19,6 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.google.common.base.Supplier;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
@@ -31,6 +29,9 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallResult;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -64,7 +65,9 @@ public class Position {
     private void processPositionEvent(final OrderEvent orderEvent) {
         if (progressDataByOrder.containsKey(orderEvent.order()))
             handleOrderInProgress(orderEvent);
-        orderRepository.removeIf(order -> endOfOrderEventTypes.contains(orderEvent.type()));
+        final IOrder order = orderEvent.order();
+        if (endOfOrderEventTypes.contains(orderEvent.type()))
+            orderRepository.remove(order);
     }
 
     private void handleOrderInProgress(final OrderEvent orderEvent) {

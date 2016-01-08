@@ -19,8 +19,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -32,6 +30,9 @@ import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -424,6 +425,26 @@ public class PositionTest extends InstrumentUtilForTest {
                     @Test
                     public void testIsBusy() {
                         assertTrue(position.isBusy());
+                    }
+
+                    public class AfterFillRejectMessage {
+
+                        @Before
+                        public void setUp() {
+                            sellOrderEURUSD.setState(IOrder.State.CANCELED);
+
+                            sendOrderEvent(sellOrderEURUSD, OrderEventType.FILL_REJECTED);
+                        }
+
+                        @Test
+                        public void testIsNotBusy() {
+                            assertFalse(position.isBusy());
+                        }
+
+                        @Test
+                        public void testPositionHasOnlyBuyOrder() {
+                            assertTrue(positionHasOrder(buyOrderEURUSD));
+                        }
                     }
 
                     public class AfterFullFillMessageForSecondOrder {
