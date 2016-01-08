@@ -69,9 +69,9 @@ public class Position {
 
     private void handleOrderInProgress(final OrderEvent orderEvent) {
         final IOrder order = orderEvent.order();
-        final OrderProgressData orderProgressData = progressDataByOrder.get(order);
-        final Subscriber<? super IOrder> subscriber = orderProgressData.subscriber();
-        final TaskEventData taskEventData = orderProgressData.taskEventData();
+        final OrderProgressData progressData = progressDataByOrder.get(order);
+        final Subscriber<? super IOrder> subscriber = progressData.subscriber();
+        final TaskEventData taskEventData = progressData.taskEventData();
         final OrderEventType orderEventType = orderEvent.type();
 
         if (taskEventData.forReject().contains(orderEventType)) {

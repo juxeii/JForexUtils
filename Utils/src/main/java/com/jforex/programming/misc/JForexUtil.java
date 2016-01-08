@@ -18,8 +18,6 @@ import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
-import com.jforex.programming.order.event.OrderEventTypeEvaluator;
-import com.jforex.programming.order.event.OrderEventTypeEvaluatorByMaps;
 import com.jforex.programming.order.event.OrderMessageData;
 import com.jforex.programming.position.NoRestorePolicy;
 import com.jforex.programming.position.Position;
@@ -65,7 +63,6 @@ public class JForexUtil implements MessageConsumer {
     private final JFEventPublisherForRx<BarQuote> barQuotePublisherForRx = new JFEventPublisherForRx<BarQuote>();
     private Observable<BarQuote> barObservable;
 
-    private final OrderEventTypeEvaluator messageDataToEventByMaps = new OrderEventTypeEvaluatorByMaps();
     private Subscription eventGatewaySubscription;
 
     public final static PlatformSettings pfs = ConfigFactory.create(PlatformSettings.class);
@@ -90,7 +87,7 @@ public class JForexUtil implements MessageConsumer {
     }
 
     private void initInfrastructure() {
-        orderEventGateway = new OrderEventGateway(messageDataToEventByMaps);
+        orderEventGateway = new OrderEventGateway();
 
         messageObservable = Observable.create(messagePublisherForRx::subscribe);
         eventGatewaySubscription = messageObservable.filter(message -> message.getOrder() != null)

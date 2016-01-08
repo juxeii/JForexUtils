@@ -8,30 +8,25 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.event.OrderEventTypeEvaluator;
 import com.jforex.programming.order.event.OrderMessageData;
-import com.jforex.programming.order.event.OrderEventTypeEvaluatorByMaps;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
-
-public class OrderEventTypeEvaluatorByMapsTest extends CommonUtilForTest {
-
-    private OrderEventTypeEvaluatorByMaps eventTypeEvaluator;
+public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
 
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
 
     @Before
     public void setUp() {
         initCommonTestFramework();
-
-        eventTypeEvaluator = new OrderEventTypeEvaluatorByMaps();
     }
 
     private OrderMessageData orderMessageData(final IMessage.Type messageType,
@@ -60,7 +55,7 @@ public class OrderEventTypeEvaluatorByMapsTest extends CommonUtilForTest {
                                       final IMessage.Reason... messageReasons) {
         final OrderMessageData orderMessageData = orderMessageData(messageType, messageReasons);
 
-        final OrderEventType actualType = eventTypeEvaluator.get(orderMessageData, orderCallRequestOpt);
+        final OrderEventType actualType = OrderEventTypeEvaluator.get(orderMessageData, orderCallRequestOpt);
 
         assertThat(actualType, equalTo(expectedType));
     }

@@ -19,14 +19,12 @@ import rx.subscriptions.Subscriptions;
 
 public class OrderEventGateway implements OrderCallResultConsumer {
 
-    private final OrderEventTypeEvaluator orderEventTypeEvaluator;
     private final Observable<OrderEvent> orderEventObservable;
     private final Set<Subscriber<? super OrderEvent>> orderEventSubscriber = Sets.newConcurrentHashSet();
     private final ConcurrentMap<IOrder, Queue<OrderCallRequest>> callRequestByOrder =
             new MapMaker().weakKeys().makeMap();
 
-    public OrderEventGateway(final OrderEventTypeEvaluator orderEventTypeEvaluator) {
-        this.orderEventTypeEvaluator = orderEventTypeEvaluator;
+    public OrderEventGateway() {
         orderEventObservable = Observable.create(this::subscribe);
     }
 
@@ -55,7 +53,7 @@ public class OrderEventGateway implements OrderCallResultConsumer {
     public final OrderEventType orderEventTypeFromData(final OrderMessageData orderMessageData) {
         return callRequestByOrder.containsKey(orderMessageData.order())
                 ? orderEventWithQueuePresent(orderMessageData)
-                : orderEventTypeEvaluator.get(orderMessageData, Optional.empty());
+                : OrderEventTypeEvaluator.get(orderMessageData, Optional.empty());
     }
 
     private final OrderEventType orderEventWithQueuePresent(final OrderMessageData orderMessageData) {
@@ -66,6 +64,6 @@ public class OrderEventGateway implements OrderCallResultConsumer {
         else
             callRequestByOrder.remove(order);
 
-        return orderEventTypeEvaluator.get(orderMessageData, callRequestOpt);
+        return OrderEventTypeEvaluator.get(orderMessageData, callRequestOpt);
     }
 }
