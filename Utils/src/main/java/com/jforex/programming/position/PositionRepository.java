@@ -10,7 +10,7 @@ import com.jforex.programming.order.event.OrderEvent;
 
 import rx.Observable;
 
-public class PositionRepository {
+public final class PositionRepository {
 
     private final OrderUtil orderUtil;
     private final Observable<OrderEvent> orderEventObservable;
@@ -22,21 +22,21 @@ public class PositionRepository {
         this.orderEventObservable = orderEventObservable;
     }
 
-    public Position createNew(final Instrument instrument,
-                              final RestoreSLTPPolicy restoreSLTPPolicy) {
+    public final Position createNew(final Instrument instrument,
+                                    final RestoreSLTPPolicy restoreSLTPPolicy) {
         return new Position(instrument,
                             orderUtil,
                             orderEventObservable,
                             restoreSLTPPolicy);
     }
 
-    public Position forInstrument(final Instrument instrument,
-                                  final RestoreSLTPPolicy restoreSLTPPolicy) {
+    public final Position forInstrument(final Instrument instrument,
+                                        final RestoreSLTPPolicy restoreSLTPPolicy) {
         positionByInstrument.computeIfAbsent(instrument, i -> createNew(i, restoreSLTPPolicy));
         return positionByInstrument.get(instrument);
     }
 
-    public Collection<Position> all() {
+    public final Collection<Position> all() {
         return positionByInstrument.values();
     }
 }
