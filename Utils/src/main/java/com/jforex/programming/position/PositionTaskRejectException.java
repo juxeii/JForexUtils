@@ -6,7 +6,7 @@ public final class PositionTaskRejectException extends Exception {
 
     private final OrderEvent orderEvent;
 
-    private static final long serialVersionUID = 1L;
+    private final static long serialVersionUID = 1L;
 
     public PositionTaskRejectException(final String message,
                                        final OrderEvent orderEvent) {
