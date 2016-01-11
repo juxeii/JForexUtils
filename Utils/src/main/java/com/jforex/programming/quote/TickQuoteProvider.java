@@ -13,20 +13,20 @@ import rx.Observable;
 
 public class TickQuoteProvider {
 
-    private final Observable<TickQuote> tickObservable;
+    private final Observable<TickQuote> tickQuoteObservable;
     private final IHistory history;
-    private final Map<Instrument, ITick> latestTickByInstrument = new ConcurrentHashMap<>();
+    private final Map<Instrument, ITick> latestTickQuote = new ConcurrentHashMap<>();
 
-    public TickQuoteProvider(final Observable<TickQuote> tickObservable,
+    public TickQuoteProvider(final Observable<TickQuote> tickQuoteObservable,
                              final IHistory history) {
-        this.tickObservable = tickObservable;
+        this.tickQuoteObservable = tickQuoteObservable;
         this.history = history;
 
-        tickObservable.subscribe(this::onTickQuote);
+        tickQuoteObservable.subscribe(this::onTickQuote);
     }
 
     public ITick tick(final Instrument instrument) {
-        return latestTickByInstrument.getOrDefault(instrument, tickFromHistory(instrument));
+        return latestTickQuote.getOrDefault(instrument, tickFromHistory(instrument));
     }
 
     private ITick tickFromHistory(final Instrument instrument) {
@@ -55,16 +55,16 @@ public class TickQuoteProvider {
     }
 
     public Observable<TickQuote> observable() {
-        return tickObservable;
+        return tickQuoteObservable;
     }
 
     public void subscribe(final Instrument instrument,
                           final TickQuoteConsumer tickQuoteConsumer) {
-        tickObservable.filter(tickQuote -> instrument == tickQuote.instrument())
-                      .subscribe(tickQuoteConsumer::onTickQuote);
+        tickQuoteObservable.filter(tickQuote -> instrument == tickQuote.instrument())
+                           .subscribe(tickQuoteConsumer::onTickQuote);
     }
 
     private void onTickQuote(final TickQuote tickQuote) {
-        latestTickByInstrument.put(tickQuote.instrument(), tickQuote.tick());
+        latestTickQuote.put(tickQuote.instrument(), tickQuote.tick());
     }
 }

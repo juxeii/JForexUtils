@@ -16,16 +16,16 @@ import rx.Observable;
 
 public class BarQuoteProvider {
 
-    private final Observable<BarQuote> barObservable;
+    private final Observable<BarQuote> barQuoteObservable;
     private final IHistory history;
-    private final Map<MultiKey<Object>, BarQuote> lastesBarQuote = new ConcurrentHashMap<>();
+    private final Map<MultiKey<Object>, BarQuote> latestBarQuote = new ConcurrentHashMap<>();
 
-    public BarQuoteProvider(final Observable<BarQuote> barObservable,
+    public BarQuoteProvider(final Observable<BarQuote> barQuoteObservable,
                             final IHistory history) {
-        this.barObservable = barObservable;
+        this.barQuoteObservable = barQuoteObservable;
         this.history = history;
 
-        barObservable.subscribe(this::onBarQuote);
+        barQuoteObservable.subscribe(this::onBarQuote);
     }
 
     public IBar askBar(final Instrument instrument,
@@ -47,7 +47,7 @@ public class BarQuoteProvider {
     private IBar bar(final Instrument instrument,
                      final Period period,
                      final OfferSide offerSide) {
-        return lastesBarQuote.containsKey(barQuoteKey(instrument, period))
+        return latestBarQuote.containsKey(barQuoteKey(instrument, period))
                 ? barQuoteByOfferSide(instrument, period, offerSide)
                 : barFromHistory(instrument, period, offerSide);
     }
@@ -70,24 +70,24 @@ public class BarQuoteProvider {
     private IBar barQuoteByOfferSide(final Instrument instrument,
                                      final Period period,
                                      final OfferSide offerSide) {
-        final BarQuote barQuote = lastesBarQuote.get(barQuoteKey(instrument, period));
+        final BarQuote barQuote = latestBarQuote.get(barQuoteKey(instrument, period));
         return offerSide == OfferSide.ASK ? barQuote.askBar() : barQuote.bidBar();
     }
 
     private void onBarQuote(final BarQuote barQuote) {
         final MultiKey<Object> multiKey = barQuoteKey(barQuote.instrument(), barQuote.period());
-        lastesBarQuote.put(multiKey, barQuote);
+        latestBarQuote.put(multiKey, barQuote);
     }
 
     public void subscribe(final Instrument instrument,
                           final Period period,
                           final BarQuoteConsumer barQuoteConsumer) {
-        barObservable.filter(barQuote -> instrument == barQuote.instrument() && period == barQuote.period())
-                     .subscribe(barQuoteConsumer::onBarQuote);
+        barQuoteObservable.filter(barQuote -> instrument == barQuote.instrument() && period == barQuote.period())
+                          .subscribe(barQuoteConsumer::onBarQuote);
     }
 
     public Observable<BarQuote> observable() {
-        return barObservable;
+        return barQuoteObservable;
     }
 
     private MultiKey<Object> barQuoteKey(final Instrument instrument,
