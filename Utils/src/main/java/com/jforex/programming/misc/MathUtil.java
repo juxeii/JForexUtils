@@ -10,9 +10,8 @@ import java.util.Set;
 import org.paukov.combinatorics.Factory;
 import org.paukov.combinatorics.Generator;
 
-import com.jforex.programming.instrument.InstrumentUtil;
-
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.instrument.InstrumentUtil;
 
 public final class MathUtil {
 
@@ -21,11 +20,13 @@ public final class MathUtil {
 
     public final static <T> Set<Set<T>> kPowerSet(final Set<T> sourceSet,
                                                   final int setSize) {
-        return setSize >= 0 ? kPowerSetForKNotZero(sourceSet, setSize) : Collections.emptySet();
+        return setSize >= 0
+                ? kPowerSetForPositiveK(sourceSet, setSize)
+                : Collections.emptySet();
     }
 
-    private final static <T> Set<Set<T>> kPowerSetForKNotZero(final Set<T> sourceSet,
-                                                              final int setSize) {
+    private final static <T> Set<Set<T>> kPowerSetForPositiveK(final Set<T> sourceSet,
+                                                               final int setSize) {
         final Set<Set<T>> kPowerSet = new HashSet<>();
         final Generator<T> generator =
                 Factory.createSimpleCombinationGenerator(Factory.createVector(sourceSet), setSize);
