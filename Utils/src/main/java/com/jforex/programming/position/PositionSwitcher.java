@@ -2,11 +2,10 @@ package com.jforex.programming.position;
 
 import static com.jforex.programming.misc.JForexUtil.uss;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
-
-import com.dukascopy.api.IEngine.OrderCommand;
 
 public final class PositionSwitcher {
 
@@ -37,7 +36,7 @@ public final class PositionSwitcher {
             executeOrderCommandSignal(desiredDirection);
     }
 
-    private final boolean canSwitchTo(final OrderDirection desiredDirection) {
+    public final boolean canSwitchTo(final OrderDirection desiredDirection) {
         return isDirection(OrderDirection.FLAT) || !isDirection(desiredDirection)
                 ? !isBusy()
                 : false;
