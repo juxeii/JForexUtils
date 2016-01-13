@@ -110,6 +110,14 @@ public class Position {
                               .collect(toList());
     }
 
+    public Collection<IOrder> orders() {
+        return orderRepository;
+    }
+
+    private Collection<IOrder> filledOrders() {
+        return filter(isFilled);
+    }
+
     public void submit(final OrderParams orderParams) {
         startTask(submitOrderObs(orderParams));
     }
@@ -224,10 +232,6 @@ public class Position {
         final IOrder order = rejectException.orderEvent().order();
         logger.warn("Received reject type " + rejectException.orderEvent().type() + " for order " + order.getLabel()
                 + "!" + " Will retry task in " + pfs.ON_FAIL_RETRY_WAITING_TIME() + " milliseconds...");
-    }
-
-    private Collection<IOrder> filledOrders() {
-        return filter(isFilled);
     }
 
     private void taskFinish() {
