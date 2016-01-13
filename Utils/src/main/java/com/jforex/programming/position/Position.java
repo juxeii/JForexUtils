@@ -81,13 +81,17 @@ public class Position {
             progressDataByOrder.remove(order);
             subscriber.onError(new PositionTaskRejectException("", orderEvent));
         } else if (taskEventData.forDone().contains(orderEventType)) {
-            if (orderEventType == OrderEventType.FULL_FILL_OK
-                    || orderEventType == OrderEventType.MERGE_OK)
+            if (wasOrderCreated(orderEventType))
                 orderRepository.add(order);
             progressDataByOrder.remove(order);
             subscriber.onNext(order);
             subscriber.onCompleted();
         }
+    }
+
+    private boolean wasOrderCreated(final OrderEventType orderEventType) {
+        return orderEventType == OrderEventType.FULL_FILL_OK
+                || orderEventType == OrderEventType.MERGE_OK;
     }
 
     public boolean isBusy() {
