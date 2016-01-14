@@ -12,18 +12,16 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.jforex.programming.misc.ConcurrentUtil;
-import com.jforex.programming.test.common.CommonUtilForTest;
-
 import com.dukascopy.api.IContext;
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.misc.ConcurrentUtil;
+import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class ConcurrentUtilTest extends CommonUtilForTest {
 
@@ -34,7 +32,6 @@ public class ConcurrentUtilTest extends CommonUtilForTest {
     @Mock private Runnable threadMock;
     @Mock private Callable<IOrder> taskMock;
     @Mock private Future<IOrder> futureMock;
-    @Mock private ScheduledFuture<IOrder> scheduledFutureMock;
 
     @Before
     public void setUp() {
