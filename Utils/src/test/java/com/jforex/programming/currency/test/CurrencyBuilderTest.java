@@ -88,6 +88,7 @@ public class CurrencyBuilderTest extends CurrencyUtilForTest {
     @Test
     public void testFromInstrument() {
         final Set<ICurrency> currencies = fromInstrument(instrumentEURUSD);
+
         assertThat(currencies.size(), equalTo(2));
         assertTrue(currencies.contains(currencyEUR));
         assertTrue(currencies.contains(currencyUSD));

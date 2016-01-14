@@ -32,8 +32,8 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
 
     @Mock private TickQuoteProvider tickQuoteProviderMock;
     @Mock private BarQuoteProvider barQuoteProviderMock;
-    private IBar askBar;
-    private IBar bidBar;
+    @Mock private IBar askBar;
+    @Mock private IBar bidBar;
     private final ITick tickEURUSD = new ITickForTest(bidEURUSD, askEURUSD);
     private final Period testAskBarPeriod = Period.ONE_MIN;
     private final Period testBidBarPeriod = Period.FIFTEEN_MINS;

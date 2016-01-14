@@ -47,12 +47,6 @@ public class ConcurrentUtilTest extends CommonUtilForTest {
         when(contextMock.executeTask(taskMock)).thenReturn(futureMock);
     }
 
-    private void verifyExecutorShutdown(final ExecutorService executorServiceMock) throws InterruptedException {
-        verify(executorServiceMock).shutdownNow();
-        verify(executorServiceMock).awaitTermination(pfs.EXECUTORSERVICE_AWAITTERMINATION_TIMEOUT(),
-                                                     TimeUnit.MILLISECONDS);
-    }
-
     @Test
     public void testExecuteForThreadStartsCorrectThread() {
         final Future<?> future = concurrentUtil.execute(threadMock);
@@ -81,7 +75,9 @@ public class ConcurrentUtilTest extends CommonUtilForTest {
     public void testOnStopCallsShutDownNowAndAwaitTerminationOnExecutorService() throws InterruptedException {
         concurrentUtil.onStop();
 
-        verifyExecutorShutdown(executorServiceMock);
+        verify(executorServiceMock).shutdownNow();
+        verify(executorServiceMock).awaitTermination(pfs.EXECUTORSERVICE_AWAITTERMINATION_TIMEOUT(),
+                                                     TimeUnit.MILLISECONDS);
     }
 
     @Test

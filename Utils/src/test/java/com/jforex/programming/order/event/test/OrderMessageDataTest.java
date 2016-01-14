@@ -9,15 +9,14 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderMessageData;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
-
-public class OrderEventDataTest extends CommonUtilForTest {
+public class OrderMessageDataTest extends CommonUtilForTest {
 
     private OrderMessageData orderEventDataByDedicatedParams;
     private OrderMessageData orderEventDataByMessage;
