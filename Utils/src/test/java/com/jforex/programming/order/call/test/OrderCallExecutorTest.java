@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.jforex.programming.order.call.OrderCall;
+import com.jforex.programming.order.call.OrderCreateCall;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderExecutorResult;
 import com.jforex.programming.test.common.CommonUtilForTest;
@@ -30,7 +30,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
     private OrderCallExecutor orderCallExecutor;
 
-    @Mock private OrderCall orderCallMock;
+    @Mock private OrderCreateCall orderCallMock;
     @Mock private Future<IOrder> futureMock;
     private final IOrderForTest order = IOrderForTest.buyOrderEURUSD();
     private OrderExecutorResult orderExecutorResult;

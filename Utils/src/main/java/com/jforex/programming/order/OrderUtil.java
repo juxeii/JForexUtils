@@ -12,10 +12,11 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.call.OrderCall;
+import com.jforex.programming.order.call.OrderCreateCall;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.call.OrderCallResult;
+import com.jforex.programming.order.call.OrderChangeCall;
 import com.jforex.programming.order.call.OrderExecutorResult;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventConsumer;
@@ -41,7 +42,7 @@ public class OrderUtil {
     }
 
     public OrderCallResult submit(final OrderParams orderParams) {
-        final OrderCall submitCall = () -> engine.submitOrder(orderParams.label(),
+        final OrderCreateCall submitCall = () -> engine.submitOrder(orderParams.label(),
                                                               orderParams.instrument(),
                                                               orderParams.orderCommand(),
                                                               orderParams.amount(),
@@ -68,7 +69,7 @@ public class OrderUtil {
 
     public OrderCallResult merge(final String mergeOrderLabel,
                                  final Collection<IOrder> toMergeOrders) {
-        final OrderCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
+        final OrderCreateCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
         return callResultForCreate(mergeCall, OrderCallRequest.MERGE);
     }
 
@@ -148,7 +149,7 @@ public class OrderUtil {
                                    OrderCallRequest.CHANGE_TP);
     }
 
-    private OrderCallResult callResultForCreate(final OrderCall orderCall,
+    private OrderCallResult callResultForCreate(final OrderCreateCall orderCall,
                                                 final OrderCallRequest orderCallRequest) {
         return createAndRegisterCallResult(orderCall, Optional.empty(), orderCallRequest);
     }
@@ -156,11 +157,11 @@ public class OrderUtil {
     private OrderCallResult callResultForChange(final OrderChangeCall orderChangeCall,
                                                 final IOrder orderToChange,
                                                 final OrderCallRequest orderCallRequest) {
-        final OrderCall orderCall = orderCallFromOrderChange(orderToChange, orderChangeCall);
+        final OrderCreateCall orderCall = orderCallFromOrderChange(orderToChange, orderChangeCall);
         return createAndRegisterCallResult(orderCall, Optional.of(orderToChange), orderCallRequest);
     }
 
-    private OrderCallResult createAndRegisterCallResult(final OrderCall orderCall,
+    private OrderCallResult createAndRegisterCallResult(final OrderCreateCall orderCall,
                                                         final Optional<IOrder> orderToChangeOpt,
                                                         final OrderCallRequest orderCallRequest) {
         final OrderCallResult orderCallResult = callResultFromExecutorResult(orderCall,
@@ -169,7 +170,7 @@ public class OrderUtil {
         return registerCallResult(orderCallResult);
     }
 
-    private OrderCallResult callResultFromExecutorResult(final OrderCall orderCall,
+    private OrderCallResult callResultFromExecutorResult(final OrderCreateCall orderCall,
                                                          final Optional<IOrder> orderToChangeOpt,
                                                          final OrderCallRequest orderCallRequest) {
         final OrderExecutorResult orderExecutorResult = orderCallExecutor.run(orderCall);
@@ -185,7 +186,7 @@ public class OrderUtil {
         return orderCallResult;
     }
 
-    private final OrderCall orderCallFromOrderChange(final IOrder orderToChange,
+    private final OrderCreateCall orderCallFromOrderChange(final IOrder orderToChange,
                                                      final OrderChangeCall orderChangeCall) {
         return () -> {
             orderChangeCall.run();

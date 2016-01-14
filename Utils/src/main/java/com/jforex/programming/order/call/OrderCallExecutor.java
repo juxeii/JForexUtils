@@ -20,7 +20,7 @@ public class OrderCallExecutor {
         this.concurrentUtil = concurrentUtil;
     }
 
-    public OrderExecutorResult run(final OrderCall orderCall) {
+    public OrderExecutorResult run(final OrderCreateCall orderCall) {
         return ConcurrentUtil.isStrategyThread()
                 ? execute(() -> orderCall.run())
                 : execute(strategyThreadCall(() -> orderCall.run()));

@@ -19,7 +19,7 @@ import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.call.OrderCall;
+import com.jforex.programming.order.call.OrderCreateCall;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallResult;
 import com.jforex.programming.order.call.OrderExecutorResult;
@@ -34,7 +34,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Mock private OrderCallExecutor orderCallExecutorMock;
     @Mock private OrderEventGateway orderEventGatewayMock;
-    @Captor private ArgumentCaptor<OrderCall> orderCallCaptor;
+    @Captor private ArgumentCaptor<OrderCreateCall> orderCallCaptor;
     private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest orderToMergeA = IOrderForTest.buyOrderEURUSD();
@@ -65,7 +65,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(orderCallExecutorMock.run(any(OrderCall.class))).thenReturn(orderExecutorResult);
+        when(orderCallExecutorMock.run(any(OrderCreateCall.class))).thenReturn(orderExecutorResult);
     }
 
     private void verifyOrderCallAndCallResultRegistration(final OrderCallResult actualCallResult) throws JFException {
