@@ -20,7 +20,7 @@ public class OrderCallExecutor {
         this.concurrentUtil = concurrentUtil;
     }
 
-    public OrderExecutorResult run(final OrderCreateCall orderCall) {
+    public OrderCallExecutorResult run(final OrderCreateCall orderCall) {
         return ConcurrentUtil.isStrategyThread()
                 ? execute(() -> orderCall.run())
                 : execute(strategyThreadCall(() -> orderCall.run()));
@@ -30,12 +30,12 @@ public class OrderCallExecutor {
         return () -> concurrentUtil.executeOnStrategyThread(orderCallable).get();
     }
 
-    private final OrderExecutorResult execute(final ExecutorOrderCall executorOrderCall) {
+    private final OrderCallExecutorResult execute(final ExecutorOrderCall executorOrderCall) {
         try {
             final IOrder order = executorOrderCall.run();
-            return new OrderExecutorResult(Optional.ofNullable(order), Optional.empty());
+            return new OrderCallExecutorResult(Optional.ofNullable(order), Optional.empty());
         } catch (JFException | InterruptedException | ExecutionException exception) {
-            return new OrderExecutorResult(Optional.empty(), Optional.of(exception));
+            return new OrderCallExecutorResult(Optional.empty(), Optional.of(exception));
         }
     }
 }

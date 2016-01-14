@@ -12,18 +12,16 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.call.OrderCreateCall;
 import com.jforex.programming.order.call.OrderCallExecutor;
+import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.call.OrderCallResult;
 import com.jforex.programming.order.call.OrderChangeCall;
-import com.jforex.programming.order.call.OrderExecutorResult;
+import com.jforex.programming.order.call.OrderCreateCall;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventConsumer;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
-
-import rx.Observable.Transformer;
 
 public class OrderUtil {
 
@@ -43,15 +41,15 @@ public class OrderUtil {
 
     public OrderCallResult submit(final OrderParams orderParams) {
         final OrderCreateCall submitCall = () -> engine.submitOrder(orderParams.label(),
-                                                              orderParams.instrument(),
-                                                              orderParams.orderCommand(),
-                                                              orderParams.amount(),
-                                                              orderParams.price(),
-                                                              orderParams.slippage(),
-                                                              orderParams.stopLossPrice(),
-                                                              orderParams.takeProfitPrice(),
-                                                              orderParams.goodTillTime(),
-                                                              orderParams.comment());
+                                                                    orderParams.instrument(),
+                                                                    orderParams.orderCommand(),
+                                                                    orderParams.amount(),
+                                                                    orderParams.price(),
+                                                                    orderParams.slippage(),
+                                                                    orderParams.stopLossPrice(),
+                                                                    orderParams.takeProfitPrice(),
+                                                                    orderParams.goodTillTime(),
+                                                                    orderParams.comment());
         return callResultForCreate(submitCall, OrderCallRequest.SUBMIT);
     }
 
@@ -173,7 +171,7 @@ public class OrderUtil {
     private OrderCallResult callResultFromExecutorResult(final OrderCreateCall orderCall,
                                                          final Optional<IOrder> orderToChangeOpt,
                                                          final OrderCallRequest orderCallRequest) {
-        final OrderExecutorResult orderExecutorResult = orderCallExecutor.run(orderCall);
+        final OrderCallExecutorResult orderExecutorResult = orderCallExecutor.run(orderCall);
         final IOrder orderFromExecution = orderExecutorResult.orderOpt().orElse(orderToChangeOpt.orElse(null));
         return new OrderCallResult(Optional.ofNullable(orderFromExecution),
                                    orderExecutorResult.exceptionOpt(),
@@ -187,7 +185,7 @@ public class OrderUtil {
     }
 
     private final OrderCreateCall orderCallFromOrderChange(final IOrder orderToChange,
-                                                     final OrderChangeCall orderChangeCall) {
+                                                           final OrderChangeCall orderChangeCall) {
         return () -> {
             orderChangeCall.run();
             return orderToChange;
@@ -213,12 +211,8 @@ public class OrderUtil {
     private void registerOnObservable(final IOrder order,
                                       final Consumer<OrderEvent> orderEventConsumer) {
         orderEventGateway.observable()
-                         .compose(applyOrderFilter(order))
+                         .filter(oe -> oe.order().equals(order))
+                         .takeUntil(oe -> endOfOrderEventTypes.contains(oe.type()))
                          .subscribe(orderEventConsumer::accept);
-    }
-
-    Transformer<OrderEvent, OrderEvent> applyOrderFilter(final IOrder order) {
-        return observable -> observable.filter(oe -> oe.order().equals(order))
-                                       .takeUntil(oe -> endOfOrderEventTypes.contains(oe.type()));
     }
 }

@@ -10,12 +10,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.dukascopy.api.IMessage;
+import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.call.OrderCallResult;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.event.OrderMessageData;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;

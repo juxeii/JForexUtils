@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
+import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.call.OrderCallResult;
 import com.jforex.programming.order.call.OrderCallResultConsumer;

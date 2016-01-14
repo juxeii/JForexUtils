@@ -12,6 +12,7 @@ import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallRequest;
 
 public final class OrderEventTypeEvaluator {

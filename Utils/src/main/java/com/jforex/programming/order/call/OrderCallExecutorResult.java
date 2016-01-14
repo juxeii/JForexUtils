@@ -4,12 +4,12 @@ import java.util.Optional;
 
 import com.dukascopy.api.IOrder;
 
-public final class OrderExecutorResult {
+public final class OrderCallExecutorResult {
 
     private final Optional<IOrder> orderOpt;
     private final Optional<Exception> exceptionOpt;
 
-    public OrderExecutorResult(final Optional<IOrder> orderOpt,
+    public OrderCallExecutorResult(final Optional<IOrder> orderOpt,
                                final Optional<Exception> exceptionOpt) {
         this.orderOpt = orderOpt;
         this.exceptionOpt = exceptionOpt;

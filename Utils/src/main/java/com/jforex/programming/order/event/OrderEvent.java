@@ -5,12 +5,12 @@ import com.dukascopy.api.IOrder;
 public final class OrderEvent {
 
     private final IOrder order;
-    private final OrderEventType orderEventType;
+    private final OrderEventType type;
 
     public OrderEvent(final IOrder order,
-                      final OrderEventType orderEventType) {
+                      final OrderEventType type) {
         this.order = order;
-        this.orderEventType = orderEventType;
+        this.type = type;
     }
 
     public final IOrder order() {
@@ -18,6 +18,6 @@ public final class OrderEvent {
     }
 
     public final OrderEventType type() {
-        return orderEventType;
+        return type;
     }
 }

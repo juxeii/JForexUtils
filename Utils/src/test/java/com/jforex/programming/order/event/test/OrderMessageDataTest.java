@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.event.OrderMessageData;
+import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;

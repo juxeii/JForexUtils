@@ -22,7 +22,7 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCreateCall;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallResult;
-import com.jforex.programming.order.call.OrderExecutorResult;
+import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
@@ -39,7 +39,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest orderToMergeA = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest orderToMergeB = IOrderForTest.orderAUDUSD();
-    private OrderExecutorResult orderExecutorResult;
+    private OrderCallExecutorResult orderExecutorResult;
     private final Set<IOrder> ordersToMerge = Sets.newConcurrentHashSet();
     private String mergeLabel;
     private final String newLabel = "NewLabel";
@@ -55,7 +55,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + orderParams.label();
         ordersToMerge.add(orderToMergeA);
         ordersToMerge.add(orderToMergeB);
-        orderExecutorResult = new OrderExecutorResult(Optional.of(orderUnderTest),
+        orderExecutorResult = new OrderCallExecutorResult(Optional.of(orderUnderTest),
                                                       Optional.empty());
         setUpMocks();
 
