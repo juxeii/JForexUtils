@@ -5,6 +5,7 @@ import static com.jforex.programming.order.OrderStaticUtil.buyOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.combinedDirection;
 import static com.jforex.programming.order.OrderStaticUtil.combinedSignedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.direction;
+import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
@@ -30,14 +31,13 @@ import java.util.function.Predicate;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.jforex.programming.order.OrderDirection;
-import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
-
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.order.OrderDirection;
+import com.jforex.programming.test.common.InstrumentUtilForTest;
+import com.jforex.programming.test.fakes.IOrderForTest;
 
 public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
@@ -346,5 +346,11 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     @Test
     public void testOfferSideForOrderCommandIsBidForSellCommand() {
         assertThat(offerSideForOrderCommand(OrderCommand.SELL), equalTo(OfferSide.BID));
+    }
+
+    @Test
+    public void testDirectionToCommand() {
+        assertThat(directionToCommand(OrderDirection.LONG), equalTo(OrderCommand.BUY));
+        assertThat(directionToCommand(OrderDirection.SHORT), equalTo(OrderCommand.SELL));
     }
 }

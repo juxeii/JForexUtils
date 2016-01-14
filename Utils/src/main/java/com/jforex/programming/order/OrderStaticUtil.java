@@ -6,12 +6,11 @@ import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.OfferSide;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 public final class OrderStaticUtil {
 
@@ -87,5 +86,9 @@ public final class OrderStaticUtil {
 
     public final static OfferSide offerSideForOrderCommand(final OrderCommand orderCommand) {
         return buyOrderCommands.contains(orderCommand) ? OfferSide.ASK : OfferSide.BID;
+    }
+
+    public final static OrderCommand directionToCommand(final OrderDirection orderDirection) {
+        return orderDirection == OrderDirection.LONG ? OrderCommand.BUY : OrderCommand.SELL;
     }
 }
