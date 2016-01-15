@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.apache.logging.log4j.LogManager;
@@ -34,6 +33,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
 import rx.Observable;
+import rx.Subscriber;
 
 public class Position {
 
@@ -65,9 +65,28 @@ public class Position {
     private void processPositionEvent(final OrderEvent orderEvent) {
         final IOrder order = orderEvent.order();
         if (progressDataByOrder.containsKey(order))
-            progressDataByOrder.get(order).processOrderEventType(orderEvent);
+            handleOrderInProgress(orderEvent);
         if (endOfOrderEventTypes.contains(orderEvent.type()))
             orderRepository.remove(order);
+    }
+
+    private void handleOrderInProgress(final OrderEvent orderEvent) {
+        final IOrder order = orderEvent.order();
+        final OrderProgressData progressData = progressDataByOrder.get(order);
+        final Subscriber<? super IOrder> subscriber = progressData.subscriber();
+        final TaskEventData taskEventData = progressData.taskEventData();
+        final OrderEventType orderEventType = orderEvent.type();
+
+        if (taskEventData.forReject().contains(orderEventType)) {
+            progressDataByOrder.remove(order);
+            subscriber.onError(new PositionTaskRejectException("", orderEvent));
+        } else if (taskEventData.forDone().contains(orderEventType)) {
+            if (wasOrderCreated(orderEventType))
+                orderRepository.add(order);
+            progressDataByOrder.remove(order);
+            subscriber.onNext(order);
+            subscriber.onCompleted();
+        }
     }
 
     private boolean wasOrderCreated(final OrderEventType orderEventType) {
@@ -164,22 +183,9 @@ public class Position {
             final OrderCallResult orderCallResult = orderCallSupplier.get();
             if (orderCallResult.exceptionOpt().isPresent())
                 subscriber.onError(orderCallResult.exceptionOpt().get());
-            else {
-                final Consumer<OrderEvent> doneAction = oe -> {
-                    final IOrder order = oe.order();
-                    if (wasOrderCreated(oe.type()))
-                        orderRepository.add(order);
-                    progressDataByOrder.remove(order);
-                    subscriber.onNext(oe.order());
-                    subscriber.onCompleted();
-                };
-                final Consumer<OrderEvent> rejectAction = oe -> {
-                    progressDataByOrder.remove(oe.order());
-                    subscriber.onError(new PositionTaskRejectException("", oe));
-                };
+            else
                 progressDataByOrder.put(orderCallResult.orderOpt().get(),
-                                        new OrderProgressData(taskEventData, doneAction, rejectAction));
-            }
+                                        new OrderProgressData(taskEventData, subscriber));
         });
     }
 
