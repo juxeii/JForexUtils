@@ -37,20 +37,22 @@ public class IEngineForTest {
     }
 
     public void throwOnSubmit(final OrderParams orderParams) throws JFException {
-        doThrow(jfException).when(engineMock).submitOrder(orderParams.label(),
-                                                          orderParams.instrument(),
-                                                          orderParams.orderCommand(),
-                                                          orderParams.amount(),
-                                                          orderParams.price(),
-                                                          orderParams.slippage(),
-                                                          orderParams.stopLossPrice(),
-                                                          orderParams.takeProfitPrice(),
-                                                          orderParams.goodTillTime(),
-                                                          orderParams.comment());
+        doThrow(jfException).when(engineMock)
+                            .submitOrder(orderParams.label(),
+                                         orderParams.instrument(),
+                                         orderParams.orderCommand(),
+                                         orderParams.amount(),
+                                         orderParams.price(),
+                                         orderParams.slippage(),
+                                         orderParams.stopLossPrice(),
+                                         orderParams.takeProfitPrice(),
+                                         orderParams.goodTillTime(),
+                                         orderParams.comment());
     }
 
     public void throwOnMerge(final String mergeLabel,
                              final Collection<IOrder> ordersToMerge) throws JFException {
-        doThrow(jfException).when(engineMock).mergeOrders(mergeLabel, ordersToMerge);
+        doThrow(jfException).when(engineMock)
+                            .mergeOrders(mergeLabel, ordersToMerge);
     }
 }

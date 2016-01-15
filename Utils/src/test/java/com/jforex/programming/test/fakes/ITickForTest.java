@@ -8,7 +8,7 @@ public class ITickForTest implements ITick {
     private final double ask;
 
     public ITickForTest(final double bid,
-                     final double ask) {
+                        final double ask) {
         this.bid = bid;
         this.ask = ask;
     }

@@ -1,7 +1,5 @@
 package com.jforex.programming.test.fakes;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
-
 import java.util.Collections;
 import java.util.Set;
 
@@ -63,17 +61,5 @@ public class IMessageForTest implements IMessage {
     @Override
     public long getCreationTime() {
         return 0;
-    }
-
-    public static IMessage connectedMessage() {
-        return new IMessageForTest(IMessage.Type.CONNECTION_STATUS, pfs.CONNECTED_STRING());
-    }
-
-    public static IMessage disconnectedMessage() {
-        return new IMessageForTest(IMessage.Type.CONNECTION_STATUS, pfs.DISCONNECTED_STRING());
-    }
-
-    public static IMessage calendarMessage() {
-        return new IMessageForTest(IMessage.Type.CALENDAR, "Calendar");
     }
 }
