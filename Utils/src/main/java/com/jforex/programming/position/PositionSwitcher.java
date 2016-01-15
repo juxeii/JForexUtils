@@ -3,6 +3,7 @@ package com.jforex.programming.position;
 import static com.jforex.programming.misc.JForexUtil.uss;
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
@@ -43,16 +44,17 @@ public final class PositionSwitcher {
     }
 
     private final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
-        final OrderParams adaptedOrderParams = adaptedOrderParams(desiredDirection);
+        final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
+        final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         final String mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + adaptedOrderParams.label();
         position.submitAndMerge(adaptedOrderParams, mergeLabel);
     }
 
-    private final OrderParams adaptedOrderParams(final OrderDirection desiredDirection) {
+    private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {
         final double absPositionExposure = Math.abs(position.signedExposure());
-        final OrderParams orderParams = orderParamsSupplier.forCommand(directionToCommand(desiredDirection));
+        final OrderParams orderParams = orderParamsSupplier.forCommand(newOrderCommand);
         return orderParams.clone()
-                          .withOrderCommand(directionToCommand(desiredDirection))
+                          .withOrderCommand(newOrderCommand)
                           .withAmount(orderParams.amount() + absPositionExposure)
                           .build();
     }

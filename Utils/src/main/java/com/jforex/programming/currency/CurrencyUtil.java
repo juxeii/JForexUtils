@@ -18,15 +18,14 @@ public final class CurrencyUtil {
 
     public final static boolean isInInstrument(final ICurrency currency,
                                                final Instrument instrument) {
-        return equalsBaseCurrency(currency, instrument) || equalsQuoteCurrency(currency, instrument);
+        return equalsBaseCurrency(currency, instrument)
+                || equalsQuoteCurrency(currency, instrument);
     }
 
     public final static boolean isInInstrument(final String currencyName,
                                                final Instrument instrument) {
         final Optional<ICurrency> currencyOpt = CurrencyBuilder.fromName(currencyName);
-        return currencyOpt.isPresent()
-                ? isInInstrument(currencyOpt.get(), instrument)
-                : false;
+        return currencyOpt.map(currency -> isInInstrument(currency, instrument)).orElse(false);
     }
 
     public final static boolean equalsBaseCurrency(final ICurrency currency,

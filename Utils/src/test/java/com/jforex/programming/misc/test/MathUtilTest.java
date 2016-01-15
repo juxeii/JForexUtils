@@ -12,11 +12,10 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.dukascopy.api.ICurrency;
 import com.jforex.programming.currency.CurrencyBuilder;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
-
-import com.dukascopy.api.ICurrency;
 
 public class MathUtilTest extends CurrencyUtilForTest {
 
