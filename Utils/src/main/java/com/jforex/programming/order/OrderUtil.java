@@ -201,9 +201,10 @@ public class OrderUtil {
     private void registerConsumerMap(final IOrder order,
                                      final Map<OrderEventType, OrderEventConsumer> orderEventConsumerMap) {
         registerOnObservable(order,
-                             oe -> {
-                                 if (orderEventConsumerMap.containsKey(oe.type()))
-                                     orderEventConsumerMap.get(oe.type()).onOrderEvent(oe);
+                             orderEvent -> {
+                                 final OrderEventType orderEventType = orderEvent.type();
+                                 if (orderEventConsumerMap.containsKey(orderEventType))
+                                     orderEventConsumerMap.get(orderEventType).onOrderEvent(orderEvent);
                              });
         logger.info("Subscribed order events map for " + order.getInstrument() + " with label " + order.getLabel());
     }
@@ -211,8 +212,8 @@ public class OrderUtil {
     private void registerOnObservable(final IOrder order,
                                       final Consumer<OrderEvent> orderEventConsumer) {
         orderEventGateway.observable()
-                         .filter(oe -> oe.order().equals(order))
-                         .takeUntil(oe -> endOfOrderEventTypes.contains(oe.type()))
+                         .filter(orderEvent -> orderEvent.order().equals(order))
+                         .takeUntil(orderEvent -> endOfOrderEventTypes.contains(orderEvent.type()))
                          .subscribe(orderEventConsumer::accept);
     }
 }

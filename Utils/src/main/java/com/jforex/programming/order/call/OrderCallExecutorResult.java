@@ -10,7 +10,7 @@ public final class OrderCallExecutorResult {
     private final Optional<Exception> exceptionOpt;
 
     public OrderCallExecutorResult(final Optional<IOrder> orderOpt,
-                               final Optional<Exception> exceptionOpt) {
+                                   final Optional<Exception> exceptionOpt) {
         this.orderOpt = orderOpt;
         this.exceptionOpt = exceptionOpt;
     }

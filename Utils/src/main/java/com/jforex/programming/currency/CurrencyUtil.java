@@ -1,7 +1,6 @@
 package com.jforex.programming.currency;
 
 import java.util.Collection;
-import java.util.Optional;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
@@ -24,8 +23,9 @@ public final class CurrencyUtil {
 
     public final static boolean isInInstrument(final String currencyName,
                                                final Instrument instrument) {
-        final Optional<ICurrency> currencyOpt = CurrencyBuilder.fromName(currencyName);
-        return currencyOpt.map(currency -> isInInstrument(currency, instrument)).orElse(false);
+        return CurrencyBuilder.fromName(currencyName)
+                              .map(currency -> isInInstrument(currency, instrument))
+                              .orElse(false);
     }
 
     public final static boolean equalsBaseCurrency(final ICurrency currency,
