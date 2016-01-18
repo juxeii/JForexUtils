@@ -59,7 +59,8 @@ public class OrderUtil {
 
     public Collection<IOrder> filterActiveOrders(final Predicate<IOrder> predicate) {
         try {
-            return engine.getOrders().stream()
+            return engine.getOrders()
+                         .stream()
                          .filter(predicate)
                          .collect(toList());
         } catch (final JFException e) {
