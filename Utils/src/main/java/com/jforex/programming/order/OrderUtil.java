@@ -1,17 +1,21 @@
 package com.jforex.programming.order;
 
 import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
+import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -51,6 +55,16 @@ public class OrderUtil {
                                                                     orderParams.goodTillTime(),
                                                                     orderParams.comment());
         return callResultForCreate(submitCall, OrderCallRequest.SUBMIT);
+    }
+
+    public Collection<IOrder> filterActiveOrders(final Predicate<IOrder> predicate) {
+        try {
+            return engine.getOrders().stream()
+                         .filter(predicate)
+                         .collect(toList());
+        } catch (final JFException e) {
+            return Collections.emptyList();
+        }
     }
 
     public OrderCallResult submit(final OrderParams orderParams,

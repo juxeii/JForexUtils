@@ -94,6 +94,14 @@ public class Position {
                 || orderEventType == OrderEventType.MERGE_OK;
     }
 
+    public void importOrders(final Predicate<IOrder> predicate) {
+        final Predicate<IOrder> filter = predicate.and(order -> order.getInstrument() == instrument);
+        final Observable<IOrder> ordersObs = Observable.from(orderUtil.filterActiveOrders(filter));
+        ordersObs.doOnNext(order -> logger.info("Importing order with label " + order.getLabel()
+                + " for position " + instrument))
+                 .subscribe(orderRepository::add);
+    }
+
     public boolean isBusy() {
         return isBusy;
     }
