@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.jforex.programming</groupId>
 	<artifactId>JForexUtils</artifactId>
-	<version>0.9.3</version>
+	<version>0.9.35</version>
 	<name>JForexUtils</name>
 	<description>A collection of utilities for Dukascopy's JForex API</description>
 	<repositories>
