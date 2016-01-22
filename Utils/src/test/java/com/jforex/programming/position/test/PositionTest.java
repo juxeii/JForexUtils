@@ -165,6 +165,14 @@ public class PositionTest extends InstrumentUtilForTest {
         assertTrue(isRepositoryEmpty());
     }
 
+    @Test
+    public void testCallingSubmitTwoTimesWillQueueOneCall() {
+        position.submit(orderParamsEURUSDBuy);
+        position.submit(orderParamsEURUSDBuy);
+
+        verify(orderUtilMock).submit(orderParamsEURUSDBuy);
+    }
+
     public class AfterSubmitWithException {
 
         @Before

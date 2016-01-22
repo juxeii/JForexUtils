@@ -10,11 +10,11 @@ import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
 
 import org.apache.logging.log4j.LogManager;
@@ -39,12 +39,11 @@ public class Position {
 
     private final Instrument instrument;
     private final OrderUtil orderUtil;
+    private final Queue<Runnable> taskQueue = new ConcurrentLinkedQueue<>();
     private final Set<IOrder> orderRepository =
             Collections.newSetFromMap(new MapMaker().weakKeys().<IOrder, Boolean> makeMap());
     private final RestoreSLTPPolicy restoreSLTPPolicy;
-    private boolean isBusy = false;
     private final ConcurrentMap<IOrder, OrderProgressData> progressDataByOrder = new MapMaker().weakKeys().makeMap();
-    private final Lock lock = new ReentrantLock();
 
     private static final Logger logger = LogManager.getLogger(Position.class);
 
@@ -103,7 +102,7 @@ public class Position {
     }
 
     public boolean isBusy() {
-        return isBusy;
+        return !taskQueue.isEmpty();
     }
 
     public OrderDirection direction() {
@@ -130,32 +129,38 @@ public class Position {
         return filter(isFilled);
     }
 
-    public void submit(final OrderParams orderParams) {
-        startTask(submitOrderObs(orderParams));
+    public synchronized void submit(final OrderParams orderParams) {
+        startTaskObs(submitOrderObs(orderParams));
     }
 
-    public void submitAndMerge(final OrderParams orderParams,
-                               final String mergeLabel) {
+    public synchronized void submitAndMerge(final OrderParams orderParams,
+                                            final String mergeLabel) {
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders());
-        startTask(submitOrderObs(orderParams).concatMap(op -> mergeSequenceObs(mergeLabel, restoreSLTPData)));
+        startTaskObs(submitOrderObs(orderParams).concatMap(op -> mergeSequenceObs(mergeLabel,
+                                                                                  restoreSLTPData)));
     }
 
-    public void merge(final String mergeLabel) {
+    public synchronized void merge(final String mergeLabel) {
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders());
-        startTask(mergeSequenceObs(mergeLabel, restoreSLTPData));
+        startTaskObs(mergeSequenceObs(mergeLabel, restoreSLTPData));
     }
 
-    public void close() {
-        startTask(Observable.from(filter(isFilled.or(isOpened)))
-                            .doOnSubscribe(() -> logger.info("Starting to close " + instrument + " position"))
-                            .flatMap(order -> orderObs(() -> orderUtil.close(order),
-                                                       TaskEventData.closeEvents).retryWhen(this::shouldRetry)));
+    public synchronized void close() {
+        final Observable<IOrder> observable =
+                Observable.from(filter(isFilled.or(isOpened)))
+                          .doOnSubscribe(() -> logger.info("Starting to close " + instrument + " position"))
+                          .flatMap(order -> orderObs(() -> orderUtil.close(order),
+                                                     TaskEventData.closeEvents).retryWhen(this::shouldRetry));
+        startTaskObs(observable);
     }
 
-    private void startTask(final Observable<IOrder> observable) {
-        lock.lock();
-        isBusy = true;
-        observable.subscribe(item -> {} , exc -> taskFinish(), () -> taskFinish());
+    private void startTaskObs(final Observable<IOrder> observable) {
+        final Runnable task = () -> observable.subscribe(item -> {} ,
+                                                         exc -> taskFinish(),
+                                                         () -> taskFinish());
+        taskQueue.add(task);
+        if (taskQueue.size() == 1)
+            taskQueue.peek().run();
     }
 
     private Observable<IOrder> mergeSequenceObs(final String mergeLabel,
@@ -247,7 +252,8 @@ public class Position {
     }
 
     private void taskFinish() {
-        isBusy = false;
-        lock.unlock();
+        taskQueue.remove();
+        if (!taskQueue.isEmpty())
+            taskQueue.peek().run();
     }
 }
