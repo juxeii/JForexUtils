@@ -678,6 +678,8 @@ public class PositionTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
+                buyOrderEURUSD.setState(IOrder.State.CANCELED);
+
                 sendOrderEvent(buyOrderEURUSD, OrderEventType.SUBMIT_REJECTED);
             }
 

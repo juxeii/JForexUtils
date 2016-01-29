@@ -65,8 +65,11 @@ public class Position {
         final IOrder order = orderEvent.order();
         if (progressDataByOrder.containsKey(order))
             handleOrderInProgress(orderEvent);
-        if (endOfOrderEventTypes.contains(orderEvent.type()))
+        if (endOfOrderEventTypes.contains(orderEvent.type())) {
             orderRepository.remove(order);
+            logger.info("Removed " + order.getLabel() + " from " + instrument
+                    + " repositiory because of event type " + orderEvent.type());
+        }
     }
 
     private void handleOrderInProgress(final OrderEvent orderEvent) {
@@ -80,8 +83,11 @@ public class Position {
             progressDataByOrder.remove(order);
             subscriber.onError(new PositionTaskRejectException("", orderEvent));
         } else if (taskEventData.forDone().contains(orderEventType)) {
-            if (wasOrderCreated(orderEventType))
+            if (wasOrderCreated(orderEventType)) {
                 orderRepository.add(order);
+                logger.info("Added " + order.getLabel() + " to " + instrument
+                        + " repositiory because of event type " + orderEventType);
+            }
             progressDataByOrder.remove(order);
             subscriber.onNext(order);
             subscriber.onCompleted();
@@ -241,8 +247,7 @@ public class Position {
         return attempts.zipWith(Observable.range(1, pfs.MAX_NUM_RETRIES_ON_FAIL()),
                                 (exc, att) -> exc)
                        .doOnNext(exc -> logRetry((PositionTaskRejectException) exc))
-                       .flatMap(exc -> Observable.timer(pfs.ON_FAIL_RETRY_WAITING_TIME(),
-                                                        TimeUnit.MILLISECONDS));
+                       .flatMap(exc -> Observable.timer(pfs.ON_FAIL_RETRY_WAITING_TIME(), TimeUnit.MILLISECONDS));
     }
 
     private void logRetry(final PositionTaskRejectException rejectException) {
