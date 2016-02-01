@@ -20,15 +20,18 @@ public final class InstrumentBuilder {
     }
 
     public final static Optional<Instrument> fromName(final String instrumentName) {
-        final String uppercaseInstrumentName = instrumentName.toUpperCase();
-        return Instrument.isInverted(uppercaseInstrumentName)
-                ? Optional.of(Instrument.fromInvertedString(uppercaseInstrumentName))
-                : Optional.ofNullable(Instrument.fromString(uppercaseInstrumentName));
+        return fromString(instrumentName.toUpperCase());
+    }
+
+    private final static Optional<Instrument> fromString(final String instrumentName) {
+        return Instrument.isInverted(instrumentName)
+                ? Optional.of(Instrument.fromInvertedString(instrumentName))
+                : Optional.ofNullable(Instrument.fromString(instrumentName));
     }
 
     public final static Optional<Instrument> fromCurrencies(final ICurrency firstCurrency,
                                                             final ICurrency secondCurrency) {
-        return fromName(InstrumentUtil.nameFromCurrencies(firstCurrency, secondCurrency));
+        return fromString(InstrumentUtil.nameFromCurrencies(firstCurrency, secondCurrency));
     }
 
     public final static Set<Instrument> combineAllFromCurrencySet(final Collection<ICurrency> currencies) {

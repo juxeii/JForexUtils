@@ -22,6 +22,8 @@ public final class InstrumentUtil {
     private final int numberOfDigits;
     private final String toStringNoSeparator;
 
+    private final static String pairsSeparator = Instrument.getPairsSeparator();
+
     public InstrumentUtil(final Instrument instrument,
                           final TickQuoteProvider tickQuoteProvider,
                           final BarQuoteProvider barQuoteProvider) {
@@ -93,7 +95,7 @@ public final class InstrumentUtil {
 
     public final static String toStringNoSeparator(final Instrument instrument) {
         return instrument.getPrimaryJFCurrency().toString() +
-               instrument.getSecondaryJFCurrency().toString();
+                instrument.getSecondaryJFCurrency().toString();
     }
 
     public final static Currency baseJavaCurrency(final Instrument instrument) {
@@ -106,6 +108,6 @@ public final class InstrumentUtil {
 
     public final static String nameFromCurrencies(final ICurrency baseCurrency,
                                                   final ICurrency quoteCurrency) {
-        return baseCurrency + Instrument.getPairsSeparator() + quoteCurrency;
+        return baseCurrency.toString().concat(pairsSeparator).concat(quoteCurrency.toString());
     }
 }
