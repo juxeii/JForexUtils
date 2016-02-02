@@ -19,7 +19,7 @@ import com.jforex.programming.order.OrderChangeResult;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.call.OrderCreateCall;
+import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
@@ -30,7 +30,7 @@ public class OrderChangeTest extends InstrumentUtilForTest {
 
     @Mock private OrderCallExecutor orderCallExecutorMock;
     @Mock private OrderEventGateway orderEventGatewayMock;
-    @Captor private ArgumentCaptor<OrderCreateCall> orderCallCaptor;
+    @Captor private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
     private OrderCallExecutorResult orderExecutorResult;
     private final String newLabel = "NewLabel";
@@ -52,13 +52,13 @@ public class OrderChangeTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(orderCallExecutorMock.run(any(OrderCreateCall.class))).thenReturn(orderExecutorResult);
+        when(orderCallExecutorMock.run(any(OrderSupplierCall.class))).thenReturn(orderExecutorResult);
     }
 
     private void verifyOrderCallAndOrderRegistration(final IOrder order,
                                                      final OrderCallRequest orderCallRequest) throws JFException {
         verify(orderCallExecutorMock).run(orderCallCaptor.capture());
-        orderCallCaptor.getValue().create();
+        orderCallCaptor.getValue().get();
         verify(orderEventGatewayMock).registerOrderRequest(order, orderCallRequest);
     }
 

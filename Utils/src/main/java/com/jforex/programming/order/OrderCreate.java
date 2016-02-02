@@ -14,7 +14,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.call.OrderCreateCall;
+import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventConsumer;
 import com.jforex.programming.order.event.OrderEventGateway;
@@ -37,16 +37,16 @@ public class OrderCreate {
     }
 
     public OrderCreateResult submit(final OrderParams orderParams) {
-        final OrderCreateCall submitCall = () -> engine.submitOrder(orderParams.label(),
-                                                                    orderParams.instrument(),
-                                                                    orderParams.orderCommand(),
-                                                                    orderParams.amount(),
-                                                                    orderParams.price(),
-                                                                    orderParams.slippage(),
-                                                                    orderParams.stopLossPrice(),
-                                                                    orderParams.takeProfitPrice(),
-                                                                    orderParams.goodTillTime(),
-                                                                    orderParams.comment());
+        final OrderSupplierCall submitCall = () -> engine.submitOrder(orderParams.label(),
+                                                                      orderParams.instrument(),
+                                                                      orderParams.orderCommand(),
+                                                                      orderParams.amount(),
+                                                                      orderParams.price(),
+                                                                      orderParams.slippage(),
+                                                                      orderParams.stopLossPrice(),
+                                                                      orderParams.takeProfitPrice(),
+                                                                      orderParams.goodTillTime(),
+                                                                      orderParams.comment());
         return createResult(submitCall, OrderCallRequest.SUBMIT);
     }
 
@@ -66,7 +66,7 @@ public class OrderCreate {
 
     public OrderCreateResult merge(final String mergeOrderLabel,
                                    final Collection<IOrder> toMergeOrders) {
-        final OrderCreateCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
+        final OrderSupplierCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
         return createResult(mergeCall, OrderCallRequest.MERGE);
     }
 
@@ -111,9 +111,9 @@ public class OrderCreate {
         }
     }
 
-    private OrderCreateResult createResult(final OrderCreateCall orderCreateCall,
+    private OrderCreateResult createResult(final OrderSupplierCall orderSupplierCall,
                                            final OrderCallRequest orderCallRequest) {
-        final OrderCallExecutorResult orderExecutorResult = orderCallExecutor.run(orderCreateCall);
+        final OrderCallExecutorResult orderExecutorResult = orderCallExecutor.run(orderSupplierCall);
         final OrderCreateResult orderCreateResult = new OrderCreateResult(orderExecutorResult.orderOpt(),
                                                                           orderExecutorResult.exceptionOpt(),
                                                                           orderCallRequest);

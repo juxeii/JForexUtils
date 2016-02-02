@@ -21,7 +21,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
-import com.jforex.programming.order.call.OrderCreateCall;
+import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
@@ -29,7 +29,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
     private OrderCallExecutor orderCallExecutor;
 
-    @Mock private OrderCreateCall orderCallMock;
+    @Mock private OrderSupplierCall orderCallMock;
     @Mock private Future<IOrder> futureMock;
     private final IOrderForTest order = IOrderForTest.buyOrderEURUSD();
     private OrderCallExecutorResult orderExecutorResult;
@@ -60,7 +60,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
         orderCallExecutor.run(orderCallMock);
 
-        verify(orderCallMock).create();
+        verify(orderCallMock).get();
         verifyZeroInteractions(concurrentUtilMock);
     }
 
@@ -70,7 +70,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
         orderCallExecutor.run(orderCallMock);
 
-        verify(orderCallMock).create();
+        verify(orderCallMock).get();
         verify(concurrentUtilMock).executeOnStrategyThread((any()));
     }
 
@@ -96,7 +96,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
     @Test
     public void testWhenOrderCallThrowsExecutorResultContentsAreCorrect() throws InterruptedException,
                                                                           ExecutionException, JFException {
-        when(orderCallMock.create()).thenThrow(jfException);
+        when(orderCallMock.get()).thenThrow(jfException);
 
         orderExecutorResult = orderCallExecutor.run(orderCallMock);
 
