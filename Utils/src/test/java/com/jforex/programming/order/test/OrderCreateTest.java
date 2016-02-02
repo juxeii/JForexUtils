@@ -66,7 +66,7 @@ public class OrderCreateTest extends InstrumentUtilForTest {
     private void verifyOrderCallAndOrderRegistration(final IOrder order,
                                                      final OrderCallRequest orderCallRequest) throws JFException {
         verify(orderCallExecutorMock).run(orderCallCaptor.capture());
-        orderCallCaptor.getValue().run();
+        orderCallCaptor.getValue().create();
         verify(orderEventGatewayMock).registerOrderRequest(order, orderCallRequest);
     }
 

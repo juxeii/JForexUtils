@@ -17,14 +17,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.jforex.programming.order.call.OrderCreateCall;
-import com.jforex.programming.order.call.OrderCallExecutor;
-import com.jforex.programming.order.call.OrderCallExecutorResult;
-import com.jforex.programming.test.common.CommonUtilForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
-
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
+import com.jforex.programming.order.call.OrderCallExecutor;
+import com.jforex.programming.order.call.OrderCallExecutorResult;
+import com.jforex.programming.order.call.OrderCreateCall;
+import com.jforex.programming.test.common.CommonUtilForTest;
+import com.jforex.programming.test.fakes.IOrderForTest;
 
 public class OrderCallExecutorTest extends CommonUtilForTest {
 
@@ -61,7 +60,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
         orderCallExecutor.run(orderCallMock);
 
-        verify(orderCallMock).run();
+        verify(orderCallMock).create();
         verifyZeroInteractions(concurrentUtilMock);
     }
 
@@ -71,7 +70,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
         orderCallExecutor.run(orderCallMock);
 
-        verify(orderCallMock).run();
+        verify(orderCallMock).create();
         verify(concurrentUtilMock).executeOnStrategyThread((any()));
     }
 
@@ -97,7 +96,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
     @Test
     public void testWhenOrderCallThrowsExecutorResultContentsAreCorrect() throws InterruptedException,
                                                                           ExecutionException, JFException {
-        when(orderCallMock.run()).thenThrow(jfException);
+        when(orderCallMock.create()).thenThrow(jfException);
 
         orderExecutorResult = orderCallExecutor.run(orderCallMock);
 

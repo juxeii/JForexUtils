@@ -105,7 +105,7 @@ public class OrderChange {
                                                            final OrderCallRequest orderCallRequest) {
         final OrderCallExecutorResult orderExecutorResult =
                 orderCallExecutor.run(() -> {
-                    orderChangeCall.run();
+                    orderChangeCall.change();
                     return orderToChange;
                 });
         return new OrderChangeResult(orderToChange,
