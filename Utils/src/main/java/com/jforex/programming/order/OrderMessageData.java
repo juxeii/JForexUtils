@@ -4,6 +4,7 @@ import java.util.Set;
 
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
+import com.google.common.collect.ImmutableSet;
 
 public final class OrderMessageData {
 
@@ -16,7 +17,7 @@ public final class OrderMessageData {
         this.order = message.getOrder();
         this.orderState = order.getState();
         this.messageType = message.getType();
-        this.messageReasons = message.getReasons();
+        this.messageReasons = ImmutableSet.copyOf(message.getReasons());
     }
 
     public final IOrder order() {
