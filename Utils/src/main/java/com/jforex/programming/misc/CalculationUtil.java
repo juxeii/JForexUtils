@@ -20,6 +20,16 @@ public final class CalculationUtil {
         this.tickQuoteProvider = tickQuoteProvider;
     }
 
+    public final double convertAmountForInstrument(final double sourceAmount,
+                                                   final Instrument sourceInstrument,
+                                                   final Instrument targetInstrument,
+                                                   final OfferSide offerSide) {
+        return convertAmount(sourceAmount,
+                             sourceInstrument.getPrimaryJFCurrency(),
+                             targetInstrument.getPrimaryJFCurrency(),
+                             offerSide);
+    }
+
     public final double convertAmount(final double sourceAmount,
                                       final ICurrency sourceCurrency,
                                       final ICurrency targetCurrency,
