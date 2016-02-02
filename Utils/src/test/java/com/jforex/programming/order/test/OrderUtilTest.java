@@ -19,10 +19,10 @@ import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.call.OrderCreateCall;
 import com.jforex.programming.order.call.OrderCallExecutor;
-import com.jforex.programming.order.call.OrderCallResult;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
+import com.jforex.programming.order.call.OrderCallResult;
+import com.jforex.programming.order.call.OrderCreateCall;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
@@ -56,7 +56,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         ordersToMerge.add(orderToMergeA);
         ordersToMerge.add(orderToMergeB);
         orderExecutorResult = new OrderCallExecutorResult(Optional.of(orderUnderTest),
-                                                      Optional.empty());
+                                                          Optional.empty());
         setUpMocks();
 
         orderUtil = new OrderUtil(engineMock,
@@ -146,11 +146,33 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
+    public void testChangeSLInPipsIsCorrect() throws JFException {
+        final double pips = 20.3;
+        final double newSLForPips = askEURUSD - pips * instrumentEURUSD.getPipValue();
+        final OrderCallResult actualCallResult = orderUtil.changeSLInPips(orderUnderTest, askEURUSD, pips);
+
+        verifyOrderCallAndCallResultRegistration(actualCallResult);
+
+        verify(orderUnderTest).setStopLossPrice(newSLForPips);
+    }
+
+    @Test
     public void testChangeTPIsCorrect() throws JFException {
         final OrderCallResult actualCallResult = orderUtil.changeTP(orderUnderTest, newTP);
 
         verifyOrderCallAndCallResultRegistration(actualCallResult);
 
         verify(orderUnderTest).setTakeProfitPrice(newTP);
+    }
+
+    @Test
+    public void testChangeTPInPipsIsCorrect() throws JFException {
+        final double pips = 20.3;
+        final double newTPForPips = askEURUSD + pips * instrumentEURUSD.getPipValue();
+        final OrderCallResult actualCallResult = orderUtil.changeTPInPips(orderUnderTest, askEURUSD, pips);
+
+        verifyOrderCallAndCallResultRegistration(actualCallResult);
+
+        verify(orderUnderTest).setTakeProfitPrice(newTPForPips);
     }
 }

@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
+import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -160,6 +161,26 @@ public class OrderUtil {
         return callResultForChange(() -> orderToChangeTP.setTakeProfitPrice(newTP),
                                    orderToChangeTP,
                                    OrderCallRequest.CHANGE_TP);
+    }
+
+    public OrderCallResult changeSLInPips(final IOrder orderToChangeSL,
+                                          final double referencePrice,
+                                          final double pips) {
+        final int pipFactor = orderToChangeSL.isLong() ? -1 : 1;
+        final double newSL = CalculationUtil.addPips(orderToChangeSL.getInstrument(),
+                                                     referencePrice,
+                                                     pipFactor * pips);
+        return changeSL(orderToChangeSL, newSL);
+    }
+
+    public OrderCallResult changeTPInPips(final IOrder orderToChangeTP,
+                                          final double referencePrice,
+                                          final double pips) {
+        final int pipFactor = orderToChangeTP.isLong() ? 1 : -1;
+        final double newTP = CalculationUtil.addPips(orderToChangeTP.getInstrument(),
+                                                     referencePrice,
+                                                     pipFactor * pips);
+        return changeTP(orderToChangeTP, newTP);
     }
 
     private OrderCallResult callResultForCreate(final OrderCreateCall orderCall,
