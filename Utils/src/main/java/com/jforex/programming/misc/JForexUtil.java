@@ -15,6 +15,8 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
+import com.jforex.programming.order.OrderChange;
+import com.jforex.programming.order.OrderCreate;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallExecutor;
@@ -45,6 +47,8 @@ public class JForexUtil implements MessageConsumer {
     private BarQuoteProvider barQuoteProvider;
 
     private OrderUtil orderUtil;
+    private OrderCreate orderCreate;
+    private OrderChange orderChange;
     private PositionRepository positionRepository;
     private OrderEventGateway orderEventGateway;
     private OrderCallExecutor orderCallRunner;
@@ -106,9 +110,12 @@ public class JForexUtil implements MessageConsumer {
 
     private void initOrderRelated() {
         orderCallRunner = new OrderCallExecutor(concurrentUtil);
-        orderUtil = new OrderUtil(context.getEngine(),
-                                  orderCallRunner,
-                                  orderEventGateway);
+        orderCreate = new OrderCreate(context.getEngine(),
+                                      orderCallRunner,
+                                      orderEventGateway);
+        orderChange = new OrderChange(orderCallRunner,
+                                      orderEventGateway);
+        orderUtil = new OrderUtil(orderCreate, orderChange);
         positionRepository = new PositionRepository(orderUtil, orderEventGateway.observable());
     }
 

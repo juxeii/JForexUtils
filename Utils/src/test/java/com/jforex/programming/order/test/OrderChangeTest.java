@@ -1,12 +1,10 @@
 package com.jforex.programming.order.test;
 
-import static com.jforex.programming.misc.JForexUtil.uss;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
-import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -16,32 +14,25 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
-import com.google.common.collect.Sets;
-import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.OrderChange;
+import com.jforex.programming.order.OrderChangeResult;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
-import com.jforex.programming.order.call.OrderCallResult;
+import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.call.OrderCreateCall;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
-public class OrderUtilTest extends InstrumentUtilForTest {
+public class OrderChangeTest extends InstrumentUtilForTest {
 
-    private OrderUtil orderUtil;
+    private OrderChange orderChange;
 
     @Mock private OrderCallExecutor orderCallExecutorMock;
     @Mock private OrderEventGateway orderEventGatewayMock;
     @Captor private ArgumentCaptor<OrderCreateCall> orderCallCaptor;
-    private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
-    private final IOrderForTest orderToMergeA = IOrderForTest.buyOrderEURUSD();
-    private final IOrderForTest orderToMergeB = IOrderForTest.orderAUDUSD();
     private OrderCallExecutorResult orderExecutorResult;
-    private final Set<IOrder> ordersToMerge = Sets.newConcurrentHashSet();
-    private String mergeLabel;
     private final String newLabel = "NewLabel";
     private final long newGTT = 123456L;
     private final double newAmount = 0.12;
@@ -52,95 +43,81 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Before
     public void setUp() {
         initCommonTestFramework();
-        mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + orderParams.label();
-        ordersToMerge.add(orderToMergeA);
-        ordersToMerge.add(orderToMergeB);
         orderExecutorResult = new OrderCallExecutorResult(Optional.of(orderUnderTest),
                                                           Optional.empty());
         setUpMocks();
 
-        orderUtil = new OrderUtil(engineMock,
-                                  orderCallExecutorMock,
-                                  orderEventGatewayMock);
+        orderChange = new OrderChange(orderCallExecutorMock,
+                                      orderEventGatewayMock);
     }
 
     private void setUpMocks() {
         when(orderCallExecutorMock.run(any(OrderCreateCall.class))).thenReturn(orderExecutorResult);
     }
 
-    private void verifyOrderCallAndCallResultRegistration(final OrderCallResult actualCallResult) throws JFException {
+    private void verifyOrderCallAndOrderRegistration(final IOrder order,
+                                                     final OrderCallRequest orderCallRequest) throws JFException {
         verify(orderCallExecutorMock).run(orderCallCaptor.capture());
         orderCallCaptor.getValue().run();
-    }
-
-    @Test
-    public void testSubmitIsCorrect() throws JFException {
-        final OrderCallResult actualCallResult = orderUtil.submit(orderParams);
-
-        verifyOrderCallAndCallResultRegistration(actualCallResult);
-
-        engineForTest.verifySubmit(orderParams, 1);
-    }
-
-    @Test
-    public void testMergeIsCorrect() throws JFException {
-        final OrderCallResult actualCallResult = orderUtil.merge(mergeLabel, ordersToMerge);
-
-        verifyOrderCallAndCallResultRegistration(actualCallResult);
-
-        verify(engineMock).mergeOrders(mergeLabel, ordersToMerge);
+        verify(orderEventGatewayMock).registerOrderRequest(order, orderCallRequest);
     }
 
     @Test
     public void testCloseIsCorrect() throws JFException {
-        final OrderCallResult actualCallResult = orderUtil.close(orderUnderTest);
+        final OrderChangeResult orderChangeResult = orderChange.close(orderUnderTest);
 
-        verifyOrderCallAndCallResultRegistration(actualCallResult);
+        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+                                            orderChangeResult.callRequest());
 
         verify(orderUnderTest).close();
     }
 
     @Test
     public void testChangeLabelIsCorrect() throws JFException {
-        final OrderCallResult actualCallResult = orderUtil.changeLabel(orderUnderTest, newLabel);
+        final OrderChangeResult orderChangeResult = orderChange.setLabel(orderUnderTest, newLabel);
 
-        verifyOrderCallAndCallResultRegistration(actualCallResult);
+        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+                                            orderChangeResult.callRequest());
 
         verify(orderUnderTest).setLabel(newLabel);
     }
 
     @Test
     public void testChangeGTTIsCorrect() throws JFException {
-        final OrderCallResult actualCallResult = orderUtil.changeGTT(orderUnderTest, newGTT);
+        final OrderChangeResult orderChangeResult = orderChange.setGTT(orderUnderTest, newGTT);
 
-        verifyOrderCallAndCallResultRegistration(actualCallResult);
+        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+                                            orderChangeResult.callRequest());
 
         verify(orderUnderTest).setGoodTillTime(newGTT);
     }
 
     @Test
     public void testChangeAmountIsCorrect() throws JFException {
-        final OrderCallResult actualCallResult = orderUtil.changeAmount(orderUnderTest, newAmount);
+        final OrderChangeResult orderChangeResult = orderChange.setAmount(orderUnderTest, newAmount);
 
-        verifyOrderCallAndCallResultRegistration(actualCallResult);
+        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+                                            orderChangeResult.callRequest());
 
         verify(orderUnderTest).setRequestedAmount(newAmount);
     }
 
     @Test
     public void testChangeOpenPriceIsCorrect() throws JFException {
-        final OrderCallResult actualCallResult = orderUtil.changeOpenPrice(orderUnderTest, newOpenPrice);
+        final OrderChangeResult orderChangeResult = orderChange.setOpenPrice(orderUnderTest, newOpenPrice);
 
-        verifyOrderCallAndCallResultRegistration(actualCallResult);
+        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+                                            orderChangeResult.callRequest());
 
         verify(orderUnderTest).setOpenPrice(newOpenPrice);
     }
 
     @Test
     public void testChangeSLIsCorrect() throws JFException {
-        final OrderCallResult actualCallResult = orderUtil.changeSL(orderUnderTest, newSL);
+        final OrderChangeResult orderChangeResult = orderChange.setSL(orderUnderTest, newSL);
 
-        verifyOrderCallAndCallResultRegistration(actualCallResult);
+        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+                                            orderChangeResult.callRequest());
 
         verify(orderUnderTest).setStopLossPrice(newSL);
     }
@@ -149,18 +126,20 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void testChangeSLInPipsIsCorrect() throws JFException {
         final double pips = 20.3;
         final double newSLForPips = askEURUSD - pips * instrumentEURUSD.getPipValue();
-        final OrderCallResult actualCallResult = orderUtil.changeSLInPips(orderUnderTest, askEURUSD, pips);
+        final OrderChangeResult orderChangeResult = orderChange.setSLInPips(orderUnderTest, askEURUSD, pips);
 
-        verifyOrderCallAndCallResultRegistration(actualCallResult);
+        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+                                            orderChangeResult.callRequest());
 
         verify(orderUnderTest).setStopLossPrice(newSLForPips);
     }
 
     @Test
     public void testChangeTPIsCorrect() throws JFException {
-        final OrderCallResult actualCallResult = orderUtil.changeTP(orderUnderTest, newTP);
+        final OrderChangeResult orderChangeResult = orderChange.setTP(orderUnderTest, newTP);
 
-        verifyOrderCallAndCallResultRegistration(actualCallResult);
+        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+                                            orderChangeResult.callRequest());
 
         verify(orderUnderTest).setTakeProfitPrice(newTP);
     }
@@ -169,9 +148,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void testChangeTPInPipsIsCorrect() throws JFException {
         final double pips = 20.3;
         final double newTPForPips = askEURUSD + pips * instrumentEURUSD.getPipValue();
-        final OrderCallResult actualCallResult = orderUtil.changeTPInPips(orderUnderTest, askEURUSD, pips);
+        final OrderChangeResult orderChangeResult = orderChange.setTPInPips(orderUnderTest, askEURUSD, pips);
 
-        verifyOrderCallAndCallResultRegistration(actualCallResult);
+        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+                                            orderChangeResult.callRequest());
 
         verify(orderUnderTest).setTakeProfitPrice(newTPForPips);
     }

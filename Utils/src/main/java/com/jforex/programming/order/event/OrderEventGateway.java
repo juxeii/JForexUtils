@@ -11,14 +11,12 @@ import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.call.OrderCallResult;
-import com.jforex.programming.order.call.OrderCallResultConsumer;
 
 import rx.Observable;
 import rx.Subscriber;
 import rx.subscriptions.Subscriptions;
 
-public class OrderEventGateway implements OrderCallResultConsumer {
+public class OrderEventGateway {
 
     private final Observable<OrderEvent> orderEventObservable;
     private final Set<Subscriber<? super OrderEvent>> orderEventSubscriber = Sets.newConcurrentHashSet();
@@ -33,11 +31,10 @@ public class OrderEventGateway implements OrderCallResultConsumer {
         return orderEventObservable;
     }
 
-    @Override
-    public void onOrderCallResult(final OrderCallResult orderCallResult) {
-        final IOrder order = orderCallResult.orderOpt().get();
+    public void registerOrderRequest(final IOrder order,
+                                     final OrderCallRequest orderCallRequest) {
         callRequestByOrder.putIfAbsent(order, new ConcurrentLinkedQueue<>());
-        callRequestByOrder.get(order).add(orderCallResult.callRequest());
+        callRequestByOrder.get(order).add(orderCallRequest);
     }
 
     public void onOrderMessageData(final OrderMessageData orderMessageData) {

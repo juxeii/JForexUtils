@@ -21,10 +21,11 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
+import com.jforex.programming.order.OrderChangeResult;
+import com.jforex.programming.order.OrderCreateResult;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.call.OrderCallResult;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
@@ -53,7 +54,7 @@ public class PositionTest extends InstrumentUtilForTest {
     private final IOrderForTest mergeOrderEURUSD = IOrderForTest.buyOrderEURUSD();
     private final double restoreSL = 1.12345;
     private final double restoreTP = 1.12543;
-    private OrderCallResult callResultWithExceptionEURUSDBuy;
+    private OrderCreateResult callResultWithExceptionEURUSDBuy;
 
     @Before
     public void setUp() throws JFException {
@@ -76,49 +77,49 @@ public class PositionTest extends InstrumentUtilForTest {
         when(restoreSLTPPolicyMock.restoreSL(any())).thenReturn(restoreSL);
         when(restoreSLTPPolicyMock.restoreTP(any())).thenReturn(restoreTP);
 
-        when(orderUtilMock.submit(orderParamsEURUSDBuy)).thenReturn(new OrderCallResult(Optional.of(buyOrderEURUSD),
-                                                                                        emptyJFExceptionOpt,
-                                                                                        OrderCallRequest.SUBMIT));
-        when(orderUtilMock.submit(orderParamsEURUSDSell)).thenReturn(new OrderCallResult(Optional.of(sellOrderEURUSD),
-                                                                                         emptyJFExceptionOpt,
-                                                                                         OrderCallRequest.SUBMIT));
-        when(orderUtilMock.changeSL(eq(buyOrderEURUSD),
-                                    anyDouble())).thenReturn(new OrderCallResult(Optional.of(buyOrderEURUSD),
-                                                                                 emptyJFExceptionOpt,
-                                                                                 OrderCallRequest.CHANGE_SL));
-        when(orderUtilMock.changeSL(eq(sellOrderEURUSD),
-                                    anyDouble())).thenReturn(new OrderCallResult(Optional.of(sellOrderEURUSD),
-                                                                                 emptyJFExceptionOpt,
-                                                                                 OrderCallRequest.CHANGE_SL));
-        when(orderUtilMock.changeTP(eq(buyOrderEURUSD),
-                                    anyDouble())).thenReturn(new OrderCallResult(Optional.of(buyOrderEURUSD),
-                                                                                 emptyJFExceptionOpt,
-                                                                                 OrderCallRequest.CHANGE_TP));
-        when(orderUtilMock.changeTP(eq(sellOrderEURUSD),
-                                    anyDouble())).thenReturn(new OrderCallResult(Optional.of(sellOrderEURUSD),
-                                                                                 emptyJFExceptionOpt,
-                                                                                 OrderCallRequest.CHANGE_TP));
+        when(orderUtilMock.submit(orderParamsEURUSDBuy)).thenReturn(new OrderCreateResult(Optional.of(buyOrderEURUSD),
+                                                                                          emptyJFExceptionOpt,
+                                                                                          OrderCallRequest.SUBMIT));
+        when(orderUtilMock.submit(orderParamsEURUSDSell)).thenReturn(new OrderCreateResult(Optional.of(sellOrderEURUSD),
+                                                                                           emptyJFExceptionOpt,
+                                                                                           OrderCallRequest.SUBMIT));
+        when(orderUtilMock.setSL(eq(buyOrderEURUSD),
+                                 anyDouble())).thenReturn(new OrderChangeResult(buyOrderEURUSD,
+                                                                                emptyJFExceptionOpt,
+                                                                                OrderCallRequest.CHANGE_SL));
+        when(orderUtilMock.setSL(eq(sellOrderEURUSD),
+                                 anyDouble())).thenReturn(new OrderChangeResult(sellOrderEURUSD,
+                                                                                emptyJFExceptionOpt,
+                                                                                OrderCallRequest.CHANGE_SL));
+        when(orderUtilMock.setTP(eq(buyOrderEURUSD),
+                                 anyDouble())).thenReturn(new OrderChangeResult(buyOrderEURUSD,
+                                                                                emptyJFExceptionOpt,
+                                                                                OrderCallRequest.CHANGE_TP));
+        when(orderUtilMock.setTP(eq(sellOrderEURUSD),
+                                 anyDouble())).thenReturn(new OrderChangeResult(sellOrderEURUSD,
+                                                                                emptyJFExceptionOpt,
+                                                                                OrderCallRequest.CHANGE_TP));
         when(orderUtilMock.merge(eq(mergeLabel),
-                                 any())).thenReturn(new OrderCallResult(Optional.of(mergeOrderEURUSD),
-                                                                        emptyJFExceptionOpt,
-                                                                        OrderCallRequest.MERGE));
-        when(orderUtilMock.changeSL(eq(mergeOrderEURUSD),
-                                    anyDouble())).thenReturn(new OrderCallResult(Optional.of(mergeOrderEURUSD),
-                                                                                 emptyJFExceptionOpt,
-                                                                                 OrderCallRequest.CHANGE_SL));
-        when(orderUtilMock.changeTP(eq(mergeOrderEURUSD),
-                                    anyDouble())).thenReturn(new OrderCallResult(Optional.of(mergeOrderEURUSD),
-                                                                                 emptyJFExceptionOpt,
-                                                                                 OrderCallRequest.CHANGE_TP));
-        when(orderUtilMock.close(buyOrderEURUSD)).thenReturn(new OrderCallResult(Optional.of(buyOrderEURUSD),
-                                                                                 emptyJFExceptionOpt,
-                                                                                 OrderCallRequest.CLOSE));
-        when(orderUtilMock.close(sellOrderEURUSD)).thenReturn(new OrderCallResult(Optional.of(sellOrderEURUSD),
-                                                                                  emptyJFExceptionOpt,
-                                                                                  OrderCallRequest.CLOSE));
-        when(orderUtilMock.close(mergeOrderEURUSD)).thenReturn(new OrderCallResult(Optional.of(mergeOrderEURUSD),
+                                 any())).thenReturn(new OrderCreateResult(Optional.of(mergeOrderEURUSD),
+                                                                          emptyJFExceptionOpt,
+                                                                          OrderCallRequest.MERGE));
+        when(orderUtilMock.setSL(eq(mergeOrderEURUSD),
+                                 anyDouble())).thenReturn(new OrderChangeResult(mergeOrderEURUSD,
+                                                                                emptyJFExceptionOpt,
+                                                                                OrderCallRequest.CHANGE_SL));
+        when(orderUtilMock.setTP(eq(mergeOrderEURUSD),
+                                 anyDouble())).thenReturn(new OrderChangeResult(mergeOrderEURUSD,
+                                                                                emptyJFExceptionOpt,
+                                                                                OrderCallRequest.CHANGE_TP));
+        when(orderUtilMock.close(buyOrderEURUSD)).thenReturn(new OrderChangeResult(buyOrderEURUSD,
                                                                                    emptyJFExceptionOpt,
                                                                                    OrderCallRequest.CLOSE));
+        when(orderUtilMock.close(sellOrderEURUSD)).thenReturn(new OrderChangeResult(sellOrderEURUSD,
+                                                                                    emptyJFExceptionOpt,
+                                                                                    OrderCallRequest.CLOSE));
+        when(orderUtilMock.close(mergeOrderEURUSD)).thenReturn(new OrderChangeResult(mergeOrderEURUSD,
+                                                                                     emptyJFExceptionOpt,
+                                                                                     OrderCallRequest.CLOSE));
     }
 
     private void sendOrderEvent(final IOrder order,
@@ -479,8 +480,8 @@ public class PositionTest extends InstrumentUtilForTest {
                             sellOrderEURUSD.setState(IOrder.State.FILLED);
                             sendOrderEvent(sellOrderEURUSD, OrderEventType.FULL_FILL_OK);
 
-                            verify(orderUtilMock).changeTP(buyOrderEURUSD, pfs.NO_TAKE_PROFIT_PRICE());
-                            verify(orderUtilMock).changeTP(sellOrderEURUSD, pfs.NO_TAKE_PROFIT_PRICE());
+                            verify(orderUtilMock).setTP(buyOrderEURUSD, pfs.NO_TAKE_PROFIT_PRICE());
+                            verify(orderUtilMock).setTP(sellOrderEURUSD, pfs.NO_TAKE_PROFIT_PRICE());
                         }
 
                         @Test
@@ -504,8 +505,8 @@ public class PositionTest extends InstrumentUtilForTest {
                                 sendOrderEvent(buyOrderEURUSD, OrderEventType.TP_CHANGE_OK);
                                 sendOrderEvent(sellOrderEURUSD, OrderEventType.TP_CHANGE_OK);
 
-                                verify(orderUtilMock).changeSL(buyOrderEURUSD, pfs.NO_STOP_LOSS_PRICE());
-                                verify(orderUtilMock).changeSL(sellOrderEURUSD, pfs.NO_STOP_LOSS_PRICE());
+                                verify(orderUtilMock).setSL(buyOrderEURUSD, pfs.NO_STOP_LOSS_PRICE());
+                                verify(orderUtilMock).setSL(sellOrderEURUSD, pfs.NO_STOP_LOSS_PRICE());
                             }
 
                             @Test
@@ -565,7 +566,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                         sendOrderEvent(sellOrderEURUSD, OrderEventType.CLOSED_BY_MERGE);
                                         sendOrderEvent(mergeOrderEURUSD, OrderEventType.MERGE_OK);
 
-                                        verify(orderUtilMock).changeSL(mergeOrderEURUSD, restoreSL);
+                                        verify(orderUtilMock).setSL(mergeOrderEURUSD, restoreSL);
                                     }
 
                                     @Test
@@ -586,7 +587,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                             mergeOrderEURUSD.setStopLossPrice(restoreSL);
                                             sendOrderEvent(mergeOrderEURUSD, OrderEventType.SL_CHANGE_OK);
 
-                                            verify(orderUtilMock).changeTP(mergeOrderEURUSD, restoreTP);
+                                            verify(orderUtilMock).setTP(mergeOrderEURUSD, restoreTP);
                                         }
 
                                         @Test
