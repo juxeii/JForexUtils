@@ -71,6 +71,35 @@
 					<altDeploymentRepository>internal.repo::default::file://${project.build.directory}/mvn-repo</altDeploymentRepository>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<finalName>${project.artifactId}-${project.version}</finalName>
+					<outputDirectory>${shade_outputDirectory}</outputDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<artifactSet>
+								<excludes>
+									<exclude>junit:*</exclude>
+									<exclude>org.hamcrest:*</exclude>
+									<exclude>pl.pragmatists:*</exclude>
+									<exclude>de.bechte.junit:*</exclude>
+									<exclude>org.powermock:*</exclude>
+									<exclude>org.mockito:*</exclude>
+								</excludes>
+							</artifactSet>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
