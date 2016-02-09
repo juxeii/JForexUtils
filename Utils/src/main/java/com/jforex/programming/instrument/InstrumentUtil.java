@@ -37,10 +37,6 @@ public final class InstrumentUtil {
         toStringNoSeparator = toStringNoSeparator(instrument);
     }
 
-    public final Instrument instrument() {
-        return instrument;
-    }
-
     public final ITick tick() {
         return tickQuoteProvider.tick(instrument);
     }

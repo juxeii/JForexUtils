@@ -54,11 +54,6 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
     }
 
     @Test
-    public void testInstrumentReturnsProvidedInstrument() {
-        assertThat(instrumentUtil.instrument(), equalTo(instrumentEURUSD));
-    }
-
-    @Test
     public void testTickReturnsTickMock() {
         when(tickQuoteProviderMock.tick(instrumentEURUSD)).thenReturn(tickEURUSD);
 
