@@ -14,12 +14,18 @@ import com.dukascopy.api.IStrategy;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
+import com.dukascopy.api.Library;
 import com.dukascopy.api.Period;
+import com.dukascopy.api.RequiresFullAccess;
 import com.jforex.programming.currency.CurrencyBuilder;
 import com.jforex.programming.currency.CurrencyUtil;
 import com.jforex.programming.instrument.InstrumentBuilder;
 import com.jforex.programming.misc.JForexUtil;
 
+/* Remove both annotations if you develop a standalone app */
+@RequiresFullAccess
+/* Change the path to the jar to your path! */
+@Library("D:/programs/JForex/libs/JForexUtils-0.9.35.jar")
 public class RunningExamplePart1 implements IStrategy {
 
     private JForexUtil jForexUtil;
