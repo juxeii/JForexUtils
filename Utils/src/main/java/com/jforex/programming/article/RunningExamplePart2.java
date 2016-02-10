@@ -42,6 +42,11 @@ public class RunningExamplePart2 implements IStrategy {
         final double addedPipsToPrice = CalculationUtil.addPips(instrumentEURUSD, 1.12887, 10.4);
         final double scaledPips = CalculationUtil.scalePipsToInstrument(12.4, instrumentEURUSD);
 
+        System.out.println("Scaled amount of  123456.78 units is " + scaledAmount + " for JForex platform.");
+        System.out.println("pipDistance for EUR/USD from   1.12887 to 1.12743 is " + pipDistance);
+        System.out.println("Adding 10.4 pips to 1.12887 for EUR/USD is " + addedPipsToPrice);
+        System.out.println("Scaled pips of 12.4 to price format of EUR/USD is " + scaledPips);
+
         // Conversion calculations needs instance of CalculationUtil
         calculationUtil = jForexUtil.calculationUtil();
         final double convertedAmount =
@@ -59,6 +64,11 @@ public class RunningExamplePart2 implements IStrategy {
                                                    12540,
                                                    usdCurrency,
                                                    OfferSide.ASK);
+
+        System.out.println("Converted amount of 12540 in EUR is " + convertedAmount + " in USD for ASK side");
+        System.out.println("Converted amount for EUR/USD of 12540 EUR is "
+                + convertedAmountForInstrument + " amount for GBP/AUD for ASK side");
+        System.out.println("Pip value for EUR/USD of 12540 EUR is " + pipValueInCurrency + " for ASK side");
 
         // Create an InstrumentUtil instance and get the latest quotes
         final InstrumentUtil utilEURUSD = jForexUtil.instrumentUtil(Instrument.EURUSD);
@@ -78,8 +88,10 @@ public class RunningExamplePart2 implements IStrategy {
 
         // In case you don't need an InstrumentUtil instance you can access some
         // methods in a static way
-        final int noOfDigitsStatic = InstrumentUtil.numberOfDigits(instrumentEURUSD);
-        final String instrumentStringNoSlashStatic = InstrumentUtil.toStringNoSeparator(instrumentEURUSD);
+        final int noOfDigitsStatic =
+                InstrumentUtil.numberOfDigits(instrumentEURUSD);
+        final String instrumentStringNoSlashStatic =
+                InstrumentUtil.toStringNoSeparator(instrumentEURUSD);
         // etc...
 
         System.out.println("Attributes of EURUSD from InstrumentUtil:");
