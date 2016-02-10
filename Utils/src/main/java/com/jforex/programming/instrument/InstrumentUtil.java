@@ -90,8 +90,8 @@ public final class InstrumentUtil {
     }
 
     public final static String toStringNoSeparator(final Instrument instrument) {
-        return instrument.getPrimaryJFCurrency().toString() +
-                instrument.getSecondaryJFCurrency().toString();
+        return instrument.getPrimaryJFCurrency().toString()
+                         .concat(instrument.getSecondaryJFCurrency().toString());
     }
 
     public final static Currency baseJavaCurrency(final Instrument instrument) {
