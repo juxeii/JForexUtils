@@ -6,6 +6,7 @@ import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IContext;
 import com.dukascopy.api.ICurrency;
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IStrategy;
 import com.dukascopy.api.ITick;
@@ -19,6 +20,7 @@ import com.jforex.programming.currency.CurrencyBuilder;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.order.OrderParams;
 
 /* Remove both annotations if you develop a standalone app */
 @RequiresFullAccess
@@ -27,7 +29,6 @@ import com.jforex.programming.misc.JForexUtil;
 public class RunningExamplePart2 implements IStrategy {
 
     private JForexUtil jForexUtil;
-    private CalculationUtil calculationUtil;
     private final Instrument instrumentEURUSD = Instrument.EURUSD;
     private final ICurrency eurCurrency = CurrencyBuilder.instanceFromName("EUR");
     private final ICurrency usdCurrency = CurrencyBuilder.instanceFromName("USD");
@@ -35,6 +36,10 @@ public class RunningExamplePart2 implements IStrategy {
     @Override
     public void onStart(final IContext context) throws JFException {
         jForexUtil = new JForexUtil(context);
+
+        /********************************/
+        /*** CalculationUtil examples ***/
+        /********************************/
 
         // Some static methods of CalculationUtil
         final double scaledAmount = CalculationUtil.scaleToPlatformAmount(123456.78);
@@ -48,7 +53,7 @@ public class RunningExamplePart2 implements IStrategy {
         System.out.println("Scaled pips of 12.4 to price format of EUR/USD is " + scaledPips);
 
         // Conversion calculations needs instance of CalculationUtil
-        calculationUtil = jForexUtil.calculationUtil();
+        final CalculationUtil calculationUtil = jForexUtil.calculationUtil();
         final double convertedAmount =
                 calculationUtil.convertAmount(12540,
                                               eurCurrency,
@@ -70,6 +75,10 @@ public class RunningExamplePart2 implements IStrategy {
                 + convertedAmountForInstrument + " amount for GBP/AUD for ASK side");
         System.out.println("Pip value for EUR/USD of 12540 EUR is " + pipValueInCurrency + " for ASK side");
 
+        /********************************/
+        /*** InstrumentUtil examples ***/
+        /********************************/
+
         // Create an InstrumentUtil instance and get the latest quotes
         final InstrumentUtil utilEURUSD = jForexUtil.instrumentUtil(Instrument.EURUSD);
 
@@ -86,8 +95,8 @@ public class RunningExamplePart2 implements IStrategy {
         final Currency baseCurrency = utilEURUSD.baseJavaCurrency();
         final Currency quoteCurrency = utilEURUSD.quoteJavaCurrency();
 
-        // In case you don't need an InstrumentUtil instance you can access some
-        // methods in a static way
+        // In case you don't need live quotes you can access some attributes in
+        // a static way
         final int noOfDigitsStatic =
                 InstrumentUtil.numberOfDigits(instrumentEURUSD);
         final String instrumentStringNoSlashStatic =
@@ -105,6 +114,48 @@ public class RunningExamplePart2 implements IStrategy {
         System.out.println("Instrument as string no slash: " + instrumentStringNoSlash);
         System.out.println("Base currency code: " + baseCurrency.getCurrencyCode());
         System.out.println("Quote currency code: " + quoteCurrency.getCurrencyCode());
+
+        /********************************/
+        /*** OrderParams examples ***/
+        /********************************/
+
+        // Prepare order parameters for EUR/USD with fluent interface
+        final OrderParams orderParamsEURUSDMinimal =
+                OrderParams.forInstrument(Instrument.EURUSD)
+                           .withOrderCommand(OrderCommand.BUY)
+                           .withAmount(0.002)
+                           .withLabel("TestLabel1")
+                           .build();
+
+        final OrderParams orderParamsEURUSDFull =
+                OrderParams.forInstrument(Instrument.EURUSD)
+                           .withOrderCommand(OrderCommand.BUY)
+                           .withAmount(0.002)
+                           .withLabel("TestLabel2")
+                           .price(0)
+                           .goodTillTime(0L)
+                           .slippage(2.0)
+                           .stopLossPrice(0)
+                           .takeProfitPrice(0)
+                           .comment("Test Comment")
+                           .build();
+
+        final OrderParams adaptedEURUSDParams =
+                orderParamsEURUSDFull.clone()
+                                     .withAmount(0.003)
+                                     .build();
+
+        System.out.println("Full specified order parameters are:");
+        System.out.println("Instrument: " + orderParamsEURUSDFull.instrument());
+        System.out.println("Command: " + orderParamsEURUSDFull.orderCommand());
+        System.out.println("Amount: " + orderParamsEURUSDFull.amount());
+        System.out.println("Label: " + orderParamsEURUSDFull.label());
+        System.out.println("Price: " + orderParamsEURUSDFull.price());
+        System.out.println("GTT: " + orderParamsEURUSDFull.goodTillTime());
+        System.out.println("Slippage: " + orderParamsEURUSDFull.slippage());
+        System.out.println("SL price: " + orderParamsEURUSDFull.stopLossPrice());
+        System.out.println("TP price: " + orderParamsEURUSDFull.takeProfitPrice());
+        System.out.println("Comment: " + orderParamsEURUSDFull.comment());
     }
 
     @Override
