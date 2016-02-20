@@ -11,6 +11,9 @@ import static org.mockito.Mockito.spy;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.test.common.OrderParamsForTest;
+
 import com.dukascopy.api.ICloseOrder;
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IFillOrder;
@@ -19,8 +22,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.test.common.OrderParamsForTest;
 
 public class IOrderForTest implements IOrder {
 
@@ -80,7 +81,6 @@ public class IOrderForTest implements IOrder {
                       final double arg2) throws JFException {
     }
 
-    @SuppressWarnings( "deprecation" )
     @Override
     public boolean compare(final IOrder arg0) {
         return false;
