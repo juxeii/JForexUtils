@@ -10,7 +10,7 @@ def projName = 'JForexUtils'
 repositories {
    mavenCentral()
    maven {
-		url "http://www.dukascopy.com/client/jforexlib/publicrepo"
+       url "http://www.dukascopy.com/client/jforexlib/publicrepo"
    }
 }
 
@@ -34,7 +34,7 @@ dependencies {
 task uberJar(type: Jar) {
 	manifest {
         attributes 'Implementation-Title': projName,  
-				   'Implementation-Version': version
+                   'Implementation-Version': version
     }
     baseName = projName
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
@@ -45,5 +45,5 @@ task copyUberJarTask(type: Copy, dependsOn: ':uberJar') {
     if (project.hasProperty('jforexLibPath')) {
 	    from 'build/libs/' + projName + '-' + version + '.jar'
         into project.ext.jforexLibPath
-	}
+    }
 }
