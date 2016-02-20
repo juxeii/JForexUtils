@@ -399,7 +399,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
                 }
 
-                public class AfterSecondSubmit {
+                public class SecondSubmit {
 
                     @Before
                     public void setUp() {
@@ -437,7 +437,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
                 }
 
-                public class AfterSecondSubmitAndMerge {
+                public class SecondSubmitAndMerge {
 
                     @Before
                     public void setUp() {
@@ -453,7 +453,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         assertTrue(position.isBusy());
                     }
 
-                    public class AfterFillRejectMessage {
+                    public class FillRejectMessage {
 
                         @Before
                         public void setUp() {
@@ -473,7 +473,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         }
                     }
 
-                    public class AfterFullFillMessageForSecondOrder {
+                    public class FullFillMessageForSecondOrder {
 
                         @Before
                         public void setUp() {
@@ -495,7 +495,7 @@ public class PositionTest extends InstrumentUtilForTest {
                             assertTrue(positionHasOrder(sellOrderEURUSD));
                         }
 
-                        public class AfterRemoveTPs {
+                        public class RemoveTPs {
 
                             @Before
                             public void setUp() throws JFException {
@@ -514,7 +514,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                 assertTrue(position.isBusy());
                             }
 
-                            public class AfterRemoveSLs {
+                            public class RemoveSLs {
 
                                 @Before
                                 public void setUp() throws JFException {
@@ -532,7 +532,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                     assertTrue(position.isBusy());
                                 }
 
-                                public class AfterMergeCloseOKMessage {
+                                public class MergeCloseOKMessage {
 
                                     @Before
                                     public void setUp() throws JFException {
@@ -555,7 +555,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                     }
                                 }
 
-                                public class AfterMergeOKMessage {
+                                public class MergeOKMessage {
 
                                     @Before
                                     public void setUp() throws JFException {
@@ -580,7 +580,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                         assertTrue(position.filter(order -> true).size() == 1);
                                     }
 
-                                    public class AfterRestoreSL {
+                                    public class RestoreSL {
 
                                         @Before
                                         public void setUp() throws JFException {
@@ -595,7 +595,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                             assertTrue(position.isBusy());
                                         }
 
-                                        public class AfterRestoreTP {
+                                        public class RestoreTP {
 
                                             @Before
                                             public void setUp() throws JFException {

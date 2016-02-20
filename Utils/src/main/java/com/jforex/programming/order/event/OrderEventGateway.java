@@ -24,7 +24,7 @@ public class OrderEventGateway {
             new MapMaker().weakKeys().makeMap();
 
     public OrderEventGateway() {
-        orderEventObservable = Observable.create(this::subscribe);
+        orderEventObservable = Observable.create(subsciber -> subscribe(subsciber));
     }
 
     public Observable<OrderEvent> observable() {

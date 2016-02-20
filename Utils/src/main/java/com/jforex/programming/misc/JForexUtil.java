@@ -93,17 +93,17 @@ public class JForexUtil implements MessageConsumer {
     private void initInfrastructure() {
         orderEventGateway = new OrderEventGateway();
 
-        messageObservable = Observable.create(messagePublisherForRx::subscribe);
+        messageObservable = Observable.create(subsciber -> messagePublisherForRx.subscribe(subsciber));
         eventGatewaySubscription = messageObservable.filter(message -> message.getOrder() != null)
                                                     .map(OrderMessageData::new)
                                                     .subscribe(orderEventGateway::onOrderMessageData);
     }
 
     private void initQuoteProvider() {
-        tickObservable = Observable.create(tickQuotePublisherForRx::subscribe);
+        tickObservable = Observable.create(subsciber -> tickQuotePublisherForRx.subscribe(subsciber));
         tickQuoteProvider = new TickQuoteProvider(tickObservable, history);
 
-        barObservable = Observable.create(barQuotePublisherForRx::subscribe);
+        barObservable = Observable.create(subsciber -> barQuotePublisherForRx.subscribe(subsciber));
         barQuoteProvider = new BarQuoteProvider(barObservable, history);
 
     }

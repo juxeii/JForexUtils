@@ -80,6 +80,7 @@ public class IOrderForTest implements IOrder {
                       final double arg2) throws JFException {
     }
 
+    @SuppressWarnings( "deprecation" )
     @Override
     public boolean compare(final IOrder arg0) {
         return false;
