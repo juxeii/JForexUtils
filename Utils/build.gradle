@@ -41,7 +41,7 @@ task uberJar(type: Jar) {
     with jar
 }
 
-task copyUberJarTask(type: Copy) {
+task copyUberJarTask(type: Copy, dependsOn: ':uberJar') {
     if (project.hasProperty('jforexLibPath')) {
 	    from 'build/libs/' + projName + '-' + version + '.jar'
         into project.ext.jforexLibPath
