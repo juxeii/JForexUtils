@@ -4,8 +4,12 @@ apply from: 'devparams.gradle'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+description ="""
+A collection of utilities for Dukascopy's JForex API. See http://www.dukascopy.com/wiki for further documentation.
+Project name: ${project.name}
+"""
+
 version = '0.9.35'
-def projName = 'JForexUtils'
 
 repositories {
    mavenCentral()
@@ -32,18 +36,18 @@ dependencies {
 }
 
 task uberJar(type: Jar) {
-	manifest {
-        attributes 'Implementation-Title': projName,  
+    manifest {
+        attributes 'Implementation-Title': project.name,  
                    'Implementation-Version': version
     }
-    baseName = projName
+    baseName = project.name
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
 
 task copyUberJarTask(type: Copy, dependsOn: ':uberJar') {
     if (project.hasProperty('jforexLibPath')) {
-	    from 'build/libs/' + projName + '-' + version + '.jar'
+	    from "${project.buildDir}/libs/" + project.name + '-' + version + '.jar'
         into project.ext.jforexLibPath
     }
 }
