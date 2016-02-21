@@ -1,5 +1,4 @@
 apply plugin: 'java'
-apply from: 'devparams.gradle'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -8,8 +7,6 @@ description ="""
 A collection of utilities for Dukascopy's JForex API. See http://www.dukascopy.com/wiki for further documentation.
 Project name: ${project.name}
 """
-
-version = '0.9.35'
 
 repositories {
    mavenCentral()
@@ -46,8 +43,6 @@ task uberJar(type: Jar) {
 }
 
 task copyUberJarTask(type: Copy, dependsOn: ':uberJar') {
-    if (project.hasProperty('jforexLibPath')) {
-	    from "${project.buildDir}/libs/" + project.name + '-' + version + '.jar'
-        into project.ext.jforexLibPath
-    }
+    from "${project.buildDir}/libs/${uberJar.archiveName}"
+    into jforexLibPath
 }
