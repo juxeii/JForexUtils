@@ -17,6 +17,9 @@ import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.OrderCreateResult;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventConsumer;
+import com.jforex.programming.order.event.OrderEventType;
 
 /* Remove both annotations if you develop a standalone app */
 @RequiresFullAccess
@@ -32,24 +35,67 @@ public class RunningExamplePart3 implements IStrategy {
         jForexUtil = new JForexUtil(context);
 
         // Prepare order parameters for EUR/USD with fluent interface
-        final OrderParams orderParamsEURUSD = OrderParams.forInstrument(Instrument.EURUSD)
-                                                         .withOrderCommand(OrderCommand.BUY)
-                                                         .withAmount(0.002)
-                                                         .withLabel("TestLabel")
-                                                         .build();
+        final OrderParams orderParamsEURUSD =
+                OrderParams.forInstrument(Instrument.EURUSD)
+                           .withOrderCommand(OrderCommand.BUY)
+                           .withAmount(0.002)
+                           .withLabel("TestLabel1")
+                           .build();
+
+        final OrderParams orderParamsEURUSDFull =
+                OrderParams.forInstrument(Instrument.EURUSD)
+                           .withOrderCommand(OrderCommand.BUY)
+                           .withAmount(0.002)
+                           .withLabel("TestLabel2")
+                           .price(0)
+                           .goodTillTime(0L)
+                           .slippage(2.0)
+                           .stopLossPrice(0)
+                           .takeProfitPrice(0)
+                           .comment("Test Comment")
+                           .build();
+
+        final OrderParams adaptedEURUSDParams =
+                orderParamsEURUSDFull.clone()
+                                     .withAmount(0.003)
+                                     .build();
 
         // Create orderUtil instance and submit order to server
         orderUtil = jForexUtil.orderUtil();
+        orderUtil.submit(orderParamsEURUSD);
 
-        final OrderCreateResult submitResult = orderUtil.submit(orderParamsEURUSD);
-        final IOrder orderEURUSD = submitResult.orderOpt().get();
+        // Submit order to server with return result
+        final OrderCreateResult result = orderUtil.submit(orderParamsEURUSDFull);
 
-        // Change SL and TP
-        orderUtil.setSL(orderEURUSD, 1.12345);
-        orderUtil.setTP(orderEURUSD, 1.12366);
+        if (result.exceptionOpt().isPresent()) {
+            final Exception e = result.exceptionOpt().get();
+            System.out.println("Ouch! An excpetion occured: " + e.getMessage());
+            // ... handle the exception somehow
+        } else {
+            // No exception, so the new order was created, but not yet accepted
+            // by the server!
+            final IOrder order = result.orderOpt().get();
+        }
+
+        // Shorter alternative
+//        final OrderCreateResult result = orderUtil.submit(orderParamsEURUSDFull);
+//        final IOrder order = result.orderOpt().orElse(null);
 
         // Close order
-        orderUtil.close(orderEURUSD);
+        final OrderCreateResult result =
+                orderUtil.submit(orderParamsEURUSDFull, new MyEventConsumer());
+        final IOrder order = result.orderOpt().orElse(null);
+    }
+
+    private class MyEventConsumer implements OrderEventConsumer {
+        @Override
+        public void onOrderEvent(final OrderEvent orderEvent) {
+            final IOrder order = orderEvent.order();
+            final OrderEventType type = orderEvent.type();
+            System.out.println("Received order event for order "
+                    + order.getLabel() + " with type " + type);
+            // do your handling here
+        }
     }
 
     @Override
