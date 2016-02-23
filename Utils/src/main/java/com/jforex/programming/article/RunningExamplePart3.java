@@ -82,9 +82,9 @@ public class RunningExamplePart3 implements IStrategy {
 //        final IOrder order = result.orderOpt().orElse(null);
 
         // Close order
-        final OrderCreateResult result =
+        final OrderCreateResult result2 =
                 orderUtil.submit(orderParamsEURUSDFull, new MyEventConsumer());
-        final IOrder order = result.orderOpt().orElse(null);
+        final IOrder order = result2.orderOpt().orElse(null);
     }
 
     private class MyEventConsumer implements OrderEventConsumer {
