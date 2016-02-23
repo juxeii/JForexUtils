@@ -174,7 +174,7 @@ public class PositionTest extends InstrumentUtilForTest {
         verify(orderUtilMock).submit(orderParamsEURUSDBuy);
     }
 
-    public class AfterSubmitWithException {
+    public class SubmitWithException {
 
         @Before
         public void setUp() {
@@ -199,7 +199,7 @@ public class PositionTest extends InstrumentUtilForTest {
         }
     }
 
-    public class AfterSubmitAndMergeWithException {
+    public class SubmitAndMergeWithException {
 
         @Before
         public void setUp() {
@@ -224,7 +224,7 @@ public class PositionTest extends InstrumentUtilForTest {
         }
     }
 
-    public class AfterSubmitAndMergeNoException {
+    public class SubmitAndMergeNoException {
 
         @Before
         public void setUp() {
@@ -243,7 +243,7 @@ public class PositionTest extends InstrumentUtilForTest {
             assertTrue(isRepositoryEmpty());
         }
 
-        public class AfterSubmitOKMessage {
+        public class SubmitOKMessage {
 
             @Before
             public void setUp() {
@@ -258,7 +258,7 @@ public class PositionTest extends InstrumentUtilForTest {
                 assertTrue(position.isBusy());
             }
 
-            public class AfterFullFillMessage {
+            public class FullFillMessage {
 
                 @Before
                 public void setUp() {
@@ -285,7 +285,7 @@ public class PositionTest extends InstrumentUtilForTest {
         }
     }
 
-    public class AfterSubmitNoException {
+    public class SubmitNoException {
 
         @Before
         public void setUp() {
@@ -306,7 +306,7 @@ public class PositionTest extends InstrumentUtilForTest {
             assertTrue(isRepositoryEmpty());
         }
 
-        public class AfterSubmitOKMessage {
+        public class SubmitOKMessage {
 
             @Before
             public void setUp() {
@@ -320,7 +320,7 @@ public class PositionTest extends InstrumentUtilForTest {
                 assertTrue(position.isBusy());
             }
 
-            public class AfterFillRejectMessage {
+            public class FillRejectMessage {
 
                 @Before
                 public void setUp() {
@@ -340,7 +340,7 @@ public class PositionTest extends InstrumentUtilForTest {
                 }
             }
 
-            public class AfterFullFillMessage {
+            public class FullFillMessage {
 
                 @Before
                 public void setUp() {
@@ -359,7 +359,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     assertTrue(positionHasOrder(buyOrderEURUSD));
                 }
 
-                public class AfterCloseOnSL {
+                public class CloseOnSL {
 
                     @Before
                     public void setUp() {
@@ -379,7 +379,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
                 }
 
-                public class AfterCloseOnTP {
+                public class CloseOnTP {
 
                     @Before
                     public void setUp() {
@@ -399,7 +399,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
                 }
 
-                public class AfterSecondSubmit {
+                public class SecondSubmit {
 
                     @Before
                     public void setUp() {
@@ -415,7 +415,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         assertTrue(position.isBusy());
                     }
 
-                    public class AfterFullFillMessageForSecondOrder {
+                    public class FullFillMessageForSecondOrder {
 
                         @Before
                         public void setUp() {
@@ -437,7 +437,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
                 }
 
-                public class AfterSecondSubmitAndMerge {
+                public class SecondSubmitAndMerge {
 
                     @Before
                     public void setUp() {
@@ -453,7 +453,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         assertTrue(position.isBusy());
                     }
 
-                    public class AfterFillRejectMessage {
+                    public class FillRejectMessage {
 
                         @Before
                         public void setUp() {
@@ -473,7 +473,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         }
                     }
 
-                    public class AfterFullFillMessageForSecondOrder {
+                    public class FullFillMessageForSecondOrder {
 
                         @Before
                         public void setUp() {
@@ -495,7 +495,7 @@ public class PositionTest extends InstrumentUtilForTest {
                             assertTrue(positionHasOrder(sellOrderEURUSD));
                         }
 
-                        public class AfterRemoveTPs {
+                        public class RemoveTPs {
 
                             @Before
                             public void setUp() throws JFException {
@@ -514,7 +514,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                 assertTrue(position.isBusy());
                             }
 
-                            public class AfterRemoveSLs {
+                            public class RemoveSLs {
 
                                 @Before
                                 public void setUp() throws JFException {
@@ -532,7 +532,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                     assertTrue(position.isBusy());
                                 }
 
-                                public class AfterMergeCloseOKMessage {
+                                public class MergeCloseOKMessage {
 
                                     @Before
                                     public void setUp() throws JFException {
@@ -555,7 +555,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                     }
                                 }
 
-                                public class AfterMergeOKMessage {
+                                public class MergeOKMessage {
 
                                     @Before
                                     public void setUp() throws JFException {
@@ -580,7 +580,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                         assertTrue(position.filter(order -> true).size() == 1);
                                     }
 
-                                    public class AfterRestoreSL {
+                                    public class RestoreSL {
 
                                         @Before
                                         public void setUp() throws JFException {
@@ -595,7 +595,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                             assertTrue(position.isBusy());
                                         }
 
-                                        public class AfterRestoreTP {
+                                        public class RestoreTP {
 
                                             @Before
                                             public void setUp() throws JFException {
@@ -615,7 +615,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
                 }
 
-                public class AfterMergeCall {
+                public class MergeCall {
 
                     @Before
                     public void setUp() {
@@ -633,7 +633,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
                 }
 
-                public class AfterCloseCall {
+                public class CloseCall {
 
                     @Before
                     public void setUp() {
@@ -652,7 +652,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         assertTrue(positionHasOrder(buyOrderEURUSD));
                     }
 
-                    public class AfterCloseOKMessage {
+                    public class CloseOKMessage {
 
                         @Before
                         public void setUp() {
@@ -675,7 +675,7 @@ public class PositionTest extends InstrumentUtilForTest {
             }
         }
 
-        public class AfterSubmitRejectMessage {
+        public class SubmitRejectMessage {
 
             @Before
             public void setUp() {
