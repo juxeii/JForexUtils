@@ -1,5 +1,8 @@
 package com.jforex.programming.article;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IContext;
@@ -13,6 +16,7 @@ import com.dukascopy.api.JFException;
 import com.dukascopy.api.Library;
 import com.dukascopy.api.Period;
 import com.dukascopy.api.RequiresFullAccess;
+import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.OrderCreateResult;
 import com.jforex.programming.order.OrderParams;
@@ -34,57 +38,81 @@ public class RunningExamplePart3 implements IStrategy {
     public void onStart(final IContext context) throws JFException {
         jForexUtil = new JForexUtil(context);
 
+        minimalSubmitExample();
+        resultEvaluationExample1();
+        resultEvaluationExample2();
+        orderEventCallbackExample1();
+        orderEventCallbackExample2();
+        orderSubmissionOnThread();
+    }
+
+    private OrderParams createOrderParams(final String label) {
         // Prepare order parameters for EUR/USD with fluent interface
-        final OrderParams orderParamsEURUSD =
-                OrderParams.forInstrument(Instrument.EURUSD)
-                           .withOrderCommand(OrderCommand.BUY)
-                           .withAmount(0.002)
-                           .withLabel("TestLabel1")
-                           .build();
+        return OrderParams.forInstrument(Instrument.EURUSD)
+                          .withOrderCommand(OrderCommand.BUY)
+                          .withAmount(0.001)
+                          .withLabel(label)
+                          .build();
+    }
 
-        final OrderParams orderParamsEURUSDFull =
-                OrderParams.forInstrument(Instrument.EURUSD)
-                           .withOrderCommand(OrderCommand.BUY)
-                           .withAmount(0.002)
-                           .withLabel("TestLabel2")
-                           .price(0)
-                           .goodTillTime(0L)
-                           .slippage(2.0)
-                           .stopLossPrice(0)
-                           .takeProfitPrice(0)
-                           .comment("Test Comment")
-                           .build();
+    private void minimalSubmitExample() {
+        final OrderParams orderParamsEURUSD = createOrderParams("minimalSubmitExample");
 
-        final OrderParams adaptedEURUSDParams =
-                orderParamsEURUSDFull.clone()
-                                     .withAmount(0.003)
-                                     .build();
-
-        // Create orderUtil instance and submit order to server
         orderUtil = jForexUtil.orderUtil();
         orderUtil.submit(orderParamsEURUSD);
+    }
 
-        // Submit order to server with return result
-        final OrderCreateResult result = orderUtil.submit(orderParamsEURUSDFull);
+    private void resultEvaluationExample1() {
+        final OrderParams orderParamsEURUSD = createOrderParams("resultEvaluationExample1");
 
+        final OrderCreateResult result = orderUtil.submit(orderParamsEURUSD);
         if (result.exceptionOpt().isPresent()) {
             final Exception e = result.exceptionOpt().get();
             System.out.println("Ouch! An excpetion occured: " + e.getMessage());
             // ... handle the exception somehow
-        } else {
-            // No exception, so the new order was created, but not yet accepted
-            // by the server!
+        } else { // No exception, so the new order was created(not yet accepted)
             final IOrder order = result.orderOpt().get();
         }
+    }
 
-        // Shorter alternative
-//        final OrderCreateResult result = orderUtil.submit(orderParamsEURUSDFull);
-//        final IOrder order = result.orderOpt().orElse(null);
+    private void resultEvaluationExample2() {
+        final OrderParams orderParamsEURUSD = createOrderParams("resultEvaluationExample2");
 
-        // Close order
-        final OrderCreateResult result2 =
-                orderUtil.submit(orderParamsEURUSDFull, new MyEventConsumer());
-        final IOrder order = result2.orderOpt().orElse(null);
+        final OrderCreateResult result = orderUtil.submit(orderParamsEURUSD);
+        final IOrder order = result.orderOpt().orElse(null);
+        if (order == null) { // Order was not created, exception occured!
+            final Exception e = result.exceptionOpt().get();
+            System.out.println("Ouch! An excpetion occured: " + e.getMessage());
+            // ... handle the exception somehow
+        }
+    }
+
+    private void orderEventCallbackExample1() {
+        final OrderParams orderParamsEURUSD = createOrderParams("orderEventCallbackExample1");
+
+        final MyEventConsumer eventConsumer = new MyEventConsumer();
+        final OrderCreateResult result = orderUtil.submit(orderParamsEURUSD, eventConsumer);
+        final IOrder order = result.orderOpt().orElse(null);
+        if (order == null)
+            ;// as before...
+    }
+
+    private void orderEventCallbackExample2() {
+        final OrderParams orderParamsEURUSD = createOrderParams("orderEventCallbackExample2");
+
+        final Map<OrderEventType, OrderEventConsumer> consumerMap = new HashMap<>();
+        consumerMap.put(OrderEventType.SUBMIT_OK, new SubmitHandler());
+        consumerMap.put(OrderEventType.SUBMIT_REJECTED, new SubmitRejectHandler());
+
+        final OrderCreateResult result = orderUtil.submit(orderParamsEURUSD, consumerMap);
+        final IOrder order = result.orderOpt().orElse(null);
+        if (order == null)
+            ;// as before...
+    }
+
+    private void orderSubmissionOnThread() {
+        final MyThread myThread = new MyThread();
+        myThread.start();
     }
 
     private class MyEventConsumer implements OrderEventConsumer {
@@ -92,9 +120,44 @@ public class RunningExamplePart3 implements IStrategy {
         public void onOrderEvent(final OrderEvent orderEvent) {
             final IOrder order = orderEvent.order();
             final OrderEventType type = orderEvent.type();
-            System.out.println("Received order event for order "
-                    + order.getLabel() + " with type " + type);
-            // do your handling here
+
+            switch (type) {
+            case SUBMIT_OK:
+                System.out.println("Order was submitted.");
+                break;
+            case FULL_FILL_OK:
+                System.out.println("Order was fully filled.");
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    private class SubmitHandler implements OrderEventConsumer {
+        @Override
+        public void onOrderEvent(final OrderEvent orderEvent) {
+            System.out.println("MapHandler: order was submitted.");
+        }
+    }
+
+    private class SubmitRejectHandler implements OrderEventConsumer {
+        @Override
+        public void onOrderEvent(final OrderEvent orderEvent) {
+            System.out.println("MapHandler: order submit was rejected!");
+        }
+    }
+
+    private class MyThread extends Thread {
+
+        @Override
+        public void run() {
+            final OrderParams orderParamsEURUSD = createOrderParams("threadExample");
+
+            final OrderCreateResult result = orderUtil.submit(orderParamsEURUSD);
+            final IOrder order = result.orderOpt().orElse(null);
+            if (order != null)
+                System.out.println("Order created on thread " + ConcurrentUtil.threadName() + "!");
         }
     }
 
