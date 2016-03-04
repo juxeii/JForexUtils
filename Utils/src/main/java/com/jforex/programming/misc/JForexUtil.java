@@ -27,6 +27,7 @@ import com.jforex.programming.settings.UserSettings;
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IContext;
+import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.ITick;
@@ -39,6 +40,7 @@ import rx.Subscription;
 public class JForexUtil implements MessageConsumer {
 
     private final IContext context;
+    private IEngine engine;
     private IAccount account;
     private IHistory history;
 
@@ -86,6 +88,7 @@ public class JForexUtil implements MessageConsumer {
     }
 
     private void initContextRelated() {
+        engine = context.getEngine();
         account = context.getAccount();
         history = context.getHistory();
         concurrentUtil = new ConcurrentUtil(context, executorService);
@@ -122,6 +125,10 @@ public class JForexUtil implements MessageConsumer {
 
     public IContext context() {
         return context;
+    }
+
+    public IEngine engine() {
+        return engine;
     }
 
     public IAccount account() {
