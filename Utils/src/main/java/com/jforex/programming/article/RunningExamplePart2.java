@@ -2,6 +2,12 @@ package com.jforex.programming.article;
 
 import java.util.Currency;
 
+import com.jforex.programming.currency.CurrencyBuilder;
+import com.jforex.programming.instrument.InstrumentUtil;
+import com.jforex.programming.misc.CalculationUtil;
+import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.order.OrderParams;
+
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IContext;
@@ -16,11 +22,6 @@ import com.dukascopy.api.Library;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.dukascopy.api.RequiresFullAccess;
-import com.jforex.programming.currency.CurrencyBuilder;
-import com.jforex.programming.instrument.InstrumentUtil;
-import com.jforex.programming.misc.CalculationUtil;
-import com.jforex.programming.misc.JForexUtil;
-import com.jforex.programming.order.OrderParams;
 
 /* Remove both annotations if you develop a standalone app */
 @RequiresFullAccess
@@ -95,13 +96,8 @@ public class RunningExamplePart2 implements IStrategy {
         final Currency baseCurrency = utilEURUSD.baseJavaCurrency();
         final Currency quoteCurrency = utilEURUSD.quoteJavaCurrency();
 
-        // In case you don't need live quotes you can access some attributes in
-        // a static way
-        final int noOfDigitsStatic =
-                InstrumentUtil.numberOfDigits(instrumentEURUSD);
-        final String instrumentStringNoSlashStatic =
-                InstrumentUtil.toStringNoSeparator(instrumentEURUSD);
-        // etc...
+        InstrumentUtil.numberOfDigits(instrumentEURUSD);
+        InstrumentUtil.toStringNoSeparator(instrumentEURUSD);
 
         System.out.println("Attributes of EURUSD from InstrumentUtil:");
         System.out.println("Latest time of tick: " + latestTick.getTime());
@@ -115,17 +111,11 @@ public class RunningExamplePart2 implements IStrategy {
         System.out.println("Base currency code: " + baseCurrency.getCurrencyCode());
         System.out.println("Quote currency code: " + quoteCurrency.getCurrencyCode());
 
-        /********************************/
-        /*** OrderParams examples ***/
-        /********************************/
-
-        // Prepare order parameters for EUR/USD with fluent interface
-        final OrderParams orderParamsEURUSDMinimal =
-                OrderParams.forInstrument(Instrument.EURUSD)
-                           .withOrderCommand(OrderCommand.BUY)
-                           .withAmount(0.002)
-                           .withLabel("TestLabel1")
-                           .build();
+        OrderParams.forInstrument(Instrument.EURUSD)
+                   .withOrderCommand(OrderCommand.BUY)
+                   .withAmount(0.002)
+                   .withLabel("TestLabel1")
+                   .build();
 
         final OrderParams orderParamsEURUSDFull =
                 OrderParams.forInstrument(Instrument.EURUSD)
@@ -140,10 +130,9 @@ public class RunningExamplePart2 implements IStrategy {
                            .comment("Test Comment")
                            .build();
 
-        final OrderParams adaptedEURUSDParams =
-                orderParamsEURUSDFull.clone()
-                                     .withAmount(0.003)
-                                     .build();
+        orderParamsEURUSDFull.clone()
+                             .withAmount(0.003)
+                             .build();
 
         System.out.println("Full specified order parameters are:");
         System.out.println("Instrument: " + orderParamsEURUSDFull.instrument());

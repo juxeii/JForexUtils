@@ -2,8 +2,12 @@ package com.jforex.programming.article;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
+
+import com.jforex.programming.currency.CurrencyBuilder;
+import com.jforex.programming.currency.CurrencyUtil;
+import com.jforex.programming.instrument.InstrumentBuilder;
+import com.jforex.programming.misc.JForexUtil;
 
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
@@ -17,10 +21,6 @@ import com.dukascopy.api.JFException;
 import com.dukascopy.api.Library;
 import com.dukascopy.api.Period;
 import com.dukascopy.api.RequiresFullAccess;
-import com.jforex.programming.currency.CurrencyBuilder;
-import com.jforex.programming.currency.CurrencyUtil;
-import com.jforex.programming.instrument.InstrumentBuilder;
-import com.jforex.programming.misc.JForexUtil;
 
 /* Remove both annotations if you develop a standalone app */
 @RequiresFullAccess
@@ -36,24 +36,20 @@ public class RunningExamplePart1 implements IStrategy {
 
         // Create ICurrency instances from currency name/string
         final ICurrency eurCurrency = CurrencyBuilder.fromName("EUR").get();
-        final ICurrency eurCurrencyMixedCase = CurrencyBuilder.fromName("eUr").get();
-        final Optional<ICurrency> invalidCurrency = CurrencyBuilder.fromName("ouch");
+        CurrencyBuilder.fromName("eUr").get();
+        CurrencyBuilder.fromName("ouch");
 
         // Create ICurrency instances from multiple currency names/strings
         final Set<String> currencyNames =
                 new HashSet<String>(Arrays.asList("EUR", "CHF", "JPY", "ouch"));
-        final Set<ICurrency> currencySetA = CurrencyBuilder.fromNames(currencyNames);
-        final Set<ICurrency> currencySetB = CurrencyBuilder.fromNames("EUR", "CHF", "JPY", "ouch");
+        CurrencyBuilder.fromNames(currencyNames);
+        CurrencyBuilder.fromNames("EUR", "CHF", "JPY", "ouch");
 
-        // Create ICurrency instances from instrument(s)
-        final Set<ICurrency> currencySetFromSingleInstrument =
-                CurrencyBuilder.fromInstrument(Instrument.EURUSD);
+        CurrencyBuilder.fromInstrument(Instrument.EURUSD);
         final Set<Instrument> instruments =
                 new HashSet<Instrument>(Arrays.asList(Instrument.EURUSD, Instrument.CHFJPY));
-        final Set<ICurrency> currencySetFromInstrumentsA =
-                CurrencyBuilder.fromInstruments(instruments);
-        final Set<ICurrency> currencySetFromInstrumentsB =
-                CurrencyBuilder.fromInstruments(Instrument.EURUSD, Instrument.CHFJPY);
+        CurrencyBuilder.fromInstruments(instruments);
+        CurrencyBuilder.fromInstruments(Instrument.EURUSD, Instrument.CHFJPY);
 
         // Check if a currency name is valid
         final boolean isValidEURCurrency = CurrencyUtil.isNameValid("EUR");
@@ -80,13 +76,12 @@ public class RunningExamplePart1 implements IStrategy {
                 + " isJPYinInstrumentSet: " + isJPYinInstrumentSet
                 + " isAUDinInstrumentSet: " + isAUDinInstrumentSet);
 
-        // Creating instrument from name/string or from currencies
-        final Instrument instrumentEURUSD = InstrumentBuilder.fromName("EUR/USD").get();
-        final Instrument instrumentEURUSDInverted = InstrumentBuilder.fromName("USD/EUR").get();
-        final Optional<Instrument> invalidEURInstrument = InstrumentBuilder.fromName("EURUSD");
-        final Instrument instrumentGBPAUD = InstrumentBuilder.fromCurrencies(CurrencyBuilder.fromName("GBP").get(),
-                                                                             CurrencyBuilder.fromName("AUD").get())
-                                                             .get();
+        InstrumentBuilder.fromName("EUR/USD").get();
+        InstrumentBuilder.fromName("USD/EUR").get();
+        InstrumentBuilder.fromName("EURUSD");
+        InstrumentBuilder.fromCurrencies(CurrencyBuilder.fromName("GBP").get(),
+                                         CurrencyBuilder.fromName("AUD").get())
+                         .get();
 
         // Combining one anchor currency with partner currencies
         final ICurrency anchorCurrency = CurrencyBuilder.fromName("EUR").get();

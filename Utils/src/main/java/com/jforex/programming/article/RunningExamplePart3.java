@@ -3,6 +3,15 @@ package com.jforex.programming.article;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jforex.programming.misc.ConcurrentUtil;
+import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.order.OrderCreateResult;
+import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventConsumer;
+import com.jforex.programming.order.event.OrderEventType;
+
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IContext;
@@ -16,14 +25,6 @@ import com.dukascopy.api.JFException;
 import com.dukascopy.api.Library;
 import com.dukascopy.api.Period;
 import com.dukascopy.api.RequiresFullAccess;
-import com.jforex.programming.misc.ConcurrentUtil;
-import com.jforex.programming.misc.JForexUtil;
-import com.jforex.programming.order.OrderCreateResult;
-import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventConsumer;
-import com.jforex.programming.order.event.OrderEventType;
 
 /* Remove both annotations if you develop a standalone app */
 @RequiresFullAccess
@@ -71,7 +72,7 @@ public class RunningExamplePart3 implements IStrategy {
             System.out.println("Ouch! An excpetion occured: " + e.getMessage());
             // ... handle the exception somehow
         } else { // No exception, so the new order was created(not yet accepted)
-            final IOrder order = result.orderOpt().get();
+            result.orderOpt().get();
         }
     }
 
@@ -118,7 +119,7 @@ public class RunningExamplePart3 implements IStrategy {
     private class MyEventConsumer implements OrderEventConsumer {
         @Override
         public void onOrderEvent(final OrderEvent orderEvent) {
-            final IOrder order = orderEvent.order();
+            orderEvent.order();
             final OrderEventType type = orderEvent.type();
 
             switch (type) {
