@@ -43,8 +43,8 @@ task uberJar(type: Jar) {
 }
 
 task copyUberJarTask(type: Copy, dependsOn: ':uberJar') {
-    if (project.hasProperty('jforexLibPath')) {
+    if (project.hasProperty('localLibPath')) {
         from "${project.buildDir}/libs/${uberJar.archiveName}"
-        into jforexLibPath
+        into localLibPath
     }
 }
