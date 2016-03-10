@@ -32,15 +32,6 @@ dependencies {
    testCompile 'junit:junit:4.12'
 }
 
-jar {
-    manifest {
-        attributes 'Implementation-Title': project.name,  
-                   'Implementation-Version': version,
-                   'Class-Path': '.' + ' ' + configurations.compile.collect { it.getName() }.join(' ')
-    }
-    baseName = project.name
-}
-
 task uberJar(type: Jar) {
     manifest {
         attributes 'Implementation-Title': project.name,  
@@ -54,13 +45,6 @@ task uberJar(type: Jar) {
 task copyUberJarTask(type: Copy, dependsOn: ':uberJar') {
     if (project.hasProperty('localLibPath')) {
         from "${project.buildDir}/libs/${uberJar.archiveName}"
-        into localLibPath
-    }
-}
-
-task copyJarToLib(type: Copy, dependsOn: ':jar') {
-    if (project.hasProperty('localLibPath')) {
-        from "${project.buildDir}/libs/${jar.archiveName}"
         into localLibPath
     }
 }
