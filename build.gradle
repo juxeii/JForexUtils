@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'maven-publish'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -13,6 +14,14 @@ repositories {
    maven {
        url "https://www.dukascopy.com/client/jforexlib/publicrepo"
    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
 }
 
 dependencies {
@@ -49,18 +58,4 @@ task uberJar(type: Jar) {
     baseName = project.name
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
-}
-
-task copyUberJarTask(type: Copy, dependsOn: ':uberJar') {
-    if (project.hasProperty('localLibFolder')) {
-        from "${project.buildDir}/libs/${uberJar.archiveName}"
-        into localLibFolder
-    }
-}
-
-task copyJarToLib(type: Copy, dependsOn: ':jar') {
-    if (project.hasProperty('localLibFolder')) {
-        from "${project.buildDir}/libs/${jar.archiveName}"
-        into localLibFolder
-    }
 }
