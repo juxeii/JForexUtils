@@ -1,6 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
+group= 'com.jforex.jforexutils'
+version = '0.9.35'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
