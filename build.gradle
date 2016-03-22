@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'maven-publish'
+apply plugin: 'osgi'
 
 group= 'com.jforex.jforexutils'
 version = '0.9.35'
@@ -60,4 +61,18 @@ task uberJar(type: Jar) {
     baseName = project.name
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
+}
+
+task copyJarToLib(type: Copy, dependsOn: ':jar') {
+    if (project.hasProperty('jforexLibFolder')) {
+        from "${project.buildDir}/libs/${jar.archiveName}"
+        into jforexLibFolder
+    }
+}
+
+task copyUberJarToLib(type: Copy, dependsOn: ':uberJar') {
+    if (project.hasProperty('jforexLibFolder')) {
+        from "${project.buildDir}/libs/${jar.archiveName}"
+        into jforexLibFolder
+    }
 }
