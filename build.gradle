@@ -60,6 +60,7 @@ jar {
         attributes 'Implementation-Title': project.name,  
                    'Implementation-Version': version,
                    'Class-Path': '.' + ' ' + configurations.compile.collect { it.getName() }.join(' '),
+                   'Import-Package': 'javax.management,*',
                    'Export-Package': 'com.jforex.programming.*'
     }
     baseName = project.name
