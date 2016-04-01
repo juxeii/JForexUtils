@@ -1,8 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'maven-publish'
-apply plugin: 'osgi'
 
-group= 'com.jforex.jforexutils'
+group= 'com.jforex.programming'
 version = '0.9.35'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -11,6 +10,18 @@ description ="""
 A collection of utilities for Dukascopy's JForex API. See http://www.dukascopy.com/wiki for further documentation.
 Project name: ${project.name}
 """
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'org.dm.gradle:gradle-bundle-plugin:0.8.2'
+    }
+}
+
+apply plugin: 'org.dm.bundle'
 
 repositories {
    mavenCentral()
@@ -32,8 +43,8 @@ dependencies {
    compile 'com.dukascopy.api:JForex-API:2.12.33'
    compile 'com.google.guava:guava:19.0'
    compile 'com.googlecode.combinatoricslib:combinatoricslib:2.1'
-   compile 'org.apache.logging.log4j:log4j-api:2.4.1'
-   compile 'org.apache.logging.log4j:log4j-core:2.4.1'
+   compile 'org.apache.logging.log4j:log4j-api:2.5'
+   compile 'org.apache.logging.log4j:log4j-core:2.5'
    compile 'org.apache.commons:commons-collections4:4.0'
    compile 'org.apache.commons:commons-lang3:3.4'
    compile 'org.aeonbits.owner:owner:1.0.8'
@@ -48,7 +59,8 @@ jar {
     manifest {
         attributes 'Implementation-Title': project.name,  
                    'Implementation-Version': version,
-                   'Class-Path': '.' + ' ' + configurations.compile.collect { it.getName() }.join(' ')
+                   'Class-Path': '.' + ' ' + configurations.compile.collect { it.getName() }.join(' '),
+                   'Export-Package': 'com.jforex.programming.*'
     }
     baseName = project.name
 }
@@ -64,15 +76,15 @@ task uberJar(type: Jar) {
 }
 
 task copyJarToLib(type: Copy, dependsOn: ':jar') {
-    if (project.hasProperty('jforexLibFolder')) {
+    if (project.hasProperty('pluginFolder')) {
         from "${project.buildDir}/libs/${jar.archiveName}"
-        into jforexLibFolder
+        into pluginFolder
     }
 }
 
 task copyUberJarToLib(type: Copy, dependsOn: ':uberJar') {
-    if (project.hasProperty('jforexLibFolder')) {
+    if (project.hasProperty('pluginFolder')) {
         from "${project.buildDir}/libs/${jar.archiveName}"
-        into jforexLibFolder
+        into pluginFolder
     }
 }
