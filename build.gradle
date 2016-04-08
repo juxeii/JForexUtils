@@ -17,11 +17,11 @@ buildscript {
     }
 
     dependencies {
-        classpath 'org.dm.gradle:gradle-bundle-plugin:0.8.2'
+        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.1.0'
     }
 }
 
-apply plugin: 'org.dm.bundle'
+apply plugin: 'biz.aQute.bnd.builder'
 
 repositories {
    mavenCentral()
@@ -44,7 +44,6 @@ dependencies {
    compile 'com.google.guava:guava:19.0'
    compile 'com.googlecode.combinatoricslib:combinatoricslib:2.1'
    compile 'org.apache.logging.log4j:log4j-api:2.5'
-   compile 'org.apache.logging.log4j:log4j-core:2.5'
    compile 'org.apache.commons:commons-collections4:4.0'
    compile 'org.apache.commons:commons-lang3:3.4'
    compile 'org.aeonbits.owner:owner:1.0.8'
@@ -59,8 +58,7 @@ jar {
     manifest {
         attributes 'Implementation-Title': project.name,  
                    'Implementation-Version': version,
-                   'Class-Path': '.' + ' ' + configurations.compile.collect { it.getName() }.join(' '),
-                   'Import-Package': 'javax.management,*',
+                   'Bundle-SymbolicName': 'com.jforex.programming',
                    'Export-Package': 'com.jforex.programming.*'
     }
     baseName = project.name
@@ -69,21 +67,22 @@ jar {
 task uberJar(type: Jar) {
     manifest {
         attributes 'Implementation-Title': project.name,  
-                   'Implementation-Version': version
+                   'Implementation-Version': version,
+                   'Class-Path': '.' + ' ' + configurations.compile.collect { it.getName() }.join(' ')
     }
     baseName = project.name
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
 
-task copyJarToLib(type: Copy, dependsOn: ':jar') {
+task copyJarToPlugins(type: Copy, dependsOn: ':jar') {
     if (project.hasProperty('pluginFolder')) {
         from "${project.buildDir}/libs/${jar.archiveName}"
         into pluginFolder
     }
 }
 
-task copyUberJarToLib(type: Copy, dependsOn: ':uberJar') {
+task copyUberJarToPlugins(type: Copy, dependsOn: ':uberJar') {
     if (project.hasProperty('pluginFolder')) {
         from "${project.buildDir}/libs/${jar.archiveName}"
         into pluginFolder
