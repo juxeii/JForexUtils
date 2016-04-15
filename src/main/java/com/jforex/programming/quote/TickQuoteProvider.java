@@ -1,6 +1,7 @@
 package com.jforex.programming.quote;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.dukascopy.api.IHistory;
@@ -58,9 +59,9 @@ public class TickQuoteProvider {
         return tickQuoteObservable;
     }
 
-    public void subscribe(final Instrument instrument,
+    public void subscribe(final Set<Instrument> instruments,
                           final TickQuoteConsumer tickQuoteConsumer) {
-        tickQuoteObservable.filter(tickQuote -> instrument == tickQuote.instrument())
+        tickQuoteObservable.filter(tickQuote -> instruments.contains(tickQuote.instrument()))
                            .subscribe(tickQuoteConsumer::onTickQuote);
     }
 
