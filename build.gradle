@@ -58,6 +58,7 @@ jar {
     manifest {
         attributes 'Implementation-Title': project.name,  
                    'Implementation-Version': version,
+                   'Bundle-Name': 'JForexUtils',
                    'Bundle-SymbolicName': 'com.jforex.programming',
                    'Export-Package': 'com.jforex.programming.*'
     }

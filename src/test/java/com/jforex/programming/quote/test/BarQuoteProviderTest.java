@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.google.common.collect.Sets;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteConsumer;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -55,7 +56,7 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
         barObservable = PublishSubject.create();
 
         barQuoteProvider = new BarQuoteProvider(barObservable, historyMock);
-        barQuoteProvider.subscribe(instrumentEURUSD, testPeriod, barQuoteConsumerEURUSDMock::onBarQuote);
+        barQuoteProvider.subscribe(Sets.newHashSet(instrumentEURUSD), testPeriod, barQuoteConsumerEURUSDMock::onBarQuote);
     }
 
     private void verifyBarValues(final IBar askBar,
@@ -126,8 +127,7 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
         @Before
         public void setUp() {
-            firstEURUSDBarQuote =
-                    new BarQuote(instrumentEURUSD, testPeriod, firstAskBarEURUSD, firstBidBarEURUSD);
+            firstEURUSDBarQuote = new BarQuote(instrumentEURUSD, testPeriod, firstAskBarEURUSD, firstBidBarEURUSD);
 
             barObservable.onNext(firstEURUSDBarQuote);
         }
@@ -158,9 +158,8 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
             @Before
             public void setUp() {
-                barQuoteProvider.subscribe(instrumentEURUSD, otherPeriod, barQuoteConsumerEURUSDMock::onBarQuote);
-                firstEURUSDBarQuote =
-                        new BarQuote(instrumentEURUSD, otherPeriod, firstAskBarEURUSD, firstBidBarEURUSD);
+                barQuoteProvider.subscribe(Sets.newHashSet(instrumentEURUSD), otherPeriod, barQuoteConsumerEURUSDMock::onBarQuote);
+                firstEURUSDBarQuote = new BarQuote(instrumentEURUSD, otherPeriod, firstAskBarEURUSD, firstBidBarEURUSD);
 
                 barObservable.onNext(firstEURUSDBarQuote);
             }
@@ -185,8 +184,7 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
             @Before
             public void setUp() {
-                secondEURUSDBarQuote =
-                        new BarQuote(instrumentEURUSD, testPeriod, secondAskBarEURUSD, secondBidBarEURUSD);
+                secondEURUSDBarQuote = new BarQuote(instrumentEURUSD, testPeriod, secondAskBarEURUSD, secondBidBarEURUSD);
 
                 barObservable.onNext(secondEURUSDBarQuote);
             }
@@ -208,9 +206,8 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
             @Test
             public void testBarQuoteConsumerForAUDUSDReceivesBarQuote() {
-                firstAUDUSDBarQuote =
-                        new BarQuote(instrumentAUDUSD, testPeriod, firstAskBarAUDUSD, firstBidBarAUDUSD);
-                barQuoteProvider.subscribe(instrumentAUDUSD, testPeriod, barQuoteConsumerAUDUSDMock::onBarQuote);
+                firstAUDUSDBarQuote = new BarQuote(instrumentAUDUSD, testPeriod, firstAskBarAUDUSD, firstBidBarAUDUSD);
+                barQuoteProvider.subscribe(Sets.newHashSet(instrumentAUDUSD), testPeriod, barQuoteConsumerAUDUSDMock::onBarQuote);
 
                 barObservable.onNext(firstAUDUSDBarQuote);
 

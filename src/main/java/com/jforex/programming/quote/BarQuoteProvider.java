@@ -1,6 +1,7 @@
 package com.jforex.programming.quote;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections4.keyvalue.MultiKey;
@@ -79,10 +80,11 @@ public class BarQuoteProvider {
         latestBarQuote.put(multiKey, barQuote);
     }
 
-    public void subscribe(final Instrument instrument,
+    public void subscribe(final Set<Instrument> instruments,
                           final Period period,
                           final BarQuoteConsumer barQuoteConsumer) {
-        barQuoteObservable.filter(barQuote -> instrument == barQuote.instrument() && period == barQuote.period())
+        barQuoteObservable.filter(barQuote -> instruments.contains(barQuote.instrument())
+                && period.equals(barQuote.period()))
                           .subscribe(barQuoteConsumer::onBarQuote);
     }
 
