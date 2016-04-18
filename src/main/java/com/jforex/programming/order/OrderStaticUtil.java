@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.OfferSide;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
@@ -17,19 +18,21 @@ public final class OrderStaticUtil {
     private OrderStaticUtil() {
     }
 
+    // @formatter:off
+    public final static ImmutableBiMap<OrderCommand, OrderCommand> orderCommands =
+        new ImmutableBiMap.Builder<OrderCommand, OrderCommand>()
+        .put(OrderCommand.BUY, OrderCommand.SELL)
+        .put(OrderCommand.BUYLIMIT, OrderCommand.SELLLIMIT)
+        .put(OrderCommand.BUYLIMIT_BYBID, OrderCommand.SELLLIMIT_BYASK)
+        .put(OrderCommand.BUYSTOP, OrderCommand.SELLSTOP)
+        .put(OrderCommand.BUYSTOP_BYBID, OrderCommand.SELLSTOP_BYASK)
+        .build();
+
     public final static ImmutableSet<OrderCommand> buyOrderCommands =
-            Sets.immutableEnumSet(OrderCommand.BUY,
-                                  OrderCommand.BUYLIMIT,
-                                  OrderCommand.BUYLIMIT_BYBID,
-                                  OrderCommand.BUYSTOP,
-                                  OrderCommand.BUYSTOP_BYBID);
+            Sets.immutableEnumSet(orderCommands.keySet());
 
     public final static ImmutableSet<OrderCommand> sellOrderCommands =
-            Sets.immutableEnumSet(OrderCommand.SELL,
-                                  OrderCommand.SELLLIMIT,
-                                  OrderCommand.SELLLIMIT_BYASK,
-                                  OrderCommand.SELLSTOP,
-                                  OrderCommand.SELLSTOP_BYASK);
+            Sets.immutableEnumSet(orderCommands.values());
 
     public final static Function<IOrder.State, Predicate<IOrder>> statePredicate =
             orderState -> order -> order.getState() == orderState;
@@ -90,5 +93,19 @@ public final class OrderStaticUtil {
 
     public final static OrderCommand directionToCommand(final OrderDirection orderDirection) {
         return orderDirection == OrderDirection.LONG ? OrderCommand.BUY : OrderCommand.SELL;
+    }
+
+    public final static OrderCommand switchCommand(final OrderCommand orderCommand) {
+        return orderCommands.containsKey(orderCommand)
+                ? orderCommands.get(orderCommand)
+                : orderCommands.inverse().get(orderCommand);
+    }
+
+    public final static OrderDirection switchDirection(final OrderDirection orderDirection) {
+        if(orderDirection==OrderDirection.FLAT)
+            return orderDirection;
+        return orderDirection==OrderDirection.LONG
+                ? OrderDirection.SHORT
+                : OrderDirection.LONG;
     }
 }

@@ -20,6 +20,8 @@ import static com.jforex.programming.order.OrderStaticUtil.orderTPPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.sellOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.signedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.statePredicate;
+import static com.jforex.programming.order.OrderStaticUtil.switchCommand;
+import static com.jforex.programming.order.OrderStaticUtil.switchDirection;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -352,5 +354,30 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     public void testDirectionToCommand() {
         assertThat(directionToCommand(OrderDirection.LONG), equalTo(OrderCommand.BUY));
         assertThat(directionToCommand(OrderDirection.SHORT), equalTo(OrderCommand.SELL));
+    }
+
+    @Test
+    public void testSwitchOrderCommandIsCorrect() {
+        assertThat(switchCommand(OrderCommand.BUY), equalTo(OrderCommand.SELL));
+        assertThat(switchCommand(OrderCommand.SELL), equalTo(OrderCommand.BUY));
+
+        assertThat(switchCommand(OrderCommand.BUYLIMIT), equalTo(OrderCommand.SELLLIMIT));
+        assertThat(switchCommand(OrderCommand.SELLLIMIT), equalTo(OrderCommand.BUYLIMIT));
+
+        assertThat(switchCommand(OrderCommand.BUYLIMIT_BYBID), equalTo(OrderCommand.SELLLIMIT_BYASK));
+        assertThat(switchCommand(OrderCommand.SELLLIMIT_BYASK), equalTo(OrderCommand.BUYLIMIT_BYBID));
+
+        assertThat(switchCommand(OrderCommand.BUYSTOP), equalTo(OrderCommand.SELLSTOP));
+        assertThat(switchCommand(OrderCommand.SELLSTOP), equalTo(OrderCommand.BUYSTOP));
+
+        assertThat(switchCommand(OrderCommand.BUYSTOP_BYBID), equalTo(OrderCommand.SELLSTOP_BYASK));
+        assertThat(switchCommand(OrderCommand.SELLSTOP_BYASK), equalTo(OrderCommand.BUYSTOP_BYBID));
+    }
+
+    @Test
+    public void testSwitchOrderDirectionIsCorrect() {
+        assertThat(switchDirection(OrderDirection.FLAT), equalTo(OrderDirection.FLAT));
+        assertThat(switchDirection(OrderDirection.LONG), equalTo(OrderDirection.SHORT));
+        assertThat(switchDirection(OrderDirection.SHORT), equalTo(OrderDirection.LONG));
     }
 }
