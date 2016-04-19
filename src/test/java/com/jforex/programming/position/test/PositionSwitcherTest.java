@@ -4,7 +4,6 @@ import static com.jforex.programming.misc.JForexUtil.uss;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,6 +14,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
@@ -23,8 +23,6 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
-
-import com.dukascopy.api.IEngine.OrderCommand;
 
 public class PositionSwitcherTest extends InstrumentUtilForTest {
 
@@ -52,7 +50,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     }
 
     private void verifyNoPositionCommands() {
-        verify(position, never()).submitAndMerge(any(), any());
         verify(position, never()).submit(any());
         verify(position, never()).merge(any());
         verify(position, never()).close();
@@ -61,7 +58,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     private void verifySendedOrderParamsAreCorrect(final String mergeLabel,
                                                    final double expectedAmount,
                                                    final OrderCommand expectedCommand) {
-        verify(position).submitAndMerge(orderParamsCaptor.capture(), eq(mergeLabel));
+        verify(position).submit(orderParamsCaptor.capture());
         final OrderParams sendedOrderParams = orderParamsCaptor.getValue();
         assertThat(sendedOrderParams.amount(), equalTo(expectedAmount));
         assertThat(sendedOrderParams.orderCommand(), equalTo(expectedCommand));
