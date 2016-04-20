@@ -2,37 +2,20 @@ package com.jforex.programming.connection;
 
 import com.jforex.programming.misc.JFEventPublisherForRx;
 
-import com.dukascopy.api.IMessage;
-
 import rx.Observable;
 
 public class ConnectionMonitor {
 
     private final JFEventPublisherForRx<ConnectionState> connectionStatePublisher = new JFEventPublisherForRx<>();
-    private ConnectionState connectionState = ConnectionState.LOGGED_OUT;
+    private ConnectionState connectionState = ConnectionState.DISCONNECTED;
 
-    public ConnectionMonitor(final Observable<LoginState> loginStateObs,
-                             final Observable<IMessage> messageObservable) {
-        loginStateObs.subscribe(this::onLoginStateUpdate);
-        messageObservable.filter(message -> message.getType() == IMessage.Type.CONNECTION_STATUS)
-                         .subscribe(this::onConnectionMessage);
+    public ConnectionMonitor(final Observable<ConnectionState> connectionStateObs) {
+        connectionStateObs.subscribe(this::onConnectionStateUpdate);
     }
 
-    private void onLoginStateUpdate(final LoginState loginState) {
-        System.out.println("LOGIN UPDATE " + loginState);
-        if (loginState == LoginState.LOGGED_IN)
-            updateState(ConnectionState.LOGGED_IN);
-        else
-            updateState(ConnectionState.LOGGED_OUT);
-    }
-
-    private void onConnectionMessage(final IMessage connectionMessage) {
-        final String connectionMessageContent = connectionMessage.getContent();
-        System.out.println("CONNECTION MESSAGE " + connectionMessageContent);
-        if (connectionMessageContent.equals("connect"))
-            updateState(ConnectionState.LOGGED_IN);
-        else if (connectionMessageContent.equals("disconnect"))
-            updateState(ConnectionState.DISCONNECTED);
+    private void onConnectionStateUpdate(final ConnectionState connectionState) {
+        System.out.println("CONNECTION MESSAGE " + connectionState);
+        updateState(connectionState);
     }
 
     public ConnectionState state() {

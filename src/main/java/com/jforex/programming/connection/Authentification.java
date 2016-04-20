@@ -47,6 +47,7 @@ public final class Authentification {
     }
 
     public final void logout() {
-        client.disconnect();
+        if (client.isConnected())
+            client.disconnect();
     }
 }
