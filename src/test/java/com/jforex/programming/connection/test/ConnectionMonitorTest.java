@@ -8,18 +8,26 @@ import org.junit.Test;
 
 import com.jforex.programming.connection.ConnectionMonitor;
 import com.jforex.programming.connection.ConnectionState;
+import com.jforex.programming.connection.LoginState;
+import com.jforex.programming.test.fakes.IMessageForTest;
+
+import com.dukascopy.api.IMessage;
 
 import rx.observers.TestSubscriber;
+import rx.subjects.PublishSubject;
+import rx.subjects.Subject;
 
 public class ConnectionMonitorTest {
 
     private ConnectionMonitor connectionMonitor;
 
+    private final Subject<LoginState, LoginState> loginStateSubject = PublishSubject.create();
+    private final Subject<IMessage, IMessage> messageSubject = PublishSubject.create();
     private final TestSubscriber<ConnectionState> subscriber = new TestSubscriber<>();
 
     @Before
     public void setUp() {
-        connectionMonitor = new ConnectionMonitor();
+        connectionMonitor = new ConnectionMonitor(loginStateSubject, messageSubject);
         connectionMonitor.connectionObs().subscribe(subscriber);
     }
 
@@ -47,21 +55,32 @@ public class ConnectionMonitorTest {
 
     @Test
     public void testOnLoginChangesStateCorrect() {
-        connectionMonitor.onLogin();
+        loginStateSubject.onNext(LoginState.LOGGED_IN);
 
         assertChangeEvent(ConnectionState.LOGGED_IN);
     }
 
     @Test
     public void testOnLogoutChangesStateCorrect() {
-        connectionMonitor.onLogout();
+        loginStateSubject.onNext(LoginState.LOGGED_OUT);
 
         assertChangeEvent(ConnectionState.LOGGED_OUT);
     }
 
     @Test
+    public void testOnConnectChangesStateCorrect() {
+        final IMessageForTest connectMessage =
+                new IMessageForTest(IMessage.Type.CONNECTION_STATUS, "connect");
+        messageSubject.onNext(connectMessage);
+
+        assertChangeEvent(ConnectionState.LOGGED_IN);
+    }
+
+    @Test
     public void testOnDisconnectChangesStateCorrect() {
-        connectionMonitor.onDisconnect();
+        final IMessageForTest disconnectMessage =
+                new IMessageForTest(IMessage.Type.CONNECTION_STATUS, "disconnect");
+        messageSubject.onNext(disconnectMessage);
 
         assertChangeEvent(ConnectionState.DISCONNECTED);
     }
@@ -70,7 +89,7 @@ public class ConnectionMonitorTest {
     public void testAfterUnsubscribeNoMoreNotifies() {
         subscriber.unsubscribe();
 
-        connectionMonitor.onLogin();
+        loginStateSubject.onNext(LoginState.LOGGED_IN);
 
         subscriber.assertNoErrors();
         subscriber.assertValueCount(0);

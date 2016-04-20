@@ -37,11 +37,11 @@ public class AuthentificationTest extends CommonUtilForTest {
     }
 
     private LoginResult loginDemo() {
-        return authentification.loginDemo(jnlpAddress, userName, password);
+        return authentification.login(jnlpAddress, userName, password);
     }
 
     private LoginResult loginLive() {
-        return authentification.loginLive(jnlpAddress, userName, password, pin);
+        return authentification.loginWithPin(jnlpAddress, userName, password, pin);
     }
 
     private void setExceptionOnConnect(final Class<? extends Exception> exceptionType) {

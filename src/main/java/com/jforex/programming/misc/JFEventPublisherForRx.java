@@ -10,11 +10,11 @@ import rx.subscriptions.Subscriptions;
 
 public final class JFEventPublisherForRx<EventType> {
 
-    private final Observable<? super EventType> observable;
+    private final Observable<EventType> observable;
     private final Set<Subscriber<? super EventType>> subscribers = Sets.newConcurrentHashSet();
 
     public JFEventPublisherForRx() {
-        observable = Observable.create(this::subscribe);
+        observable = Observable.create(subscriber -> subscribe(subscriber));
     }
 
     private final void subscribe(final Subscriber<? super EventType> subscriber) {
@@ -22,7 +22,7 @@ public final class JFEventPublisherForRx<EventType> {
         subscribers.add(subscriber);
     }
 
-    public final Observable<? super EventType> observable() {
+    public final Observable<EventType> observable() {
         return observable;
     }
 

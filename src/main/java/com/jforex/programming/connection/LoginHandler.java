@@ -4,14 +4,17 @@ import rx.Observable;
 
 public interface LoginHandler {
 
-    public void loginDemo(final String jnlp,
-                          final String username,
-                          final String password);
+    public void login(final String jnlp,
+                      final String username,
+                      final String password);
 
-    public void loginLive(final String jnlp,
-                          final String username,
-                          final String password,
-                          final String pin);
+    public void loginWithPin(final String jnlp,
+                             final String username,
+                             final String password);
+
+    public void logout();
+
+    public LoginState state();
 
     public Observable<LoginState> loginStateObs();
 }

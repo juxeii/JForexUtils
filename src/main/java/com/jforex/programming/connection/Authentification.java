@@ -14,16 +14,16 @@ public final class Authentification {
         this.client = client;
     }
 
-    public final LoginResult loginDemo(final String jnlp,
-                                       final String username,
-                                       final String password) {
+    public final LoginResult login(final String jnlp,
+                                   final String username,
+                                   final String password) {
         return login(jnlp, username, password, "");
     }
 
-    public final LoginResult loginLive(final String jnlp,
-                                       final String username,
-                                       final String password,
-                                       final String pin) {
+    public final LoginResult loginWithPin(final String jnlp,
+                                          final String username,
+                                          final String password,
+                                          final String pin) {
         return login(jnlp, username, password, pin);
     }
 
