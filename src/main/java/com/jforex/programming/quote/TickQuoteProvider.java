@@ -15,19 +15,26 @@ import rx.Observable;
 public class TickQuoteProvider {
 
     private final Observable<TickQuote> tickQuoteObservable;
+    private final Set<Instrument> subscribedInstruments;
     private final IHistory history;
     private final Map<Instrument, ITick> latestTickQuote = new ConcurrentHashMap<>();
 
     public TickQuoteProvider(final Observable<TickQuote> tickQuoteObservable,
+                             final Set<Instrument> subscribedInstruments,
                              final IHistory history) {
         this.tickQuoteObservable = tickQuoteObservable;
+        this.subscribedInstruments = subscribedInstruments;
         this.history = history;
 
+        initLatestTicksFromHistory();
         tickQuoteObservable.subscribe(this::onTickQuote);
     }
 
-    public ITick tick(final Instrument instrument) {
-        return latestTickQuote.getOrDefault(instrument, tickFromHistory(instrument));
+    private void initLatestTicksFromHistory() {
+        subscribedInstruments.forEach(inst -> {
+            final ITick latestTick = tickFromHistory(inst);
+            latestTickQuote.put(inst, latestTick);
+        });
     }
 
     private ITick tickFromHistory(final Instrument instrument) {
@@ -40,6 +47,10 @@ public class TickQuoteProvider {
             throw new QuoteProviderException("Exception occured while retreiving quote for " + instrument
                     + " Message: " + e.getMessage());
         }
+    }
+
+    public ITick tick(final Instrument instrument) {
+        return latestTickQuote.get(instrument);
     }
 
     public double ask(final Instrument instrument) {

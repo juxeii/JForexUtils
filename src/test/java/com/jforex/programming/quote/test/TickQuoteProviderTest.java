@@ -6,6 +6,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +22,7 @@ import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.fakes.ITickForTest;
 
 import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 
@@ -34,6 +37,7 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
 
     @Mock private TickQuoteConsumer tickQuoteConsumerEURUSDMock;
     @Mock private TickQuoteConsumer tickQuoteConsumerAUDUSDMock;
+    private Set<Instrument> subscribedInstruments;
     private Subject<TickQuote, TickQuote> tickObservable;
     private final ITick tickEURUSDOfHistory = new ITickForTest(1.23413, 1.23488);
     private final ITick firstTickEURUSD = new ITickForTest(1.23456, 1.23451);
@@ -47,10 +51,20 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
     @Before
     public void setUp() {
         initCommonTestFramework();
+        setupMocks();
         tickObservable = PublishSubject.create();
+        subscribedInstruments = createSet(instrumentEURUSD, instrumentAUDUSD);
 
-        tickQuoteProvider = new TickQuoteProvider(tickObservable, historyMock);
+        tickQuoteProvider = new TickQuoteProvider(tickObservable, subscribedInstruments, historyMock);
         tickQuoteProvider.subscribe(Sets.newHashSet(instrumentEURUSD), tickQuoteConsumerEURUSDMock::onTickQuote);
+    }
+
+    private void setupMocks() {
+        try {
+            when(historyMock.getLastTick(instrumentEURUSD)).thenReturn(tickEURUSDOfHistory);
+            when(historyMock.getLastTick(instrumentAUDUSD)).thenReturn(firstTickAUDUSD);
+        } catch (final JFException e) {
+        }
     }
 
     private void verifyTickValues(final ITick tick) {
@@ -75,7 +89,7 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
         assertThat(tickQuoteProvider.observable(), equalTo(tickObservable));
     }
 
-    public class HistoryThrowsBeforeFirstTickQuoteIsReceived {
+    public class HistoryThrowsAtInitialization {
 
         @Before
         public void setUp() throws JFException {
@@ -84,27 +98,7 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
 
         @Test(expected = QuoteProviderException.class)
         public void testTickThrows() {
-            tickQuoteProvider.tick(instrumentEURUSD);
-        }
-
-        @Test(expected = QuoteProviderException.class)
-        public void testAskThrows() {
-            tickQuoteProvider.ask(instrumentEURUSD);
-        }
-
-        @Test(expected = QuoteProviderException.class)
-        public void testBidThrows() {
-            tickQuoteProvider.bid(instrumentEURUSD);
-        }
-
-        @Test(expected = QuoteProviderException.class)
-        public void testForOfferSideAskThrows() {
-            tickQuoteProvider.forOfferSide(instrumentEURUSD, OfferSide.ASK);
-        }
-
-        @Test(expected = QuoteProviderException.class)
-        public void testForOfferSideBidThrows() {
-            tickQuoteProvider.forOfferSide(instrumentEURUSD, OfferSide.BID);
+            tickQuoteProvider = new TickQuoteProvider(tickObservable, subscribedInstruments, historyMock);
         }
     }
 
@@ -130,11 +124,6 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
         }
 
         @Test
-        public void testNoInteractionsWithHistory() {
-            verifyZeroInteractions(historyMock);
-        }
-
-        @Test
         public void testTickReturnsFirstTick() {
             verifyTickValues(firstTickEURUSD);
         }
@@ -155,11 +144,6 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
             @Before
             public void setUp() {
                 tickObservable.onNext(secondEURUSDTickQuote);
-            }
-
-            @Test
-            public void testNoInteractionsWithHistory() {
-                verifyZeroInteractions(historyMock);
             }
 
             @Test
