@@ -13,6 +13,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.quote.TickQuote;
@@ -20,11 +24,6 @@ import com.jforex.programming.quote.TickQuoteConsumer;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.fakes.ITickForTest;
-
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.OfferSide;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -63,8 +62,7 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
         try {
             when(historyMock.getLastTick(instrumentEURUSD)).thenReturn(tickEURUSDOfHistory);
             when(historyMock.getLastTick(instrumentAUDUSD)).thenReturn(firstTickAUDUSD);
-        } catch (final JFException e) {
-        }
+        } catch (final JFException e) {}
     }
 
     private void verifyTickValues(final ITick tick) {
@@ -131,7 +129,6 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
         @Test
         public void testTickQuoteConsumerReceivesFirstTickQuote() {
             verify(tickQuoteConsumerEURUSDMock).onTickQuote(firstEURUSDTickQuote);
-
         }
 
         @Test
@@ -158,7 +155,8 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
 
             @Test
             public void testTickQuoteConsumerForAUDUSDReceivesTickQuote() {
-                tickQuoteProvider.subscribe(Sets.newHashSet(instrumentAUDUSD), tickQuoteConsumerAUDUSDMock::onTickQuote);
+                tickQuoteProvider.subscribe(Sets.newHashSet(instrumentAUDUSD),
+                                            tickQuoteConsumerAUDUSDMock::onTickQuote);
 
                 tickObservable.onNext(firstAUDUSDTickQuote);
 
