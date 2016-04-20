@@ -132,13 +132,6 @@ public class Position {
         startTaskObs(submitOrderObs(orderParams));
     }
 
-    public synchronized void submitAndMerge(final OrderParams orderParams,
-                                            final String mergeLabel) {
-        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders());
-        startTaskObs(submitOrderObs(orderParams).concatMap(op -> mergeSequenceObs(mergeLabel,
-                                                                                  restoreSLTPData)));
-    }
-
     public synchronized void merge(final String mergeLabel) {
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders());
         startTaskObs(mergeSequenceObs(mergeLabel, restoreSLTPData));
@@ -154,7 +147,7 @@ public class Position {
     }
 
     private void startTaskObs(final Observable<IOrder> observable) {
-        final Runnable task = () -> observable.subscribe(item -> {} ,
+        final Runnable task = () -> observable.subscribe(item -> {},
                                                          exc -> taskFinish(),
                                                          () -> taskFinish());
         taskQueue.add(task);

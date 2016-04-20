@@ -2,6 +2,7 @@ package com.jforex.programming.position;
 
 import static com.jforex.programming.misc.JForexUtil.uss;
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
+import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.order.OrderDirection;
@@ -47,7 +48,9 @@ public final class PositionSwitcher {
         final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         final String mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + adaptedOrderParams.label();
-        position.submitAndMerge(adaptedOrderParams, mergeLabel);
+        position.submit(adaptedOrderParams);
+        if (position.filter(isFilled).size() >= 1)
+            position.merge(mergeLabel);
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {
