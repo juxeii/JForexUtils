@@ -5,9 +5,10 @@ import java.awt.image.BufferedImage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.system.IClient;
 import com.google.common.base.Supplier;
 import com.jforex.programming.misc.JFEventPublisherForRx;
+
+import com.dukascopy.api.system.IClient;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
@@ -38,11 +39,9 @@ public class LoginHandler {
 
     public void loginWithPin(final String jnlp,
                              final String username,
-                             final String password) {
-        latestLoginCall = () -> {
-            final String pin = new PinFormForAWT(client, jnlp).getPin();
-            return authentification.login(jnlp, username, password);
-        };
+                             final String password,
+                             final String pin) {
+        latestLoginCall = () -> authentification.loginWithPin(jnlp, username, password, pin);
         final LoginResult loginResult = latestLoginCall.get();
         evaluateLoginResult(loginResult);
     }
