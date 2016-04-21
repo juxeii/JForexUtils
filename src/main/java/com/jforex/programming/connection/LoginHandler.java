@@ -3,9 +3,9 @@ package com.jforex.programming.connection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.misc.JFEventPublisherForRx;
-
 import com.dukascopy.api.system.IClient;
+import com.google.common.base.Supplier;
+import com.jforex.programming.misc.JFEventPublisherForRx;
 
 import rx.Observable;
 
@@ -14,6 +14,7 @@ public class LoginHandler {
     private final Authentification authentification;
     private final IClient client;
     private final JFEventPublisherForRx<LoginState> loginStatePublisher = new JFEventPublisherForRx<>();
+    private Supplier<LoginResult> latestLoginCall;
     private LoginState loginState = LoginState.LOGGED_OUT;
 
     private final static Logger logger = LogManager.getLogger(LoginHandler.class);
@@ -26,16 +27,29 @@ public class LoginHandler {
     public void login(final String jnlp,
                       final String username,
                       final String password) {
-        final LoginResult loginResult = authentification.login(jnlp, username, password);
+        latestLoginCall = () -> authentification.login(jnlp, username, password);
+        final LoginResult loginResult = latestLoginCall.get();
         evaluateLoginResult(loginResult);
     }
 
     public void loginWithPin(final String jnlp,
                              final String username,
                              final String password) {
-        final String pin = new LivePinForm(client, jnlp).getPin();
-        final LoginResult loginResult = authentification.loginWithPin(jnlp, username, password, pin);
+        latestLoginCall = () -> {
+            final String pin = new LivePinForm(client, jnlp).getPin();
+            return authentification.login(jnlp, username, password);
+        };
+        final LoginResult loginResult = latestLoginCall.get();
         evaluateLoginResult(loginResult);
+    }
+
+    public void relogin() {
+        final LoginResult loginResult = latestLoginCall.get();
+        evaluateLoginResult(loginResult);
+    }
+
+    public void reconnect() {
+        client.reconnect();
     }
 
     private void evaluateLoginResult(final LoginResult loginResult) {
