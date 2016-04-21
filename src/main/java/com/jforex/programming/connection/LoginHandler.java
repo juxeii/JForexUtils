@@ -1,5 +1,7 @@
 package com.jforex.programming.connection;
 
+import java.awt.image.BufferedImage;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -7,6 +9,8 @@ import com.dukascopy.api.system.IClient;
 import com.google.common.base.Supplier;
 import com.jforex.programming.misc.JFEventPublisherForRx;
 
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.image.Image;
 import rx.Observable;
 
 public class LoginHandler {
@@ -36,7 +40,7 @@ public class LoginHandler {
                              final String username,
                              final String password) {
         latestLoginCall = () -> {
-            final String pin = new LivePinForm(client, jnlp).getPin();
+            final String pin = new PinFormForAWT(client, jnlp).getPin();
             return authentification.login(jnlp, username, password);
         };
         final LoginResult loginResult = latestLoginCall.get();
@@ -75,5 +79,19 @@ public class LoginHandler {
     public void logout() {
         authentification.logout();
         updateState(LoginState.LOGGED_OUT);
+    }
+
+    public BufferedImage pinCaptchaForAWT(final String jnlpUrl) {
+        try {
+            return client.getCaptchaImage(jnlpUrl);
+        } catch (final Exception e) {
+            logger.error("Error while retreiving pin captcha! " + e.getMessage());
+            return null;
+        }
+    }
+
+    public Image pinCaptchaForJavaFX(final String jnlpUrl) {
+        final BufferedImage captcha = pinCaptchaForAWT(jnlpUrl);
+        return captcha != null ? SwingFXUtils.toFXImage(captcha, null) : null;
     }
 }

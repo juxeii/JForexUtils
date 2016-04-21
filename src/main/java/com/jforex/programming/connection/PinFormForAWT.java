@@ -17,16 +17,16 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.system.IClient;
 
 // Code from http://www.dukascopy.com/wiki/#JForex_SDK_LIVE_mode
-public class LivePinForm {
+public class PinFormForAWT {
 
     private final IClient client;
     private final String jnlpUrl;
     private static JFrame noParentFrame;
 
-    private final static Logger logger = LogManager.getLogger(LivePinForm.class);
+    private final static Logger logger = LogManager.getLogger(PinFormForAWT.class);
 
-    public LivePinForm(final IClient client,
-                       final String jnlpUrl) {
+    public PinFormForAWT(final IClient client,
+                         final String jnlpUrl) {
         this.client = client;
         this.jnlpUrl = jnlpUrl;
     }
