@@ -4,20 +4,20 @@ import java.util.Optional;
 
 public final class LoginResult {
 
-    private final LoginResultType loginResultType;
-    private final Optional<Exception> loginExceptionOpt;
+    private final LoginResultType type;
+    private final Optional<Exception> exceptionOpt;
 
-    public LoginResult(final LoginResultType loginResultType,
-                                  final Optional<Exception> loginExceptionOpt) {
-        this.loginResultType = loginResultType;
-        this.loginExceptionOpt = loginExceptionOpt;
+    public LoginResult(final LoginResultType type,
+                       final Optional<Exception> exceptionOpt) {
+        this.type = type;
+        this.exceptionOpt = exceptionOpt;
     }
 
-    public final LoginResultType loginResultType() {
-        return loginResultType;
+    public final LoginResultType type() {
+        return type;
     }
 
-    public final Optional<Exception> loginExceptionOpt() {
-        return loginExceptionOpt;
+    public final Optional<Exception> exceptionOpt() {
+        return exceptionOpt;
     }
 }

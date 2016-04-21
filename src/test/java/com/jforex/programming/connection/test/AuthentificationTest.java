@@ -54,8 +54,8 @@ public class AuthentificationTest extends CommonUtilForTest {
     private void assertResultContents(final LoginResult result,
                                       final LoginResultType loginResultType,
                                       final Class<? extends Exception> exceptionType) {
-        assertThat(result.loginResultType(), equalTo(loginResultType));
-        assertTrue(exceptionType.isInstance(result.loginExceptionOpt().get()));
+        assertThat(result.type(), equalTo(loginResultType));
+        assertTrue(exceptionType.isInstance(result.exceptionOpt().get()));
     }
 
     private void assertLoginException(final LoginResultType loginResultType,
