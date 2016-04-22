@@ -20,10 +20,9 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.google.common.base.Supplier;
 import com.google.common.collect.MapMaker;
+import com.jforex.programming.misc.JFEventPublisherForRx;
 import com.jforex.programming.order.OrderChangeResult;
 import com.jforex.programming.order.OrderCreateResult;
 import com.jforex.programming.order.OrderDirection;
@@ -32,6 +31,9 @@ import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -45,6 +47,8 @@ public class Position {
             Collections.newSetFromMap(new MapMaker().weakKeys().<IOrder, Boolean> makeMap());
     private final RestoreSLTPPolicy restoreSLTPPolicy;
     private final ConcurrentMap<IOrder, OrderProgressData> progressDataByOrder = new MapMaker().weakKeys().makeMap();
+    private final JFEventPublisherForRx<PositionEventType> positionEventPublisher = new JFEventPublisherForRx<>();
+    private PositionEventType positionEventType;
 
     private static final Logger logger = LogManager.getLogger(Position.class);
 
@@ -60,6 +64,10 @@ public class Position {
                             .doOnNext(orderEvent -> logger.info("Received " + orderEvent.type() + " for position "
                                     + instrument + " with label " + orderEvent.order().getLabel()))
                             .subscribe(this::processPositionEvent);
+    }
+
+    public Observable<PositionEventType> positionEventTypeObs() {
+        return positionEventPublisher.observable();
     }
 
     private void processPositionEvent(final OrderEvent orderEvent) {
@@ -129,15 +137,18 @@ public class Position {
     }
 
     public synchronized void submit(final OrderParams orderParams) {
+        positionEventType = PositionEventType.SUBMITTED;
         startTaskObs(submitOrderObs(orderParams));
     }
 
     public synchronized void merge(final String mergeLabel) {
+        positionEventType = null;
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders());
         startTaskObs(mergeSequenceObs(mergeLabel, restoreSLTPData));
     }
 
     public synchronized void close() {
+        positionEventType = null;
         final Observable<IOrder> observable =
                 Observable.from(filter(isFilled.or(isOpened)))
                           .doOnSubscribe(() -> logger.info("Starting to close " + instrument + " position"))
@@ -255,8 +266,11 @@ public class Position {
     }
 
     private void taskFinish() {
-        taskQueue.remove();
+        if (!taskQueue.isEmpty())
+            taskQueue.remove();
         if (!taskQueue.isEmpty())
             taskQueue.peek().run();
+        if (positionEventType != null)
+            positionEventPublisher.onJFEvent(positionEventType);
     }
 }

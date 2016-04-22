@@ -4,20 +4,24 @@ import static com.jforex.programming.misc.JForexUtil.uss;
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 
-import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
+
+import com.dukascopy.api.IEngine.OrderCommand;
 
 public final class PositionSwitcher {
 
     private final Position position;
     private final OrderParamsSupplier orderParamsSupplier;
+    private String mergeLabel;
 
     public PositionSwitcher(final Position position,
                             final OrderParamsSupplier orderParamsSupplier) {
         this.position = position;
         this.orderParamsSupplier = orderParamsSupplier;
+        position.positionEventTypeObs().filter(type -> type == PositionEventType.SUBMITTED)
+                .subscribe(this::onSubmitOK);
     }
 
     public final void sendBuySignal() {
@@ -47,9 +51,12 @@ public final class PositionSwitcher {
     private final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
         final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
-        final String mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + adaptedOrderParams.label();
+        mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + adaptedOrderParams.label();
         position.submit(adaptedOrderParams);
-        if (position.filter(isFilled).size() >= 1)
+    }
+
+    private void onSubmitOK(final PositionEventType positionEventType) {
+        if (position.filter(isFilled).size() > 1)
             position.merge(mergeLabel);
     }
 

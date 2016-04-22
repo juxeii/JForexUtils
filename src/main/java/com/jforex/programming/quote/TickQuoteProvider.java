@@ -45,11 +45,11 @@ public class TickQuoteProvider {
     private ITick tickFromHistory(final Instrument instrument) {
         try {
             ITick historyTick = null;
-            for (int i = 0; i < 3; ++i) {
+            for (int i = 0; i < 10; ++i) {
                 historyTick = history.getLastTick(instrument);
                 if (historyTick == null) {
                     logger.warn("Last tick for " + instrument +
-                            " from history returned null! Retry no " + i + " starts...");
+                            " from history returned null! Retry no " + (i + 1) + " starts...");
                     Thread.sleep(500L);
                 } else
                     break;
