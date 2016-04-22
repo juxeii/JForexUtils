@@ -14,23 +14,30 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IEngine.OrderCommand;
+import com.jforex.programming.misc.JFEventPublisherForRx;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionEventType;
 import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
+
+import com.dukascopy.api.IEngine.OrderCommand;
 
 public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     private PositionSwitcher positionSwitcher;
 
-    @Mock private Position position;
-    @Mock private OrderParamsSupplier orderParamsSupplierMock;
-    @Captor private ArgumentCaptor<OrderParams> orderParamsCaptor;
+    @Mock
+    private Position position;
+    @Mock
+    private OrderParamsSupplier orderParamsSupplierMock;
+    @Captor
+    private ArgumentCaptor<OrderParams> orderParamsCaptor;
+    private final JFEventPublisherForRx<PositionEventType> positionEventPublisher = new JFEventPublisherForRx<>();
     private final OrderParams orderParamsBUY = OrderParamsForTest.paramsBuyEURUSD();
     private final OrderParams orderParamsSELL = OrderParamsForTest.paramsSellEURUSD();
     private final String buyMergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + orderParamsBUY.label();
@@ -45,6 +52,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
+        when(position.positionEventTypeObs()).thenReturn(positionEventPublisher.observable());
         when(orderParamsSupplierMock.forCommand(OrderCommand.BUY)).thenReturn(orderParamsBUY);
         when(orderParamsSupplierMock.forCommand(OrderCommand.SELL)).thenReturn(orderParamsSELL);
     }
