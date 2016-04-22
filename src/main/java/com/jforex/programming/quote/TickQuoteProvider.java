@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
@@ -18,6 +21,8 @@ public class TickQuoteProvider {
     private final Set<Instrument> subscribedInstruments;
     private final IHistory history;
     private final Map<Instrument, ITick> latestTickQuote = new ConcurrentHashMap<>();
+
+    private final static Logger logger = LogManager.getLogger(TickQuoteProvider.class);
 
     public TickQuoteProvider(final Observable<TickQuote> tickQuoteObservable,
                              final Set<Instrument> subscribedInstruments,
@@ -39,13 +44,22 @@ public class TickQuoteProvider {
 
     private ITick tickFromHistory(final Instrument instrument) {
         try {
-            final ITick historyTick = history.getLastTick(instrument);
-            if (historyTick == null)
-                throw new QuoteProviderException("Last tick for " + instrument + " from history returned null!");
+            ITick historyTick = null;
+            for (int i = 0; i < 3; ++i) {
+                historyTick = history.getLastTick(instrument);
+                if (historyTick == null) {
+                    logger.warn("Last tick for " + instrument +
+                            " from history returned null! Retry no " + i + " starts...");
+                    Thread.sleep(500L);
+                } else
+                    break;
+            }
             return historyTick;
         } catch (final JFException e) {
             throw new QuoteProviderException("Exception occured while retreiving quote for " + instrument
                     + " Message: " + e.getMessage());
+        } catch (final InterruptedException e) {
+            throw new QuoteProviderException("InterruptedException occured while retry waiting! " + e.getMessage());
         }
     }
 
