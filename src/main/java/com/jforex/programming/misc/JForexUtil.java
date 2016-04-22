@@ -5,15 +5,6 @@ import java.util.concurrent.Executors;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderChange;
@@ -32,6 +23,16 @@ import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
+
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.Period;
 
 import rx.Observable;
 import rx.Subscription;
@@ -96,17 +97,17 @@ public class JForexUtil implements MessageConsumer {
     private void initInfrastructure() {
         orderEventGateway = new OrderEventGateway();
 
-        messageObservable = (Observable<IMessage>) messagePublisherForRx.observable();
+        messageObservable = messagePublisherForRx.observable();
         eventGatewaySubscription = messageObservable.filter(message -> message.getOrder() != null)
                                                     .map(OrderMessageData::new)
                                                     .subscribe(orderEventGateway::onOrderMessageData);
     }
 
     private void initQuoteProvider() {
-        tickObservable = (Observable<TickQuote>) tickQuotePublisherForRx.observable();
+        tickObservable = tickQuotePublisherForRx.observable();
         tickQuoteProvider = new TickQuoteProvider(tickObservable, context.getSubscribedInstruments(), history);
 
-        barObservable = (Observable<BarQuote>) barQuotePublisherForRx.observable();
+        barObservable = barQuotePublisherForRx.observable();
         barQuoteProvider = new BarQuoteProvider(barObservable, history);
 
     }

@@ -58,8 +58,10 @@ public class LoginHandler {
     private void evaluateLoginResult(final LoginResult loginResult) {
         if (loginResult.type() == LoginResultType.LOGGED_IN)
             updateState(LoginState.LOGGED_IN);
-        else
+        else {
             logger.error("Exception occured during login! " + loginResult.exceptionOpt().get());
+            System.exit(0);
+        }
     }
 
     private void updateState(final LoginState loginState) {
