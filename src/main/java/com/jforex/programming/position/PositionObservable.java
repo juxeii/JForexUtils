@@ -12,7 +12,6 @@ import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 
-//@formatter:off
 public class PositionObservable {
 
     private final OrderUtil orderUtil;
@@ -24,32 +23,44 @@ public class PositionObservable {
         this.orderEventObservable = orderEventObservable;
     }
 
-    public Observable<OrderEvent> forSubmitAndServerReply(final OrderParams orderParams) {
-        return forSubmit(orderParams)
-               .flatMap(order -> filterOrderEvent(order, TaskEventData.submitEvents));
+    public Observable<IOrder> forSubmitAndServerReply(final OrderParams orderParams) {
+        return withEventFilter(forSubmit(orderParams),
+                               TaskEventData.submitEvents);
     }
 
-    public Observable<OrderEvent> forMergeAndServerReply(final String mergeLabel,
-                                                         final Set<IOrder> toMergeOrders) {
-        return forMerge(mergeLabel, toMergeOrders)
-               .flatMap(order -> filterOrderEvent(order, TaskEventData.mergeEvents));
+    public Observable<IOrder> forMergeAndServerReply(final String mergeLabel,
+                                                     final Set<IOrder> toMergeOrders) {
+        return withEventFilter(forMerge(mergeLabel, toMergeOrders),
+                               TaskEventData.mergeEvents);
     }
 
-    public Observable<OrderEvent> forChangeSLAndServerReply(final IOrder orderToChangeSL,
-                                                            final double newSL) {
-        return forChangeSL(orderToChangeSL,newSL)
-               .flatMap(order -> filterOrderEvent(order, TaskEventData.changeSLEvents));
+    public Observable<IOrder> forChangeSLAndServerReply(final IOrder orderToChangeSL,
+                                                        final double newSL) {
+        return withEventFilter(forChangeSL(orderToChangeSL, newSL),
+                               TaskEventData.changeSLEvents);
     }
 
-    public Observable<OrderEvent> forChangeTPAndServerReply(final IOrder orderToChangeTP,
-                                                            final double newTP) {
-        return forChangeTP(orderToChangeTP,newTP)
-               .flatMap(order -> filterOrderEvent(order, TaskEventData.changeTPEvents));
+    public Observable<IOrder> forChangeTPAndServerReply(final IOrder orderToChangeTP,
+                                                        final double newTP) {
+        return withEventFilter(forChangeTP(orderToChangeTP, newTP),
+                               TaskEventData.changeTPEvents);
     }
 
-    public Observable<OrderEvent> forCloseAndServerReply(final IOrder orderToClose) {
-        return forClose(orderToClose)
-               .flatMap(order -> filterOrderEvent(order, TaskEventData.closeEvents));
+    public Observable<IOrder> forCloseAndServerReply(final IOrder orderToClose) {
+        return withEventFilter(forClose(orderToClose),
+                               TaskEventData.closeEvents);
+    }
+
+    public Observable<IOrder> batchChangeSL(final Set<IOrder> ordersToChangeSL,
+                                            final double newSL) {
+        return Observable.from(ordersToChangeSL)
+                .flatMap(order -> forChangeSLAndServerReply(order, newSL));
+    }
+
+    public Observable<IOrder> batchChangeTP(final Set<IOrder> ordersToChangeTP,
+                                            final double newTP) {
+        return Observable.from(ordersToChangeTP)
+                .flatMap(order -> forChangeTPAndServerReply(order, newTP));
     }
 
     public Observable<IOrder> forSubmit(final OrderParams orderParams) {
@@ -79,9 +90,16 @@ public class PositionObservable {
         return orderEventObservable.filter(orderEvent -> orderEvent.order() == order);
     }
 
-    private Observable<OrderEvent> filterOrderEvent(final IOrder order,
-                                                    final TaskEventData taskEventData) {
+    private Observable<IOrder> filterOrderEvent(final IOrder order,
+                                                final TaskEventData taskEventData) {
         return filterOrderEventByOrder(order)
-               .filter(orderEvent -> taskEventData.all().contains(orderEvent.type()));
+                .filter(orderEvent -> taskEventData.all().contains(orderEvent.type()))
+                .flatMap(orderEvent -> Observable.just(orderEvent.order()));
+
+    }
+
+    private Observable<IOrder> withEventFilter(final Observable<IOrder> orderObs,
+                                               final TaskEventData taskEventData) {
+        return orderObs.flatMap(order -> filterOrderEvent(order, taskEventData));
     }
 }

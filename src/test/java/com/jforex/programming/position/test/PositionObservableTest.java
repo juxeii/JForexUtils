@@ -42,12 +42,15 @@ public class PositionObservableTest extends InstrumentUtilForTest {
     private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
     private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
-    private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
+    private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
+    // private final TestSubscriber<OrderEvent> orderEventSubscriber = new
+    // TestSubscriber<>();
     private OrderCreateResult submitOKResult;
     private OrderCreateResult submitExceptionResult;
     private OrderCreateResult mergeOKResult;
     private OrderCreateResult mergeExceptionResult;
     private OrderChangeResult changeOKResult;
+    private OrderChangeResult changeOKResultSell;
     private OrderChangeResult changeExceptionResult;
     private final String mergeLabel = "MergeLabel";
     private Set<IOrder> orderSet;
@@ -73,6 +76,9 @@ public class PositionObservableTest extends InstrumentUtilForTest {
         changeOKResult = new OrderChangeResult(buyOrder,
                                                Optional.empty(),
                                                OrderCallRequest.CHANGE_SL);
+        changeOKResultSell = new OrderChangeResult(sellOrder,
+                                                   Optional.empty(),
+                                                   OrderCallRequest.CHANGE_SL);
         changeExceptionResult = new OrderChangeResult(buyOrder,
                                                       Optional.of(jfException),
                                                       OrderCallRequest.CHANGE_SL);
@@ -82,14 +88,14 @@ public class PositionObservableTest extends InstrumentUtilForTest {
     }
 
     private void assertExceptionNotification() {
-        orderEventSubscriber.assertError(JFException.class);
-        orderEventSubscriber.assertValueCount(0);
+        orderSubscriber.assertError(JFException.class);
+        orderSubscriber.assertValueCount(0);
     }
 
-    private void assertOrderEventNotification(final OrderEvent orderEvent) {
-        orderEventSubscriber.assertNoErrors();
-        orderEventSubscriber.assertValueCount(1);
-        assertThat(orderEventSubscriber.getOnNextEvents().get(0), equalTo(orderEvent));
+    private void assertOrderNotification() {
+        orderSubscriber.assertNoErrors();
+        orderSubscriber.assertValueCount(1);
+        assertThat(orderSubscriber.getOnNextEvents().get(0), equalTo(buyOrder));
     }
 
     private void testSubmitOKWithOrderEventType(final OrderEventType orderEventType) {
@@ -97,11 +103,11 @@ public class PositionObservableTest extends InstrumentUtilForTest {
         final OrderEvent event = new OrderEvent(buyOrder, orderEventType);
 
         positionObservable.forSubmitAndServerReply(orderParams)
-                          .subscribe(orderEventSubscriber);
+                .subscribe(orderSubscriber);
         orderEventSubject.onNext(event);
 
         verify(orderUtilMock).submit(orderParams);
-        assertOrderEventNotification(event);
+        assertOrderNotification();
     }
 
     private void testMergeOKWithOrderEventType(final OrderEventType orderEventType) {
@@ -109,11 +115,11 @@ public class PositionObservableTest extends InstrumentUtilForTest {
         final OrderEvent event = new OrderEvent(buyOrder, orderEventType);
 
         positionObservable.forMergeAndServerReply(mergeLabel, orderSet)
-                          .subscribe(orderEventSubscriber);
+                .subscribe(orderSubscriber);
         orderEventSubject.onNext(event);
 
         verify(orderUtilMock).merge(mergeLabel, orderSet);
-        assertOrderEventNotification(event);
+        assertOrderNotification();
     }
 
     private void testChangeSLOKWithOrderEventType(final OrderEventType orderEventType) {
@@ -121,11 +127,11 @@ public class PositionObservableTest extends InstrumentUtilForTest {
         final OrderEvent event = new OrderEvent(buyOrder, orderEventType);
 
         positionObservable.forChangeSLAndServerReply(buyOrder, newSL)
-                          .subscribe(orderEventSubscriber);
+                .subscribe(orderSubscriber);
         orderEventSubject.onNext(event);
 
         verify(orderUtilMock).setSL(buyOrder, newSL);
-        assertOrderEventNotification(event);
+        assertOrderNotification();
     }
 
     private void testChangeTPOKWithOrderEventType(final OrderEventType orderEventType) {
@@ -133,11 +139,11 @@ public class PositionObservableTest extends InstrumentUtilForTest {
         final OrderEvent event = new OrderEvent(buyOrder, orderEventType);
 
         positionObservable.forChangeTPAndServerReply(buyOrder, newTP)
-                          .subscribe(orderEventSubscriber);
+                .subscribe(orderSubscriber);
         orderEventSubject.onNext(event);
 
         verify(orderUtilMock).setTP(buyOrder, newTP);
-        assertOrderEventNotification(event);
+        assertOrderNotification();
     }
 
     private void testCloseOKWithOrderEventType(final OrderEventType orderEventType) {
@@ -145,11 +151,11 @@ public class PositionObservableTest extends InstrumentUtilForTest {
         final OrderEvent event = new OrderEvent(buyOrder, orderEventType);
 
         positionObservable.forCloseAndServerReply(buyOrder)
-                          .subscribe(orderEventSubscriber);
+                .subscribe(orderSubscriber);
         orderEventSubject.onNext(event);
 
         verify(orderUtilMock).close(buyOrder);
-        assertOrderEventNotification(event);
+        assertOrderNotification();
     }
 
     @Test
@@ -157,7 +163,7 @@ public class PositionObservableTest extends InstrumentUtilForTest {
         when(orderUtilMock.submit(orderParams)).thenReturn(submitExceptionResult);
 
         positionObservable.forSubmitAndServerReply(orderParams)
-                          .subscribe(orderEventSubscriber);
+                .subscribe(orderSubscriber);
 
         verify(orderUtilMock).submit(orderParams);
         assertExceptionNotification();
@@ -183,7 +189,7 @@ public class PositionObservableTest extends InstrumentUtilForTest {
         when(orderUtilMock.merge(mergeLabel, orderSet)).thenReturn(mergeExceptionResult);
 
         positionObservable.forMergeAndServerReply(mergeLabel, orderSet)
-                          .subscribe(orderEventSubscriber);
+                .subscribe(orderSubscriber);
 
         verify(orderUtilMock).merge(mergeLabel, orderSet);
         assertExceptionNotification();
@@ -209,7 +215,7 @@ public class PositionObservableTest extends InstrumentUtilForTest {
         when(orderUtilMock.setSL(buyOrder, newSL)).thenReturn(changeExceptionResult);
 
         positionObservable.forChangeSLAndServerReply(buyOrder, newSL)
-                          .subscribe(orderEventSubscriber);
+                .subscribe(orderSubscriber);
 
         verify(orderUtilMock).setSL(buyOrder, newSL);
         assertExceptionNotification();
@@ -230,7 +236,7 @@ public class PositionObservableTest extends InstrumentUtilForTest {
         when(orderUtilMock.setTP(buyOrder, newTP)).thenReturn(changeExceptionResult);
 
         positionObservable.forChangeTPAndServerReply(buyOrder, newTP)
-                          .subscribe(orderEventSubscriber);
+                .subscribe(orderSubscriber);
 
         verify(orderUtilMock).setTP(buyOrder, newTP);
         assertExceptionNotification();
@@ -251,7 +257,7 @@ public class PositionObservableTest extends InstrumentUtilForTest {
         when(orderUtilMock.close(buyOrder)).thenReturn(changeExceptionResult);
 
         positionObservable.forCloseAndServerReply(buyOrder)
-                          .subscribe(orderEventSubscriber);
+                .subscribe(orderSubscriber);
 
         verify(orderUtilMock).close(buyOrder);
         assertExceptionNotification();
@@ -265,5 +271,51 @@ public class PositionObservableTest extends InstrumentUtilForTest {
     @Test
     public void testCloseObservableForCloseRejected() {
         testCloseOKWithOrderEventType(OrderEventType.CLOSE_REJECTED);
+    }
+
+    @Test
+    public void testBatchChangeSLIsCorrect() {
+        when(orderUtilMock.setSL(buyOrder, newSL)).thenReturn(changeOKResult);
+        when(orderUtilMock.setSL(sellOrder, newSL)).thenReturn(changeOKResultSell);
+        final OrderEvent eventForBuyOrder = new OrderEvent(buyOrder, OrderEventType.SL_CHANGE_OK);
+        final OrderEvent eventForSellOrder = new OrderEvent(sellOrder, OrderEventType.SL_CHANGE_OK);
+
+        positionObservable.batchChangeSL(orderSet, newSL)
+                .subscribe(orderSubscriber);
+        orderEventSubject.onNext(eventForBuyOrder);
+        orderEventSubject.onNext(eventForSellOrder);
+
+        verify(orderUtilMock).setSL(buyOrder, newSL);
+        verify(orderUtilMock).setSL(sellOrder, newSL);
+
+        orderSubscriber.assertNoErrors();
+        orderSubscriber.assertValueCount(2);
+        assertThat(orderSubscriber.getOnNextEvents().get(0),
+                   equalTo(buyOrder));
+        assertThat(orderSubscriber.getOnNextEvents().get(1),
+                   equalTo(sellOrder));
+    }
+
+    @Test
+    public void testBatchChangeTPIsCorrect() {
+        when(orderUtilMock.setTP(buyOrder, newTP)).thenReturn(changeOKResult);
+        when(orderUtilMock.setTP(sellOrder, newTP)).thenReturn(changeOKResultSell);
+        final OrderEvent eventForBuyOrder = new OrderEvent(buyOrder, OrderEventType.TP_CHANGE_OK);
+        final OrderEvent eventForSellOrder = new OrderEvent(sellOrder, OrderEventType.TP_CHANGE_OK);
+
+        positionObservable.batchChangeTP(orderSet, newTP)
+                .subscribe(orderSubscriber);
+        orderEventSubject.onNext(eventForBuyOrder);
+        orderEventSubject.onNext(eventForSellOrder);
+
+        verify(orderUtilMock).setTP(buyOrder, newTP);
+        verify(orderUtilMock).setTP(sellOrder, newTP);
+
+        orderSubscriber.assertNoErrors();
+        orderSubscriber.assertValueCount(2);
+        assertThat(orderSubscriber.getOnNextEvents().get(0),
+                   equalTo(buyOrder));
+        assertThat(orderSubscriber.getOnNextEvents().get(1),
+                   equalTo(sellOrder));
     }
 }
