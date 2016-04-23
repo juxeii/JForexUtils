@@ -36,6 +36,12 @@ public final class TaskEventData {
         return rejectEvents;
     }
 
+    public final EnumSet<OrderEventType> all() {
+        final EnumSet<OrderEventType> allEvents = EnumSet.copyOf(doneEvents);
+        allEvents.addAll(rejectEvents);
+        return allEvents;
+    }
+
     public final static TaskEventData submitEvents = new TaskEventData(EnumSet.of(FULL_FILL_OK),
                                                                        EnumSet.of(FILL_REJECTED, SUBMIT_REJECTED));
 
