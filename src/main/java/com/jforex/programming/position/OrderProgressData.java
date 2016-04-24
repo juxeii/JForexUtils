@@ -6,16 +6,16 @@ import rx.Subscriber;
 
 public final class OrderProgressData {
 
-    private final TaskEventData taskEventData;
+    private final OrderEventData taskEventData;
     private final Subscriber<? super IOrder> subscriber;
 
-    public OrderProgressData(final TaskEventData taskEventData,
+    public OrderProgressData(final OrderEventData taskEventData,
                              final Subscriber<? super IOrder> subscriber) {
         this.taskEventData = taskEventData;
         this.subscriber = subscriber;
     }
 
-    public final TaskEventData taskEventData() {
+    public final OrderEventData taskEventData() {
         return taskEventData;
     }
 

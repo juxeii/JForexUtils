@@ -15,7 +15,6 @@ import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.offerSideForOrderCommand;
-import static com.jforex.programming.order.OrderStaticUtil.orderCallObservable;
 import static com.jforex.programming.order.OrderStaticUtil.orderSLPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.orderTPPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.sellOrderCommands;
@@ -27,23 +26,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 
-import com.google.common.base.Supplier;
-import com.jforex.programming.order.OrderChangeResult;
-import com.jforex.programming.order.OrderCreateResult;
 import com.jforex.programming.order.OrderDirection;
-import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.call.OrderCallResult;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
@@ -52,36 +42,19 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 
-import rx.observers.TestSubscriber;
-
 public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
-    @Mock
-    private Supplier<OrderCallResult> orderCallResultSupplier;
     private final IOrderForTest firstOrderEURUSD = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest secondOrderEURUSD = IOrderForTest.buyOrderEURUSD();
     private Set<IOrder> orders;
-    private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
 
     @Before
     public void setUp() throws JFException {
-        initCommonTestFramework();
         firstOrderEURUSD.setState(IOrder.State.FILLED);
         secondOrderEURUSD.setState(IOrder.State.FILLED);
         secondOrderEURUSD.setLabel("SecondOrderLabel");
 
         orders = createSet(firstOrderEURUSD, secondOrderEURUSD);
-    }
-
-    private void assertIOrderNotification() {
-        orderSubscriber.assertNoErrors();
-        orderSubscriber.assertValueCount(1);
-        assertThat(orderSubscriber.getOnNextEvents().get(0), equalTo(firstOrderEURUSD));
-    }
-
-    private void assertExceptionNotification() {
-        orderSubscriber.assertError(JFException.class);
-        orderSubscriber.assertValueCount(0);
     }
 
     @Test
@@ -407,57 +380,5 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         assertThat(switchDirection(OrderDirection.FLAT), equalTo(OrderDirection.FLAT));
         assertThat(switchDirection(OrderDirection.LONG), equalTo(OrderDirection.SHORT));
         assertThat(switchDirection(OrderDirection.SHORT), equalTo(OrderDirection.LONG));
-    }
-
-    @Test
-    public void testOrderCallObservableIsCorrectForOrderCreateResult() {
-        final OrderCreateResult createOKResult = new OrderCreateResult(Optional.of(firstOrderEURUSD),
-                                                                       Optional.empty(),
-                                                                       OrderCallRequest.SUBMIT);
-        when(orderCallResultSupplier.get()).thenReturn(createOKResult);
-
-        orderCallObservable(orderCallResultSupplier).subscribe(orderSubscriber);
-
-        verify(orderCallResultSupplier).get();
-        assertIOrderNotification();
-    }
-
-    @Test
-    public void testOrderCallObservableIsCorrectForOrderCreateResultWithException() {
-        final OrderCreateResult createExceptionResult = new OrderCreateResult(Optional.empty(),
-                                                                              Optional.of(jfException),
-                                                                              OrderCallRequest.SUBMIT);
-        when(orderCallResultSupplier.get()).thenReturn(createExceptionResult);
-
-        orderCallObservable(orderCallResultSupplier).subscribe(orderSubscriber);
-
-        verify(orderCallResultSupplier).get();
-        assertExceptionNotification();
-    }
-
-    @Test
-    public void testOrderCallObservableIsCorrectForOrderChangeResult() {
-        final OrderChangeResult changeOKResult = new OrderChangeResult(firstOrderEURUSD,
-                                                                       Optional.empty(),
-                                                                       OrderCallRequest.CHANGE_SL);
-        when(orderCallResultSupplier.get()).thenReturn(changeOKResult);
-
-        orderCallObservable(orderCallResultSupplier).subscribe(orderSubscriber);
-
-        verify(orderCallResultSupplier).get();
-        assertIOrderNotification();
-    }
-
-    @Test
-    public void testOrderCallObservableIsCorrectForOrderChangeResultWithException() {
-        final OrderChangeResult changeExceptionResult = new OrderChangeResult(firstOrderEURUSD,
-                                                                              Optional.of(jfException),
-                                                                              OrderCallRequest.CHANGE_SL);
-        when(orderCallResultSupplier.get()).thenReturn(changeExceptionResult);
-
-        orderCallObservable(orderCallResultSupplier).subscribe(orderSubscriber);
-
-        verify(orderCallResultSupplier).get();
-        assertExceptionNotification();
     }
 }

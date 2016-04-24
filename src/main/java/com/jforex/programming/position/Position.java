@@ -85,7 +85,7 @@ public class Position {
         final IOrder order = orderEvent.order();
         final OrderProgressData progressData = progressDataByOrder.get(order);
         final Subscriber<? super IOrder> subscriber = progressData.subscriber();
-        final TaskEventData taskEventData = progressData.taskEventData();
+        final OrderEventData taskEventData = progressData.taskEventData();
         final OrderEventType orderEventType = orderEvent.type();
 
         if (taskEventData.forReject().contains(orderEventType)) {
@@ -153,7 +153,7 @@ public class Position {
                 Observable.from(filter(isFilled.or(isOpened)))
                           .doOnSubscribe(() -> logger.info("Starting to close " + instrument + " position"))
                           .flatMap(order -> orderObsForChange(() -> orderUtil.close(order),
-                                                              TaskEventData.closeEvents).retryWhen(this::shouldRetry));
+                                                              OrderEventData.closeEvents).retryWhen(this::shouldRetry));
         startTaskObs(observable);
     }
 
@@ -194,7 +194,7 @@ public class Position {
     }
 
     private Observable<IOrder> orderObsForCreate(final Supplier<OrderCreateResult> orderCreateResultSupplier,
-                                                 final TaskEventData taskEventData) {
+                                                 final OrderEventData taskEventData) {
         return Observable.create(subscriber -> {
             final OrderCreateResult orderCreateResult = orderCreateResultSupplier.get();
             if (orderCreateResult.exceptionOpt().isPresent())
@@ -206,7 +206,7 @@ public class Position {
     }
 
     private Observable<IOrder> orderObsForChange(final Supplier<OrderChangeResult> orderChangeResultSupplier,
-                                                 final TaskEventData taskEventData) {
+                                                 final OrderEventData taskEventData) {
         return Observable.create(subscriber -> {
             final OrderChangeResult orderChangeResult = orderChangeResultSupplier.get();
             if (orderChangeResult.exceptionOpt().isPresent())
@@ -219,14 +219,14 @@ public class Position {
 
     private Observable<IOrder> submitOrderObs(final OrderParams orderParams) {
         return orderObsForCreate(() -> orderUtil.submit(orderParams),
-                                 TaskEventData.submitEvents);
+                                 OrderEventData.submitEvents);
     }
 
     private Observable<IOrder> mergeOrderObs(final String mergeLabel) {
         return Observable.just(mergeLabel)
                          .doOnNext(label -> logger.info("Start merge with label: " + label + " for " + instrument))
                          .flatMap(label -> orderObsForCreate(() -> orderUtil.merge(mergeLabel, filledOrders()),
-                                                             TaskEventData.mergeEvents))
+                                                             OrderEventData.mergeEvents))
                          .retryWhen(this::shouldRetry);
     }
 
@@ -237,7 +237,7 @@ public class Position {
                          .doOnNext(order -> logger.info("Start to change SL from " + order.getStopLossPrice() + " to "
                                  + newSL + " for order " + order.getLabel() + " and position " + instrument))
                          .flatMap(order -> orderObsForChange(() -> orderUtil.setSL(order, newSL),
-                                                             TaskEventData.changeSLEvents))
+                                                             OrderEventData.changeSLEvents))
                          .retryWhen(this::shouldRetry);
     }
 
@@ -248,7 +248,7 @@ public class Position {
                          .doOnNext(order -> logger.info("Start to change TP from " + order.getTakeProfitPrice() + " to "
                                  + newTP + " for order " + order.getLabel() + " and position " + instrument))
                          .flatMap(order -> orderObsForChange(() -> orderUtil.setTP(order, newTP),
-                                                             TaskEventData.changeTPEvents))
+                                                             OrderEventData.changeTPEvents))
                          .retryWhen(this::shouldRetry);
     }
 

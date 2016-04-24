@@ -6,17 +6,13 @@ import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.call.OrderCallResult;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.OfferSide;
-
-import rx.Observable;
 
 public final class OrderStaticUtil {
 
@@ -114,21 +110,5 @@ public final class OrderStaticUtil {
         return orderDirection == OrderDirection.LONG
                 ? OrderDirection.SHORT
                 : OrderDirection.LONG;
-    }
-
-    public final static Observable<IOrder>
-           orderCallObservable(final Supplier<OrderCallResult> orderCallResultSupplier) {
-        return Observable.create(subscriber -> {
-            final OrderCallResult orderCallResult = orderCallResultSupplier.get();
-            if (orderCallResult.exceptionOpt().isPresent())
-                subscriber.onError(orderCallResult.exceptionOpt().get());
-            else {
-                if (orderCallResult instanceof OrderCreateResult)
-                    subscriber.onNext(((OrderCreateResult) orderCallResult).orderOpt().get());
-                else
-                    subscriber.onNext(((OrderChangeResult) orderCallResult).order());
-                subscriber.onCompleted();
-            }
-        });
     }
 }
