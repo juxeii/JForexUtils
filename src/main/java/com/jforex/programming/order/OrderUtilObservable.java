@@ -24,6 +24,10 @@ public class OrderUtilObservable {
         this.orderEventObservable = orderEventObservable;
     }
 
+    public Observable<OrderEvent> orderEventObservable() {
+        return orderEventObservable;
+    }
+
     public Observable<IOrder> submit(final OrderParams orderParams) {
         return orderCallObservable(() -> orderUtil.submit(orderParams),
                                    OrderEventData.submitEvents);

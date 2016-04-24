@@ -1,37 +1,32 @@
 package com.jforex.programming.position.test;
 
 import static com.jforex.programming.misc.JForexUtil.uss;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-
-import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
-import com.jforex.programming.order.OrderChangeResult;
-import com.jforex.programming.order.OrderCreateResult;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.call.OrderCallRequest;
+import com.jforex.programming.order.OrderUtilObservable;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionTaskRejectException;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -42,8 +37,11 @@ public class PositionTest extends InstrumentUtilForTest {
 
     private Position position;
 
-    @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
-    @Mock private OrderUtil orderUtilMock;
+    @Mock
+    private RestoreSLTPPolicy restoreSLTPPolicyMock;
+    @Mock
+    private OrderUtilObservable orderUtilObservableMock;
+    private Subject<IOrder, IOrder> orderSubject;
     private Subject<OrderEvent, OrderEvent> orderEventSubject;
     private OrderParams orderParamsEURUSDBuy;
     private OrderParams orderParamsEURUSDSell;
@@ -53,22 +51,21 @@ public class PositionTest extends InstrumentUtilForTest {
     private final IOrderForTest mergeOrderEURUSD = IOrderForTest.buyOrderEURUSD();
     private final double restoreSL = 1.12345;
     private final double restoreTP = 1.12543;
-    private OrderCreateResult callResultWithExceptionEURUSDBuy;
 
     @Before
     public void setUp() throws JFException {
+        initCommonTestFramework();
+
+        orderSubject = PublishSubject.create();
+        orderEventSubject = PublishSubject.create();
         orderParamsEURUSDBuy = OrderParamsForTest.paramsBuyEURUSD();
         orderParamsEURUSDSell = OrderParamsForTest.paramsSellEURUSD();
         mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + orderParamsEURUSDBuy.label();
         mergeOrderEURUSD.setLabel(mergeLabel);
-        initCommonTestFramework();
         setUpMocks();
 
-        orderEventSubject = PublishSubject.create();
-
         position = new Position(instrumentEURUSD,
-                                orderUtilMock,
-                                orderEventSubject,
+                                orderUtilObservableMock,
                                 restoreSLTPPolicyMock);
     }
 
@@ -76,54 +73,19 @@ public class PositionTest extends InstrumentUtilForTest {
         when(restoreSLTPPolicyMock.restoreSL(any())).thenReturn(restoreSL);
         when(restoreSLTPPolicyMock.restoreTP(any())).thenReturn(restoreTP);
 
-        when(orderUtilMock.submit(orderParamsEURUSDBuy)).thenReturn(new OrderCreateResult(Optional.of(buyOrderEURUSD),
-                                                                                          emptyJFExceptionOpt,
-                                                                                          OrderCallRequest.SUBMIT));
-        when(orderUtilMock.submit(orderParamsEURUSDSell)).thenReturn(new OrderCreateResult(Optional.of(sellOrderEURUSD),
-                                                                                           emptyJFExceptionOpt,
-                                                                                           OrderCallRequest.SUBMIT));
-        when(orderUtilMock.setSL(eq(buyOrderEURUSD),
-                                 anyDouble())).thenReturn(new OrderChangeResult(buyOrderEURUSD,
-                                                                                emptyJFExceptionOpt,
-                                                                                OrderCallRequest.CHANGE_SL));
-        when(orderUtilMock.setSL(eq(sellOrderEURUSD),
-                                 anyDouble())).thenReturn(new OrderChangeResult(sellOrderEURUSD,
-                                                                                emptyJFExceptionOpt,
-                                                                                OrderCallRequest.CHANGE_SL));
-        when(orderUtilMock.setTP(eq(buyOrderEURUSD),
-                                 anyDouble())).thenReturn(new OrderChangeResult(buyOrderEURUSD,
-                                                                                emptyJFExceptionOpt,
-                                                                                OrderCallRequest.CHANGE_TP));
-        when(orderUtilMock.setTP(eq(sellOrderEURUSD),
-                                 anyDouble())).thenReturn(new OrderChangeResult(sellOrderEURUSD,
-                                                                                emptyJFExceptionOpt,
-                                                                                OrderCallRequest.CHANGE_TP));
-        when(orderUtilMock.merge(eq(mergeLabel),
-                                 any())).thenReturn(new OrderCreateResult(Optional.of(mergeOrderEURUSD),
-                                                                          emptyJFExceptionOpt,
-                                                                          OrderCallRequest.MERGE));
-        when(orderUtilMock.setSL(eq(mergeOrderEURUSD),
-                                 anyDouble())).thenReturn(new OrderChangeResult(mergeOrderEURUSD,
-                                                                                emptyJFExceptionOpt,
-                                                                                OrderCallRequest.CHANGE_SL));
-        when(orderUtilMock.setTP(eq(mergeOrderEURUSD),
-                                 anyDouble())).thenReturn(new OrderChangeResult(mergeOrderEURUSD,
-                                                                                emptyJFExceptionOpt,
-                                                                                OrderCallRequest.CHANGE_TP));
-        when(orderUtilMock.close(buyOrderEURUSD)).thenReturn(new OrderChangeResult(buyOrderEURUSD,
-                                                                                   emptyJFExceptionOpt,
-                                                                                   OrderCallRequest.CLOSE));
-        when(orderUtilMock.close(sellOrderEURUSD)).thenReturn(new OrderChangeResult(sellOrderEURUSD,
-                                                                                    emptyJFExceptionOpt,
-                                                                                    OrderCallRequest.CLOSE));
-        when(orderUtilMock.close(mergeOrderEURUSD)).thenReturn(new OrderChangeResult(mergeOrderEURUSD,
-                                                                                     emptyJFExceptionOpt,
-                                                                                     OrderCallRequest.CLOSE));
-    }
-
-    private void sendOrderEvent(final IOrder order,
-                                final OrderEventType orderEventType) {
-        orderEventSubject.onNext(new OrderEvent(order, orderEventType));
+        when(orderUtilObservableMock.orderEventObservable()).thenReturn(orderEventSubject);
+        when(orderUtilObservableMock.submit(orderParamsEURUSDBuy)).thenReturn(orderSubject);
+        when(orderUtilObservableMock.submit(orderParamsEURUSDSell)).thenReturn(orderSubject);
+        when(orderUtilObservableMock.setSL(eq(buyOrderEURUSD), anyDouble())).thenReturn(orderSubject);
+        when(orderUtilObservableMock.setSL(eq(sellOrderEURUSD), anyDouble())).thenReturn(orderSubject);
+        when(orderUtilObservableMock.setTP(eq(buyOrderEURUSD), anyDouble())).thenReturn(orderSubject);
+        when(orderUtilObservableMock.setTP(eq(sellOrderEURUSD), anyDouble())).thenReturn(orderSubject);
+        when(orderUtilObservableMock.merge(eq(mergeLabel), any())).thenReturn(orderSubject);
+        when(orderUtilObservableMock.setSL(eq(mergeOrderEURUSD), anyDouble())).thenReturn(orderSubject);
+        when(orderUtilObservableMock.setTP(eq(mergeOrderEURUSD), anyDouble())).thenReturn(orderSubject);
+        when(orderUtilObservableMock.close(buyOrderEURUSD)).thenReturn(orderSubject);
+        when(orderUtilObservableMock.close(sellOrderEURUSD)).thenReturn(orderSubject);
+        when(orderUtilObservableMock.close(mergeOrderEURUSD)).thenReturn(orderSubject);
     }
 
     private boolean isRepositoryEmpty() {
@@ -135,61 +97,30 @@ public class PositionTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testIsNotBusyForNoRunningTask() {
-        assertFalse(position.isBusy());
-    }
-
-    @Test
     public void testCloseOnEmptyPositionIsIgnored() {
         position.close();
-
-        verifyZeroInteractions(orderUtilMock);
-        assertFalse(position.isBusy());
     }
 
     @Test
-    public void testExternalOrderWillNotBeAddedToRepositoryOnFill() {
-        final IOrderForTest externalOrder = IOrderForTest.buyOrderEURUSD();
-
-        sendOrderEvent(externalOrder, OrderEventType.FULL_FILL_OK);
-
-        assertTrue(isRepositoryEmpty());
-    }
-
-    @Test
-    public void testExternalOrderWillNotBeAddedToRepositoryOnMergeOK() {
-        final IOrderForTest externalOrder = IOrderForTest.buyOrderEURUSD();
-
-        sendOrderEvent(externalOrder, OrderEventType.MERGE_OK);
-
-        assertTrue(isRepositoryEmpty());
-    }
-
-    @Test
-    public void testCallingSubmitTwoTimesWillQueueOneCall() {
+    public void testMultipleSubmitCallsAreNotBlocked() {
         position.submit(orderParamsEURUSDBuy);
         position.submit(orderParamsEURUSDBuy);
 
-        verify(orderUtilMock).submit(orderParamsEURUSDBuy);
+        verify(orderUtilObservableMock, times(2)).submit(orderParamsEURUSDBuy);
     }
 
     public class SubmitWithException {
 
         @Before
         public void setUp() {
-            when(orderUtilMock.submit(orderParamsEURUSDBuy)).thenReturn(callResultWithExceptionEURUSDBuy);
+            when(orderUtilObservableMock.submit(orderParamsEURUSDBuy)).thenReturn(orderSubject);
 
             position.submit(orderParamsEURUSDBuy);
         }
 
         @Test
-        public void testIsNotBusy() {
-            assertFalse(position.isBusy());
-        }
-
-        @Test
         public void testSubmitOnOrderUtilIsCalled() {
-            verify(orderUtilMock).submit(orderParamsEURUSDBuy);
+            verify(orderUtilObservableMock).submit(orderParamsEURUSDBuy);
         }
 
         @Test
@@ -206,12 +137,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
             position.submit(orderParamsEURUSDBuy);
 
-            verify(orderUtilMock).submit(orderParamsEURUSDBuy);
-        }
-
-        @Test
-        public void testIsBusy() {
-            assertTrue(position.isBusy());
+            verify(orderUtilObservableMock).submit(orderParamsEURUSDBuy);
         }
 
         @Test
@@ -224,13 +150,6 @@ public class PositionTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 buyOrderEURUSD.setState(IOrder.State.OPENED);
-
-                sendOrderEvent(buyOrderEURUSD, OrderEventType.SUBMIT_OK);
-            }
-
-            @Test
-            public void testIsBusy() {
-                assertTrue(position.isBusy());
             }
 
             public class FillRejectMessage {
@@ -239,12 +158,7 @@ public class PositionTest extends InstrumentUtilForTest {
                 public void setUp() {
                     buyOrderEURUSD.setState(IOrder.State.CANCELED);
 
-                    sendOrderEvent(buyOrderEURUSD, OrderEventType.FILL_REJECTED);
-                }
-
-                @Test
-                public void testIsNotBusy() {
-                    assertFalse(position.isBusy());
+                    orderSubject.onError(new PositionTaskRejectException("", null));
                 }
 
                 @Test
@@ -259,12 +173,7 @@ public class PositionTest extends InstrumentUtilForTest {
                 public void setUp() {
                     buyOrderEURUSD.setState(IOrder.State.FILLED);
 
-                    sendOrderEvent(buyOrderEURUSD, OrderEventType.FULL_FILL_OK);
-                }
-
-                @Test
-                public void testIsNotBusy() {
-                    assertFalse(position.isBusy());
+                    orderSubject.onNext(buyOrderEURUSD);
                 }
 
                 @Test
@@ -278,12 +187,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     public void setUp() {
                         buyOrderEURUSD.setState(IOrder.State.CLOSED);
 
-                        sendOrderEvent(buyOrderEURUSD, OrderEventType.CLOSED_BY_SL);
-                    }
-
-                    @Test
-                    public void testIsFalse() {
-                        assertFalse(position.isBusy());
+                        orderEventSubject.onNext(new OrderEvent(buyOrderEURUSD, OrderEventType.CLOSED_BY_SL));
                     }
 
                     @Test
@@ -298,12 +202,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     public void setUp() {
                         buyOrderEURUSD.setState(IOrder.State.CLOSED);
 
-                        sendOrderEvent(buyOrderEURUSD, OrderEventType.CLOSED_BY_TP);
-                    }
-
-                    @Test
-                    public void testIsFalse() {
-                        assertFalse(position.isBusy());
+                        orderEventSubject.onNext(new OrderEvent(buyOrderEURUSD, OrderEventType.CLOSED_BY_TP));
                     }
 
                     @Test
@@ -320,12 +219,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         position.submit(orderParamsEURUSDSell);
 
-                        verify(orderUtilMock).submit(orderParamsEURUSDSell);
-                    }
-
-                    @Test
-                    public void testIsBusy() {
-                        assertTrue(position.isBusy());
+                        verify(orderUtilObservableMock).submit(orderParamsEURUSDSell);
                     }
 
                     public class FullFillMessageForSecondOrder {
@@ -334,12 +228,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         public void setUp() {
                             sellOrderEURUSD.setState(IOrder.State.FILLED);
 
-                            sendOrderEvent(sellOrderEURUSD, OrderEventType.FULL_FILL_OK);
-                        }
-
-                        @Test
-                        public void testIsNotBusy() {
-                            assertFalse(position.isBusy());
+                            orderSubject.onNext(sellOrderEURUSD);
                         }
 
                         @Test
@@ -358,13 +247,8 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
 
                     @Test
-                    public void testIsNotBusy() {
-                        assertFalse(position.isBusy());
-                    }
-
-                    @Test
                     public void testNoOrderUtilInteractions() {
-                        verifyNoMoreInteractions(orderUtilMock);
+                        ;
                     }
                 }
 
@@ -374,12 +258,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     public void setUp() {
                         position.close();
 
-                        verify(orderUtilMock).close(buyOrderEURUSD);
-                    }
-
-                    @Test
-                    public void testIsBusy() {
-                        assertTrue(position.isBusy());
+                        verify(orderUtilObservableMock).close(buyOrderEURUSD);
                     }
 
                     @Test
@@ -393,12 +272,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         public void setUp() {
                             buyOrderEURUSD.setState(IOrder.State.CLOSED);
 
-                            sendOrderEvent(buyOrderEURUSD, OrderEventType.CLOSE_OK);
-                        }
-
-                        @Test
-                        public void testIsNotBusy() {
-                            assertFalse(position.isBusy());
+                            orderSubject.onNext(buyOrderEURUSD);
                         }
 
                         @Test
@@ -416,12 +290,7 @@ public class PositionTest extends InstrumentUtilForTest {
             public void setUp() {
                 buyOrderEURUSD.setState(IOrder.State.CANCELED);
 
-                sendOrderEvent(buyOrderEURUSD, OrderEventType.SUBMIT_REJECTED);
-            }
-
-            @Test
-            public void testIsNotBusy() {
-                assertFalse(position.isBusy());
+                orderSubject.onError(new PositionTaskRejectException("", null));
             }
 
             @Test

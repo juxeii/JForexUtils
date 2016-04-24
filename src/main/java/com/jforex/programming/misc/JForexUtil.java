@@ -11,6 +11,7 @@ import com.jforex.programming.order.OrderChange;
 import com.jforex.programming.order.OrderCreate;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.OrderUtilObservable;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.NoRestorePolicy;
@@ -50,6 +51,7 @@ public class JForexUtil implements MessageConsumer {
     private BarQuoteProvider barQuoteProvider;
 
     private OrderUtil orderUtil;
+    private OrderUtilObservable orderUtilObservable;
     private OrderCreate orderCreate;
     private OrderChange orderChange;
     private PositionRepository positionRepository;
@@ -99,8 +101,8 @@ public class JForexUtil implements MessageConsumer {
 
         messageObservable = messagePublisherForRx.observable();
         eventGatewaySubscription = messageObservable.filter(message -> message.getOrder() != null)
-                                                    .map(OrderMessageData::new)
-                                                    .subscribe(orderEventGateway::onOrderMessageData);
+                .map(OrderMessageData::new)
+                .subscribe(orderEventGateway::onOrderMessageData);
     }
 
     private void initQuoteProvider() {
@@ -120,7 +122,8 @@ public class JForexUtil implements MessageConsumer {
         orderChange = new OrderChange(orderCallRunner,
                                       orderEventGateway);
         orderUtil = new OrderUtil(orderCreate, orderChange, orderEventGateway);
-        positionRepository = new PositionRepository(orderUtil, orderEventGateway.observable());
+        orderUtilObservable = new OrderUtilObservable(orderUtil, orderEventGateway.observable());
+        positionRepository = new PositionRepository(orderUtilObservable);
     }
 
     public IContext context() {

@@ -72,10 +72,8 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         assertThat(sendedOrderParams.orderCommand(), equalTo(expectedCommand));
     }
 
-    private void setPositionManagerState(final OrderDirection orderDirection,
-                                         final boolean isBusy) {
+    private void setPositionManagerState(final OrderDirection orderDirection) {
         when(position.direction()).thenReturn(orderDirection);
-        when(position.isBusy()).thenReturn(isBusy);
     }
 
     private double expectedAmount(final double signedExposure,
@@ -87,7 +85,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     @Test
     public void testSendFlatSignalWhenPositionIsFlatDoesNotCallPositionCommands() {
-        setPositionManagerState(OrderDirection.FLAT, false);
+        setPositionManagerState(OrderDirection.FLAT);
 
         positionSwitcher.sendFlatSignal();
 
@@ -96,7 +94,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     @Test
     public void testSendBuySignalWhenPositionIsFlatDoesCallSubmitOnPositionManager() {
-        setPositionManagerState(OrderDirection.FLAT, false);
+        setPositionManagerState(OrderDirection.FLAT);
 
         positionSwitcher.sendBuySignal();
 
@@ -105,7 +103,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     @Test
     public void testSendSellSignalWhenPositionIsFlatDoesCallSubmitOnPositionManager() {
-        setPositionManagerState(OrderDirection.FLAT, false);
+        setPositionManagerState(OrderDirection.FLAT);
 
         positionSwitcher.sendSellSignal();
 
@@ -113,35 +111,8 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testSendFlatSignalWhenPositionIsBusyDoesNotCallPositionCommands() {
-        setPositionManagerState(OrderDirection.LONG, true);
-
-        positionSwitcher.sendFlatSignal();
-
-        verifyNoPositionCommands();
-    }
-
-    @Test
-    public void testSendBuySignalWhenPositionIsBusyDoesNotCallPositionCommands() {
-        setPositionManagerState(OrderDirection.SHORT, true);
-
-        positionSwitcher.sendBuySignal();
-
-        verifyNoPositionCommands();
-    }
-
-    @Test
-    public void testSendSellSignalWhenPositionIsBusyDoesNotCallPositionCommands() {
-        setPositionManagerState(OrderDirection.LONG, true);
-
-        positionSwitcher.sendSellSignal();
-
-        verifyNoPositionCommands();
-    }
-
-    @Test
     public void testSendFlatSignalCallCloseWhenPositionIsLong() {
-        setPositionManagerState(OrderDirection.LONG, false);
+        setPositionManagerState(OrderDirection.LONG);
 
         positionSwitcher.sendFlatSignal();
 
@@ -150,7 +121,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     @Test
     public void testSendFlatSignalCallCloseWhenPositionIsShort() {
-        setPositionManagerState(OrderDirection.SHORT, false);
+        setPositionManagerState(OrderDirection.SHORT);
 
         positionSwitcher.sendFlatSignal();
 
@@ -159,7 +130,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     @Test
     public void testSendBuySignalDoesNotCallPositionCommandsWhenAlreadyLong() {
-        setPositionManagerState(OrderDirection.LONG, false);
+        setPositionManagerState(OrderDirection.LONG);
 
         positionSwitcher.sendBuySignal();
 
@@ -168,7 +139,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     @Test
     public void testSendSellSignalDoesNotCallPositionCommandsWhenAlreadyShort() {
-        setPositionManagerState(OrderDirection.SHORT, false);
+        setPositionManagerState(OrderDirection.SHORT);
 
         positionSwitcher.sendSellSignal();
 
@@ -177,7 +148,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     @Test
     public void testSendBuySignalCallsSubmitWithCorrectAmountAndCommand() {
-        setPositionManagerState(OrderDirection.SHORT, false);
+        setPositionManagerState(OrderDirection.SHORT);
         final double expectedAmount = expectedAmount(-0.12, orderParamsBUY);
 
         positionSwitcher.sendBuySignal();
@@ -187,7 +158,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     @Test
     public void testSendSellSignalCallsSubmitWithCorrectAmountAndCommand() {
-        setPositionManagerState(OrderDirection.LONG, false);
+        setPositionManagerState(OrderDirection.LONG);
         final double expectedAmount = expectedAmount(0.03, orderParamsSELL);
 
         positionSwitcher.sendSellSignal();
@@ -198,11 +169,11 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     @Test
     public void testOrderCommandIsCorrectedEvenIfParamProviderReturnedWrongCommand() {
         final OrderParams paramsWithWrongCommand = orderParamsBUY.clone()
-                                                                 .withOrderCommand(OrderCommand.SELL)
-                                                                 .build();
+                .withOrderCommand(OrderCommand.SELL)
+                .build();
 
         when(orderParamsSupplierMock.forCommand(OrderCommand.BUY)).thenReturn(paramsWithWrongCommand);
-        setPositionManagerState(OrderDirection.FLAT, false);
+        setPositionManagerState(OrderDirection.FLAT);
 
         positionSwitcher.sendBuySignal();
 

@@ -4,29 +4,23 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.OrderUtilObservable;
 
-import rx.Observable;
+import com.dukascopy.api.Instrument;
 
 public final class PositionRepository {
 
-    private final OrderUtil orderUtil;
-    private final Observable<OrderEvent> orderEventObservable;
+    private final OrderUtilObservable orderUtilObservable;
     private final Map<Instrument, Position> positionByInstrument = new ConcurrentHashMap<>();
 
-    public PositionRepository(final OrderUtil orderUtil,
-                              final Observable<OrderEvent> orderEventObservable) {
-        this.orderUtil = orderUtil;
-        this.orderEventObservable = orderEventObservable;
+    public PositionRepository(final OrderUtilObservable orderUtilObservable) {
+        this.orderUtilObservable = orderUtilObservable;
     }
 
     public final Position createNew(final Instrument instrument,
                                     final RestoreSLTPPolicy restoreSLTPPolicy) {
         return new Position(instrument,
-                            orderUtil,
-                            orderEventObservable,
+                            orderUtilObservable,
                             restoreSLTPPolicy);
     }
 
