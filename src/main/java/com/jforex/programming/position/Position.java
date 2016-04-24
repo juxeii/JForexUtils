@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
+import com.google.common.collect.Sets;
 import com.jforex.programming.misc.JFEventPublisherForRx;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
@@ -100,16 +101,32 @@ public class Position {
     }
 
     public synchronized void merge(final String mergeLabel) {
-        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders());
-        startTaskObs(mergeSequenceObs(mergeLabel, restoreSLTPData), PositionEventType.MERGED);
+        final Set<IOrder> filledOrders = Sets.newHashSet(filledOrders());
+        if (filledOrders.size() < 2)
+            return;
+        orderRepository.clear();
+        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders);
+        startTaskObs(mergeSequenceObs(mergeLabel, filledOrders, restoreSLTPData)
+                .doOnTerminate(() -> setOrderRepository(filledOrders)), PositionEventType.MERGED);
     }
 
     public synchronized void close() {
-        final Observable<IOrder> observable = Observable.from(filter(isFilled.or(isOpened)))
+        final Set<IOrder> ordersToClose = Sets.newHashSet(filter(isFilled.or(isOpened)));
+        if (ordersToClose.isEmpty())
+            return;
+        orderRepository.clear();
+        final Observable<IOrder> observable = Observable.from(ordersToClose)
                 .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
                 .flatMap(order -> orderUtilObservable.close(order).retryWhen(this::shouldRetry))
-                .doOnNext(orderRepository::remove);
+                .doOnTerminate(() -> setOrderRepository(ordersToClose));
         startTaskObs(observable, PositionEventType.CLOSED);
+    }
+
+    private void setOrderRepository(final Set<IOrder> orders) {
+        orders.forEach(order -> {
+            if (isFilled.test(order) || isOpened.test(order))
+                orderRepository.add(order);
+        });
     }
 
     private void startTaskObs(final Observable<IOrder> observable,
@@ -120,19 +137,16 @@ public class Position {
     }
 
     private Observable<IOrder> mergeSequenceObs(final String mergeLabel,
+                                                final Set<IOrder> filledOrders,
                                                 final RestoreSLTPData restoreSLTPData) {
-        if (filledOrders().size() < 2)
-            return Observable.empty();
+        final Observable<IOrder> mergeAndRestoreObs = mergeOrderObs(mergeLabel, filledOrders)
+                .flatMap(order -> restoreSLTPObs(order, restoreSLTPData.sl(), restoreSLTPData.tp()));
 
-        final Observable<IOrder> mergeAndRestoreObs =
-                mergeOrderObs(mergeLabel).flatMap(order -> restoreSLTPObs(order,
-                                                                          restoreSLTPData.sl(),
-                                                                          restoreSLTPData.tp()));
-        return removeTPSLObs().concatWith(mergeAndRestoreObs);
+        return removeTPSLObs(filledOrders).concatWith(mergeAndRestoreObs);
     }
 
-    private Observable<IOrder> removeTPSLObs() {
-        return Observable.from(filledOrders())
+    private Observable<IOrder> removeTPSLObs(final Set<IOrder> filledOrders) {
+        return Observable.from(filledOrders)
                 .flatMap(order -> Observable.concat(changeTPOrderObs(order, pfs.NO_TAKE_PROFIT_PRICE()),
                                                     changeSLOrderObs(order, pfs.NO_STOP_LOSS_PRICE())));
     }
@@ -146,10 +160,11 @@ public class Position {
                                                     changeTPOrderObs(order, restoreTP)));
     }
 
-    private Observable<IOrder> mergeOrderObs(final String mergeLabel) {
+    private Observable<IOrder> mergeOrderObs(final String mergeLabel,
+                                             final Set<IOrder> filledOrders) {
         return Observable.just(mergeLabel)
                 .doOnNext(label -> logger.debug("Start merge with label: " + label + " for " + instrument))
-                .flatMap(label -> orderUtilObservable.merge(mergeLabel, filledOrders()))
+                .flatMap(label -> orderUtilObservable.merge(mergeLabel, filledOrders))
                 .retryWhen(this::shouldRetry);
     }
 

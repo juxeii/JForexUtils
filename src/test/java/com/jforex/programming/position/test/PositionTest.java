@@ -430,8 +430,8 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
 
                     @Test
-                    public void testRepositoryHoldsStillBuyOrder() {
-                        assertTrue(positionHasOrder(buyOrder));
+                    public void testRepositoryIsEmptyWhileClosing() {
+                        assertTrue(isRepositoryEmpty());
                     }
 
                     public class CloseOKMessage {
