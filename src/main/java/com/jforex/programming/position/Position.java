@@ -105,24 +105,23 @@ public class Position {
     }
 
     public synchronized void close() {
-        final Observable<IOrder> observable =
-                Observable.from(filter(isFilled.or(isOpened)))
-                        .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
-                        .flatMap(order -> orderUtilObservable.close(order).retryWhen(this::shouldRetry))
-                        .doOnNext(orderRepository::remove);
+        final Observable<IOrder> observable = Observable.from(filter(isFilled.or(isOpened)))
+                .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
+                .flatMap(order -> orderUtilObservable.close(order).retryWhen(this::shouldRetry))
+                .doOnNext(orderRepository::remove);
         startTaskObs(observable, PositionEventType.CLOSED);
     }
 
     private void startTaskObs(final Observable<IOrder> observable,
                               final PositionEventType positionEventType) {
         observable.subscribe(item -> {},
-                             exc -> taskFinishWithException(exc, positionEventType),
+                             this::taskFinishWithException,
                              () -> taskFinish(positionEventType));
     }
 
     private Observable<IOrder> mergeSequenceObs(final String mergeLabel,
                                                 final RestoreSLTPData restoreSLTPData) {
-        if (filledOrders().size() <= 1)
+        if (filledOrders().size() < 2)
             return Observable.empty();
 
         final Observable<IOrder> mergeAndRestoreObs =
@@ -191,8 +190,7 @@ public class Position {
         positionEventTypePublisher.onJFEvent(positionEventType);
     }
 
-    private void taskFinishWithException(final Throwable throwable,
-                                         final PositionEventType positionEventType) {
-        positionEventTypePublisher.onJFEvent(positionEventType);
+    private void taskFinishWithException(final Throwable throwable) {
+        logger.error("Task finished with excpetion! " + throwable.getMessage());
     }
 }

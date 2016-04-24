@@ -11,6 +11,9 @@ import static org.mockito.Mockito.spy;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.test.common.OrderParamsForTest;
+
 import com.dukascopy.api.ICloseOrder;
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IFillOrder;
@@ -19,8 +22,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.test.common.OrderParamsForTest;
 
 public class IOrderForTest implements IOrder {
 
@@ -252,7 +253,7 @@ public class IOrderForTest implements IOrder {
     }
 
     @Override
-    public void setStopLossPrice(final double stopLossPrice) throws JFException {
+    public void setStopLossPrice(final double stopLossPrice) {
         this.stopLossPrice = stopLossPrice;
     }
 
@@ -272,7 +273,7 @@ public class IOrderForTest implements IOrder {
     }
 
     @Override
-    public void setTakeProfitPrice(final double takeProfitPrice) throws JFException {
+    public void setTakeProfitPrice(final double takeProfitPrice) {
         this.takeProfitPrice = takeProfitPrice;
     }
 
@@ -380,32 +381,32 @@ public class IOrderForTest implements IOrder {
 
     public static void throwOnSetLabel(final IOrderForTest order) throws JFException {
         doThrow(new JFException("Exception thrown during label change!")).when(order)
-                                                                         .setLabel(any());
+                .setLabel(any());
     }
 
     public static void throwOnSetGTT(final IOrderForTest order) throws JFException {
         doThrow(new JFException("Exception thrown during GTT change!")).when(order)
-                                                                       .setGoodTillTime(anyLong());
+                .setGoodTillTime(anyLong());
     }
 
     public static void throwOnSetAmount(final IOrderForTest order) throws JFException {
         doThrow(new JFException("Exception thrown during amount change!")).when(order)
-                                                                          .setRequestedAmount(anyDouble());
+                .setRequestedAmount(anyDouble());
     }
 
     public static void throwOnSetOpenPrice(final IOrderForTest order) throws JFException {
         doThrow(new JFException("Exception thrown during open price change!")).when(order)
-                                                                              .setOpenPrice(anyDouble());
+                .setOpenPrice(anyDouble());
     }
 
     public static void throwOnSetSL(final IOrderForTest order) throws JFException {
         doThrow(new JFException("Exception thrown during SL change!")).when(order)
-                                                                      .setStopLossPrice(anyDouble());
+                .setStopLossPrice(anyDouble());
     }
 
     public static void throwOnSetTP(final IOrderForTest order) throws JFException {
         doThrow(new JFException("Exception thrown during TP change!")).when(order)
-                                                                      .setTakeProfitPrice(anyDouble());
+                .setTakeProfitPrice(anyDouble());
     }
 
     public static IOrderForTest fromOrderParams(final OrderParams orderParams) {
@@ -413,10 +414,10 @@ public class IOrderForTest implements IOrder {
                                          orderParams.instrument(),
                                          orderParams.orderCommand(),
                                          orderParams.amount()).stopLossPrice(orderParams.stopLossPrice())
-                                                              .takeProfitPrice(orderParams.takeProfitPrice())
-                                                              .goodTillTime(orderParams.goodTillTime())
-                                                              .comment(orderParams.comment())
-                                                              .build();
+                                                 .takeProfitPrice(orderParams.takeProfitPrice())
+                                                 .goodTillTime(orderParams.goodTillTime())
+                                                 .comment(orderParams.comment())
+                                                 .build();
     }
 
     public static IOrderForTest buyOrderEURUSD() {
@@ -432,7 +433,7 @@ public class IOrderForTest implements IOrder {
                                          Instrument.AUDUSD,
                                          OrderCommand.SELL,
                                          0.12)
-                                              .build();
+                                                 .build();
     }
 
     public static IOrderForTest orderUSDJPY() {
@@ -440,6 +441,6 @@ public class IOrderForTest implements IOrder {
                                          Instrument.USDJPY,
                                          OrderCommand.SELL,
                                          0.25)
-                                              .build();
+                                                 .build();
     }
 }
