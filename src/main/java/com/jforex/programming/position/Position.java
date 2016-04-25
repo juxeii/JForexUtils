@@ -17,8 +17,6 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
@@ -29,6 +27,9 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtilObservable;
 import com.jforex.programming.order.event.OrderEvent;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -60,6 +61,10 @@ public class Position {
                         + instrument + " with label " + orderEvent.order().getLabel()))
                 .doOnNext(this::checkOnOrderCloseEvent)
                 .subscribe();
+    }
+
+    public Instrument instrument() {
+        return instrument;
     }
 
     private void checkOnOrderCloseEvent(final OrderEvent orderEvent) {
@@ -102,46 +107,48 @@ public class Position {
     public synchronized void submit(final OrderParams orderParams) {
         startTaskObs(orderUtilObservable.submit(orderParams)
                 .doOnNext(orderRepository::add),
-                PositionEventType.SUBMITTED);
+                     PositionEventType.SUBMITTED);
     }
 
     public synchronized void merge(final String mergeLabel) {
         if (isBusy)
             return;
-        else
-            isBusy = true;
 
         final Set<IOrder> filledOrders = Sets.newHashSet(filledOrders());
-        if (filledOrders.size() < 2)
+        if (filledOrders.size() < 2) {
+            positionEventTypePublisher.onJFEvent(PositionEventType.MERGED);
             return;
+        }
+
+        isBusy = true;
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders);
         startTaskObs(mergeSequenceObs(mergeLabel, filledOrders, restoreSLTPData)
-                .doOnNext(orderRepository::add),
-                PositionEventType.MERGED);
+                .doOnTerminate(() -> isBusy = false),
+                     PositionEventType.MERGED);
     }
 
     public synchronized void close() {
         if (isBusy)
             return;
-        else
-            isBusy = true;
 
         final Set<IOrder> ordersToClose = Sets.newHashSet(filter(isFilled.or(isOpened)));
         if (ordersToClose.isEmpty())
             return;
+        isBusy = true;
         final Observable<IOrder> observable = Observable.from(ordersToClose)
                 .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
                 .flatMap(order -> orderUtilObservable.close(order))
+                .doOnNext(orderRepository::remove)
                 .retryWhen(this::shouldRetry)
-                .doOnNext(orderRepository::remove);
+                .doOnTerminate(() -> isBusy = false);
         startTaskObs(observable, PositionEventType.CLOSED);
     }
 
     private void startTaskObs(final Observable<IOrder> observable,
                               final PositionEventType positionEventType) {
         observable.subscribe(item -> {},
-                this::taskFinishWithException,
-                () -> taskFinish(positionEventType));
+                             this::taskFinishWithException,
+                             () -> taskFinish(positionEventType));
     }
 
     private Observable<IOrder> mergeSequenceObs(final String mergeLabel,
@@ -156,7 +163,7 @@ public class Position {
     private Observable<IOrder> removeTPSLObs(final Set<IOrder> filledOrders) {
         return Observable.from(filledOrders)
                 .flatMap(order -> Observable.concat(changeTPOrderObs(order, pfs.NO_TAKE_PROFIT_PRICE()),
-                        changeSLOrderObs(order, pfs.NO_STOP_LOSS_PRICE())));
+                                                    changeSLOrderObs(order, pfs.NO_STOP_LOSS_PRICE())));
     }
 
     private Observable<IOrder> restoreSLTPObs(final IOrder mergedOrder,
@@ -165,7 +172,7 @@ public class Position {
         return Observable.just(mergedOrder)
                 .filter(isFilled::test)
                 .flatMap(order -> Observable.concat(changeSLOrderObs(order, restoreSL),
-                        changeTPOrderObs(order, restoreTP)));
+                                                    changeTPOrderObs(order, restoreTP)));
     }
 
     private Observable<IOrder> mergeOrderObs(final String mergeLabel,
@@ -173,7 +180,8 @@ public class Position {
         return Observable.just(mergeLabel)
                 .doOnNext(label -> logger.debug("Start merge with label: " + label + " for " + instrument))
                 .flatMap(label -> orderUtilObservable.merge(mergeLabel, filledOrders))
-                .retryWhen(this::shouldRetry);
+                .retryWhen(this::shouldRetry)
+                .doOnNext(orderRepository::add);
     }
 
     private Observable<IOrder> changeSLOrderObs(final IOrder orderToChangeSL,
@@ -199,10 +207,10 @@ public class Position {
 
     private Observable<?> shouldRetry(final Observable<? extends Throwable> attempts) {
         return attempts.zipWith(Observable.range(1, pfs.MAX_NUM_RETRIES_ON_FAIL()),
-                (exc, att) -> exc)
+                                (exc, att) -> exc)
                 .doOnNext(exc -> logRetry((PositionTaskRejectException) exc))
                 .flatMap(exc -> concurrentUtil.timerObservable(pfs.ON_FAIL_RETRY_WAITING_TIME(),
-                        TimeUnit.MILLISECONDS));
+                                                               TimeUnit.MILLISECONDS));
     }
 
     private void logRetry(final PositionTaskRejectException rejectException) {
@@ -212,12 +220,10 @@ public class Position {
     }
 
     private void taskFinish(final PositionEventType positionEventType) {
-        isBusy = false;
         positionEventTypePublisher.onJFEvent(positionEventType);
     }
 
     private void taskFinishWithException(final Throwable throwable) {
-        isBusy = false;
         logger.error("Task finished with excpetion! " + throwable.getMessage());
     }
 }

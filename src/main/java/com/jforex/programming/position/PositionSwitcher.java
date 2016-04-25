@@ -3,10 +3,11 @@ package com.jforex.programming.position;
 import static com.jforex.programming.misc.JForexUtil.uss;
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
 
-import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
+
+import com.dukascopy.api.IEngine.OrderCommand;
 
 public final class PositionSwitcher {
 
@@ -16,12 +17,11 @@ public final class PositionSwitcher {
     private boolean isBusy = false;
 
     public PositionSwitcher(final Position position,
-            final OrderParamsSupplier orderParamsSupplier) {
+                            final OrderParamsSupplier orderParamsSupplier) {
         this.position = position;
         this.orderParamsSupplier = orderParamsSupplier;
         position.positionEventTypeObs()
-                .filter(type -> type == PositionEventType.SUBMITTED)
-                .subscribe(this::onSubmitOK);
+                .subscribe(this::onPositionEvent);
     }
 
     public final void sendBuySignal() {
@@ -56,9 +56,11 @@ public final class PositionSwitcher {
         isBusy = true;
     }
 
-    private void onSubmitOK(final PositionEventType positionEventType) {
-        position.merge(mergeLabel);
-        isBusy = false;
+    private void onPositionEvent(final PositionEventType positionEventType) {
+        if (positionEventType == PositionEventType.SUBMITTED)
+            position.merge(mergeLabel);
+        else if (positionEventType == PositionEventType.MERGED)
+            isBusy = false;
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {

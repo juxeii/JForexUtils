@@ -70,16 +70,12 @@ public class OrderUtilObservable {
 
     public Observable<IOrder> setSL(final IOrder orderToChangeSL,
                                     final double newSL) {
-        if (newSL > 0)
-            System.out.println("BIIIIIIIIIIIIIIIIIIIIIIIG");
         return orderCallObservable(() -> orderUtil.setSL(orderToChangeSL, newSL),
                                    OrderEventData.changeSLEvents);
     }
 
     public Observable<IOrder> setTP(final IOrder orderToChangeTP,
                                     final double newTP) {
-        if (newTP > 0)
-            System.out.println("BIIIIIIIIIIIIIIIIIIIIIIIG");
         return orderCallObservable(() -> orderUtil.setTP(orderToChangeTP, newTP),
                                    OrderEventData.changeTPEvents);
     }
