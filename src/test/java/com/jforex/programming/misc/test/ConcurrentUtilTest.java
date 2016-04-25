@@ -77,7 +77,7 @@ public class ConcurrentUtilTest extends CommonUtilForTest {
 
         verify(executorServiceMock).shutdownNow();
         verify(executorServiceMock).awaitTermination(pfs.EXECUTORSERVICE_AWAITTERMINATION_TIMEOUT(),
-                                                     TimeUnit.MILLISECONDS);
+                TimeUnit.MILLISECONDS);
     }
 
     @Test
