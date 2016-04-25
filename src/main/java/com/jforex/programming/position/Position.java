@@ -115,7 +115,8 @@ public class Position {
         if (filledOrders.size() < 2)
             return;
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders);
-        startTaskObs(mergeSequenceObs(mergeLabel, filledOrders, restoreSLTPData),
+        startTaskObs(mergeSequenceObs(mergeLabel, filledOrders, restoreSLTPData)
+                .doOnNext(orderRepository::add),
                 PositionEventType.MERGED);
     }
 
