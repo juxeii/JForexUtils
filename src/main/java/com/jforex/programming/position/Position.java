@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.apache.logging.log4j.LogManager;
@@ -108,12 +109,11 @@ public class Position {
     public synchronized void merge(final String mergeLabel) {
         if (isBusy)
             return;
-        else
-            isBusy = true;
 
         final Set<IOrder> filledOrders = Sets.newHashSet(filledOrders());
         if (filledOrders.size() < 2)
             return;
+        isBusy = true;
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders);
         startTaskObs(mergeSequenceObs(mergeLabel, filledOrders, restoreSLTPData),
                 PositionEventType.MERGED);
@@ -122,49 +122,56 @@ public class Position {
     public synchronized void close() {
         if (isBusy)
             return;
-        else
-            isBusy = true;
-
         final Set<IOrder> ordersToClose = Sets.newHashSet(filter(isFilled.or(isOpened)));
         if (ordersToClose.isEmpty())
             return;
-        final Observable<IOrder> observable = Observable.from(ordersToClose)
-                .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
-                .flatMap(order -> orderUtilObservable.close(order))
-                .retryWhen(this::shouldRetry)
-                .doOnNext(orderRepository::remove);
+
+        isBusy = true;
+        final Observable<IOrder> observable = batchObsWithRetry(ordersToClose,
+                order -> orderUtilObservable.close(order))
+                        .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
+                        .doOnNext(orderRepository::remove);
         startTaskObs(observable, PositionEventType.CLOSED);
     }
 
     private void startTaskObs(final Observable<IOrder> observable,
                               final PositionEventType positionEventType) {
-        observable.subscribe(item -> {},
-                this::taskFinishWithException,
-                () -> taskFinish(positionEventType));
+        observable.doOnTerminate(() -> isBusy = false)
+                .subscribe(item -> {},
+                        this::taskFinishWithException,
+                        () -> taskFinish(positionEventType));
     }
 
     private Observable<IOrder> mergeSequenceObs(final String mergeLabel,
                                                 final Set<IOrder> filledOrders,
                                                 final RestoreSLTPData restoreSLTPData) {
         final Observable<IOrder> mergeAndRestoreObs = mergeOrderObs(mergeLabel, filledOrders)
-                .flatMap(order -> restoreSLTPObs(order, restoreSLTPData.sl(), restoreSLTPData.tp()));
+                .flatMap(order -> restoreSLTPObs(order, restoreSLTPData));
 
         return removeTPSLObs(filledOrders).concatWith(mergeAndRestoreObs);
     }
 
     private Observable<IOrder> removeTPSLObs(final Set<IOrder> filledOrders) {
-        return Observable.from(filledOrders)
-                .flatMap(order -> Observable.concat(changeTPOrderObs(order, pfs.NO_TAKE_PROFIT_PRICE()),
-                        changeSLOrderObs(order, pfs.NO_STOP_LOSS_PRICE())));
+        final Observable<IOrder> removeTPs = batchObsWithRetry(filledOrders,
+                order -> changeTPOrderObs(order, pfs.NO_TAKE_PROFIT_PRICE()));
+        final Observable<IOrder> removeSLs = batchObsWithRetry(filledOrders,
+                order -> changeSLOrderObs(order, pfs.NO_STOP_LOSS_PRICE()));
+        return removeTPs.concatWith(removeSLs);
+    }
+
+    private Observable<IOrder> batchObsWithRetry(final Set<IOrder> orders,
+                                                 final Function<IOrder, Observable<IOrder>> singleObs) {
+        return Observable.from(orders)
+                .flatMap(singleObs::apply)
+                .retryWhen(this::shouldRetry);
     }
 
     private Observable<IOrder> restoreSLTPObs(final IOrder mergedOrder,
-                                              final double restoreSL,
-                                              final double restoreTP) {
+                                              final RestoreSLTPData restoreSLTPData) {
         return Observable.just(mergedOrder)
                 .filter(isFilled::test)
-                .flatMap(order -> Observable.concat(changeSLOrderObs(order, restoreSL),
-                        changeTPOrderObs(order, restoreTP)));
+                .flatMap(order -> Observable.concat(changeSLOrderObs(order, restoreSLTPData.sl()),
+                        changeTPOrderObs(order, restoreSLTPData.tp())));
     }
 
     private Observable<IOrder> mergeOrderObs(final String mergeLabel,
@@ -181,8 +188,7 @@ public class Position {
                 .filter(order -> !isSLSetTo(newSL).test(order))
                 .doOnNext(order -> logger.debug("Start to change SL from " + order.getStopLossPrice() + " to "
                         + newSL + " for order " + order.getLabel() + " and position " + instrument))
-                .flatMap(order -> orderUtilObservable.setSL(orderToChangeSL, newSL))
-                .retryWhen(this::shouldRetry);
+                .flatMap(order -> orderUtilObservable.setSL(orderToChangeSL, newSL));
     }
 
     private Observable<IOrder> changeTPOrderObs(final IOrder orderToChangeTP,
@@ -192,8 +198,7 @@ public class Position {
                 .doOnNext(order -> logger.debug("Start to change TP from " + order.getTakeProfitPrice()
                         + " to " + newTP + " for order "
                         + order.getLabel() + " and position " + instrument))
-                .flatMap(order -> orderUtilObservable.setTP(orderToChangeTP, newTP))
-                .retryWhen(this::shouldRetry);
+                .flatMap(order -> orderUtilObservable.setTP(orderToChangeTP, newTP));
     }
 
     private Observable<?> shouldRetry(final Observable<? extends Throwable> attempts) {
@@ -211,12 +216,10 @@ public class Position {
     }
 
     private void taskFinish(final PositionEventType positionEventType) {
-        isBusy = false;
         positionEventTypePublisher.onJFEvent(positionEventType);
     }
 
     private void taskFinishWithException(final Throwable throwable) {
-        isBusy = false;
         logger.error("Task finished with excpetion! " + throwable.getMessage());
     }
 }
