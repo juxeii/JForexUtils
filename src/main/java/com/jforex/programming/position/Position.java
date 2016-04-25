@@ -17,6 +17,8 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
@@ -27,10 +29,9 @@ import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtilObservable;
 import com.jforex.programming.order.event.OrderEvent;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
-
 import rx.Observable;
+import rx.Scheduler;
+import rx.schedulers.Schedulers;
 
 public class Position {
 
@@ -40,12 +41,14 @@ public class Position {
             Collections.newSetFromMap(new MapMaker().weakKeys().<IOrder, Boolean> makeMap());
     private final RestoreSLTPPolicy restoreSLTPPolicy;
     private final JFEventPublisherForRx<PositionEventType> positionEventTypePublisher = new JFEventPublisherForRx<>();
+    private boolean isBusy = false;
+    private Scheduler scheduler = Schedulers.computation();
 
     private static final Logger logger = LogManager.getLogger(Position.class);
 
     public Position(final Instrument instrument,
-                    final OrderUtilObservable orderUtilObservable,
-                    final RestoreSLTPPolicy restoreSLTPPolicy) {
+            final OrderUtilObservable orderUtilObservable,
+            final RestoreSLTPPolicy restoreSLTPPolicy) {
         this.instrument = instrument;
         this.restoreSLTPPolicy = restoreSLTPPolicy;
         this.orderUtilObservable = orderUtilObservable;
@@ -56,6 +59,10 @@ public class Position {
                         + instrument + " with label " + orderEvent.order().getLabel()))
                 .doOnNext(this::checkOnOrderCloseEvent)
                 .subscribe();
+    }
+
+    public void setScheduler(final Scheduler scheduler) {
+        this.scheduler = scheduler;
     }
 
     private void checkOnOrderCloseEvent(final OrderEvent orderEvent) {
@@ -97,43 +104,48 @@ public class Position {
 
     public synchronized void submit(final OrderParams orderParams) {
         startTaskObs(orderUtilObservable.submit(orderParams)
-                .doOnNext(orderRepository::add), PositionEventType.SUBMITTED);
+                .doOnNext(orderRepository::add),
+                PositionEventType.SUBMITTED);
     }
 
     public synchronized void merge(final String mergeLabel) {
+        if (isBusy)
+            return;
+        else
+            isBusy = true;
+
         final Set<IOrder> filledOrders = Sets.newHashSet(filledOrders());
         if (filledOrders.size() < 2)
             return;
-        orderRepository.clear();
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders);
-        startTaskObs(mergeSequenceObs(mergeLabel, filledOrders, restoreSLTPData)
-                .doOnTerminate(() -> setOrderRepository(filledOrders)), PositionEventType.MERGED);
+        startTaskObs(mergeSequenceObs(mergeLabel, filledOrders, restoreSLTPData),
+                PositionEventType.MERGED);
     }
 
     public synchronized void close() {
+        if (isBusy)
+            return;
+        else
+            isBusy = true;
+
         final Set<IOrder> ordersToClose = Sets.newHashSet(filter(isFilled.or(isOpened)));
         if (ordersToClose.isEmpty())
             return;
-        orderRepository.clear();
         final Observable<IOrder> observable = Observable.from(ordersToClose)
-                .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
-                .flatMap(order -> orderUtilObservable.close(order).retryWhen(this::shouldRetry))
-                .doOnTerminate(() -> setOrderRepository(ordersToClose));
+                .doOnSubscribe(() -> logger.debug("Starting to close "
+                        + instrument + " position"))
+                .flatMap(order -> orderUtilObservable.close(order)
+                        .retryWhen(this::shouldRetry))
+                .doOnNext(orderRepository::remove);
         startTaskObs(observable, PositionEventType.CLOSED);
-    }
-
-    private void setOrderRepository(final Set<IOrder> orders) {
-        orders.forEach(order -> {
-            if (isFilled.test(order) || isOpened.test(order))
-                orderRepository.add(order);
-        });
     }
 
     private void startTaskObs(final Observable<IOrder> observable,
                               final PositionEventType positionEventType) {
-        observable.subscribe(item -> {},
-                             this::taskFinishWithException,
-                             () -> taskFinish(positionEventType));
+        observable.subscribe(item -> {
+        },
+                this::taskFinishWithException,
+                () -> taskFinish(positionEventType));
     }
 
     private Observable<IOrder> mergeSequenceObs(final String mergeLabel,
@@ -148,7 +160,7 @@ public class Position {
     private Observable<IOrder> removeTPSLObs(final Set<IOrder> filledOrders) {
         return Observable.from(filledOrders)
                 .flatMap(order -> Observable.concat(changeTPOrderObs(order, pfs.NO_TAKE_PROFIT_PRICE()),
-                                                    changeSLOrderObs(order, pfs.NO_STOP_LOSS_PRICE())));
+                        changeSLOrderObs(order, pfs.NO_STOP_LOSS_PRICE())));
     }
 
     private Observable<IOrder> restoreSLTPObs(final IOrder mergedOrder,
@@ -157,7 +169,7 @@ public class Position {
         return Observable.just(mergedOrder)
                 .filter(isFilled::test)
                 .flatMap(order -> Observable.concat(changeSLOrderObs(order, restoreSL),
-                                                    changeTPOrderObs(order, restoreTP)));
+                        changeTPOrderObs(order, restoreTP)));
     }
 
     private Observable<IOrder> mergeOrderObs(final String mergeLabel,
@@ -182,7 +194,8 @@ public class Position {
                                                 final double newTP) {
         return Observable.just(orderToChangeTP)
                 .filter(order -> !isTPSetTo(newTP).test(order))
-                .doOnNext(order -> logger.debug("Start to change TP from " + order.getTakeProfitPrice() + " to "
+                .doOnNext(order -> logger.debug("Start to change TP from " + order.getTakeProfitPrice()
+                        + " to "
                         + newTP + " for order " + order.getLabel() + " and position " + instrument))
                 .flatMap(order -> orderUtilObservable.setTP(orderToChangeTP, newTP))
                 .retryWhen(this::shouldRetry);
@@ -190,9 +203,11 @@ public class Position {
 
     private Observable<?> shouldRetry(final Observable<? extends Throwable> attempts) {
         return attempts.zipWith(Observable.range(1, pfs.MAX_NUM_RETRIES_ON_FAIL()),
-                                (exc, att) -> exc)
+                (exc, att) -> exc)
                 .doOnNext(exc -> logRetry((PositionTaskRejectException) exc))
-                .flatMap(exc -> Observable.timer(pfs.ON_FAIL_RETRY_WAITING_TIME(), TimeUnit.MILLISECONDS));
+                .flatMap(exc -> Observable.timer(pfs.ON_FAIL_RETRY_WAITING_TIME(),
+                        TimeUnit.MILLISECONDS,
+                        scheduler));
     }
 
     private void logRetry(final PositionTaskRejectException rejectException) {
@@ -202,10 +217,12 @@ public class Position {
     }
 
     private void taskFinish(final PositionEventType positionEventType) {
+        isBusy = false;
         positionEventTypePublisher.onJFEvent(positionEventType);
     }
 
     private void taskFinishWithException(final Throwable throwable) {
+        isBusy = false;
         logger.error("Task finished with excpetion! " + throwable.getMessage());
     }
 }
