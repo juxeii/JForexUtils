@@ -3,11 +3,10 @@ package com.jforex.programming.position;
 import static com.jforex.programming.misc.JForexUtil.uss;
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
-
-import com.dukascopy.api.IEngine.OrderCommand;
 
 public final class PositionSwitcher {
 
@@ -17,7 +16,7 @@ public final class PositionSwitcher {
     private boolean isBusy = false;
 
     public PositionSwitcher(final Position position,
-                            final OrderParamsSupplier orderParamsSupplier) {
+            final OrderParamsSupplier orderParamsSupplier) {
         this.position = position;
         this.orderParamsSupplier = orderParamsSupplier;
         position.positionEventTypeObs()

@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -14,7 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.jforex.programming.misc.JFEventPublisherForRx;
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
@@ -25,19 +26,17 @@ import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 
-import com.dukascopy.api.IEngine.OrderCommand;
+import rx.subjects.PublishSubject;
+import rx.subjects.Subject;
 
 public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     private PositionSwitcher positionSwitcher;
 
-    @Mock
-    private Position position;
-    @Mock
-    private OrderParamsSupplier orderParamsSupplierMock;
-    @Captor
-    private ArgumentCaptor<OrderParams> orderParamsCaptor;
-    private final JFEventPublisherForRx<PositionEventType> positionEventPublisher = new JFEventPublisherForRx<>();
+    @Mock private Position position;
+    @Mock private OrderParamsSupplier orderParamsSupplierMock;
+    @Captor private ArgumentCaptor<OrderParams> orderParamsCaptor;
+    private Subject<PositionEventType, PositionEventType> positionEventSubject;
     private final OrderParams orderParamsBUY = OrderParamsForTest.paramsBuyEURUSD();
     private final OrderParams orderParamsSELL = OrderParamsForTest.paramsSellEURUSD();
     private final String buyMergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + orderParamsBUY.label();
@@ -46,13 +45,14 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     @Before
     public void setUp() {
         initCommonTestFramework();
+        positionEventSubject = PublishSubject.create();
         setUpMocks();
 
         positionSwitcher = new PositionSwitcher(position, orderParamsSupplierMock);
     }
 
     private void setUpMocks() {
-        when(position.positionEventTypeObs()).thenReturn(positionEventPublisher.observable());
+        when(position.positionEventTypeObs()).thenReturn(positionEventSubject);
         when(orderParamsSupplierMock.forCommand(OrderCommand.BUY)).thenReturn(orderParamsBUY);
         when(orderParamsSupplierMock.forCommand(OrderCommand.SELL)).thenReturn(orderParamsSELL);
     }
@@ -102,12 +102,58 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     }
 
     @Test
+    public void testMultipleBuySignalsAreIgnoredWhenNoSubmitEventOnPosition() {
+        setPositionManagerState(OrderDirection.FLAT);
+
+        positionSwitcher.sendBuySignal();
+        positionSwitcher.sendBuySignal();
+
+        verify(position).submit(any());
+    }
+
+    @Test
+    public void testSecondBuySignalIsAcceptedWhenPositionEventSubmitOccured() {
+        setPositionManagerState(OrderDirection.FLAT);
+
+        positionSwitcher.sendBuySignal();
+        verify(position).submit(any());
+
+        positionEventSubject.onNext(PositionEventType.SUBMITTED);
+
+        positionSwitcher.sendBuySignal();
+        verify(position, times(2)).submit(any());
+    }
+
+    @Test
     public void testSendSellSignalWhenPositionIsFlatDoesCallSubmitOnPositionManager() {
         setPositionManagerState(OrderDirection.FLAT);
 
         positionSwitcher.sendSellSignal();
 
         verifySendedOrderParamsAreCorrect(sellMergeLabel, orderParamsSELL.amount(), OrderCommand.SELL);
+    }
+
+    @Test
+    public void testMultipleSellSignalsAreIgnoredWhenNoSubmitEventOnPosition() {
+        setPositionManagerState(OrderDirection.FLAT);
+
+        positionSwitcher.sendSellSignal();
+        positionSwitcher.sendSellSignal();
+
+        verify(position).submit(any());
+    }
+
+    @Test
+    public void testSecondSellSignalIsAcceptedWhenPositionEventSubmitOccured() {
+        setPositionManagerState(OrderDirection.FLAT);
+
+        positionSwitcher.sendSellSignal();
+        verify(position).submit(any());
+
+        positionEventSubject.onNext(PositionEventType.SUBMITTED);
+
+        positionSwitcher.sendSellSignal();
+        verify(position, times(2)).submit(any());
     }
 
     @Test
