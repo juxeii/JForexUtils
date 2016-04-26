@@ -5,6 +5,9 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.common.collect.MapMaker;
 import com.jforex.programming.misc.JFEventPublisherForRx;
 import com.jforex.programming.order.OrderMessageData;
@@ -20,6 +23,8 @@ public class OrderEventGateway {
     private final ConcurrentMap<IOrder, Queue<OrderCallRequest>> callRequestByOrder =
             new MapMaker().weakKeys().makeMap();
 
+    private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);
+
     public Observable<OrderEvent> observable() {
         return orderEventPublisher.observable();
     }
@@ -33,6 +38,8 @@ public class OrderEventGateway {
     public void onOrderMessageData(final OrderMessageData orderMessageData) {
         final IOrder order = orderMessageData.order();
         final OrderEventType orderEventType = orderEventTypeFromData(orderMessageData);
+        logger.debug("Received order event for " + order.getLabel()
+                + " type " + orderEventType + " state " + order.getState());
         orderEventPublisher.onJFEvent(new OrderEvent(order, orderEventType));
     }
 
