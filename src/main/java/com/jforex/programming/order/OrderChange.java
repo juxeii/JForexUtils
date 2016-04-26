@@ -1,12 +1,19 @@
 package com.jforex.programming.order;
 
-import com.dukascopy.api.IOrder;
+import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
+
+import java.util.Optional;
+
 import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.call.OrderChangeCall;
 import com.jforex.programming.order.event.OrderEventGateway;
+
+import com.dukascopy.api.IOrder;
 
 public class OrderChange {
 
@@ -23,51 +30,65 @@ public class OrderChange {
     }
 
     public OrderChangeResult close(final IOrder orderToClose) {
-        return orderChangeResult(() -> orderToClose.close(),
-                                 orderToClose,
-                                 OrderCallRequest.CLOSE);
+        return isClosed.test(orderToClose)
+                ? new OrderChangeResult(orderToClose, Optional.empty(), OrderCallRequest.CLOSE)
+                : orderChangeResult(() -> orderToClose.close(),
+                                    orderToClose,
+                                    OrderCallRequest.CLOSE);
     }
 
     public OrderChangeResult setLabel(final IOrder orderToChangeLabel,
                                       final String newLabel) {
-        return orderChangeResult(() -> orderToChangeLabel.setLabel(newLabel),
-                                 orderToChangeLabel,
-                                 OrderCallRequest.CHANGE_LABEL);
+        return orderToChangeLabel.getLabel().equals(newLabel)
+                ? new OrderChangeResult(orderToChangeLabel, Optional.empty(), OrderCallRequest.CHANGE_LABEL)
+                : orderChangeResult(() -> orderToChangeLabel.setLabel(newLabel),
+                                    orderToChangeLabel,
+                                    OrderCallRequest.CHANGE_LABEL);
     }
 
     public OrderChangeResult setGTT(final IOrder orderToChangeGTT,
                                     final long newGTT) {
-        return orderChangeResult(() -> orderToChangeGTT.setGoodTillTime(newGTT),
-                                 orderToChangeGTT,
-                                 OrderCallRequest.CHANGE_GTT);
+        return orderToChangeGTT.getGoodTillTime() == newGTT
+                ? new OrderChangeResult(orderToChangeGTT, Optional.empty(), OrderCallRequest.CHANGE_GTT)
+                : orderChangeResult(() -> orderToChangeGTT.setGoodTillTime(newGTT),
+                                    orderToChangeGTT,
+                                    OrderCallRequest.CHANGE_GTT);
     }
 
     public OrderChangeResult setOpenPrice(final IOrder orderToChangeOpenPrice,
                                           final double newOpenPrice) {
-        return orderChangeResult(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
-                                 orderToChangeOpenPrice,
-                                 OrderCallRequest.CHANGE_OPENPRICE);
+        return orderToChangeOpenPrice.getOpenPrice() == newOpenPrice
+                ? new OrderChangeResult(orderToChangeOpenPrice, Optional.empty(), OrderCallRequest.CHANGE_OPENPRICE)
+                : orderChangeResult(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
+                                    orderToChangeOpenPrice,
+                                    OrderCallRequest.CHANGE_OPENPRICE);
     }
 
     public OrderChangeResult setAmount(final IOrder orderToChangeAmount,
                                        final double newAmount) {
-        return orderChangeResult(() -> orderToChangeAmount.setRequestedAmount(newAmount),
-                                 orderToChangeAmount,
-                                 OrderCallRequest.CHANGE_AMOUNT);
+        return orderToChangeAmount.getAmount() == newAmount
+                ? new OrderChangeResult(orderToChangeAmount, Optional.empty(), OrderCallRequest.CHANGE_AMOUNT)
+                : orderChangeResult(() -> orderToChangeAmount.setRequestedAmount(newAmount),
+                                    orderToChangeAmount,
+                                    OrderCallRequest.CHANGE_AMOUNT);
     }
 
     public OrderChangeResult setSL(final IOrder orderToChangeSL,
                                    final double newSL) {
-        return orderChangeResult(() -> orderToChangeSL.setStopLossPrice(newSL),
-                                 orderToChangeSL,
-                                 OrderCallRequest.CHANGE_SL);
+        return isSLSetTo(newSL).test(orderToChangeSL)
+                ? new OrderChangeResult(orderToChangeSL, Optional.empty(), OrderCallRequest.CHANGE_SL)
+                : orderChangeResult(() -> orderToChangeSL.setStopLossPrice(newSL),
+                                    orderToChangeSL,
+                                    OrderCallRequest.CHANGE_SL);
     }
 
     public OrderChangeResult setTP(final IOrder orderToChangeTP,
                                    final double newTP) {
-        return orderChangeResult(() -> orderToChangeTP.setTakeProfitPrice(newTP),
-                                 orderToChangeTP,
-                                 OrderCallRequest.CHANGE_TP);
+        return isTPSetTo(newTP).test(orderToChangeTP)
+                ? new OrderChangeResult(orderToChangeTP, Optional.empty(), OrderCallRequest.CHANGE_TP)
+                : orderChangeResult(() -> orderToChangeTP.setTakeProfitPrice(newTP),
+                                    orderToChangeTP,
+                                    OrderCallRequest.CHANGE_TP);
     }
 
     public OrderChangeResult setSLInPips(final IOrder orderToChangeSL,
