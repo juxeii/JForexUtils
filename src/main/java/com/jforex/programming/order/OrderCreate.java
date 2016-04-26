@@ -2,13 +2,14 @@ package com.jforex.programming.order;
 
 import java.util.Collection;
 
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEventGateway;
+
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
 
 public class OrderCreate {
 
@@ -48,15 +49,15 @@ public class OrderCreate {
                                            final OrderCallRequest orderCallRequest) {
         final OrderCallExecutorResult orderExecutorResult = orderCallExecutor.run(orderSupplierCall);
         final OrderCreateResult orderCreateResult = new OrderCreateResult(orderExecutorResult.orderOpt(),
-                                                                          orderExecutorResult.exceptionOpt(),
-                                                                          orderCallRequest);
-        registerOrderCallRequest(orderCreateResult);
+                                                                          orderExecutorResult.exceptionOpt());
+        registerOrderCallRequest(orderCreateResult, orderCallRequest);
         return orderCreateResult;
     }
 
-    private void registerOrderCallRequest(final OrderCreateResult orderCreateResult) {
+    private void registerOrderCallRequest(final OrderCreateResult orderCreateResult,
+                                          final OrderCallRequest orderCallRequest) {
         if (!orderCreateResult.exceptionOpt().isPresent())
             orderEventGateway.registerOrderRequest(orderCreateResult.orderOpt().get(),
-                                                   orderCreateResult.callRequest());
+                                                   orderCallRequest);
     }
 }

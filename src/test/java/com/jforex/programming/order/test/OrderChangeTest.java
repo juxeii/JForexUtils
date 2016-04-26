@@ -12,8 +12,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderChange;
 import com.jforex.programming.order.OrderChangeResult;
 import com.jforex.programming.order.call.OrderCallExecutor;
@@ -24,13 +22,19 @@ import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
+
 public class OrderChangeTest extends InstrumentUtilForTest {
 
     private OrderChange orderChange;
 
-    @Mock private OrderCallExecutor orderCallExecutorMock;
-    @Mock private OrderEventGateway orderEventGatewayMock;
-    @Captor private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
+    @Mock
+    private OrderCallExecutor orderCallExecutorMock;
+    @Mock
+    private OrderEventGateway orderEventGatewayMock;
+    @Captor
+    private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
     private OrderCallExecutorResult orderExecutorResult;
     private final String newLabel = "NewLabel";
@@ -67,7 +71,7 @@ public class OrderChangeTest extends InstrumentUtilForTest {
         final OrderChangeResult orderChangeResult = orderChange.close(orderUnderTest);
 
         verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
-                                            orderChangeResult.callRequest());
+                                            OrderCallRequest.CLOSE);
 
         verify(orderUnderTest).close();
     }
@@ -77,7 +81,7 @@ public class OrderChangeTest extends InstrumentUtilForTest {
         final OrderChangeResult orderChangeResult = orderChange.setLabel(orderUnderTest, newLabel);
 
         verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
-                                            orderChangeResult.callRequest());
+                                            OrderCallRequest.CHANGE_LABEL);
 
         verify(orderUnderTest).setLabel(newLabel);
     }
@@ -87,7 +91,7 @@ public class OrderChangeTest extends InstrumentUtilForTest {
         final OrderChangeResult orderChangeResult = orderChange.setGTT(orderUnderTest, newGTT);
 
         verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
-                                            orderChangeResult.callRequest());
+                                            OrderCallRequest.CHANGE_GTT);
 
         verify(orderUnderTest).setGoodTillTime(newGTT);
     }
@@ -97,7 +101,7 @@ public class OrderChangeTest extends InstrumentUtilForTest {
         final OrderChangeResult orderChangeResult = orderChange.setAmount(orderUnderTest, newAmount);
 
         verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
-                                            orderChangeResult.callRequest());
+                                            OrderCallRequest.CHANGE_AMOUNT);
 
         verify(orderUnderTest).setRequestedAmount(newAmount);
     }
@@ -107,7 +111,7 @@ public class OrderChangeTest extends InstrumentUtilForTest {
         final OrderChangeResult orderChangeResult = orderChange.setOpenPrice(orderUnderTest, newOpenPrice);
 
         verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
-                                            orderChangeResult.callRequest());
+                                            OrderCallRequest.CHANGE_OPENPRICE);
 
         verify(orderUnderTest).setOpenPrice(newOpenPrice);
     }
@@ -117,7 +121,7 @@ public class OrderChangeTest extends InstrumentUtilForTest {
         final OrderChangeResult orderChangeResult = orderChange.setSL(orderUnderTest, newSL);
 
         verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
-                                            orderChangeResult.callRequest());
+                                            OrderCallRequest.CHANGE_SL);
 
         verify(orderUnderTest).setStopLossPrice(newSL);
     }
@@ -129,7 +133,7 @@ public class OrderChangeTest extends InstrumentUtilForTest {
         final OrderChangeResult orderChangeResult = orderChange.setSLInPips(orderUnderTest, askEURUSD, pips);
 
         verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
-                                            orderChangeResult.callRequest());
+                                            OrderCallRequest.CHANGE_SL);
 
         verify(orderUnderTest).setStopLossPrice(newSLForPips);
     }
@@ -139,7 +143,7 @@ public class OrderChangeTest extends InstrumentUtilForTest {
         final OrderChangeResult orderChangeResult = orderChange.setTP(orderUnderTest, newTP);
 
         verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
-                                            orderChangeResult.callRequest());
+                                            OrderCallRequest.CHANGE_TP);
 
         verify(orderUnderTest).setTakeProfitPrice(newTP);
     }
@@ -151,7 +155,7 @@ public class OrderChangeTest extends InstrumentUtilForTest {
         final OrderChangeResult orderChangeResult = orderChange.setTPInPips(orderUnderTest, askEURUSD, pips);
 
         verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
-                                            orderChangeResult.callRequest());
+                                            OrderCallRequest.CHANGE_TP);
 
         verify(orderUnderTest).setTakeProfitPrice(newTPForPips);
     }

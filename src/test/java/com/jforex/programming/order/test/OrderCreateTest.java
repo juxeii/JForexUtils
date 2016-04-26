@@ -14,8 +14,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderCreate;
 import com.jforex.programming.order.OrderCreateResult;
@@ -29,13 +27,19 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
+
 public class OrderCreateTest extends InstrumentUtilForTest {
 
     private OrderCreate orderCreate;
 
-    @Mock private OrderCallExecutor orderCallExecutorMock;
-    @Mock private OrderEventGateway orderEventGatewayMock;
-    @Captor private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
+    @Mock
+    private OrderCallExecutor orderCallExecutorMock;
+    @Mock
+    private OrderEventGateway orderEventGatewayMock;
+    @Captor
+    private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
     private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest orderToMergeA = IOrderForTest.buyOrderEURUSD();
@@ -75,7 +79,7 @@ public class OrderCreateTest extends InstrumentUtilForTest {
         final OrderCreateResult orderCreateResult = orderCreate.submit(orderParams);
 
         verifyOrderCallAndOrderRegistration(orderCreateResult.orderOpt().get(),
-                                            orderCreateResult.callRequest());
+                                            OrderCallRequest.SUBMIT);
 
         engineForTest.verifySubmit(orderParams, 1);
     }
@@ -85,7 +89,7 @@ public class OrderCreateTest extends InstrumentUtilForTest {
         final OrderCreateResult orderCreateResult = orderCreate.merge(mergeLabel, ordersToMerge);
 
         verifyOrderCallAndOrderRegistration(orderCreateResult.orderOpt().get(),
-                                            orderCreateResult.callRequest());
+                                            OrderCallRequest.MERGE);
 
         verify(engineMock).mergeOrders(mergeLabel, ordersToMerge);
     }

@@ -31,7 +31,7 @@ public class OrderChange {
 
     public OrderChangeResult close(final IOrder orderToClose) {
         return isClosed.test(orderToClose)
-                ? new OrderChangeResult(orderToClose, Optional.empty(), OrderCallRequest.CLOSE)
+                ? new OrderChangeResult(orderToClose, Optional.empty())
                 : orderChangeResult(() -> orderToClose.close(),
                                     orderToClose,
                                     OrderCallRequest.CLOSE);
@@ -40,7 +40,7 @@ public class OrderChange {
     public OrderChangeResult setLabel(final IOrder orderToChangeLabel,
                                       final String newLabel) {
         return orderToChangeLabel.getLabel().equals(newLabel)
-                ? new OrderChangeResult(orderToChangeLabel, Optional.empty(), OrderCallRequest.CHANGE_LABEL)
+                ? new OrderChangeResult(orderToChangeLabel, Optional.empty())
                 : orderChangeResult(() -> orderToChangeLabel.setLabel(newLabel),
                                     orderToChangeLabel,
                                     OrderCallRequest.CHANGE_LABEL);
@@ -49,7 +49,7 @@ public class OrderChange {
     public OrderChangeResult setGTT(final IOrder orderToChangeGTT,
                                     final long newGTT) {
         return orderToChangeGTT.getGoodTillTime() == newGTT
-                ? new OrderChangeResult(orderToChangeGTT, Optional.empty(), OrderCallRequest.CHANGE_GTT)
+                ? new OrderChangeResult(orderToChangeGTT, Optional.empty())
                 : orderChangeResult(() -> orderToChangeGTT.setGoodTillTime(newGTT),
                                     orderToChangeGTT,
                                     OrderCallRequest.CHANGE_GTT);
@@ -58,7 +58,7 @@ public class OrderChange {
     public OrderChangeResult setOpenPrice(final IOrder orderToChangeOpenPrice,
                                           final double newOpenPrice) {
         return orderToChangeOpenPrice.getOpenPrice() == newOpenPrice
-                ? new OrderChangeResult(orderToChangeOpenPrice, Optional.empty(), OrderCallRequest.CHANGE_OPENPRICE)
+                ? new OrderChangeResult(orderToChangeOpenPrice, Optional.empty())
                 : orderChangeResult(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
                                     orderToChangeOpenPrice,
                                     OrderCallRequest.CHANGE_OPENPRICE);
@@ -67,7 +67,7 @@ public class OrderChange {
     public OrderChangeResult setAmount(final IOrder orderToChangeAmount,
                                        final double newAmount) {
         return orderToChangeAmount.getAmount() == newAmount
-                ? new OrderChangeResult(orderToChangeAmount, Optional.empty(), OrderCallRequest.CHANGE_AMOUNT)
+                ? new OrderChangeResult(orderToChangeAmount, Optional.empty())
                 : orderChangeResult(() -> orderToChangeAmount.setRequestedAmount(newAmount),
                                     orderToChangeAmount,
                                     OrderCallRequest.CHANGE_AMOUNT);
@@ -76,7 +76,7 @@ public class OrderChange {
     public OrderChangeResult setSL(final IOrder orderToChangeSL,
                                    final double newSL) {
         return isSLSetTo(newSL).test(orderToChangeSL)
-                ? new OrderChangeResult(orderToChangeSL, Optional.empty(), OrderCallRequest.CHANGE_SL)
+                ? new OrderChangeResult(orderToChangeSL, Optional.empty())
                 : orderChangeResult(() -> orderToChangeSL.setStopLossPrice(newSL),
                                     orderToChangeSL,
                                     OrderCallRequest.CHANGE_SL);
@@ -85,7 +85,7 @@ public class OrderChange {
     public OrderChangeResult setTP(final IOrder orderToChangeTP,
                                    final double newTP) {
         return isTPSetTo(newTP).test(orderToChangeTP)
-                ? new OrderChangeResult(orderToChangeTP, Optional.empty(), OrderCallRequest.CHANGE_TP)
+                ? new OrderChangeResult(orderToChangeTP, Optional.empty())
                 : orderChangeResult(() -> orderToChangeTP.setTakeProfitPrice(newTP),
                                     orderToChangeTP,
                                     OrderCallRequest.CHANGE_TP);
@@ -117,7 +117,7 @@ public class OrderChange {
         final OrderChangeResult orderChangeResult = callResultFromExecutorResult(orderChangeCall,
                                                                                  orderToChange,
                                                                                  orderCallRequest);
-        registerChangeResult(orderChangeResult);
+        registerChangeResult(orderChangeResult, orderCallRequest);
         return orderChangeResult;
     }
 
@@ -130,13 +130,13 @@ public class OrderChange {
                     return orderToChange;
                 });
         return new OrderChangeResult(orderToChange,
-                                     orderExecutorResult.exceptionOpt(),
-                                     orderCallRequest);
+                                     orderExecutorResult.exceptionOpt());
     }
 
-    private void registerChangeResult(final OrderChangeResult orderChangeResult) {
+    private void registerChangeResult(final OrderChangeResult orderChangeResult,
+                                      final OrderCallRequest orderCallRequest) {
         if (!orderChangeResult.exceptionOpt().isPresent())
             orderEventGateway.registerOrderRequest(orderChangeResult.order(),
-                                                   orderChangeResult.callRequest());
+                                                   orderCallRequest);
     }
 }

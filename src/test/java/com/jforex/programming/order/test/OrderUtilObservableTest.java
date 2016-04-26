@@ -18,7 +18,6 @@ import com.jforex.programming.order.OrderCreateResult;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilObservable;
-import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.PositionTaskRejectException;
@@ -60,23 +59,17 @@ public class OrderUtilObservableTest extends InstrumentUtilForTest {
         initCommonTestFramework();
         orderEventSubject = PublishSubject.create();
         submitOKResult = new OrderCreateResult(Optional.of(buyOrder),
-                                               Optional.empty(),
-                                               OrderCallRequest.SUBMIT);
+                                               Optional.empty());
         submitExceptionResult = new OrderCreateResult(Optional.empty(),
-                                                      Optional.of(jfException),
-                                                      OrderCallRequest.SUBMIT);
+                                                      Optional.of(jfException));
         mergeOKResult = new OrderCreateResult(Optional.of(buyOrder),
-                                              Optional.empty(),
-                                              OrderCallRequest.MERGE);
+                                              Optional.empty());
         mergeExceptionResult = new OrderCreateResult(Optional.empty(),
-                                                     Optional.of(jfException),
-                                                     OrderCallRequest.MERGE);
+                                                     Optional.of(jfException));
         changeOKResult = new OrderChangeResult(buyOrder,
-                                               Optional.empty(),
-                                               OrderCallRequest.CHANGE_SL);
+                                               Optional.empty());
         changeExceptionResult = new OrderChangeResult(buyOrder,
-                                                      Optional.of(jfException),
-                                                      OrderCallRequest.CHANGE_SL);
+                                                      Optional.of(jfException));
         orderSet = Sets.newHashSet(buyOrder, sellOrder);
 
         orderUtilObservable = new OrderUtilObservable(orderUtilMock, orderEventSubject);
