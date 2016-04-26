@@ -56,6 +56,9 @@ public class Position {
         this.concurrentUtil = concurrentUtil;
 
         orderUtilObservable.orderEventObservable()
+                .filter(orderEvent -> orderEvent.order().getInstrument() == instrument)
+                .doOnNext(orderEvent -> logger.info("Received " + orderEvent.type() + " for position "
+                        + instrument + " with label " + orderEvent.order().getLabel()))
                 .filter(orderEvent -> orderRepository.contains(orderEvent.order()))
                 .doOnNext(orderEvent -> logger.info("Received " + orderEvent.type() + " for position "
                         + instrument + " with label " + orderEvent.order().getLabel()))
@@ -105,6 +108,7 @@ public class Position {
     }
 
     public synchronized void submit(final OrderParams orderParams) {
+        logger.info("Start submit for " + orderParams.label());
         startTaskObs(orderUtilObservable.submit(orderParams)
                 .doOnNext(orderRepository::add),
                      PositionEventType.SUBMITTED);
