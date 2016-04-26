@@ -1,9 +1,8 @@
 package com.jforex.programming.order;
 
 import java.util.Collection;
+import java.util.Optional;
 
-import com.google.common.base.Supplier;
-import com.jforex.programming.order.call.OrderCallResult;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.OrderEventData;
 import com.jforex.programming.position.PositionTaskRejectException;
@@ -29,65 +28,71 @@ public class OrderUtilObservable {
     }
 
     public Observable<IOrder> submit(final OrderParams orderParams) {
-        return orderCallObservable(() -> orderUtil.submit(orderParams),
+        return orderCallObservable(orderUtil.submit(orderParams),
                                    OrderEventData.submitEvents);
     }
 
     public Observable<IOrder> merge(final String mergeOrderLabel,
                                     final Collection<IOrder> toMergeOrders) {
-        return orderCallObservable(() -> orderUtil.merge(mergeOrderLabel, toMergeOrders),
+        return orderCallObservable(orderUtil.merge(mergeOrderLabel, toMergeOrders),
                                    OrderEventData.mergeEvents);
     }
 
     public Observable<IOrder> close(final IOrder orderToClose) {
-        return orderCallObservable(() -> orderUtil.close(orderToClose),
+        return orderCallObservable(new OrderCreateResult(Optional.of(orderToClose),
+                                                         orderUtil.close(orderToClose)),
                                    OrderEventData.closeEvents);
     }
 
     public Observable<IOrder> setLabel(final IOrder orderToChangeLabel,
                                        final String newLabel) {
-        return orderCallObservable(() -> orderUtil.setLabel(orderToChangeLabel, newLabel),
+        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeLabel),
+                                                         orderUtil.setLabel(orderToChangeLabel, newLabel)),
                                    OrderEventData.changeLabelEvents);
     }
 
     public Observable<IOrder> setGTT(final IOrder orderToChangeGTT,
                                      final long newGTT) {
-        return orderCallObservable(() -> orderUtil.setGTT(orderToChangeGTT, newGTT),
+        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeGTT),
+                                                         orderUtil.setGTT(orderToChangeGTT, newGTT)),
                                    OrderEventData.changeGTTEvents);
     }
 
     public Observable<IOrder> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                            final double newOpenPrice) {
-        return orderCallObservable(() -> orderUtil.setOpenPrice(orderToChangeOpenPrice, newOpenPrice),
+        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeOpenPrice),
+                                                         orderUtil.setOpenPrice(orderToChangeOpenPrice, newOpenPrice)),
                                    OrderEventData.changeOpenPriceEvents);
     }
 
     public Observable<IOrder> setAmount(final IOrder orderToChangeAmount,
                                         final double newAmount) {
-        return orderCallObservable(() -> orderUtil.setAmount(orderToChangeAmount, newAmount),
+        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeAmount),
+                                                         orderUtil.setAmount(orderToChangeAmount, newAmount)),
                                    OrderEventData.changeAmountEvents);
     }
 
     public Observable<IOrder> setSL(final IOrder orderToChangeSL,
                                     final double newSL) {
-        return orderCallObservable(() -> orderUtil.setSL(orderToChangeSL, newSL),
+        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeSL),
+                                                         orderUtil.setSL(orderToChangeSL, newSL)),
                                    OrderEventData.changeSLEvents);
     }
 
     public Observable<IOrder> setTP(final IOrder orderToChangeTP,
                                     final double newTP) {
-        return orderCallObservable(() -> orderUtil.setTP(orderToChangeTP, newTP),
+        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeTP),
+                                                         orderUtil.setTP(orderToChangeTP, newTP)),
                                    OrderEventData.changeTPEvents);
     }
 
-    private final Observable<IOrder> orderCallObservable(final Supplier<OrderCallResult> orderCall,
+    private final Observable<IOrder> orderCallObservable(final OrderCreateResult orderCreateResult,
                                                          final OrderEventData orderEventData) {
         return Observable.create(subscriber -> {
-            final OrderCallResult orderCallResult = orderCall.get();
-            if (orderCallResult.exceptionOpt().isPresent())
-                subscriber.onError(orderCallResult.exceptionOpt().get());
+            if (orderCreateResult.exceptionOpt().isPresent())
+                subscriber.onError(orderCreateResult.exceptionOpt().get());
             else {
-                final IOrder order = orderFromCallResult(orderCallResult);
+                final IOrder order = orderCreateResult.orderOpt().get();
                 orderEventObservable.filter(orderEvent -> orderEvent.order() == order)
                         .filter(orderEvent -> orderEventData.all().contains(orderEvent.type()))
                         .flatMap(orderEvent -> processOrderEvent(orderEvent, orderEventData, subscriber))
@@ -107,11 +112,5 @@ public class OrderUtilObservable {
                 externalSubscriber.onCompleted();
             }
         });
-    }
-
-    private IOrder orderFromCallResult(final OrderCallResult orderCallResult) {
-        return orderCallResult instanceof OrderCreateResult
-                ? ((OrderCreateResult) orderCallResult).orderOpt().get()
-                : ((OrderChangeResult) orderCallResult).order();
     }
 }

@@ -29,71 +29,71 @@ public class OrderChange {
         this.orderEventGateway = orderEventGateway;
     }
 
-    public OrderChangeResult close(final IOrder orderToClose) {
+    public Optional<Exception> close(final IOrder orderToClose) {
         return isClosed.test(orderToClose)
-                ? new OrderChangeResult(orderToClose, Optional.empty())
+                ? Optional.empty()
                 : orderChangeResult(() -> orderToClose.close(),
                                     orderToClose,
                                     OrderCallRequest.CLOSE);
     }
 
-    public OrderChangeResult setLabel(final IOrder orderToChangeLabel,
-                                      final String newLabel) {
+    public Optional<Exception> setLabel(final IOrder orderToChangeLabel,
+                                        final String newLabel) {
         return orderToChangeLabel.getLabel().equals(newLabel)
-                ? new OrderChangeResult(orderToChangeLabel, Optional.empty())
+                ? Optional.empty()
                 : orderChangeResult(() -> orderToChangeLabel.setLabel(newLabel),
                                     orderToChangeLabel,
                                     OrderCallRequest.CHANGE_LABEL);
     }
 
-    public OrderChangeResult setGTT(final IOrder orderToChangeGTT,
-                                    final long newGTT) {
+    public Optional<Exception> setGTT(final IOrder orderToChangeGTT,
+                                      final long newGTT) {
         return orderToChangeGTT.getGoodTillTime() == newGTT
-                ? new OrderChangeResult(orderToChangeGTT, Optional.empty())
+                ? Optional.empty()
                 : orderChangeResult(() -> orderToChangeGTT.setGoodTillTime(newGTT),
                                     orderToChangeGTT,
                                     OrderCallRequest.CHANGE_GTT);
     }
 
-    public OrderChangeResult setOpenPrice(final IOrder orderToChangeOpenPrice,
-                                          final double newOpenPrice) {
+    public Optional<Exception> setOpenPrice(final IOrder orderToChangeOpenPrice,
+                                            final double newOpenPrice) {
         return orderToChangeOpenPrice.getOpenPrice() == newOpenPrice
-                ? new OrderChangeResult(orderToChangeOpenPrice, Optional.empty())
+                ? Optional.empty()
                 : orderChangeResult(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
                                     orderToChangeOpenPrice,
                                     OrderCallRequest.CHANGE_OPENPRICE);
     }
 
-    public OrderChangeResult setAmount(final IOrder orderToChangeAmount,
-                                       final double newAmount) {
+    public Optional<Exception> setAmount(final IOrder orderToChangeAmount,
+                                         final double newAmount) {
         return orderToChangeAmount.getAmount() == newAmount
-                ? new OrderChangeResult(orderToChangeAmount, Optional.empty())
+                ? Optional.empty()
                 : orderChangeResult(() -> orderToChangeAmount.setRequestedAmount(newAmount),
                                     orderToChangeAmount,
                                     OrderCallRequest.CHANGE_AMOUNT);
     }
 
-    public OrderChangeResult setSL(final IOrder orderToChangeSL,
-                                   final double newSL) {
+    public Optional<Exception> setSL(final IOrder orderToChangeSL,
+                                     final double newSL) {
         return isSLSetTo(newSL).test(orderToChangeSL)
-                ? new OrderChangeResult(orderToChangeSL, Optional.empty())
+                ? Optional.empty()
                 : orderChangeResult(() -> orderToChangeSL.setStopLossPrice(newSL),
                                     orderToChangeSL,
                                     OrderCallRequest.CHANGE_SL);
     }
 
-    public OrderChangeResult setTP(final IOrder orderToChangeTP,
-                                   final double newTP) {
+    public Optional<Exception> setTP(final IOrder orderToChangeTP,
+                                     final double newTP) {
         return isTPSetTo(newTP).test(orderToChangeTP)
-                ? new OrderChangeResult(orderToChangeTP, Optional.empty())
+                ? Optional.empty()
                 : orderChangeResult(() -> orderToChangeTP.setTakeProfitPrice(newTP),
                                     orderToChangeTP,
                                     OrderCallRequest.CHANGE_TP);
     }
 
-    public OrderChangeResult setSLInPips(final IOrder orderToChangeSL,
-                                         final double referencePrice,
-                                         final double pips) {
+    public Optional<Exception> setSLInPips(final IOrder orderToChangeSL,
+                                           final double referencePrice,
+                                           final double pips) {
         final int pipFactor = orderToChangeSL.isLong() ? shortFactor : longFactor;
         final double newSL = CalculationUtil.addPips(orderToChangeSL.getInstrument(),
                                                      referencePrice,
@@ -101,9 +101,9 @@ public class OrderChange {
         return setSL(orderToChangeSL, newSL);
     }
 
-    public OrderChangeResult setTPInPips(final IOrder orderToChangeTP,
-                                         final double referencePrice,
-                                         final double pips) {
+    public Optional<Exception> setTPInPips(final IOrder orderToChangeTP,
+                                           final double referencePrice,
+                                           final double pips) {
         final int pipFactor = orderToChangeTP.isLong() ? longFactor : shortFactor;
         final double newTP = CalculationUtil.addPips(orderToChangeTP.getInstrument(),
                                                      referencePrice,
@@ -111,32 +111,29 @@ public class OrderChange {
         return setTP(orderToChangeTP, newTP);
     }
 
-    private OrderChangeResult orderChangeResult(final OrderChangeCall orderChangeCall,
-                                                final IOrder orderToChange,
-                                                final OrderCallRequest orderCallRequest) {
-        final OrderChangeResult orderChangeResult = callResultFromExecutorResult(orderChangeCall,
-                                                                                 orderToChange,
-                                                                                 orderCallRequest);
-        registerChangeResult(orderChangeResult, orderCallRequest);
-        return orderChangeResult;
+    private Optional<Exception> orderChangeResult(final OrderChangeCall orderChangeCall,
+                                                  final IOrder orderToChange,
+                                                  final OrderCallRequest orderCallRequest) {
+        final OrderCallExecutorResult orderCallExecutorResult = callResultFromExecutorResult(orderChangeCall,
+                                                                                             orderToChange,
+                                                                                             orderCallRequest);
+        registerChangeResult(orderCallExecutorResult, orderCallRequest);
+        return orderCallExecutorResult.exceptionOpt();
     }
 
-    private OrderChangeResult callResultFromExecutorResult(final OrderChangeCall orderChangeCall,
-                                                           final IOrder orderToChange,
-                                                           final OrderCallRequest orderCallRequest) {
-        final OrderCallExecutorResult orderExecutorResult =
-                orderCallExecutor.run(() -> {
-                    orderChangeCall.change();
-                    return orderToChange;
-                });
-        return new OrderChangeResult(orderToChange,
-                                     orderExecutorResult.exceptionOpt());
+    private OrderCallExecutorResult callResultFromExecutorResult(final OrderChangeCall orderChangeCall,
+                                                                 final IOrder orderToChange,
+                                                                 final OrderCallRequest orderCallRequest) {
+        return orderCallExecutor.run(() -> {
+            orderChangeCall.change();
+            return orderToChange;
+        });
     }
 
-    private void registerChangeResult(final OrderChangeResult orderChangeResult,
+    private void registerChangeResult(final OrderCallExecutorResult orderCallExecutorResult,
                                       final OrderCallRequest orderCallRequest) {
-        if (!orderChangeResult.exceptionOpt().isPresent())
-            orderEventGateway.registerOrderRequest(orderChangeResult.order(),
+        if (!orderCallExecutorResult.exceptionOpt().isPresent())
+            orderEventGateway.registerOrderRequest(orderCallExecutorResult.orderOpt().get(),
                                                    orderCallRequest);
     }
 }

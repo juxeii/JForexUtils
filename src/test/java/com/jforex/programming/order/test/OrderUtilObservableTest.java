@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.OrderChangeResult;
 import com.jforex.programming.order.OrderCreateResult;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
@@ -47,8 +46,8 @@ public class OrderUtilObservableTest extends InstrumentUtilForTest {
     private OrderCreateResult submitExceptionResult;
     private OrderCreateResult mergeOKResult;
     private OrderCreateResult mergeExceptionResult;
-    private OrderChangeResult changeOKResult;
-    private OrderChangeResult changeExceptionResult;
+    private Optional<Exception> changeOKResult;
+    private Optional<Exception> changeExceptionResult;
     private final String mergeLabel = "MergeLabel";
     private Set<IOrder> orderSet;
     private final double newSL = askEURUSD;
@@ -66,10 +65,8 @@ public class OrderUtilObservableTest extends InstrumentUtilForTest {
                                               Optional.empty());
         mergeExceptionResult = new OrderCreateResult(Optional.empty(),
                                                      Optional.of(jfException));
-        changeOKResult = new OrderChangeResult(buyOrder,
-                                               Optional.empty());
-        changeExceptionResult = new OrderChangeResult(buyOrder,
-                                                      Optional.of(jfException));
+        changeOKResult = Optional.empty();
+        changeExceptionResult = Optional.of(jfException);
         orderSet = Sets.newHashSet(buyOrder, sellOrder);
 
         orderUtilObservable = new OrderUtilObservable(orderUtilMock, orderEventSubject);

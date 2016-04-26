@@ -13,7 +13,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.jforex.programming.order.OrderChange;
-import com.jforex.programming.order.OrderChangeResult;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -68,9 +67,9 @@ public class OrderChangeTest extends InstrumentUtilForTest {
 
     @Test
     public void testCloseIsCorrect() throws JFException {
-        final OrderChangeResult orderChangeResult = orderChange.close(orderUnderTest);
+        orderChange.close(orderUnderTest);
 
-        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+        verifyOrderCallAndOrderRegistration(orderUnderTest,
                                             OrderCallRequest.CLOSE);
 
         verify(orderUnderTest).close();
@@ -78,9 +77,9 @@ public class OrderChangeTest extends InstrumentUtilForTest {
 
     @Test
     public void testChangeLabelIsCorrect() throws JFException {
-        final OrderChangeResult orderChangeResult = orderChange.setLabel(orderUnderTest, newLabel);
+        orderChange.setLabel(orderUnderTest, newLabel);
 
-        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+        verifyOrderCallAndOrderRegistration(orderUnderTest,
                                             OrderCallRequest.CHANGE_LABEL);
 
         verify(orderUnderTest).setLabel(newLabel);
@@ -88,9 +87,9 @@ public class OrderChangeTest extends InstrumentUtilForTest {
 
     @Test
     public void testChangeGTTIsCorrect() throws JFException {
-        final OrderChangeResult orderChangeResult = orderChange.setGTT(orderUnderTest, newGTT);
+        orderChange.setGTT(orderUnderTest, newGTT);
 
-        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+        verifyOrderCallAndOrderRegistration(orderUnderTest,
                                             OrderCallRequest.CHANGE_GTT);
 
         verify(orderUnderTest).setGoodTillTime(newGTT);
@@ -98,9 +97,9 @@ public class OrderChangeTest extends InstrumentUtilForTest {
 
     @Test
     public void testChangeAmountIsCorrect() throws JFException {
-        final OrderChangeResult orderChangeResult = orderChange.setAmount(orderUnderTest, newAmount);
+        orderChange.setAmount(orderUnderTest, newAmount);
 
-        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+        verifyOrderCallAndOrderRegistration(orderUnderTest,
                                             OrderCallRequest.CHANGE_AMOUNT);
 
         verify(orderUnderTest).setRequestedAmount(newAmount);
@@ -108,9 +107,9 @@ public class OrderChangeTest extends InstrumentUtilForTest {
 
     @Test
     public void testChangeOpenPriceIsCorrect() throws JFException {
-        final OrderChangeResult orderChangeResult = orderChange.setOpenPrice(orderUnderTest, newOpenPrice);
+        orderChange.setOpenPrice(orderUnderTest, newOpenPrice);
 
-        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+        verifyOrderCallAndOrderRegistration(orderUnderTest,
                                             OrderCallRequest.CHANGE_OPENPRICE);
 
         verify(orderUnderTest).setOpenPrice(newOpenPrice);
@@ -118,9 +117,9 @@ public class OrderChangeTest extends InstrumentUtilForTest {
 
     @Test
     public void testChangeSLIsCorrect() throws JFException {
-        final OrderChangeResult orderChangeResult = orderChange.setSL(orderUnderTest, newSL);
+        orderChange.setSL(orderUnderTest, newSL);
 
-        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+        verifyOrderCallAndOrderRegistration(orderUnderTest,
                                             OrderCallRequest.CHANGE_SL);
 
         verify(orderUnderTest).setStopLossPrice(newSL);
@@ -130,9 +129,9 @@ public class OrderChangeTest extends InstrumentUtilForTest {
     public void testChangeSLInPipsIsCorrect() throws JFException {
         final double pips = 20.3;
         final double newSLForPips = askEURUSD - pips * instrumentEURUSD.getPipValue();
-        final OrderChangeResult orderChangeResult = orderChange.setSLInPips(orderUnderTest, askEURUSD, pips);
+        orderChange.setSLInPips(orderUnderTest, askEURUSD, pips);
 
-        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+        verifyOrderCallAndOrderRegistration(orderUnderTest,
                                             OrderCallRequest.CHANGE_SL);
 
         verify(orderUnderTest).setStopLossPrice(newSLForPips);
@@ -140,9 +139,9 @@ public class OrderChangeTest extends InstrumentUtilForTest {
 
     @Test
     public void testChangeTPIsCorrect() throws JFException {
-        final OrderChangeResult orderChangeResult = orderChange.setTP(orderUnderTest, newTP);
+        orderChange.setTP(orderUnderTest, newTP);
 
-        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+        verifyOrderCallAndOrderRegistration(orderUnderTest,
                                             OrderCallRequest.CHANGE_TP);
 
         verify(orderUnderTest).setTakeProfitPrice(newTP);
@@ -152,9 +151,9 @@ public class OrderChangeTest extends InstrumentUtilForTest {
     public void testChangeTPInPipsIsCorrect() throws JFException {
         final double pips = 20.3;
         final double newTPForPips = askEURUSD + pips * instrumentEURUSD.getPipValue();
-        final OrderChangeResult orderChangeResult = orderChange.setTPInPips(orderUnderTest, askEURUSD, pips);
+        orderChange.setTPInPips(orderUnderTest, askEURUSD, pips);
 
-        verifyOrderCallAndOrderRegistration(orderChangeResult.order(),
+        verifyOrderCallAndOrderRegistration(orderUnderTest,
                                             OrderCallRequest.CHANGE_TP);
 
         verify(orderUnderTest).setTakeProfitPrice(newTPForPips);
