@@ -56,9 +56,19 @@ public class LoginHandler {
     }
 
     private void evaluateLoginResult(final LoginResult loginResult) {
-        if (loginResult.type() == LoginResultType.LOGGED_IN)
+        if (loginResult.type() == LoginResultType.LOGGED_IN) {
+            while (!client.isConnected()) {
+                logger.debug("Waiting for client to connect...");
+                try {
+                    Thread.sleep(1000L);
+                } catch (final InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            logger.debug("Client connected.");
             updateState(LoginState.LOGGED_IN);
-        else {
+        } else {
             logger.error("Exception occured during login! " + loginResult.exceptionOpt().get());
             System.exit(0);
         }
