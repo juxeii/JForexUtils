@@ -190,13 +190,15 @@ public class JForexUtil implements MessageConsumer {
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
-        tickQuotePublisherForRx.onJFEvent(new TickQuote(instrument, tick));
+        if (!DateTimeUtil.isWeekendMillis(tick.getTime()))
+            tickQuotePublisherForRx.onJFEvent(new TickQuote(instrument, tick));
     }
 
     public void onBar(final Instrument instrument,
                       final Period period,
                       final IBar askBar,
                       final IBar bidBar) {
-        barQuotePublisherForRx.onJFEvent(new BarQuote(instrument, period, askBar, bidBar));
+        if (!DateTimeUtil.isWeekendMillis(askBar.getTime()))
+            barQuotePublisherForRx.onJFEvent(new BarQuote(instrument, period, askBar, bidBar));
     }
 }
