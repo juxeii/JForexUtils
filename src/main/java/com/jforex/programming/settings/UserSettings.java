@@ -18,4 +18,7 @@ public interface UserSettings extends Config {
 
     @DefaultValue("M_")
     public String ORDER_MERGE_LABEL_PREFIX();
+
+    @DefaultValue("true")
+    public boolean ENABLE_WEEKEND_QUOTE_FILTER();
 }

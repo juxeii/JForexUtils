@@ -190,7 +190,7 @@ public class JForexUtil implements MessageConsumer {
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
-        if (!DateTimeUtil.isWeekendMillis(tick.getTime()))
+        if (uss.ENABLE_WEEKEND_QUOTE_FILTER() && !DateTimeUtil.isWeekendMillis(tick.getTime()))
             tickQuotePublisherForRx.onJFEvent(new TickQuote(instrument, tick));
     }
 
@@ -198,7 +198,7 @@ public class JForexUtil implements MessageConsumer {
                       final Period period,
                       final IBar askBar,
                       final IBar bidBar) {
-        if (!DateTimeUtil.isWeekendMillis(askBar.getTime()))
+        if (uss.ENABLE_WEEKEND_QUOTE_FILTER() && !DateTimeUtil.isWeekendMillis(askBar.getTime()))
             barQuotePublisherForRx.onJFEvent(new BarQuote(instrument, period, askBar, bidBar));
     }
 }
