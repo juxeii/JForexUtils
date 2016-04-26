@@ -119,6 +119,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         verify(position).submit(any());
 
         positionEventSubject.onNext(PositionEventType.SUBMITTED);
+        positionEventSubject.onNext(PositionEventType.MERGED);
 
         positionSwitcher.sendBuySignal();
         verify(position, times(2)).submit(any());
@@ -151,6 +152,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         verify(position).submit(any());
 
         positionEventSubject.onNext(PositionEventType.SUBMITTED);
+        positionEventSubject.onNext(PositionEventType.MERGED);
 
         positionSwitcher.sendSellSignal();
         verify(position, times(2)).submit(any());
