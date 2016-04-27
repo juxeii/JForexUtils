@@ -38,12 +38,12 @@ public final class OrderEventData {
         this.doneEvents = doneEvents;
     }
 
-    public final EnumSet<OrderEventType> forDone() {
-        return doneEvents;
+    public final boolean isDoneType(final OrderEventType orderEventType) {
+        return doneEvents.contains(orderEventType);
     }
 
-    public final EnumSet<OrderEventType> forReject() {
-        return rejectEvents;
+    public final boolean isRejectType(final OrderEventType orderEventType) {
+        return rejectEvents.contains(orderEventType);
     }
 
     public final EnumSet<OrderEventType> all() {

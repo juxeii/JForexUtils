@@ -120,13 +120,13 @@ public class OrderUtilObservable {
         });
     }
 
-    private Observable<IOrder> processOrderEvent(final OrderEvent orderEvent,
-                                                 final OrderEventData orderEventData,
-                                                 final Subscriber<? super IOrder> externalSubscriber) {
+    private final Observable<IOrder> processOrderEvent(final OrderEvent orderEvent,
+                                                       final OrderEventData orderEventData,
+                                                       final Subscriber<? super IOrder> externalSubscriber) {
         return Observable.create(subscriber -> {
-            if (orderEventData.forReject().contains(orderEvent.type())) {
+            if (orderEventData.isRejectType(orderEvent.type()))
                 externalSubscriber.onError(new PositionTaskRejectException("", orderEvent));
-            } else if (orderEventData.forDone().contains(orderEvent.type())) {
+            else if (orderEventData.isDoneType(orderEvent.type())) {
                 externalSubscriber.onNext(orderEvent.order());
                 externalSubscriber.onCompleted();
             }

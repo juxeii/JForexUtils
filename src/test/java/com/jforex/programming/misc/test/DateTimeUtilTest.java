@@ -13,8 +13,9 @@ import java.time.format.DateTimeFormatter;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.DateTimeUtil;
+
+import com.dukascopy.api.JFException;
 
 public class DateTimeUtilTest {
 
@@ -57,10 +58,9 @@ public class DateTimeUtilTest {
 
     @Test
     public void testToDukascopyTimeIsCorrect() {
-        final LocalDateTime localNow = LocalDateTime.now();
-        final LocalDateTime dukascopyNow = DateTimeUtil.toDukascopyDateTime(localNow);
+        final LocalDateTime dukascopyTime = DateTimeUtil.toDukascopyDateTime(testDateTime);
 
-        assertThat(localNow.getHour(), equalTo(dukascopyNow.getHour() + 2));
+        assertThat(testDateTime.getHour(), equalTo(dukascopyTime.getHour() + 2));
     }
 
     @Test
