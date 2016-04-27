@@ -3,8 +3,6 @@ package com.jforex.programming.position;
 import static com.jforex.programming.misc.JForexUtil.pfs;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
-import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
-import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
 import static java.util.stream.Collectors.toList;
 
@@ -191,7 +189,6 @@ public class Position {
     private Observable<IOrder> changeSLOrderObs(final IOrder orderToChangeSL,
                                                 final double newSL) {
         return Observable.just(orderToChangeSL)
-                .filter(order -> !isSLSetTo(newSL).test(order))
                 .doOnNext(order -> logger.debug("Start to change SL from " + order.getStopLossPrice() + " to "
                         + newSL + " for order " + order.getLabel() + " and position " + instrument))
                 .flatMap(order -> orderUtilObservable.setSL(orderToChangeSL, newSL))
@@ -201,10 +198,8 @@ public class Position {
     private Observable<IOrder> changeTPOrderObs(final IOrder orderToChangeTP,
                                                 final double newTP) {
         return Observable.just(orderToChangeTP)
-                .filter(order -> !isTPSetTo(newTP).test(order))
                 .doOnNext(order -> logger.debug("Start to change TP from " + order.getTakeProfitPrice()
-                        + " to " + newTP + " for order "
-                        + order.getLabel() + " and position " + instrument))
+                        + " to " + newTP + " for order " + order.getLabel() + " and position " + instrument))
                 .flatMap(order -> orderUtilObservable.setTP(orderToChangeTP, newTP))
                 .retryWhen(this::shouldRetry);
     }
