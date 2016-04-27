@@ -1,9 +1,5 @@
 package com.jforex.programming.order;
 
-import static com.jforex.programming.order.OrderStaticUtil.isClosed;
-import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
-import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
-
 import java.util.Optional;
 
 import com.jforex.programming.misc.CalculationUtil;
@@ -30,66 +26,51 @@ public class OrderChange {
     }
 
     public Optional<Exception> close(final IOrder orderToClose) {
-        return isClosed.test(orderToClose)
-                ? Optional.empty()
-                : runChangeCall(() -> orderToClose.close(),
-                                orderToClose,
-                                OrderCallRequest.CLOSE);
+        return runChangeCall(() -> orderToClose.close(),
+                             orderToClose,
+                             OrderCallRequest.CLOSE);
     }
 
     public Optional<Exception> setLabel(final IOrder orderToChangeLabel,
                                         final String newLabel) {
-        return orderToChangeLabel.getLabel().equals(newLabel)
-                ? Optional.empty()
-                : runChangeCall(() -> orderToChangeLabel.setLabel(newLabel),
-                                orderToChangeLabel,
-                                OrderCallRequest.CHANGE_LABEL);
+        return runChangeCall(() -> orderToChangeLabel.setLabel(newLabel),
+                             orderToChangeLabel,
+                             OrderCallRequest.CHANGE_LABEL);
     }
 
     public Optional<Exception> setGTT(final IOrder orderToChangeGTT,
                                       final long newGTT) {
-        return orderToChangeGTT.getGoodTillTime() == newGTT
-                ? Optional.empty()
-                : runChangeCall(() -> orderToChangeGTT.setGoodTillTime(newGTT),
-                                orderToChangeGTT,
-                                OrderCallRequest.CHANGE_GTT);
+        return runChangeCall(() -> orderToChangeGTT.setGoodTillTime(newGTT),
+                             orderToChangeGTT,
+                             OrderCallRequest.CHANGE_GTT);
     }
 
     public Optional<Exception> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                             final double newOpenPrice) {
-        return orderToChangeOpenPrice.getOpenPrice() == newOpenPrice
-                ? Optional.empty()
-                : runChangeCall(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
-                                orderToChangeOpenPrice,
-                                OrderCallRequest.CHANGE_OPENPRICE);
+        return runChangeCall(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
+                             orderToChangeOpenPrice,
+                             OrderCallRequest.CHANGE_OPENPRICE);
     }
 
     public Optional<Exception> setAmount(final IOrder orderToChangeAmount,
                                          final double newAmount) {
-        System.out.println("old amout " + orderToChangeAmount.getRequestedAmount() + " new " + newAmount);
-        return orderToChangeAmount.getRequestedAmount() == newAmount
-                ? Optional.empty()
-                : runChangeCall(() -> orderToChangeAmount.setRequestedAmount(newAmount),
-                                orderToChangeAmount,
-                                OrderCallRequest.CHANGE_AMOUNT);
+        return runChangeCall(() -> orderToChangeAmount.setRequestedAmount(newAmount),
+                             orderToChangeAmount,
+                             OrderCallRequest.CHANGE_AMOUNT);
     }
 
     public Optional<Exception> setSL(final IOrder orderToChangeSL,
                                      final double newSL) {
-        return isSLSetTo(newSL).test(orderToChangeSL)
-                ? Optional.empty()
-                : runChangeCall(() -> orderToChangeSL.setStopLossPrice(newSL),
-                                orderToChangeSL,
-                                OrderCallRequest.CHANGE_SL);
+        return runChangeCall(() -> orderToChangeSL.setStopLossPrice(newSL),
+                             orderToChangeSL,
+                             OrderCallRequest.CHANGE_SL);
     }
 
     public Optional<Exception> setTP(final IOrder orderToChangeTP,
                                      final double newTP) {
-        return isTPSetTo(newTP).test(orderToChangeTP)
-                ? Optional.empty()
-                : runChangeCall(() -> orderToChangeTP.setTakeProfitPrice(newTP),
-                                orderToChangeTP,
-                                OrderCallRequest.CHANGE_TP);
+        return runChangeCall(() -> orderToChangeTP.setTakeProfitPrice(newTP),
+                             orderToChangeTP,
+                             OrderCallRequest.CHANGE_TP);
     }
 
     public Optional<Exception> setSLInPips(final IOrder orderToChangeSL,

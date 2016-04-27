@@ -1,9 +1,7 @@
 package com.jforex.programming.order.test;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -78,16 +76,6 @@ public class OrderChangeTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testCloseIsNotCalledWhenAlreadyClosed() throws JFException {
-        orderUnderTest.setState(IOrder.State.CLOSED);
-
-        orderChange.close(orderUnderTest);
-
-        verify(orderUnderTest, never()).close();
-        verifyZeroInteractions(orderCallExecutorMock);
-    }
-
-    @Test
     public void testChangeLabelIsCorrect() throws JFException {
         orderChange.setLabel(orderUnderTest, newLabel);
 
@@ -95,16 +83,6 @@ public class OrderChangeTest extends InstrumentUtilForTest {
                                             OrderCallRequest.CHANGE_LABEL);
 
         verify(orderUnderTest).setLabel(newLabel);
-    }
-
-    @Test
-    public void testSetLabelIsNotCalledWhenAlreadySet() throws JFException {
-        final String orderLabel = orderUnderTest.getLabel();
-
-        orderChange.setLabel(orderUnderTest, orderLabel);
-
-        verify(orderUnderTest, never()).setLabel(orderLabel);
-        verifyZeroInteractions(orderCallExecutorMock);
     }
 
     @Test
@@ -118,16 +96,6 @@ public class OrderChangeTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testSetGTTIsNotCalledWhenAlreadySet() throws JFException {
-        final long orderGTT = orderUnderTest.getGoodTillTime();
-
-        orderChange.setGTT(orderUnderTest, orderGTT);
-
-        verify(orderUnderTest, never()).setGoodTillTime(orderGTT);
-        verifyZeroInteractions(orderCallExecutorMock);
-    }
-
-    @Test
     public void testChangeAmountIsCorrect() throws JFException {
         orderChange.setAmount(orderUnderTest, newAmount);
 
@@ -135,16 +103,6 @@ public class OrderChangeTest extends InstrumentUtilForTest {
                                             OrderCallRequest.CHANGE_AMOUNT);
 
         verify(orderUnderTest).setRequestedAmount(newAmount);
-    }
-
-    @Test
-    public void testSetAmountNotCalledWhenAlreadySet() throws JFException {
-        final double orderAmount = orderUnderTest.getRequestedAmount();
-
-        orderChange.setAmount(orderUnderTest, orderAmount);
-
-        verify(orderUnderTest, never()).setRequestedAmount(orderAmount);
-        verifyZeroInteractions(orderCallExecutorMock);
     }
 
     @Test
@@ -158,16 +116,6 @@ public class OrderChangeTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testSetOpenPriceNotCalledWhenAlreadySet() throws JFException {
-        final double orderOpenPrice = orderUnderTest.getOpenPrice();
-
-        orderChange.setOpenPrice(orderUnderTest, orderOpenPrice);
-
-        verify(orderUnderTest, never()).setOpenPrice(orderOpenPrice);
-        verifyZeroInteractions(orderCallExecutorMock);
-    }
-
-    @Test
     public void testChangeSLIsCorrect() throws JFException {
         orderChange.setSL(orderUnderTest, newSL);
 
@@ -175,16 +123,6 @@ public class OrderChangeTest extends InstrumentUtilForTest {
                                             OrderCallRequest.CHANGE_SL);
 
         verify(orderUnderTest).setStopLossPrice(newSL);
-    }
-
-    @Test
-    public void testSetSLNotCalledWhenAlreadySet() throws JFException {
-        final double orderSL = orderUnderTest.getStopLossPrice();
-
-        orderChange.setSL(orderUnderTest, orderSL);
-
-        verify(orderUnderTest, never()).setStopLossPrice(orderSL);
-        verifyZeroInteractions(orderCallExecutorMock);
     }
 
     @Test
@@ -207,16 +145,6 @@ public class OrderChangeTest extends InstrumentUtilForTest {
                                             OrderCallRequest.CHANGE_TP);
 
         verify(orderUnderTest).setTakeProfitPrice(newTP);
-    }
-
-    @Test
-    public void testSetTPNotCalledWhenAlreadySet() throws JFException {
-        final double orderTP = orderUnderTest.getTakeProfitPrice();
-
-        orderChange.setTP(orderUnderTest, orderTP);
-
-        verify(orderUnderTest, never()).setTakeProfitPrice(orderTP);
-        verifyZeroInteractions(orderCallExecutorMock);
     }
 
     @Test

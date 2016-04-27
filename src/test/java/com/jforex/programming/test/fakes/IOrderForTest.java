@@ -229,17 +229,17 @@ public class IOrderForTest implements IOrder {
     }
 
     @Override
-    public void setGoodTillTime(final long goodTillTime) throws JFException {
+    public void setGoodTillTime(final long goodTillTime) {
         this.goodTillTime = goodTillTime;
     }
 
     @Override
-    public void setLabel(final String label) throws JFException {
+    public void setLabel(final String label) {
         this.label = label;
     }
 
     @Override
-    public void setOpenPrice(final double openPrice) throws JFException {
+    public void setOpenPrice(final double openPrice) {
         this.openPrice = openPrice;
     }
 
@@ -248,7 +248,7 @@ public class IOrderForTest implements IOrder {
     }
 
     @Override
-    public void setRequestedAmount(final double requestedAmount) throws JFException {
+    public void setRequestedAmount(final double requestedAmount) {
         this.requestedAmount = requestedAmount;
     }
 

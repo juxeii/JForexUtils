@@ -297,29 +297,35 @@ public class OrderUtilObservableTest extends InstrumentUtilForTest {
 
     @Test
     public void testSetGTTWithExceptionObservableIsCorrect() {
-        when(orderUtilMock.setGTT(buyOrder, 0L)).thenReturn(changeExceptionResult);
+        buyOrder.setGoodTillTime(42L);
+        when(orderUtilMock.setGTT(buyOrder, 24L)).thenReturn(changeExceptionResult);
 
-        orderUtilObservable.setGTT(buyOrder, 0L)
+        orderUtilObservable.setGTT(buyOrder, 24L)
                 .subscribe(orderSubscriber);
 
-        verify(orderUtilMock).setGTT(buyOrder, 0L);
+        verify(orderUtilMock).setGTT(buyOrder, 24L);
         assertExceptionNotification();
     }
 
     @Test
     public void testChangeGTTObservableForOK() {
+        buyOrder.setGoodTillTime(42L);
+
         testChangeGTTWithOrderEventType(OrderEventType.GTT_CHANGE_OK);
         assertOrderNotification();
     }
 
     @Test
     public void testChangeGTTObservableForRejected() {
+        buyOrder.setGoodTillTime(42L);
+
         testChangeGTTWithOrderEventType(OrderEventType.CHANGE_GTT_REJECTED);
         assertRejectExceptionNotification();
     }
 
     @Test
     public void testSetOpenPriceWithExceptionObservableIsCorrect() {
+        buyOrder.setOpenPrice(1.5432);
         when(orderUtilMock.setOpenPrice(buyOrder, 0)).thenReturn(changeExceptionResult);
 
         orderUtilObservable.setOpenPrice(buyOrder, 0)
@@ -331,18 +337,23 @@ public class OrderUtilObservableTest extends InstrumentUtilForTest {
 
     @Test
     public void testChangeOpenPriceObservableForOK() {
+        buyOrder.setOpenPrice(1.33421);
+
         testChangeOpenPriceWithOrderEventType(OrderEventType.PRICE_CHANGE_OK);
         assertOrderNotification();
     }
 
     @Test
     public void testChangeOpenPriceObservableForRejected() {
+        buyOrder.setOpenPrice(1.33421);
+
         testChangeOpenPriceWithOrderEventType(OrderEventType.CHANGE_OPENPRICE_REJECTED);
         assertRejectExceptionNotification();
     }
 
     @Test
     public void testSetAmountWithExceptionObservableIsCorrect() {
+        buyOrder.setRequestedAmount(0.21);
         when(orderUtilMock.setAmount(buyOrder, 0)).thenReturn(changeExceptionResult);
 
         orderUtilObservable.setAmount(buyOrder, 0)
@@ -354,18 +365,23 @@ public class OrderUtilObservableTest extends InstrumentUtilForTest {
 
     @Test
     public void testChangeAmountObservableForOK() {
+        buyOrder.setRequestedAmount(0.12);
+
         testChangeAmountWithOrderEventType(OrderEventType.AMOUNT_CHANGE_OK);
         assertOrderNotification();
     }
 
     @Test
     public void testChangeAmountObservableForRejected() {
+        buyOrder.setRequestedAmount(42.42);
+
         testChangeAmountWithOrderEventType(OrderEventType.CHANGE_AMOUNT_REJECTED);
         assertRejectExceptionNotification();
     }
 
     @Test
     public void testChangeSLWithExceptionObservableIsCorrect() {
+        buyOrder.setStopLossPrice(1.4367);
         when(orderUtilMock.setSL(buyOrder, newSL)).thenReturn(changeExceptionResult);
 
         orderUtilObservable.setSL(buyOrder, newSL)
@@ -377,12 +393,16 @@ public class OrderUtilObservableTest extends InstrumentUtilForTest {
 
     @Test
     public void testChangeSLObservableForChangeSLOK() {
+        buyOrder.setStopLossPrice(1.4321);
+
         testChangeSLWithOrderEventType(OrderEventType.SL_CHANGE_OK);
         assertOrderNotification();
     }
 
     @Test
     public void testChangeSLObservableForChangeSLRejected() {
+        buyOrder.setStopLossPrice(1.4321);
+
         testChangeSLWithOrderEventType(OrderEventType.CHANGE_SL_REJECTED);
         assertRejectExceptionNotification();
     }

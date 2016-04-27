@@ -1,5 +1,9 @@
 package com.jforex.programming.order;
 
+import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
+
 import java.util.Collection;
 import java.util.Optional;
 
@@ -39,51 +43,66 @@ public class OrderUtilObservable {
     }
 
     public Observable<IOrder> close(final IOrder orderToClose) {
-        return orderCallObservable(new OrderCreateResult(Optional.of(orderToClose),
-                                                         orderUtil.close(orderToClose)),
-                                   OrderEventData.closeEvents);
+        return isClosed.test(orderToClose)
+                ? Observable.just(orderToClose)
+                : orderCallObservable(new OrderCreateResult(Optional.of(orderToClose),
+                                                            orderUtil.close(orderToClose)),
+                                      OrderEventData.closeEvents);
     }
 
     public Observable<IOrder> setLabel(final IOrder orderToChangeLabel,
                                        final String newLabel) {
-        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeLabel),
-                                                         orderUtil.setLabel(orderToChangeLabel, newLabel)),
-                                   OrderEventData.changeLabelEvents);
+        return orderToChangeLabel.getLabel().equals(newLabel)
+                ? Observable.just(orderToChangeLabel)
+                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeLabel),
+                                                            orderUtil.setLabel(orderToChangeLabel, newLabel)),
+                                      OrderEventData.changeLabelEvents);
     }
 
     public Observable<IOrder> setGTT(final IOrder orderToChangeGTT,
                                      final long newGTT) {
-        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeGTT),
-                                                         orderUtil.setGTT(orderToChangeGTT, newGTT)),
-                                   OrderEventData.changeGTTEvents);
+        return orderToChangeGTT.getGoodTillTime() == newGTT
+                ? Observable.just(orderToChangeGTT)
+                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeGTT),
+                                                            orderUtil.setGTT(orderToChangeGTT, newGTT)),
+                                      OrderEventData.changeGTTEvents);
     }
 
     public Observable<IOrder> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                            final double newOpenPrice) {
-        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeOpenPrice),
-                                                         orderUtil.setOpenPrice(orderToChangeOpenPrice, newOpenPrice)),
-                                   OrderEventData.changeOpenPriceEvents);
+        return orderToChangeOpenPrice.getOpenPrice() == newOpenPrice
+                ? Observable.just(orderToChangeOpenPrice)
+                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeOpenPrice),
+                                                            orderUtil.setOpenPrice(orderToChangeOpenPrice,
+                                                                                   newOpenPrice)),
+                                      OrderEventData.changeOpenPriceEvents);
     }
 
     public Observable<IOrder> setAmount(final IOrder orderToChangeAmount,
                                         final double newAmount) {
-        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeAmount),
-                                                         orderUtil.setAmount(orderToChangeAmount, newAmount)),
-                                   OrderEventData.changeAmountEvents);
+        return orderToChangeAmount.getRequestedAmount() == newAmount
+                ? Observable.just(orderToChangeAmount)
+                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeAmount),
+                                                            orderUtil.setAmount(orderToChangeAmount, newAmount)),
+                                      OrderEventData.changeAmountEvents);
     }
 
     public Observable<IOrder> setSL(final IOrder orderToChangeSL,
                                     final double newSL) {
-        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeSL),
-                                                         orderUtil.setSL(orderToChangeSL, newSL)),
-                                   OrderEventData.changeSLEvents);
+        return isSLSetTo(newSL).test(orderToChangeSL)
+                ? Observable.just(orderToChangeSL)
+                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeSL),
+                                                            orderUtil.setSL(orderToChangeSL, newSL)),
+                                      OrderEventData.changeSLEvents);
     }
 
     public Observable<IOrder> setTP(final IOrder orderToChangeTP,
                                     final double newTP) {
-        return orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeTP),
-                                                         orderUtil.setTP(orderToChangeTP, newTP)),
-                                   OrderEventData.changeTPEvents);
+        return isTPSetTo(newTP).test(orderToChangeTP)
+                ? Observable.just(orderToChangeTP)
+                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeTP),
+                                                            orderUtil.setTP(orderToChangeTP, newTP)),
+                                      OrderEventData.changeTPEvents);
     }
 
     private final Observable<IOrder> orderCallObservable(final OrderCreateResult orderCreateResult,

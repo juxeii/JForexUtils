@@ -192,7 +192,10 @@ public class Position {
                 .doOnNext(order -> logger.debug("Start to change SL from " + order.getStopLossPrice() + " to "
                         + newSL + " for order " + order.getLabel() + " and position " + instrument))
                 .flatMap(order -> orderUtilObservable.setSL(orderToChangeSL, newSL))
-                .retryWhen(this::shouldRetry);
+                .retryWhen(this::shouldRetry)
+                .doOnNext(order -> logger.debug("Changed SL from " + order.getStopLossPrice()
+                        + " to " + order.getStopLossPrice() + " for order " + order.getLabel() + " and position "
+                        + instrument));
     }
 
     private Observable<IOrder> changeTPOrderObs(final IOrder orderToChangeTP,
@@ -201,7 +204,10 @@ public class Position {
                 .doOnNext(order -> logger.debug("Start to change TP from " + order.getTakeProfitPrice()
                         + " to " + newTP + " for order " + order.getLabel() + " and position " + instrument))
                 .flatMap(order -> orderUtilObservable.setTP(orderToChangeTP, newTP))
-                .retryWhen(this::shouldRetry);
+                .retryWhen(this::shouldRetry)
+                .doOnNext(order -> logger.debug("Changed TP from " + order.getTakeProfitPrice()
+                        + " to " + order.getTakeProfitPrice() + " for order " + order.getLabel() + " and position "
+                        + instrument));
     }
 
     private Observable<?> shouldRetry(final Observable<? extends Throwable> attempts) {
