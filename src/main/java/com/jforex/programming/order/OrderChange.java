@@ -66,7 +66,8 @@ public class OrderChange {
 
     public Optional<Exception> setAmount(final IOrder orderToChangeAmount,
                                          final double newAmount) {
-        return orderToChangeAmount.getAmount() == newAmount
+        System.out.println("old amout " + orderToChangeAmount.getRequestedAmount() + " new " + newAmount);
+        return orderToChangeAmount.getRequestedAmount() == newAmount
                 ? Optional.empty()
                 : runChangeCall(() -> orderToChangeAmount.setRequestedAmount(newAmount),
                                 orderToChangeAmount,
