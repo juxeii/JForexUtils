@@ -2,7 +2,7 @@ package com.jforex.programming.connection;
 
 public enum LoginResultType {
 
-    LOGGED_IN,
+    NO_ERROR,
     INVALID_CREDENTIALS,
     INVALID_VERSION,
     EXCEPTION

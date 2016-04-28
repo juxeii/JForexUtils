@@ -129,6 +129,7 @@ public class OrderUtilObservable {
             else if (orderEventData.isDoneType(orderEvent.type())) {
                 externalSubscriber.onNext(orderEvent.order());
                 externalSubscriber.onCompleted();
+                subscriber.onCompleted();
             }
         });
     }

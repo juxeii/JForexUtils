@@ -2,28 +2,29 @@ package com.jforex.programming.connection.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.google.common.base.Supplier;
+import com.jforex.programming.connection.Authentification;
+import com.jforex.programming.test.common.CommonUtilForTest;
+
 import com.dukascopy.api.system.IClient;
 import com.dukascopy.api.system.JFAuthenticationException;
 import com.dukascopy.api.system.JFVersionException;
-import com.google.common.base.Supplier;
-import com.jforex.programming.connection.Authentification;
-import com.jforex.programming.connection.LoginResult;
-import com.jforex.programming.connection.LoginResultType;
-import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class AuthentificationTest extends CommonUtilForTest {
 
     private Authentification authentification;
 
-    @Mock private IClient clientMock;
+    @Mock
+    private IClient clientMock;
     private final static String jnlpAddress = "http://jnlp.test.address";
     private final static String userName = "username";
     private final static String password = "password";
@@ -36,11 +37,11 @@ public class AuthentificationTest extends CommonUtilForTest {
         authentification = new Authentification(clientMock);
     }
 
-    private LoginResult loginDemo() {
+    private Optional<Exception> login() {
         return authentification.login(jnlpAddress, userName, password);
     }
 
-    private LoginResult loginLive() {
+    private Optional<Exception> loginWithPin() {
         return authentification.loginWithPin(jnlpAddress, userName, password, pin);
     }
 
@@ -51,60 +52,51 @@ public class AuthentificationTest extends CommonUtilForTest {
         } catch (final Exception e) {}
     }
 
-    private void assertResultContents(final LoginResult result,
-                                      final LoginResultType loginResultType,
-                                      final Class<? extends Exception> exceptionType) {
-        assertThat(result.type(), equalTo(loginResultType));
-        assertTrue(exceptionType.isInstance(result.exceptionOpt().get()));
-    }
-
-    private void assertLoginException(final LoginResultType loginResultType,
-                                      final Class<? extends Exception> exceptionType) {
-        assertLoginExceptionWithCallParameter(this::loginDemo, loginResultType, exceptionType);
-        assertLoginExceptionWithCallParameter(this::loginLive, loginResultType, exceptionType);
-    }
-
-    private void assertLoginExceptionWithCallParameter(final Supplier<LoginResult> loginCall,
-                                                       final LoginResultType loginResultType,
+    private void assertLoginExceptionWithCallParameter(final Supplier<Optional<Exception>> loginCall,
                                                        final Class<? extends Exception> exceptionType) {
         setExceptionOnConnect(exceptionType);
 
-        final LoginResult result = loginCall.get();
+        final Optional<Exception> exceptionOpt = loginCall.get();
 
-        assertResultContents(result, loginResultType, exceptionType);
+        assertThat(exceptionOpt.get().getClass(), equalTo(exceptionType));
+    }
+
+    private void assertLoginException(final Class<? extends Exception> exceptionType) {
+        assertLoginExceptionWithCallParameter(this::login, exceptionType);
+        assertLoginExceptionWithCallParameter(this::loginWithPin, exceptionType);
     }
 
     @Test
-    public void testOnDemoLoginConnectIsCalledOnClient() throws JFAuthenticationException,
-                                                         JFVersionException,
-                                                         Exception {
-        loginDemo();
+    public void testLoginCallsClient() throws JFAuthenticationException,
+                                       JFVersionException,
+                                       Exception {
+        login();
 
         verify(clientMock).connect(jnlpAddress, userName, password);
     }
 
     @Test
-    public void testOnLiveLoginConnectIsCalledOnClient() throws JFAuthenticationException,
-                                                         JFVersionException,
-                                                         Exception {
-        loginLive();
+    public void testLoginWithPinCallsClient() throws JFAuthenticationException,
+                                              JFVersionException,
+                                              Exception {
+        loginWithPin();
 
         verify(clientMock).connect(jnlpAddress, userName, password, pin);
     }
 
     @Test
-    public void testLoginResultIsCorrectForInvalidCredentials() {
-        assertLoginException(LoginResultType.INVALID_CREDENTIALS, JFAuthenticationException.class);
+    public void testCorrectExceptionForInvalidCredentials() {
+        assertLoginException(JFAuthenticationException.class);
     }
 
     @Test
-    public void testLoginResultIsCorrectForInvalidVersion() {
-        assertLoginException(LoginResultType.INVALID_VERSION, JFVersionException.class);
+    public void testCorrectExceptionForInvalidVersion() {
+        assertLoginException(JFVersionException.class);
     }
 
     @Test
-    public void testLoginResultIsCorrectForException() {
-        assertLoginException(LoginResultType.EXCEPTION, Exception.class);
+    public void testCorrectExceptionForException() {
+        assertLoginException(Exception.class);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.jforex.programming.connection;
 
 import java.awt.image.BufferedImage;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +20,7 @@ public class LoginHandler {
     private final Authentification authentification;
     private final IClient client;
     private final JFEventPublisherForRx<LoginState> loginStatePublisher = new JFEventPublisherForRx<>();
-    private Supplier<LoginResult> latestLoginCall;
+    private Supplier<Optional<Exception>> latestLoginCall;
     private LoginState loginState = LoginState.LOGGED_OUT;
 
     private final static Logger logger = LogManager.getLogger(LoginHandler.class);
@@ -33,8 +34,8 @@ public class LoginHandler {
                       final String username,
                       final String password) {
         latestLoginCall = () -> authentification.login(jnlp, username, password);
-        final LoginResult loginResult = latestLoginCall.get();
-        evaluateLoginResult(loginResult);
+        final Optional<Exception> exceptionOpt = latestLoginCall.get();
+        evaluateLoginResult(exceptionOpt);
     }
 
     public void loginWithPin(final String jnlp,
@@ -42,34 +43,31 @@ public class LoginHandler {
                              final String password,
                              final String pin) {
         latestLoginCall = () -> authentification.loginWithPin(jnlp, username, password, pin);
-        final LoginResult loginResult = latestLoginCall.get();
-        evaluateLoginResult(loginResult);
+        final Optional<Exception> exceptionOpt = latestLoginCall.get();
+        evaluateLoginResult(exceptionOpt);
     }
 
     public void relogin() {
-        final LoginResult loginResult = latestLoginCall.get();
-        evaluateLoginResult(loginResult);
+        final Optional<Exception> exceptionOpt = latestLoginCall.get();
+        evaluateLoginResult(exceptionOpt);
     }
 
     public void reconnect() {
         client.reconnect();
     }
 
-    private void evaluateLoginResult(final LoginResult loginResult) {
-        if (loginResult.type() == LoginResultType.LOGGED_IN) {
+    private void evaluateLoginResult(final Optional<Exception> exceptionOpt) {
+        if (!exceptionOpt.isPresent()) {
             while (!client.isConnected()) {
                 logger.debug("Waiting for client to connect...");
                 try {
                     Thread.sleep(1000L);
-                } catch (final InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
+                } catch (final InterruptedException e) {}
             }
             logger.debug("Client connected.");
             updateState(LoginState.LOGGED_IN);
         } else {
-            logger.error("Exception occured during login! " + loginResult.exceptionOpt().get());
+            logger.error("Exception occured during login! " + exceptionOpt.get());
             System.exit(0);
         }
     }
