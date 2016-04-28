@@ -1,6 +1,7 @@
 package com.jforex.programming.misc;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
@@ -24,11 +25,13 @@ public final class ClientUtil {
 
     private final static Logger logger = LogManager.getLogger(ClientUtil.class);
 
-    public ClientUtil(final IClient client) {
+    public ClientUtil(final IClient client,
+                      final String cacheDirectory) {
         this.client = client;
 
         initSystemListener();
         initAuthentification();
+        setCacheDirectory(cacheDirectory);
     }
 
     private final void initSystemListener() {
@@ -38,6 +41,12 @@ public final class ClientUtil {
 
     private final void initAuthentification() {
         authentificationUtil = new AuthentificationUtil(client, connectionStateObs());
+    }
+
+    private void setCacheDirectory(final String cacheDirectory) {
+        final File cacheDirectoryFile = new File(cacheDirectory);
+        client.setCacheDirectory(cacheDirectoryFile);
+        logger.debug("Setting of cache directory " + cacheDirectory + " for client done.");
     }
 
     public final Observable<ConnectionState> connectionStateObs() {
