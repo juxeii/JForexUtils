@@ -6,9 +6,10 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.system.IClient;
 import com.google.common.base.Supplier;
 import com.jforex.programming.misc.JFEventPublisherForRx;
+
+import com.dukascopy.api.system.IClient;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
@@ -60,8 +61,10 @@ public class AuthentificationUtil {
     }
 
     public void logout() {
-        client.disconnect();
-        updateState(LoginState.LOGGED_OUT);
+        if (state() == LoginState.LOGGED_IN) {
+            client.disconnect();
+            updateState(LoginState.LOGGED_OUT);
+        }
     }
 
     public void relogin() {
@@ -94,7 +97,8 @@ public class AuthentificationUtil {
     }
 
     public void reconnect() {
-        client.reconnect();
+        if (state() == LoginState.LOGGED_IN)
+            client.reconnect();
     }
 
     public Optional<BufferedImage> pinCaptchaForAWT(final String jnlpAddress) {
