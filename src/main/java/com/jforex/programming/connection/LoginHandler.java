@@ -17,7 +17,7 @@ import rx.Observable;
 
 public class LoginHandler {
 
-    private final Authentification authentification;
+    private final Login authentification;
     private final IClient client;
     private final JFEventPublisherForRx<LoginState> loginStatePublisher = new JFEventPublisherForRx<>();
     private Supplier<Optional<Exception>> latestLoginCall;
@@ -27,13 +27,13 @@ public class LoginHandler {
 
     public LoginHandler(final IClient client) {
         this.client = client;
-        authentification = new Authentification(client);
+        authentification = new Login(client);
     }
 
     public void login(final String jnlp,
                       final String username,
                       final String password) {
-        latestLoginCall = () -> authentification.login(jnlp, username, password);
+        latestLoginCall = () -> authentification.withoutPin(jnlp, username, password);
         final Optional<Exception> exceptionOpt = latestLoginCall.get();
         evaluateLoginResult(exceptionOpt);
     }
@@ -42,7 +42,7 @@ public class LoginHandler {
                              final String username,
                              final String password,
                              final String pin) {
-        latestLoginCall = () -> authentification.loginWithPin(jnlp, username, password, pin);
+        latestLoginCall = () -> authentification.withPin(jnlp, username, password, pin);
         final Optional<Exception> exceptionOpt = latestLoginCall.get();
         evaluateLoginResult(exceptionOpt);
     }

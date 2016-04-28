@@ -12,7 +12,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.google.common.base.Supplier;
-import com.jforex.programming.connection.Authentification;
+import com.jforex.programming.connection.Login;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import com.dukascopy.api.system.IClient;
@@ -21,7 +21,7 @@ import com.dukascopy.api.system.JFVersionException;
 
 public class AuthentificationTest extends CommonUtilForTest {
 
-    private Authentification authentification;
+    private Login authentification;
 
     @Mock
     private IClient clientMock;
@@ -34,15 +34,15 @@ public class AuthentificationTest extends CommonUtilForTest {
     public void setUp() {
         initCommonTestFramework();
 
-        authentification = new Authentification(clientMock);
+        authentification = new Login(clientMock);
     }
 
     private Optional<Exception> login() {
-        return authentification.login(jnlpAddress, userName, password);
+        return authentification.withoutPin(jnlpAddress, userName, password);
     }
 
     private Optional<Exception> loginWithPin() {
-        return authentification.loginWithPin(jnlpAddress, userName, password, pin);
+        return authentification.withPin(jnlpAddress, userName, password, pin);
     }
 
     private void setExceptionOnConnect(final Class<? extends Exception> exceptionType) {
