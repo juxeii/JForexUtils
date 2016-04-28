@@ -1,18 +1,13 @@
 package com.jforex.programming.connection;
 
-import java.awt.image.BufferedImage;
 import java.util.Optional;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.jforex.programming.misc.JFEventPublisherForRx;
 
+import com.dukascopy.api.JFException;
 import com.dukascopy.api.system.IClient;
 
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.Image;
 import rx.Observable;
 
 public class AuthentificationUtil {
@@ -21,8 +16,6 @@ public class AuthentificationUtil {
     private final JFEventPublisherForRx<LoginState> loginStatePublisher = new JFEventPublisherForRx<>();
     private Supplier<Optional<Exception>> latestLoginCall;
     private LoginState loginState = LoginState.LOGGED_OUT;
-
-    private final static Logger logger = LogManager.getLogger(AuthentificationUtil.class);
 
     public AuthentificationUtil(final IClient client,
                                 final Observable<ConnectionState> connectionStateObs) {
@@ -67,9 +60,10 @@ public class AuthentificationUtil {
         }
     }
 
-    public void relogin() {
-        if (latestLoginCall != null)
-            processLoginCall();
+    public Optional<Exception> relogin() {
+        return latestLoginCall != null
+                ? latestLoginCall.get()
+                : Optional.of(new JFException("Client was not logged in before!"));
     }
 
     public Observable<LoginState> loginStateObs() {
@@ -79,12 +73,6 @@ public class AuthentificationUtil {
     private void onConnectionState(final ConnectionState connectionState) {
         if (connectionState == ConnectionState.CONNECTED && loginState == LoginState.LOGGED_OUT)
             updateState(LoginState.LOGGED_IN);
-    }
-
-    private void processLoginCall() {
-        final Optional<Exception> exceptionOpt = latestLoginCall.get();
-        if (exceptionOpt.isPresent())
-            logger.error("Exception occured during login! " + exceptionOpt.get().getMessage());
     }
 
     private void updateState(final LoginState loginState) {
@@ -99,21 +87,5 @@ public class AuthentificationUtil {
     public void reconnect() {
         if (state() == LoginState.LOGGED_IN)
             client.reconnect();
-    }
-
-    public Optional<BufferedImage> pinCaptchaForAWT(final String jnlpAddress) {
-        try {
-            return Optional.of(client.getCaptchaImage(jnlpAddress));
-        } catch (final Exception e) {
-            logger.error("Error while retreiving pin captcha! " + e.getMessage());
-            return Optional.empty();
-        }
-    }
-
-    public Optional<Image> pinCaptchaForJavaFX(final String jnlpAddress) {
-        final Optional<BufferedImage> captcha = pinCaptchaForAWT(jnlpAddress);
-        return captcha.isPresent()
-                ? Optional.of(SwingFXUtils.toFXImage(captcha.get(), null))
-                : Optional.empty();
     }
 }
