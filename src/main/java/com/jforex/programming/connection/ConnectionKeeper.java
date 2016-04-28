@@ -7,13 +7,13 @@ import rx.Observable;
 
 public final class ConnectionKeeper {
 
-    private final LoginHandler loginHandler;
+    private final AuthentificationUtil loginHandler;
     private int noOfLightReconnects;
 
     private final static Logger logger = LogManager.getLogger(ConnectionKeeper.class);
 
     public ConnectionKeeper(final Observable<ConnectionState> connectionObs,
-                            final LoginHandler loginHandler) {
+                            final AuthentificationUtil loginHandler) {
         this.loginHandler = loginHandler;
         connectionObs.subscribe(this::onConnectionStateUpdate);
         resetReconnectData();

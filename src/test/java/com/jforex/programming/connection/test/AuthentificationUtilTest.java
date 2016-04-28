@@ -11,20 +11,26 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.google.common.base.Supplier;
-import com.jforex.programming.connection.Login;
-import com.jforex.programming.test.common.CommonUtilForTest;
-
 import com.dukascopy.api.system.IClient;
 import com.dukascopy.api.system.JFAuthenticationException;
 import com.dukascopy.api.system.JFVersionException;
+import com.google.common.base.Supplier;
+import com.jforex.programming.connection.AuthentificationUtil;
+import com.jforex.programming.connection.ConnectionState;
+import com.jforex.programming.connection.LoginState;
+import com.jforex.programming.test.common.CommonUtilForTest;
 
-public class AuthentificationTest extends CommonUtilForTest {
+import rx.observers.TestSubscriber;
+import rx.subjects.PublishSubject;
+import rx.subjects.Subject;
 
-    private Login authentification;
+public class AuthentificationUtilTest extends CommonUtilForTest {
 
-    @Mock
-    private IClient clientMock;
+    private AuthentificationUtil authentificationUtil;
+
+    @Mock private IClient clientMock;
+    private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
+    private final TestSubscriber<LoginState> loginStateSubscriber = new TestSubscriber<>();
     private final static String jnlpAddress = "http://jnlp.test.address";
     private final static String userName = "username";
     private final static String password = "password";
@@ -34,15 +40,16 @@ public class AuthentificationTest extends CommonUtilForTest {
     public void setUp() {
         initCommonTestFramework();
 
-        authentification = new Login(clientMock);
+        authentificationUtil = new AuthentificationUtil(clientMock, connectionStateObs);
+        authentificationUtil.loginStateObs().subscribe(loginStateSubscriber);
     }
 
     private Optional<Exception> login() {
-        return authentification.withoutPin(jnlpAddress, userName, password);
+        return authentificationUtil.login(jnlpAddress, userName, password);
     }
 
     private Optional<Exception> loginWithPin() {
-        return authentification.withPin(jnlpAddress, userName, password, pin);
+        return authentificationUtil.loginWithPin(jnlpAddress, userName, password, pin);
     }
 
     private void setExceptionOnConnect(final Class<? extends Exception> exceptionType) {
@@ -52,18 +59,18 @@ public class AuthentificationTest extends CommonUtilForTest {
         } catch (final Exception e) {}
     }
 
-    private void assertLoginExceptionWithCallParameter(final Supplier<Optional<Exception>> loginCall,
-                                                       final Class<? extends Exception> exceptionType) {
+    private void assertLoginException(final Class<? extends Exception> exceptionType) {
+        assertLoginExceptionForLoginType(this::login, exceptionType);
+        assertLoginExceptionForLoginType(this::loginWithPin, exceptionType);
+    }
+
+    private void assertLoginExceptionForLoginType(final Supplier<Optional<Exception>> loginCall,
+                                                  final Class<? extends Exception> exceptionType) {
         setExceptionOnConnect(exceptionType);
 
         final Optional<Exception> exceptionOpt = loginCall.get();
 
         assertThat(exceptionOpt.get().getClass(), equalTo(exceptionType));
-    }
-
-    private void assertLoginException(final Class<? extends Exception> exceptionType) {
-        assertLoginExceptionWithCallParameter(this::login, exceptionType);
-        assertLoginExceptionWithCallParameter(this::loginWithPin, exceptionType);
     }
 
     @Test
@@ -101,7 +108,7 @@ public class AuthentificationTest extends CommonUtilForTest {
 
     @Test
     public void testOnLogoutDisconnectIsCalledOnClient() {
-        authentification.logout();
+        authentificationUtil.logout();
 
         verify(clientMock).disconnect();
     }
