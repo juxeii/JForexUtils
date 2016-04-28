@@ -63,7 +63,7 @@ public class AuthentificationUtil {
     public Optional<Exception> relogin() {
         return latestLoginCall != null
                 ? latestLoginCall.get()
-                : Optional.of(new JFException("Client was not logged in before!"));
+                : Optional.of(new JFException("Failed to relogin since client was not logged in before!"));
     }
 
     public Observable<LoginState> loginStateObs() {
