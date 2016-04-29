@@ -21,9 +21,9 @@ public final class AuthentificationUtil {
 
     public final Optional<Exception> login(final LoginCredentials loginCredentials) {
         return connectClient(loginCredentials.jnlpAddress(),
-                loginCredentials.username(),
-                loginCredentials.password(),
-                loginCredentials.pin());
+                             loginCredentials.username(),
+                             loginCredentials.password(),
+                             loginCredentials.pin());
     }
 
     private final Optional<Exception> connectClient(final String jnlpAddress,

@@ -14,9 +14,9 @@ public final class ConnectionKeeper {
     private final static Logger logger = LogManager.getLogger(ConnectionKeeper.class);
 
     public ConnectionKeeper(final Observable<ConnectionState> connectionObs,
-                            final AuthentificationUtil loginHandler,
+                            final AuthentificationUtil authentificationUtil,
                             final LoginCredentials loginCredentials) {
-        this.authentificationUtil = loginHandler;
+        this.authentificationUtil = authentificationUtil;
         this.loginCredentials = loginCredentials;
         connectionObs.subscribe(this::onConnectionStateUpdate);
         resetReconnectData();
@@ -37,12 +37,12 @@ public final class ConnectionKeeper {
 
     private final void startReconnectStrategy() {
         if (noOfLightReconnects > 0)
-            doLightReconnect();
+            lightReconnect();
         else
             relogin();
     }
 
-    private final void doLightReconnect() {
+    private synchronized final void lightReconnect() {
         logger.debug("Try to do a light reconnect.Remaining attempts " + noOfLightReconnects);
         authentificationUtil.reconnect();
         --noOfLightReconnects;
