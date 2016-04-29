@@ -8,15 +8,15 @@ import rx.Observable;
 
 public final class JFSystemListener implements ISystemListener {
 
-    private final JFEventPublisherForRx<ConnectionState> connectionStatePublisher = new JFEventPublisherForRx<>();
     private final JFEventPublisherForRx<StrategyInfo> strategyInfoPublisher = new JFEventPublisherForRx<>();
-
-    public final Observable<ConnectionState> connectionObs() {
-        return connectionStatePublisher.observable();
-    }
+    private final JFEventPublisherForRx<ConnectionState> connectionStatePublisher = new JFEventPublisherForRx<>();
 
     public final Observable<StrategyInfo> strategyObs() {
         return strategyInfoPublisher.observable();
+    }
+
+    public final Observable<ConnectionState> connectionObs() {
+        return connectionStatePublisher.observable();
     }
 
     @Override
