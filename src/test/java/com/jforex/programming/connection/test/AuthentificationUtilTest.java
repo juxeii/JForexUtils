@@ -1,6 +1,7 @@
 package com.jforex.programming.connection.test;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -14,15 +15,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.google.common.base.Supplier;
-import com.jforex.programming.connection.AuthentificationUtil;
-import com.jforex.programming.connection.ConnectionState;
-import com.jforex.programming.connection.LoginState;
-import com.jforex.programming.test.common.CommonUtilForTest;
-
 import com.dukascopy.api.system.IClient;
 import com.dukascopy.api.system.JFAuthenticationException;
 import com.dukascopy.api.system.JFVersionException;
+import com.google.common.base.Supplier;
+import com.jforex.programming.connection.AuthentificationUtil;
+import com.jforex.programming.connection.ConnectionState;
+import com.jforex.programming.connection.LoginCredentials;
+import com.jforex.programming.connection.LoginState;
+import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
@@ -34,29 +35,48 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     private AuthentificationUtil authentificationUtil;
 
-    @Mock
-    private IClient clientMock;
+    @Mock private IClient clientMock;
     private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
     private final TestSubscriber<LoginState> loginStateSubscriber = new TestSubscriber<>();
     private final static String jnlpAddress = "http://jnlp.test.address";
     private final static String userName = "username";
     private final static String password = "password";
     private final static String pin = "1234";
+    private LoginCredentials loginCredentials;
+    private LoginCredentials loginCredentialsWithPin;
 
     @Before
     public void setUp() {
         initCommonTestFramework();
+        loginCredentials = new LoginCredentials(jnlpAddress,
+                                                userName,
+                                                password);
+        loginCredentialsWithPin = new LoginCredentials(jnlpAddress,
+                                                       userName,
+                                                       password,
+                                                       pin);
 
         authentificationUtil = new AuthentificationUtil(clientMock, connectionStateObs);
         authentificationUtil.loginStateObs().subscribe(loginStateSubscriber);
     }
 
     private Optional<Exception> login() {
-        return authentificationUtil.login(jnlpAddress, userName, password);
+        return authentificationUtil.login(loginCredentials);
     }
 
     private Optional<Exception> loginWithPin() {
-        return authentificationUtil.loginWithPin(jnlpAddress, userName, password, pin);
+        return authentificationUtil.login(loginCredentialsWithPin);
+    }
+
+    private void verifyConnectCall(final LoginCredentials loginCredentials,
+                                   final int times) {
+        try {
+            if (loginCredentials.pin().isEmpty())
+                verify(clientMock, times(times)).connect(jnlpAddress, userName, password);
+            else
+                verify(clientMock, times(times)).connect(jnlpAddress, userName, password, pin);
+        } catch (final Exception e) {}
+
     }
 
     private void setExceptionOnConnect(final Class<? extends Exception> exceptionType) {
@@ -86,7 +106,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         loginStateSubscriber.assertValueCount(eventIndex + 1);
 
         assertThat(loginStateSubscriber.getOnNextEvents().get(eventIndex),
-                   equalTo(loginState));
+                equalTo(loginState));
     }
 
     @Test
@@ -123,18 +143,26 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         assertLoginException(Exception.class);
     }
 
+    @Test
+    public void testLoginWithPinCallsClientWithPin() {
+        final Optional<Exception> exceptionOpt = loginWithPin();
+
+        verifyConnectCall(loginCredentialsWithPin, 1);
+        assertFalse(exceptionOpt.isPresent());
+    }
+
     public class AfterLogin {
 
         @Before
         public void setUp() {
-            login();
+            final Optional<Exception> exceptionOpt = login();
+
+            assertFalse(exceptionOpt.isPresent());
         }
 
         @Test
-        public void testLoginCallsClient() throws JFAuthenticationException,
-                                           JFVersionException,
-                                           Exception {
-            verify(clientMock).connect(jnlpAddress, userName, password);
+        public void testLoginCallsClient() {
+            verifyConnectCall(loginCredentials, 1);
         }
 
         @Test
@@ -206,6 +234,13 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
                 public void testNotificationForLogoutHappens() {
                     assertLoginStateNotification(LoginState.LOGGED_OUT, 1);
                 }
+
+                @Test
+                public void testReconnectionIsNotPossible() {
+                    authentificationUtil.reconnect();
+
+                    verify(clientMock, never()).reconnect();
+                }
             }
 
             public class AfterDisconnectedMessage {
@@ -234,14 +269,5 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
                 }
             }
         }
-    }
-
-    @Test
-    public void testLoginWithPinCallsClient() throws JFAuthenticationException,
-                                              JFVersionException,
-                                              Exception {
-        loginWithPin();
-
-        verify(clientMock).connect(jnlpAddress, userName, password, pin);
     }
 }

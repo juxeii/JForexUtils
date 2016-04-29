@@ -2,19 +2,15 @@ package com.jforex.programming.connection;
 
 import java.util.Optional;
 
-import com.google.common.base.Supplier;
-import com.jforex.programming.misc.JFEventPublisherForRx;
-
-import com.dukascopy.api.JFException;
 import com.dukascopy.api.system.IClient;
+import com.jforex.programming.misc.JFEventPublisherForRx;
 
 import rx.Observable;
 
-public class AuthentificationUtil {
+public final class AuthentificationUtil {
 
     private final IClient client;
     private final JFEventPublisherForRx<LoginState> loginStatePublisher = new JFEventPublisherForRx<>();
-    private Supplier<Optional<Exception>> latestLoginCall;
     private LoginState loginState = LoginState.LOGGED_OUT;
 
     public AuthentificationUtil(final IClient client,
@@ -23,25 +19,17 @@ public class AuthentificationUtil {
         connectionStateObs.subscribe(this::onConnectionState);
     }
 
-    public final synchronized Optional<Exception> login(final String jnlpAddress,
-                                                        final String username,
-                                                        final String password) {
-        latestLoginCall = () -> connectClient(jnlpAddress, username, password, "");
-        return latestLoginCall.get();
+    public final Optional<Exception> login(final LoginCredentials loginCredentials) {
+        return connectClient(loginCredentials.jnlpAddress(),
+                loginCredentials.username(),
+                loginCredentials.password(),
+                loginCredentials.pin());
     }
 
-    public final synchronized Optional<Exception> loginWithPin(final String jnlpAddress,
-                                                               final String username,
-                                                               final String password,
-                                                               final String pin) {
-        latestLoginCall = () -> connectClient(jnlpAddress, username, password, pin);
-        return latestLoginCall.get();
-    }
-
-    private Optional<Exception> connectClient(final String jnlpAddress,
-                                              final String username,
-                                              final String password,
-                                              final String pin) {
+    private final Optional<Exception> connectClient(final String jnlpAddress,
+                                                    final String username,
+                                                    final String password,
+                                                    final String pin) {
         try {
             if (pin.isEmpty())
                 client.connect(jnlpAddress, username, password);
@@ -53,38 +41,32 @@ public class AuthentificationUtil {
         return Optional.empty();
     }
 
-    public void logout() {
+    public final void logout() {
         if (state() == LoginState.LOGGED_IN) {
             client.disconnect();
             updateState(LoginState.LOGGED_OUT);
         }
     }
 
-    public Optional<Exception> relogin() {
-        return latestLoginCall != null
-                ? latestLoginCall.get()
-                : Optional.of(new JFException("Failed to relogin since client was not logged in before!"));
-    }
-
-    public Observable<LoginState> loginStateObs() {
+    public final Observable<LoginState> loginStateObs() {
         return loginStatePublisher.observable();
     }
 
-    private void onConnectionState(final ConnectionState connectionState) {
+    private final void onConnectionState(final ConnectionState connectionState) {
         if (connectionState == ConnectionState.CONNECTED && loginState == LoginState.LOGGED_OUT)
             updateState(LoginState.LOGGED_IN);
     }
 
-    private void updateState(final LoginState loginState) {
+    private final synchronized void updateState(final LoginState loginState) {
         this.loginState = loginState;
         loginStatePublisher.onJFEvent(loginState);
     }
 
-    public LoginState state() {
+    public final LoginState state() {
         return loginState;
     }
 
-    public void reconnect() {
+    public final void reconnect() {
         if (state() == LoginState.LOGGED_IN)
             client.reconnect();
     }

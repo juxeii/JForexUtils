@@ -7,14 +7,17 @@ import rx.Observable;
 
 public final class ConnectionKeeper {
 
-    private final AuthentificationUtil loginHandler;
+    private final AuthentificationUtil authentificationUtil;
+    private final LoginCredentials loginCredentials;
     private int noOfLightReconnects;
 
     private final static Logger logger = LogManager.getLogger(ConnectionKeeper.class);
 
     public ConnectionKeeper(final Observable<ConnectionState> connectionObs,
-                            final AuthentificationUtil loginHandler) {
-        this.loginHandler = loginHandler;
+                            final AuthentificationUtil loginHandler,
+                            final LoginCredentials loginCredentials) {
+        this.authentificationUtil = loginHandler;
+        this.loginCredentials = loginCredentials;
         connectionObs.subscribe(this::onConnectionStateUpdate);
         resetReconnectData();
     }
@@ -24,7 +27,8 @@ public final class ConnectionKeeper {
     }
 
     private final void onConnectionStateUpdate(final ConnectionState connectionState) {
-        if (connectionState == ConnectionState.DISCONNECTED && loginHandler.state() == LoginState.LOGGED_IN) {
+        if (connectionState == ConnectionState.DISCONNECTED &&
+                authentificationUtil.state() == LoginState.LOGGED_IN) {
             logger.warn("Disconnect message received, starting reconnect strategy...");
             startReconnectStrategy();
         } else if (connectionState == ConnectionState.CONNECTED)
@@ -40,12 +44,12 @@ public final class ConnectionKeeper {
 
     private final void doLightReconnect() {
         logger.debug("Try to do a light reconnect.Remaining attempts " + noOfLightReconnects);
-        loginHandler.reconnect();
+        authentificationUtil.reconnect();
         --noOfLightReconnects;
     }
 
     private final void relogin() {
         logger.debug("Try to relogin...");
-        loginHandler.relogin();
+        authentificationUtil.login(loginCredentials);
     }
 }
