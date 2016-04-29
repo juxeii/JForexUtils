@@ -1,4 +1,4 @@
-package com.jforex.programming.misc;
+package com.jforex.programming.client;
 
 public final class StrategyInfo {
 

@@ -1,4 +1,4 @@
-package com.jforex.programming.misc;
+package com.jforex.programming.client;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
-
 import com.dukascopy.api.system.IClient;
 
 import javafx.embed.swing.SwingFXUtils;

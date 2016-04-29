@@ -1,7 +1,8 @@
-package com.jforex.programming.misc;
+package com.jforex.programming.client;
 
 import com.dukascopy.api.system.ISystemListener;
 import com.jforex.programming.connection.ConnectionState;
+import com.jforex.programming.misc.JFEventPublisherForRx;
 
 import rx.Observable;
 

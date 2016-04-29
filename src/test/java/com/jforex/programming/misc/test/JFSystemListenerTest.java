@@ -6,10 +6,10 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.jforex.programming.client.JFSystemListener;
+import com.jforex.programming.client.StrategyInfo;
+import com.jforex.programming.client.StrategyState;
 import com.jforex.programming.connection.ConnectionState;
-import com.jforex.programming.misc.JFSystemListener;
-import com.jforex.programming.misc.StrategyInfo;
-import com.jforex.programming.misc.StrategyState;
 
 import rx.observers.TestSubscriber;
 
