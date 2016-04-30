@@ -14,7 +14,6 @@ import com.jforex.programming.position.PositionTaskRejectException;
 import com.dukascopy.api.IOrder;
 
 import rx.Observable;
-import rx.Subscriber;
 
 public class OrderUtilObservable {
 
@@ -111,24 +110,29 @@ public class OrderUtilObservable {
             if (orderCreateResult.exceptionOpt().isPresent())
                 subscriber.onError(orderCreateResult.exceptionOpt().get());
             else {
-                final IOrder order = orderCreateResult.orderOpt().get();
-                orderEventObservable.filter(orderEvent -> orderEvent.order() == order)
-                        .filter(orderEvent -> orderEventData.all().contains(orderEvent.type()))
-                        .flatMap(orderEvent -> processOrderEvent(orderEvent, orderEventData, subscriber))
-                        .subscribe();
+                filterForEvents(orderCreateResult.orderOpt().get(), orderEventData)
+                        .subscribe(orderEvent -> {
+                            subscriber.onNext(orderEvent.order());
+                            subscriber.onCompleted();
+                        }, t -> subscriber.onError(t));
             }
         });
     }
 
-    private final Observable<IOrder> processOrderEvent(final OrderEvent orderEvent,
-                                                       final OrderEventData orderEventData,
-                                                       final Subscriber<? super IOrder> externalSubscriber) {
+    private final Observable<OrderEvent> filterForEvents(final IOrder order,
+                                                         final OrderEventData orderEventData) {
+        return orderEventObservable.filter(orderEvent -> orderEvent.order() == order)
+                .filter(orderEvent -> orderEventData.all().contains(orderEvent.type()))
+                .flatMap(orderEvent -> orderEventEvaluationObs(orderEvent, orderEventData));
+    }
+
+    private final Observable<OrderEvent> orderEventEvaluationObs(final OrderEvent orderEvent,
+                                                                 final OrderEventData orderEventData) {
         return Observable.create(subscriber -> {
             if (orderEventData.isRejectType(orderEvent.type()))
-                externalSubscriber.onError(new PositionTaskRejectException("", orderEvent));
-            else if (orderEventData.isDoneType(orderEvent.type())) {
-                externalSubscriber.onNext(orderEvent.order());
-                externalSubscriber.onCompleted();
+                subscriber.onError(new PositionTaskRejectException("", orderEvent));
+            else {
+                subscriber.onNext(orderEvent);
                 subscriber.onCompleted();
             }
         });
