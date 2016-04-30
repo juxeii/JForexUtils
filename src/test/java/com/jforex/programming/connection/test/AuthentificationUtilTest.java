@@ -15,15 +15,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.system.IClient;
-import com.dukascopy.api.system.JFAuthenticationException;
-import com.dukascopy.api.system.JFVersionException;
 import com.google.common.base.Supplier;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.test.common.CommonUtilForTest;
+
+import com.dukascopy.api.system.IClient;
+import com.dukascopy.api.system.JFAuthenticationException;
+import com.dukascopy.api.system.JFVersionException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
@@ -35,7 +36,8 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     private AuthentificationUtil authentificationUtil;
 
-    @Mock private IClient clientMock;
+    @Mock
+    private IClient clientMock;
     private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
     private final TestSubscriber<LoginState> loginStateSubscriber = new TestSubscriber<>();
     private final static String jnlpAddress = "http://jnlp.test.address";
@@ -71,7 +73,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     private void verifyConnectCall(final LoginCredentials loginCredentials,
                                    final int times) {
         try {
-            if (loginCredentials.pin().isEmpty())
+            if (!loginCredentials.pinOpt().isPresent())
                 verify(clientMock, times(times)).connect(jnlpAddress, userName, password);
             else
                 verify(clientMock, times(times)).connect(jnlpAddress, userName, password, pin);
@@ -106,7 +108,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         loginStateSubscriber.assertValueCount(eventIndex + 1);
 
         assertThat(loginStateSubscriber.getOnNextEvents().get(eventIndex),
-                equalTo(loginState));
+                   equalTo(loginState));
     }
 
     @Test

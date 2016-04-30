@@ -1,11 +1,13 @@
 package com.jforex.programming.connection;
 
+import java.util.Optional;
+
 public final class LoginCredentials {
 
     private final String jnlpAddress;
     private final String username;
     private final String password;
-    private final String pin;
+    private final Optional<String> pinOpt;
 
     public LoginCredentials(final String jnlpAddress,
                             final String username,
@@ -14,7 +16,9 @@ public final class LoginCredentials {
         this.jnlpAddress = jnlpAddress;
         this.username = username;
         this.password = password;
-        this.pin = pin;
+        pinOpt = pin.isEmpty()
+                ? Optional.empty()
+                : Optional.of(pin);
     }
 
     public LoginCredentials(final String jnlpAddress,
@@ -35,7 +39,7 @@ public final class LoginCredentials {
         return password;
     }
 
-    public final String pin() {
-        return pin;
+    public final Optional<String> pinOpt() {
+        return pinOpt;
     }
 }

@@ -2,8 +2,9 @@ package com.jforex.programming.connection;
 
 import java.util.Optional;
 
-import com.dukascopy.api.system.IClient;
 import com.jforex.programming.misc.JFEventPublisherForRx;
+
+import com.dukascopy.api.system.IClient;
 
 import rx.Observable;
 
@@ -23,18 +24,18 @@ public final class AuthentificationUtil {
         return connectClient(loginCredentials.jnlpAddress(),
                              loginCredentials.username(),
                              loginCredentials.password(),
-                             loginCredentials.pin());
+                             loginCredentials.pinOpt());
     }
 
     private final Optional<Exception> connectClient(final String jnlpAddress,
                                                     final String username,
                                                     final String password,
-                                                    final String pin) {
+                                                    final Optional<String> pinOpt) {
         try {
-            if (pin.isEmpty())
-                client.connect(jnlpAddress, username, password);
+            if (pinOpt.isPresent())
+                client.connect(jnlpAddress, username, password, pinOpt.get());
             else
-                client.connect(jnlpAddress, username, password, pin);
+                client.connect(jnlpAddress, username, password);
         } catch (final Exception e) {
             return Optional.of(e);
         }
@@ -42,10 +43,14 @@ public final class AuthentificationUtil {
     }
 
     public final void logout() {
-        if (state() == LoginState.LOGGED_IN) {
+        if (isLoggedIn()) {
             client.disconnect();
             updateState(LoginState.LOGGED_OUT);
         }
+    }
+
+    private boolean isLoggedIn() {
+        return state() == LoginState.LOGGED_IN;
     }
 
     public final Observable<LoginState> loginStateObs() {
@@ -53,8 +58,13 @@ public final class AuthentificationUtil {
     }
 
     private final void onConnectionState(final ConnectionState connectionState) {
-        if (connectionState == ConnectionState.CONNECTED && loginState == LoginState.LOGGED_OUT)
+        if (isLoginTrigger(connectionState))
             updateState(LoginState.LOGGED_IN);
+    }
+
+    private boolean isLoginTrigger(final ConnectionState connectionState) {
+        return connectionState == ConnectionState.CONNECTED &&
+                loginState == LoginState.LOGGED_OUT;
     }
 
     private final synchronized void updateState(final LoginState loginState) {
@@ -67,7 +77,7 @@ public final class AuthentificationUtil {
     }
 
     public final void reconnect() {
-        if (state() == LoginState.LOGGED_IN)
+        if (isLoggedIn())
             client.reconnect();
     }
 }
