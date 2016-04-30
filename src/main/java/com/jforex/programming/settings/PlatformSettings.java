@@ -40,15 +40,6 @@ public interface PlatformSettings extends Config {
     @DefaultValue("\\w{1,256}")
     public String VALID_LABEL_REGEX();
 
-    @DefaultValue("6")
-    public String Strategy();
-
-    @DefaultValue("Connected")
-    public String CONNECTED_STRING();
-
-    @DefaultValue("Disconnected")
-    public String DISCONNECTED_STRING();
-
     @DefaultValue("3")
     public int MAX_NUM_RETRIES_ON_FAIL();
 

@@ -25,7 +25,7 @@ import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.NoRestorePolicy;
 import com.jforex.programming.position.Position;
-import com.jforex.programming.position.PositionRepository;
+import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -53,7 +53,7 @@ public class JForexUtil implements MessageConsumer {
     private OrderUtilObservable orderUtilObservable;
     private OrderCreate orderCreate;
     private OrderChange orderChange;
-    private PositionRepository positionRepository;
+    private PositionFactory positionRepository;
     private OrderEventGateway orderEventGateway;
     private OrderCallExecutor orderCallRunner;
 
@@ -122,7 +122,7 @@ public class JForexUtil implements MessageConsumer {
                                       orderEventGateway);
         orderUtil = new OrderUtil(orderCreate, orderChange, orderEventGateway);
         orderUtilObservable = new OrderUtilObservable(orderUtil, orderEventGateway.observable());
-        positionRepository = new PositionRepository(orderUtilObservable, concurrentUtil);
+        positionRepository = new PositionFactory(orderUtilObservable, concurrentUtil);
     }
 
     public IContext context() {
