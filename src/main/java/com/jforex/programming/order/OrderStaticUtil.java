@@ -22,15 +22,15 @@ public final class OrderStaticUtil {
     // @formatter:off
     public final static ImmutableBiMap<OrderCommand, OrderCommand> orderCommands =
             new ImmutableBiMap.Builder<OrderCommand, OrderCommand>()
-                                                                    .put(OrderCommand.BUY, OrderCommand.SELL)
-                                                                    .put(OrderCommand.BUYLIMIT, OrderCommand.SELLLIMIT)
-                                                                    .put(OrderCommand.BUYLIMIT_BYBID,
-                                                                         OrderCommand.SELLLIMIT_BYASK)
-                                                                    .put(OrderCommand.BUYSTOP, OrderCommand.SELLSTOP)
-                                                                    .put(OrderCommand.BUYSTOP_BYBID,
-                                                                         OrderCommand.SELLSTOP_BYASK)
-                                                                    .build();
-
+                                .put(OrderCommand.BUY, OrderCommand.SELL)
+                                .put(OrderCommand.BUYLIMIT, OrderCommand.SELLLIMIT)
+                                .put(OrderCommand.BUYLIMIT_BYBID,
+                                     OrderCommand.SELLLIMIT_BYASK)
+                                .put(OrderCommand.BUYSTOP, OrderCommand.SELLSTOP)
+                                .put(OrderCommand.BUYSTOP_BYBID,
+                                     OrderCommand.SELLSTOP_BYASK)
+                                .build();
+    // @formatter:on
     public final static ImmutableSet<OrderCommand> buyOrderCommands =
             Sets.immutableEnumSet(orderCommands.keySet());
 
@@ -72,12 +72,16 @@ public final class OrderStaticUtil {
         final double signedAmount = combinedSignedAmount(orders);
         if (signedAmount > 0)
             return OrderDirection.LONG;
-        return signedAmount < 0 ? OrderDirection.SHORT : OrderDirection.FLAT;
+        return signedAmount < 0
+                ? OrderDirection.SHORT
+                : OrderDirection.FLAT;
     }
 
     public final static double signedAmount(final double amount,
                                             final OrderCommand orderCommand) {
-        return buyOrderCommands.contains(orderCommand) ? amount : -amount;
+        return buyOrderCommands.contains(orderCommand)
+                ? amount
+                : -amount;
     }
 
     public final static double signedAmount(final IOrder order) {
@@ -85,17 +89,22 @@ public final class OrderStaticUtil {
     }
 
     public final static double combinedSignedAmount(final Collection<IOrder> orders) {
-        return orders.stream()
-                     .mapToDouble(OrderStaticUtil::signedAmount)
-                     .sum();
+        return orders
+                .stream()
+                .mapToDouble(OrderStaticUtil::signedAmount)
+                .sum();
     }
 
     public final static OfferSide offerSideForOrderCommand(final OrderCommand orderCommand) {
-        return buyOrderCommands.contains(orderCommand) ? OfferSide.ASK : OfferSide.BID;
+        return buyOrderCommands.contains(orderCommand)
+                ? OfferSide.ASK
+                : OfferSide.BID;
     }
 
     public final static OrderCommand directionToCommand(final OrderDirection orderDirection) {
-        return orderDirection == OrderDirection.LONG ? OrderCommand.BUY : OrderCommand.SELL;
+        return orderDirection == OrderDirection.LONG
+                ? OrderCommand.BUY
+                : OrderCommand.SELL;
     }
 
     public final static OrderCommand switchCommand(final OrderCommand orderCommand) {

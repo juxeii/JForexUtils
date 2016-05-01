@@ -5,5 +5,5 @@ import com.dukascopy.api.IEngine.OrderCommand;
 @FunctionalInterface
 public interface OrderParamsSupplier {
 
-    abstract OrderParams forCommand(OrderCommand orderCommand);
+    public OrderParams forCommand(OrderCommand orderCommand);
 }

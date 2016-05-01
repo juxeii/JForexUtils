@@ -126,10 +126,10 @@ public class OrderChangeTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testChangeSLInPipsIsCorrect() throws JFException {
+    public void testChangeSLWithPipsIsCorrect() throws JFException {
         final double pips = 20.3;
         final double newSLForPips = askEURUSD - pips * instrumentEURUSD.getPipValue();
-        orderChange.setSLInPips(orderUnderTest, askEURUSD, pips);
+        orderChange.setSLWithPips(orderUnderTest, askEURUSD, pips);
 
         verifyOrderCallAndOrderRegistration(orderUnderTest,
                                             OrderCallRequest.CHANGE_SL);
@@ -148,10 +148,10 @@ public class OrderChangeTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testChangeTPInPipsIsCorrect() throws JFException {
+    public void testChangeTPWithPipsIsCorrect() throws JFException {
         final double pips = 20.3;
         final double newTPForPips = askEURUSD + pips * instrumentEURUSD.getPipValue();
-        orderChange.setTPInPips(orderUnderTest, askEURUSD, pips);
+        orderChange.setTPWithPips(orderUnderTest, askEURUSD, pips);
 
         verifyOrderCallAndOrderRegistration(orderUnderTest,
                                             OrderCallRequest.CHANGE_TP);

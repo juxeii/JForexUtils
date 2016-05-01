@@ -73,9 +73,9 @@ public class OrderChange {
                              OrderCallRequest.CHANGE_TP);
     }
 
-    public Optional<Exception> setSLInPips(final IOrder orderToChangeSL,
-                                           final double referencePrice,
-                                           final double pips) {
+    public Optional<Exception> setSLWithPips(final IOrder orderToChangeSL,
+                                             final double referencePrice,
+                                             final double pips) {
         final int pipFactor = orderToChangeSL.isLong() ? shortFactor : longFactor;
         final double newSL = CalculationUtil.addPips(orderToChangeSL.getInstrument(),
                                                      referencePrice,
@@ -83,9 +83,9 @@ public class OrderChange {
         return setSL(orderToChangeSL, newSL);
     }
 
-    public Optional<Exception> setTPInPips(final IOrder orderToChangeTP,
-                                           final double referencePrice,
-                                           final double pips) {
+    public Optional<Exception> setTPWithPips(final IOrder orderToChangeTP,
+                                             final double referencePrice,
+                                             final double pips) {
         final int pipFactor = orderToChangeTP.isLong() ? longFactor : shortFactor;
         final double newTP = CalculationUtil.addPips(orderToChangeTP.getInstrument(),
                                                      referencePrice,

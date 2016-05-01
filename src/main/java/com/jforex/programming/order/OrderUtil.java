@@ -71,16 +71,16 @@ public class OrderUtil {
         return orderChange.setTP(orderToChangeTP, newTP);
     }
 
-    public Optional<Exception> setSLInPips(final IOrder orderToChangeSL,
-                                           final double referencePrice,
-                                           final double pips) {
-        return orderChange.setSLInPips(orderToChangeSL, referencePrice, pips);
+    public Optional<Exception> setSLWithPips(final IOrder orderToChangeSL,
+                                             final double referencePrice,
+                                             final double pips) {
+        return orderChange.setSLWithPips(orderToChangeSL, referencePrice, pips);
     }
 
-    public Optional<Exception> setTPInPips(final IOrder orderToChangeTP,
-                                           final double referencePrice,
-                                           final double pips) {
-        return orderChange.setTPInPips(orderToChangeTP, referencePrice, pips);
+    public Optional<Exception> setTPWithPips(final IOrder orderToChangeTP,
+                                             final double referencePrice,
+                                             final double pips) {
+        return orderChange.setTPWithPips(orderToChangeTP, referencePrice, pips);
     }
 
     public void registerEventConsumer(final IOrder order,
@@ -90,7 +90,8 @@ public class OrderUtil {
 
     private void registerOnObservable(final IOrder order,
                                       final Consumer<OrderEvent> orderEventConsumer) {
-        orderEventGateway.observable()
+        orderEventGateway
+                .observable()
                 .filter(orderEvent -> orderEvent.order().equals(order))
                 .takeUntil(orderEvent -> endOfOrderEventTypes.contains(orderEvent.type()))
                 .subscribe(orderEventConsumer::accept);
