@@ -7,11 +7,10 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import java.util.Collection;
 import java.util.Optional;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.OrderEventTypesInfo;
 import com.jforex.programming.position.PositionTaskRejectException;
-
-import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 
@@ -31,99 +30,110 @@ public class OrderUtilObservable {
     }
 
     public Observable<IOrder> submit(final OrderParams orderParams) {
-        return orderCallObservable(orderUtil.submit(orderParams),
-                                   OrderEventTypesInfo.submitEvents);
+        return createObs(orderUtil.submit(orderParams),
+                         OrderEventTypesInfo.submitEvents);
     }
 
     public Observable<IOrder> merge(final String mergeOrderLabel,
                                     final Collection<IOrder> toMergeOrders) {
-        return orderCallObservable(orderUtil.merge(mergeOrderLabel, toMergeOrders),
-                                   OrderEventTypesInfo.mergeEvents);
+        return createObs(orderUtil.merge(mergeOrderLabel, toMergeOrders),
+                         OrderEventTypesInfo.mergeEvents);
     }
 
     public Observable<IOrder> close(final IOrder orderToClose) {
         return isClosed.test(orderToClose)
                 ? Observable.just(orderToClose)
-                : orderCallObservable(new OrderCreateResult(Optional.of(orderToClose),
-                                                            orderUtil.close(orderToClose)),
-                                      OrderEventTypesInfo.closeEvents);
+                : changeObs(orderUtil.close(orderToClose),
+                            orderToClose,
+                            OrderEventTypesInfo.closeEvents);
     }
 
     public Observable<IOrder> setLabel(final IOrder orderToChangeLabel,
                                        final String newLabel) {
         return orderToChangeLabel.getLabel().equals(newLabel)
                 ? Observable.just(orderToChangeLabel)
-                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeLabel),
-                                                            orderUtil.setLabel(orderToChangeLabel, newLabel)),
-                                      OrderEventTypesInfo.changeLabelEvents);
+                : changeObs(orderUtil.setLabel(orderToChangeLabel, newLabel),
+                            orderToChangeLabel,
+                            OrderEventTypesInfo.changeLabelEvents);
     }
 
     public Observable<IOrder> setGTT(final IOrder orderToChangeGTT,
                                      final long newGTT) {
         return orderToChangeGTT.getGoodTillTime() == newGTT
                 ? Observable.just(orderToChangeGTT)
-                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeGTT),
-                                                            orderUtil.setGTT(orderToChangeGTT, newGTT)),
-                                      OrderEventTypesInfo.changeGTTEvents);
+                : changeObs(orderUtil.setGTT(orderToChangeGTT, newGTT),
+                            orderToChangeGTT,
+                            OrderEventTypesInfo.changeGTTEvents);
     }
 
     public Observable<IOrder> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                            final double newOpenPrice) {
         return orderToChangeOpenPrice.getOpenPrice() == newOpenPrice
                 ? Observable.just(orderToChangeOpenPrice)
-                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeOpenPrice),
-                                                            orderUtil.setOpenPrice(orderToChangeOpenPrice,
-                                                                                   newOpenPrice)),
-                                      OrderEventTypesInfo.changeOpenPriceEvents);
+                : changeObs(orderUtil.setOpenPrice(orderToChangeOpenPrice, newOpenPrice),
+                            orderToChangeOpenPrice,
+                            OrderEventTypesInfo.changeOpenPriceEvents);
     }
 
     public Observable<IOrder> setAmount(final IOrder orderToChangeAmount,
                                         final double newAmount) {
         return orderToChangeAmount.getRequestedAmount() == newAmount
                 ? Observable.just(orderToChangeAmount)
-                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeAmount),
-                                                            orderUtil.setAmount(orderToChangeAmount, newAmount)),
-                                      OrderEventTypesInfo.changeAmountEvents);
+                : changeObs(orderUtil.setAmount(orderToChangeAmount, newAmount),
+                            orderToChangeAmount,
+                            OrderEventTypesInfo.changeAmountEvents);
     }
 
     public Observable<IOrder> setSL(final IOrder orderToChangeSL,
                                     final double newSL) {
         return isSLSetTo(newSL).test(orderToChangeSL)
                 ? Observable.just(orderToChangeSL)
-                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeSL),
-                                                            orderUtil.setSL(orderToChangeSL, newSL)),
-                                      OrderEventTypesInfo.changeSLEvents);
+                : changeObs(orderUtil.setSL(orderToChangeSL, newSL),
+                            orderToChangeSL,
+                            OrderEventTypesInfo.changeSLEvents);
     }
 
     public Observable<IOrder> setTP(final IOrder orderToChangeTP,
                                     final double newTP) {
         return isTPSetTo(newTP).test(orderToChangeTP)
                 ? Observable.just(orderToChangeTP)
-                : orderCallObservable(new OrderCreateResult(Optional.of(orderToChangeTP),
-                                                            orderUtil.setTP(orderToChangeTP, newTP)),
-                                      OrderEventTypesInfo.changeTPEvents);
+                : changeObs(orderUtil.setTP(orderToChangeTP, newTP),
+                            orderToChangeTP,
+                            OrderEventTypesInfo.changeTPEvents);
     }
 
-    private final Observable<IOrder> orderCallObservable(final OrderCreateResult orderCreateResult,
-                                                         final OrderEventTypesInfo orderEventData) {
+    private Observable<IOrder> changeObs(final Optional<Exception> exceptionOpt,
+                                         final IOrder orderToChange,
+                                         final OrderEventTypesInfo orderEventData) {
+        return exceptionOpt.isPresent()
+                ? Observable.error(exceptionOpt.get())
+                : Observable
+                        .just(orderToChange)
+                        .flatMap(order -> orderChangeCallObservable(order, orderEventData));
+    }
+
+    private Observable<IOrder> createObs(final OrderCreateResult createResult,
+                                         final OrderEventTypesInfo orderEventData) {
+        final Optional<Exception> exceptionOpt = createResult.exceptionOpt();
+        return exceptionOpt.isPresent()
+                ? Observable.error(exceptionOpt.get())
+                : Observable
+                        .just(createResult.orderOpt().get())
+                        .flatMap(order -> orderChangeCallObservable(order, orderEventData));
+    }
+
+    private final Observable<IOrder> orderChangeCallObservable(final IOrder order,
+                                                               final OrderEventTypesInfo orderEventData) {
         return Observable.create(subscriber -> {
-            if (orderCreateResult.exceptionOpt().isPresent())
-                subscriber.onError(orderCreateResult.exceptionOpt().get());
-            else {
-                filterForEvents(orderCreateResult.orderOpt().get(), orderEventData)
-                        .subscribe(orderEvent -> {
-                            subscriber.onNext(orderEvent.order());
-                            subscriber.onCompleted();
-                        }, t -> subscriber.onError(t));
-            }
+            orderEventObservable
+                    .filter(orderEvent -> orderEvent.order() == order)
+                    .filter(orderEvent -> orderEventData.all().contains(orderEvent.type()))
+                    .flatMap(orderEvent -> orderEventEvaluationObs(orderEvent, orderEventData))
+                    .subscribe(orderEvent -> {
+                        subscriber.onNext(orderEvent.order());
+                        subscriber.onCompleted();
+                    }, throwable -> subscriber.onError(throwable));
         });
-    }
-
-    private final Observable<OrderEvent> filterForEvents(final IOrder order,
-                                                         final OrderEventTypesInfo orderEventData) {
-        return orderEventObservable.filter(orderEvent -> orderEvent.order() == order)
-                .filter(orderEvent -> orderEventData.all().contains(orderEvent.type()))
-                .flatMap(orderEvent -> orderEventEvaluationObs(orderEvent, orderEventData));
     }
 
     private final Observable<OrderEvent> orderEventEvaluationObs(final OrderEvent orderEvent,
