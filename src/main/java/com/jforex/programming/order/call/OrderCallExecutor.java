@@ -13,7 +13,7 @@ public class OrderCallExecutor {
     private final ConcurrentUtil concurrentUtil;
 
     private interface ExecutorOrderCall {
-        abstract IOrder run() throws JFException, InterruptedException, ExecutionException;
+        public IOrder run() throws JFException, InterruptedException, ExecutionException;
     }
 
     public OrderCallExecutor(final ConcurrentUtil concurrentUtil) {

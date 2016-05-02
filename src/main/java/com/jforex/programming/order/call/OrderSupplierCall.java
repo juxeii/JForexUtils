@@ -6,5 +6,5 @@ import com.dukascopy.api.JFException;
 @FunctionalInterface
 public interface OrderSupplierCall {
 
-    abstract IOrder get() throws JFException;
+    public IOrder get() throws JFException;
 }
