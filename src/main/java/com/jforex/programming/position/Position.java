@@ -15,6 +15,8 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
@@ -25,9 +27,6 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtilObservable;
 import com.jforex.programming.order.event.OrderEvent;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -179,19 +178,17 @@ public class Position {
 
     private Observable<IOrder> mergeOrderObs(final String mergeLabel,
                                              final Set<IOrder> filledOrders) {
-        return Observable.just(mergeLabel)
+        return orderUtilObservable.merge(mergeLabel, filledOrders)
                 .doOnNext(label -> logger.debug("Start merge with label: " + label + " for " + instrument))
-                .flatMap(label -> orderUtilObservable.merge(mergeLabel, filledOrders))
                 .retryWhen(this::shouldRetry)
                 .doOnNext(orderRepository::add);
     }
 
     private Observable<IOrder> changeSLOrderObs(final IOrder orderToChangeSL,
                                                 final double newSL) {
-        return Observable.just(orderToChangeSL)
+        return orderUtilObservable.setSL(orderToChangeSL, newSL)
                 .doOnNext(order -> logger.debug("Start to change SL from " + order.getStopLossPrice() + " to "
                         + newSL + " for order " + order.getLabel() + " and position " + instrument))
-                .flatMap(order -> orderUtilObservable.setSL(orderToChangeSL, newSL))
                 .retryWhen(this::shouldRetry)
                 .doOnNext(order -> logger.debug("Changed SL from " + order.getStopLossPrice()
                         + " to " + order.getStopLossPrice() + " for order " + order.getLabel() + " and position "
@@ -200,10 +197,9 @@ public class Position {
 
     private Observable<IOrder> changeTPOrderObs(final IOrder orderToChangeTP,
                                                 final double newTP) {
-        return Observable.just(orderToChangeTP)
+        return orderUtilObservable.setTP(orderToChangeTP, newTP)
                 .doOnNext(order -> logger.debug("Start to change TP from " + order.getTakeProfitPrice()
                         + " to " + newTP + " for order " + order.getLabel() + " and position " + instrument))
-                .flatMap(order -> orderUtilObservable.setTP(orderToChangeTP, newTP))
                 .retryWhen(this::shouldRetry)
                 .doOnNext(order -> logger.debug("Changed TP from " + order.getTakeProfitPrice()
                         + " to " + order.getTakeProfitPrice() + " for order " + order.getLabel() + " and position "
