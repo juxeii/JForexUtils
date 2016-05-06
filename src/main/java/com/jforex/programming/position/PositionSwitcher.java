@@ -59,7 +59,8 @@ public final class PositionSwitcher {
     private void onPositionEvent(final PositionEventType positionEventType) {
         if (positionEventType == PositionEventType.SUBMITTED)
             position.merge(mergeLabel);
-        else if (positionEventType == PositionEventType.MERGED)
+        else if (positionEventType == PositionEventType.MERGED
+                || positionEventType == PositionEventType.ERROR)
             isBusy = false;
     }
 

@@ -1,12 +1,12 @@
 package com.jforex.programming.client;
 
-public final class StrategyInfo {
+public final class StrategyRunData {
 
     private final long processID;
-    private final StrategyState state;
+    private final StrategyRunState state;
 
-    public StrategyInfo(final long processID,
-                        final StrategyState state) {
+    public StrategyRunData(final long processID,
+                           final StrategyRunState state) {
         this.processID = processID;
         this.state = state;
     }
@@ -15,7 +15,7 @@ public final class StrategyInfo {
         return processID;
     }
 
-    public final StrategyState state() {
+    public final StrategyRunState state() {
         return state;
     }
 }

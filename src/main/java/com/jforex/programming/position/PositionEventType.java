@@ -4,5 +4,6 @@ public enum PositionEventType {
 
     SUBMITTED,
     MERGED,
-    CLOSED
+    CLOSED,
+    ERROR
 }

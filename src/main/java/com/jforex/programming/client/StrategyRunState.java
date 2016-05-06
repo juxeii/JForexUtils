@@ -1,6 +1,6 @@
 package com.jforex.programming.client;
 
-public enum StrategyState {
+public enum StrategyRunState {
 
     STARTED,
     STOPPED

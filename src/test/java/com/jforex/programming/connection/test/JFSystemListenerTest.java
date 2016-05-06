@@ -7,8 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.client.JFSystemListener;
-import com.jforex.programming.client.StrategyInfo;
-import com.jforex.programming.client.StrategyState;
+import com.jforex.programming.client.StrategyRunData;
+import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.connection.ConnectionState;
 
 import rx.observers.TestSubscriber;
@@ -17,7 +17,7 @@ public class JFSystemListenerTest {
 
     private JFSystemListener jfSystemListener;
 
-    private final TestSubscriber<StrategyInfo> strategyInfoSubscriber = new TestSubscriber<>();
+    private final TestSubscriber<StrategyRunData> strategyInfoSubscriber = new TestSubscriber<>();
     private final TestSubscriber<ConnectionState> connectionStateSubscriber = new TestSubscriber<>();
     private final long processID = 42L;
 
@@ -29,11 +29,11 @@ public class JFSystemListenerTest {
         jfSystemListener.connectionObs().subscribe(connectionStateSubscriber);
     }
 
-    private void assertStrategyInfoNotification(final StrategyState strategyState) {
+    private void assertStrategyInfoNotification(final StrategyRunState strategyState) {
         strategyInfoSubscriber.assertNoErrors();
         strategyInfoSubscriber.assertValueCount(1);
 
-        final StrategyInfo strategyInfo = strategyInfoSubscriber.getOnNextEvents().get(0);
+        final StrategyRunData strategyInfo = strategyInfoSubscriber.getOnNextEvents().get(0);
 
         assertThat(strategyInfo.processID(), equalTo(processID));
         assertThat(strategyInfo.state(), equalTo(strategyState));
@@ -52,14 +52,14 @@ public class JFSystemListenerTest {
     public void testOnStrategyStartNotifiesSubscriber() {
         jfSystemListener.onStart(processID);
 
-        assertStrategyInfoNotification(StrategyState.STARTED);
+        assertStrategyInfoNotification(StrategyRunState.STARTED);
     }
 
     @Test
     public void testOnStrategyStopNotifiesSubscriber() {
         jfSystemListener.onStop(processID);
 
-        assertStrategyInfoNotification(StrategyState.STOPPED);
+        assertStrategyInfoNotification(StrategyRunState.STOPPED);
     }
 
     @Test

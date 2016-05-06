@@ -28,11 +28,12 @@ public final class CurrencyBuilder {
     }
 
     public final static Set<ICurrency> fromNames(final Collection<String> currencyNames) {
-        return currencyNames.stream()
-                            .map(CurrencyBuilder::fromName)
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .collect(toSet());
+        return currencyNames
+                .stream()
+                .map(CurrencyBuilder::fromName)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toSet());
     }
 
     public final static Set<ICurrency> fromNames(final String... currencyNames) {
@@ -42,14 +43,15 @@ public final class CurrencyBuilder {
     public final static Set<ICurrency> fromInstrument(final Instrument instrument) {
         return Stream.of(instrument.getPrimaryJFCurrency(),
                          instrument.getSecondaryJFCurrency())
-                     .collect(toSet());
+                .collect(toSet());
     }
 
     public final static Set<ICurrency> fromInstruments(final Collection<Instrument> instruments) {
-        return instruments.stream()
-                          .map(CurrencyBuilder::fromInstrument)
-                          .flatMap(instrumentCurrencies -> instrumentCurrencies.stream())
-                          .collect(toSet());
+        return instruments
+                .stream()
+                .map(CurrencyBuilder::fromInstrument)
+                .flatMap(Set::stream)
+                .collect(toSet());
     }
 
     public final static Set<ICurrency> fromInstruments(final Instrument... instruments) {

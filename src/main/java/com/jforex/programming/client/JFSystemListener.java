@@ -1,41 +1,42 @@
 package com.jforex.programming.client;
 
-import com.dukascopy.api.system.ISystemListener;
 import com.jforex.programming.connection.ConnectionState;
-import com.jforex.programming.misc.JFEventPublisherForRx;
+import com.jforex.programming.misc.JFObservable;
+
+import com.dukascopy.api.system.ISystemListener;
 
 import rx.Observable;
 
 public final class JFSystemListener implements ISystemListener {
 
-    private final JFEventPublisherForRx<StrategyInfo> strategyInfoPublisher = new JFEventPublisherForRx<>();
-    private final JFEventPublisherForRx<ConnectionState> connectionStatePublisher = new JFEventPublisherForRx<>();
+    private final JFObservable<StrategyRunData> strategyRunDataPublisher = new JFObservable<>();
+    private final JFObservable<ConnectionState> connectionStatePublisher = new JFObservable<>();
 
-    public final Observable<StrategyInfo> strategyObs() {
-        return strategyInfoPublisher.observable();
+    public final Observable<StrategyRunData> strategyObs() {
+        return strategyRunDataPublisher.get();
     }
 
     public final Observable<ConnectionState> connectionObs() {
-        return connectionStatePublisher.observable();
+        return connectionStatePublisher.get();
     }
 
     @Override
     public final void onStart(final long processId) {
-        strategyInfoPublisher.onJFEvent(new StrategyInfo(processId, StrategyState.STARTED));
+        strategyRunDataPublisher.onNext(new StrategyRunData(processId, StrategyRunState.STARTED));
     }
 
     @Override
     public final void onStop(final long processId) {
-        strategyInfoPublisher.onJFEvent(new StrategyInfo(processId, StrategyState.STOPPED));
+        strategyRunDataPublisher.onNext(new StrategyRunData(processId, StrategyRunState.STOPPED));
     }
 
     @Override
     public final void onConnect() {
-        connectionStatePublisher.onJFEvent(ConnectionState.CONNECTED);
+        connectionStatePublisher.onNext(ConnectionState.CONNECTED);
     }
 
     @Override
     public final void onDisconnect() {
-        connectionStatePublisher.onJFEvent(ConnectionState.DISCONNECTED);
+        connectionStatePublisher.onNext(ConnectionState.DISCONNECTED);
     }
 }

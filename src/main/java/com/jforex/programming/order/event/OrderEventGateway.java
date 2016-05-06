@@ -9,7 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.MapMaker;
-import com.jforex.programming.misc.JFEventPublisherForRx;
+import com.jforex.programming.misc.JFObservable;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallRequest;
 
@@ -19,14 +19,14 @@ import rx.Observable;
 
 public class OrderEventGateway {
 
-    private final JFEventPublisherForRx<OrderEvent> orderEventPublisher = new JFEventPublisherForRx<>();
+    private final JFObservable<OrderEvent> orderEventPublisher = new JFObservable<>();
     private final ConcurrentMap<IOrder, Queue<OrderCallRequest>> callRequestByOrder =
             new MapMaker().weakKeys().makeMap();
 
     private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);
 
     public Observable<OrderEvent> observable() {
-        return orderEventPublisher.observable();
+        return orderEventPublisher.get();
     }
 
     public void registerOrderRequest(final IOrder order,
@@ -40,7 +40,7 @@ public class OrderEventGateway {
         final OrderEventType orderEventType = orderEventTypeFromData(orderMessageData);
         logger.debug("Received order event for " + order.getLabel()
                 + " type " + orderEventType + " state " + order.getState());
-        orderEventPublisher.onJFEvent(new OrderEvent(order, orderEventType));
+        orderEventPublisher.onNext(new OrderEvent(order, orderEventType));
     }
 
     private final OrderEventType orderEventTypeFromData(final OrderMessageData orderMessageData) {

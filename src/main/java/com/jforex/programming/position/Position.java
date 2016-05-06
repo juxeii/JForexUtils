@@ -4,10 +4,8 @@ import static com.jforex.programming.misc.JForexUtil.pfs;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
-import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -15,18 +13,16 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.ConcurrentUtil;
-import com.jforex.programming.misc.JFEventPublisherForRx;
+import com.jforex.programming.misc.JFObservable;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtilObservable;
 import com.jforex.programming.order.event.OrderEvent;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -34,12 +30,10 @@ public class Position {
 
     private final Instrument instrument;
     private final OrderUtilObservable orderUtilObservable;
-    private final Set<IOrder> orderRepository =
-            Collections.newSetFromMap(new MapMaker().weakKeys().<IOrder, Boolean> makeMap());
     private final RestoreSLTPPolicy restoreSLTPPolicy;
     private final ConcurrentUtil concurrentUtil;
-    private final JFEventPublisherForRx<PositionEventType> positionEventTypePublisher = new JFEventPublisherForRx<>();
-    private boolean isBusy = false;
+    private final PositionOrders orderRepository = new PositionOrders();
+    private final JFObservable<PositionEventType> positionEventTypePublisher = new JFObservable<>();
 
     private static final Logger logger = LogManager.getLogger(Position.class);
 
@@ -77,31 +71,27 @@ public class Position {
     }
 
     public Observable<PositionEventType> positionEventTypeObs() {
-        return positionEventTypePublisher.observable();
+        return positionEventTypePublisher.get();
     }
 
     public OrderDirection direction() {
-        return OrderStaticUtil.combinedDirection(filter(isFilled));
+        return orderRepository.direction();
     }
 
     public double signedExposure() {
-        return filter(isFilled).stream()
-                .mapToDouble(OrderStaticUtil::signedAmount)
-                .sum();
+        return orderRepository.signedExposure();
     }
 
     public Collection<IOrder> filter(final Predicate<IOrder> orderPredicate) {
-        return orderRepository.stream()
-                .filter(orderPredicate)
-                .collect(toList());
+        return orderRepository.filter(orderPredicate);
     }
 
     public Collection<IOrder> orders() {
-        return ImmutableSet.copyOf(orderRepository);
+        return orderRepository.orders();
     }
 
     private Collection<IOrder> filledOrders() {
-        return filter(isFilled);
+        return orderRepository.filterIdle(isFilled);
     }
 
     public synchronized void submit(final OrderParams orderParams) {
@@ -112,36 +102,30 @@ public class Position {
     }
 
     public synchronized void merge(final String mergeLabel) {
-        if (isBusy)
-            return;
-
         final Set<IOrder> filledOrders = Sets.newHashSet(filledOrders());
         if (filledOrders.size() < 2) {
-            positionEventTypePublisher.onJFEvent(PositionEventType.MERGED);
+            positionEventTypePublisher.onNext(PositionEventType.MERGED);
             return;
         }
 
-        isBusy = true;
+        orderRepository.markAllActive();
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders);
-        startTaskObs(mergeSequenceObs(mergeLabel, filledOrders, restoreSLTPData)
-                .doOnTerminate(() -> isBusy = false),
+        startTaskObs(mergeSequenceObs(mergeLabel, filledOrders, restoreSLTPData),
                      PositionEventType.MERGED);
     }
 
     public synchronized void close() {
-        if (isBusy)
-            return;
-
-        final Set<IOrder> ordersToClose = Sets.newHashSet(filter(isFilled.or(isOpened)));
+        final Set<IOrder> ordersToClose = Sets.newHashSet(orderRepository.filterIdle(isFilled.or(isOpened)));
+        System.out.println("Closing ordersToClose " + ordersToClose.size());
         if (ordersToClose.isEmpty())
             return;
-        isBusy = true;
+
+        orderRepository.markAllActive();
         final Observable<IOrder> observable = Observable.from(ordersToClose)
                 .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
                 .flatMap(order -> orderUtilObservable.close(order))
                 .doOnNext(orderRepository::remove)
-                .retryWhen(this::shouldRetry)
-                .doOnTerminate(() -> isBusy = false);
+                .retryWhen(this::shouldRetry);
         startTaskObs(observable, PositionEventType.CLOSED);
     }
 
@@ -221,10 +205,11 @@ public class Position {
     }
 
     private void taskFinish(final PositionEventType positionEventType) {
-        positionEventTypePublisher.onJFEvent(positionEventType);
+        positionEventTypePublisher.onNext(positionEventType);
     }
 
     private void taskFinishWithException(final Throwable throwable) {
         logger.error("Task finished with excpetion! " + throwable.getMessage());
+        positionEventTypePublisher.onNext(PositionEventType.ERROR);
     }
 }

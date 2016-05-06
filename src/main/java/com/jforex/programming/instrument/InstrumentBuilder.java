@@ -10,9 +10,10 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.jforex.programming.misc.MathUtil;
+
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.misc.MathUtil;
 
 public final class InstrumentBuilder {
 
@@ -36,9 +37,9 @@ public final class InstrumentBuilder {
 
     public final static Set<Instrument> combineAllFromCurrencySet(final Collection<ICurrency> currencies) {
         return fromCurrencyPairs(MathUtil.kPowerSet((Set<ICurrency>) currencies, 2)
-                                         .stream()
-                                         .map(InstrumentBuilder::currencyPairFromSet)
-                                         .collect(toSet()));
+                .stream()
+                .map(InstrumentBuilder::currencyPairFromSet)
+                .collect(toSet()));
     }
 
     private final static Pair<ICurrency, ICurrency> currencyPairFromSet(final Set<ICurrency> currencySet) {
@@ -47,9 +48,10 @@ public final class InstrumentBuilder {
     }
 
     private final static Set<Instrument> fromCurrencyPairs(final Set<Pair<ICurrency, ICurrency>> currencyPairs) {
-        return currencyPairs.stream()
-                            .map(currencyTuple -> fromCurrencyTuple(currencyTuple).get())
-                            .collect(toSet());
+        return currencyPairs
+                .stream()
+                .map(currencyTuple -> fromCurrencyTuple(currencyTuple).get())
+                .collect(toSet());
     }
 
     private final static Optional<Instrument> fromCurrencyTuple(final Pair<ICurrency, ICurrency> currencyTuple) {
@@ -58,10 +60,11 @@ public final class InstrumentBuilder {
 
     public final static Set<Instrument> combineAllWithAnchorCurrency(final ICurrency anchorCurrency,
                                                                      final Collection<ICurrency> partnerCurrencies) {
-        return partnerCurrencies.stream()
-                                .map(partnerCurrency -> fromCurrencies(anchorCurrency, partnerCurrency))
-                                .filter(Optional::isPresent)
-                                .map(Optional::get)
-                                .collect(toSet());
+        return partnerCurrencies
+                .stream()
+                .map(partnerCurrency -> fromCurrencies(anchorCurrency, partnerCurrency))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toSet());
     }
 }

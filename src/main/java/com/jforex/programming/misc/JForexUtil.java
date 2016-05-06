@@ -62,13 +62,13 @@ public class JForexUtil implements MessageConsumer {
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final RestoreSLTPPolicy defaultRestorePolicy = new NoRestorePolicy();
 
-    private final JFEventPublisherForRx<IMessage> messagePublisherForRx = new JFEventPublisherForRx<IMessage>();
+    private final JFObservable<IMessage> messagePublisherForRx = new JFObservable<IMessage>();
     private Observable<IMessage> messageObservable;
 
-    private final JFEventPublisherForRx<TickQuote> tickQuotePublisherForRx = new JFEventPublisherForRx<TickQuote>();
+    private final JFObservable<TickQuote> tickQuotePublisherForRx = new JFObservable<TickQuote>();
     private Observable<TickQuote> tickObservable;
 
-    private final JFEventPublisherForRx<BarQuote> barQuotePublisherForRx = new JFEventPublisherForRx<BarQuote>();
+    private final JFObservable<BarQuote> barQuotePublisherForRx = new JFObservable<BarQuote>();
     private Observable<BarQuote> barObservable;
 
     private Subscription eventGatewaySubscription;
@@ -98,17 +98,17 @@ public class JForexUtil implements MessageConsumer {
     private void initInfrastructure() {
         orderEventGateway = new OrderEventGateway();
 
-        messageObservable = messagePublisherForRx.observable();
+        messageObservable = messagePublisherForRx.get();
         eventGatewaySubscription = messageObservable.filter(message -> message.getOrder() != null)
                 .map(OrderMessageData::new)
                 .subscribe(orderEventGateway::onOrderMessageData);
     }
 
     private void initQuoteProvider() {
-        tickObservable = tickQuotePublisherForRx.observable();
+        tickObservable = tickQuotePublisherForRx.get();
         tickQuoteProvider = new TickQuoteProvider(tickObservable, context.getSubscribedInstruments(), history);
 
-        barObservable = barQuotePublisherForRx.observable();
+        barObservable = barQuotePublisherForRx.get();
         barQuoteProvider = new BarQuoteProvider(barObservable, history);
 
     }
@@ -185,13 +185,13 @@ public class JForexUtil implements MessageConsumer {
 
     @Override
     public void onMessage(final IMessage message) {
-        messagePublisherForRx.onJFEvent(message);
+        messagePublisherForRx.onNext(message);
     }
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
         if (uss.ENABLE_WEEKEND_QUOTE_FILTER() && !DateTimeUtil.isWeekendMillis(tick.getTime()))
-            tickQuotePublisherForRx.onJFEvent(new TickQuote(instrument, tick));
+            tickQuotePublisherForRx.onNext(new TickQuote(instrument, tick));
     }
 
     public void onBar(final Instrument instrument,
@@ -199,6 +199,6 @@ public class JForexUtil implements MessageConsumer {
                       final IBar askBar,
                       final IBar bidBar) {
         if (uss.ENABLE_WEEKEND_QUOTE_FILTER() && !DateTimeUtil.isWeekendMillis(askBar.getTime()))
-            barQuotePublisherForRx.onJFEvent(new BarQuote(instrument, period, askBar, bidBar));
+            barQuotePublisherForRx.onNext(new BarQuote(instrument, period, askBar, bidBar));
     }
 }

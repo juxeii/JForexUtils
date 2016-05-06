@@ -52,7 +52,7 @@ public final class ClientUtil {
         return jfSystemListener.connectionObs();
     }
 
-    public final Observable<StrategyInfo> strategyInfoObs() {
+    public final Observable<StrategyRunData> strategyInfoObs() {
         return jfSystemListener.strategyObs();
     }
 

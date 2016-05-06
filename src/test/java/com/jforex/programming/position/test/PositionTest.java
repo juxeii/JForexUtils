@@ -20,8 +20,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.ConcurrentUtil;
@@ -37,6 +35,9 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
+
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -48,9 +49,12 @@ public class PositionTest extends InstrumentUtilForTest {
 
     private Position position;
 
-    @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
-    @Mock private OrderUtilObservable orderUtilObservableMock;
-    @Mock private ConcurrentUtil concurrentUtilMock;
+    @Mock
+    private RestoreSLTPPolicy restoreSLTPPolicyMock;
+    @Mock
+    private OrderUtilObservable orderUtilObservableMock;
+    @Mock
+    private ConcurrentUtil concurrentUtilMock;
     private Subject<OrderEvent, OrderEvent> orderEventSubject;
     private Subject<Long, Long> timerSubject;
     private final TestSubscriber<PositionEventType> positionSubscriber = new TestSubscriber<>();
@@ -530,9 +534,10 @@ public class PositionTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void testNoEventWasSent() {
+            public void testErrorEventWasSent() {
                 positionSubscriber.assertNoErrors();
-                positionSubscriber.assertValueCount(0);
+                assertThat(positionSubscriber.getOnNextEvents().get(0),
+                           equalTo(PositionEventType.ERROR));
             }
         }
     }

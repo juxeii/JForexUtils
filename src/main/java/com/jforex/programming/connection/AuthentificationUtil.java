@@ -2,7 +2,7 @@ package com.jforex.programming.connection;
 
 import java.util.Optional;
 
-import com.jforex.programming.misc.JFEventPublisherForRx;
+import com.jforex.programming.misc.JFObservable;
 
 import com.dukascopy.api.system.IClient;
 
@@ -11,7 +11,7 @@ import rx.Observable;
 public final class AuthentificationUtil {
 
     private final IClient client;
-    private final JFEventPublisherForRx<LoginState> loginStatePublisher = new JFEventPublisherForRx<>();
+    private final JFObservable<LoginState> loginStatePublisher = new JFObservable<>();
     private LoginState loginState = LoginState.LOGGED_OUT;
 
     public AuthentificationUtil(final IClient client,
@@ -54,7 +54,7 @@ public final class AuthentificationUtil {
     }
 
     public final Observable<LoginState> loginStateObs() {
-        return loginStatePublisher.observable();
+        return loginStatePublisher.get();
     }
 
     private final void onConnectionState(final ConnectionState connectionState) {
@@ -69,7 +69,7 @@ public final class AuthentificationUtil {
 
     private final synchronized void updateState(final LoginState loginState) {
         this.loginState = loginState;
-        loginStatePublisher.onJFEvent(loginState);
+        loginStatePublisher.onNext(loginState);
     }
 
     public final LoginState state() {
