@@ -65,15 +65,11 @@ public class PositionOrders {
                 .entrySet()
                 .stream()
                 .filter(entry -> entry.getValue() == OrderProcessState.IDLE)
-                .collect(Collectors.toMap(p -> p.getKey(), p -> p.getValue()))
+                .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()))
                 .keySet();
     }
 
     public Collection<IOrder> orders() {
         return ImmutableSet.copyOf(orderRepository.keySet());
-    }
-
-    public Collection<IOrder> filledOrders() {
-        return filter(isFilled);
     }
 }

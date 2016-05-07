@@ -96,7 +96,8 @@ public class Position {
 
     public synchronized void submit(final OrderParams orderParams) {
         logger.info("Start submit for " + orderParams.label());
-        startTaskObs(orderUtilObservable.submit(orderParams)
+        startTaskObs(orderUtilObservable
+                .submit(orderParams)
                 .doOnNext(orderRepository::add),
                      PositionEventType.SUBMITTED);
     }
@@ -116,7 +117,6 @@ public class Position {
 
     public synchronized void close() {
         final Set<IOrder> ordersToClose = Sets.newHashSet(orderRepository.filterIdle(isFilled.or(isOpened)));
-        System.out.println("Closing ordersToClose " + ordersToClose.size());
         if (ordersToClose.isEmpty())
             return;
 
