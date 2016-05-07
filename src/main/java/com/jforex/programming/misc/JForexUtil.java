@@ -5,19 +5,8 @@ import java.util.concurrent.Executors;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
-import com.jforex.programming.order.OrderChange;
-import com.jforex.programming.order.OrderCreate;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilObservable;
@@ -33,6 +22,16 @@ import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
+
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.Period;
 
 import rx.Observable;
 import rx.Subscription;
@@ -51,24 +50,22 @@ public class JForexUtil implements MessageConsumer {
 
     private OrderUtil orderUtil;
     private OrderUtilObservable orderUtilObservable;
-    private OrderCreate orderCreate;
-    private OrderChange orderChange;
     private PositionFactory positionRepository;
     private OrderEventGateway orderEventGateway;
-    private OrderCallExecutor orderCallRunner;
+    private OrderCallExecutor orderCallExecutor;
 
     private final CalculationUtil calculationUtil;
     private final RiskPercentMM riskPercentMM;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
     private final RestoreSLTPPolicy defaultRestorePolicy = new NoRestorePolicy();
 
-    private final JFObservable<IMessage> messagePublisherForRx = new JFObservable<IMessage>();
+    private final JFObservable<IMessage> messagePublisher = new JFObservable<IMessage>();
     private Observable<IMessage> messageObservable;
 
-    private final JFObservable<TickQuote> tickQuotePublisherForRx = new JFObservable<TickQuote>();
+    private final JFObservable<TickQuote> tickQuotePublisher = new JFObservable<TickQuote>();
     private Observable<TickQuote> tickObservable;
 
-    private final JFObservable<BarQuote> barQuotePublisherForRx = new JFObservable<BarQuote>();
+    private final JFObservable<BarQuote> barQuotePublisher = new JFObservable<BarQuote>();
     private Observable<BarQuote> barObservable;
 
     private Subscription eventGatewaySubscription;
@@ -98,31 +95,26 @@ public class JForexUtil implements MessageConsumer {
     private void initInfrastructure() {
         orderEventGateway = new OrderEventGateway();
 
-        messageObservable = messagePublisherForRx.get();
+        messageObservable = messagePublisher.get();
         eventGatewaySubscription = messageObservable.filter(message -> message.getOrder() != null)
                 .map(OrderMessageData::new)
                 .subscribe(orderEventGateway::onOrderMessageData);
     }
 
     private void initQuoteProvider() {
-        tickObservable = tickQuotePublisherForRx.get();
+        tickObservable = tickQuotePublisher.get();
         tickQuoteProvider = new TickQuoteProvider(tickObservable, context.getSubscribedInstruments(), history);
 
-        barObservable = barQuotePublisherForRx.get();
+        barObservable = barQuotePublisher.get();
         barQuoteProvider = new BarQuoteProvider(barObservable, history);
 
     }
 
     private void initOrderRelated() {
-        orderCallRunner = new OrderCallExecutor(concurrentUtil);
-        orderCreate = new OrderCreate(context.getEngine(),
-                                      orderCallRunner,
-                                      orderEventGateway);
-        orderChange = new OrderChange(orderCallRunner,
-                                      orderEventGateway);
-        orderUtil = new OrderUtil(orderCreate, orderChange, orderEventGateway);
-        orderUtilObservable = new OrderUtilObservable(orderUtil, orderEventGateway.observable());
-        positionRepository = new PositionFactory(orderUtilObservable, concurrentUtil);
+        orderCallExecutor = new OrderCallExecutor(concurrentUtil);
+        orderUtil = new OrderUtil(context.getEngine(), orderCallExecutor, orderEventGateway);
+        orderUtilObservable = new OrderUtilObservable(orderUtil);
+        positionRepository = new PositionFactory(orderUtilObservable, orderEventGateway.observable(), concurrentUtil);
     }
 
     public IContext context() {
@@ -185,13 +177,13 @@ public class JForexUtil implements MessageConsumer {
 
     @Override
     public void onMessage(final IMessage message) {
-        messagePublisherForRx.onNext(message);
+        messagePublisher.onNext(message);
     }
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
         if (uss.ENABLE_WEEKEND_QUOTE_FILTER() && !DateTimeUtil.isWeekendMillis(tick.getTime()))
-            tickQuotePublisherForRx.onNext(new TickQuote(instrument, tick));
+            tickQuotePublisher.onNext(new TickQuote(instrument, tick));
     }
 
     public void onBar(final Instrument instrument,
@@ -199,6 +191,6 @@ public class JForexUtil implements MessageConsumer {
                       final IBar askBar,
                       final IBar bidBar) {
         if (uss.ENABLE_WEEKEND_QUOTE_FILTER() && !DateTimeUtil.isWeekendMillis(askBar.getTime()))
-            barQuotePublisherForRx.onNext(new BarQuote(instrument, period, askBar, bidBar));
+            barQuotePublisher.onNext(new BarQuote(instrument, period, askBar, bidBar));
     }
 }

@@ -1,109 +1,162 @@
 package com.jforex.programming.order;
 
-import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
-
 import java.util.Collection;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Consumer;
 
+import com.jforex.programming.misc.CalculationUtil;
+import com.jforex.programming.order.call.OrderCallExecutor;
+import com.jforex.programming.order.call.OrderCallExecutorResult;
+import com.jforex.programming.order.call.OrderCallRequest;
+import com.jforex.programming.order.call.OrderChangeCall;
+import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventConsumer;
 import com.jforex.programming.order.event.OrderEventGateway;
-import com.jforex.programming.order.event.OrderEventType;
 
+import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
+
+import rx.Observable;
 
 public class OrderUtil {
 
-    private final OrderCreate orderCreate;
-    private final OrderChange orderChange;
+    private final IEngine engine;
+    private final OrderCallExecutor orderCallExecutor;
     private final OrderEventGateway orderEventGateway;
 
-    public OrderUtil(final OrderCreate orderCreate,
-                     final OrderChange orderChange,
+    private final static int longFactor = 1;
+    private final static int shortFactor = -1;
+
+    public OrderUtil(final IEngine engine,
+                     final OrderCallExecutor orderCallExecutor,
                      final OrderEventGateway orderEventGateway) {
-        this.orderCreate = orderCreate;
-        this.orderChange = orderChange;
+        this.engine = engine;
+        this.orderCallExecutor = orderCallExecutor;
         this.orderEventGateway = orderEventGateway;
     }
 
-    public OrderCreateResult submit(final OrderParams orderParams) {
-        return orderCreate.submit(orderParams);
+    public Observable<OrderEvent> submit(final OrderParams orderParams) {
+        final OrderSupplierCall submitCall = () -> engine.submitOrder(orderParams.label(),
+                                                                      orderParams.instrument(),
+                                                                      orderParams.orderCommand(),
+                                                                      orderParams.amount(),
+                                                                      orderParams.price(),
+                                                                      orderParams.slippage(),
+                                                                      orderParams.stopLossPrice(),
+                                                                      orderParams.takeProfitPrice(),
+                                                                      orderParams.goodTillTime(),
+                                                                      orderParams.comment());
+        final OrderCallExecutorResult orderExecutorResult = createResult(submitCall, OrderCallRequest.SUBMIT);
+        return createObs(orderExecutorResult);
     }
 
-    public OrderCreateResult merge(final String mergeOrderLabel,
-                                   final Collection<IOrder> toMergeOrders) {
-        return orderCreate.merge(mergeOrderLabel, toMergeOrders);
+    public Observable<OrderEvent> merge(final String mergeOrderLabel,
+                                        final Collection<IOrder> toMergeOrders) {
+        final OrderSupplierCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
+        final OrderCallExecutorResult orderExecutorResult = createResult(mergeCall, OrderCallRequest.MERGE);
+        return createObs(orderExecutorResult);
     }
 
-    public Optional<Exception> close(final IOrder orderToClose) {
-        return orderChange.close(orderToClose);
+    private OrderCallExecutorResult createResult(final OrderSupplierCall orderSupplierCall,
+                                                 final OrderCallRequest orderCallRequest) {
+        final OrderCallExecutorResult orderExecutorResult = orderCallExecutor.run(orderSupplierCall);
+        registerOrderCallRequest(orderExecutorResult, orderCallRequest);
+        return orderExecutorResult;
     }
 
-    public Optional<Exception> setLabel(final IOrder orderToChangeLabel,
-                                        final String newLabel) {
-        return orderChange.setLabel(orderToChangeLabel, newLabel);
+    private Observable<OrderEvent> createObs(final OrderCallExecutorResult orderExecutorResult) {
+        return orderExecutorResult.exceptionOpt().isPresent()
+                ? Observable.error(orderExecutorResult.exceptionOpt().get())
+                : orderEventGateway
+                        .observable()
+                        .filter(orderEvent -> orderEvent.order() == orderExecutorResult.orderOpt().get());
     }
 
-    public Optional<Exception> setGTT(final IOrder orderToChangeGTT,
-                                      final long newGTT) {
-        return orderChange.setGTT(orderToChangeGTT, newGTT);
+    public Observable<OrderEvent> close(final IOrder orderToClose) {
+        return runChangeCall(() -> orderToClose.close(),
+                             orderToClose,
+                             OrderCallRequest.CLOSE);
     }
 
-    public Optional<Exception> setOpenPrice(final IOrder orderToChangeOpenPrice,
-                                            final double newOpenPrice) {
-        return orderChange.setOpenPrice(orderToChangeOpenPrice, newOpenPrice);
+    public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
+                                           final String newLabel) {
+        return runChangeCall(() -> orderToChangeLabel.setLabel(newLabel),
+                             orderToChangeLabel,
+                             OrderCallRequest.CHANGE_LABEL);
     }
 
-    public Optional<Exception> setAmount(final IOrder orderToChangeAmount,
-                                         final double newAmount) {
-        return orderChange.setAmount(orderToChangeAmount, newAmount);
+    public Observable<OrderEvent> setGTT(final IOrder orderToChangeGTT,
+                                         final long newGTT) {
+        return runChangeCall(() -> orderToChangeGTT.setGoodTillTime(newGTT),
+                             orderToChangeGTT,
+                             OrderCallRequest.CHANGE_GTT);
     }
 
-    public Optional<Exception> setSL(final IOrder orderToChangeSL,
-                                     final double newSL) {
-        return orderChange.setSL(orderToChangeSL, newSL);
+    public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
+                                               final double newOpenPrice) {
+        return runChangeCall(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
+                             orderToChangeOpenPrice,
+                             OrderCallRequest.CHANGE_OPENPRICE);
     }
 
-    public Optional<Exception> setTP(final IOrder orderToChangeTP,
-                                     final double newTP) {
-        return orderChange.setTP(orderToChangeTP, newTP);
+    public Observable<OrderEvent> setAmount(final IOrder orderToChangeAmount,
+                                            final double newAmount) {
+        return runChangeCall(() -> orderToChangeAmount.setRequestedAmount(newAmount),
+                             orderToChangeAmount,
+                             OrderCallRequest.CHANGE_AMOUNT);
     }
 
-    public Optional<Exception> setSLWithPips(final IOrder orderToChangeSL,
-                                             final double referencePrice,
-                                             final double pips) {
-        return orderChange.setSLWithPips(orderToChangeSL, referencePrice, pips);
+    public Observable<OrderEvent> setSL(final IOrder orderToChangeSL,
+                                        final double newSL) {
+        return runChangeCall(() -> orderToChangeSL.setStopLossPrice(newSL),
+                             orderToChangeSL,
+                             OrderCallRequest.CHANGE_SL);
     }
 
-    public Optional<Exception> setTPWithPips(final IOrder orderToChangeTP,
-                                             final double referencePrice,
-                                             final double pips) {
-        return orderChange.setTPWithPips(orderToChangeTP, referencePrice, pips);
+    public Observable<OrderEvent> setTP(final IOrder orderToChangeTP,
+                                        final double newTP) {
+        return runChangeCall(() -> orderToChangeTP.setTakeProfitPrice(newTP),
+                             orderToChangeTP,
+                             OrderCallRequest.CHANGE_TP);
     }
 
-    public void registerEventConsumer(final IOrder order,
-                                      final OrderEventConsumer orderEventConsumer) {
-        registerOnObservable(order, orderEventConsumer::onOrderEvent);
+    public Observable<OrderEvent> setSLWithPips(final IOrder orderToChangeSL,
+                                                final double referencePrice,
+                                                final double pips) {
+        final int pipFactor = orderToChangeSL.isLong() ? shortFactor : longFactor;
+        final double newSL = CalculationUtil.addPips(orderToChangeSL.getInstrument(),
+                                                     referencePrice,
+                                                     pipFactor * pips);
+        return setSL(orderToChangeSL, newSL);
     }
 
-    private void registerOnObservable(final IOrder order,
-                                      final Consumer<OrderEvent> orderEventConsumer) {
-        orderEventGateway
-                .observable()
-                .filter(orderEvent -> orderEvent.order().equals(order))
-                .takeUntil(orderEvent -> endOfOrderEventTypes.contains(orderEvent.type()))
-                .subscribe(orderEventConsumer::accept);
+    public Observable<OrderEvent> setTPWithPips(final IOrder orderToChangeTP,
+                                                final double referencePrice,
+                                                final double pips) {
+        final int pipFactor = orderToChangeTP.isLong() ? longFactor : shortFactor;
+        final double newTP = CalculationUtil.addPips(orderToChangeTP.getInstrument(),
+                                                     referencePrice,
+                                                     pipFactor * pips);
+        return setTP(orderToChangeTP, newTP);
     }
 
-    public void registerEventConsumerMap(final IOrder order,
-                                         final Map<OrderEventType, OrderEventConsumer> orderEventConsumerMap) {
-        registerOnObservable(order,
-                             orderEvent -> {
-                                 final OrderEventType orderEventType = orderEvent.type();
-                                 if (orderEventConsumerMap.containsKey(orderEventType))
-                                     orderEventConsumerMap.get(orderEventType).onOrderEvent(orderEvent);
-                             });
+    private Observable<OrderEvent> runChangeCall(final OrderChangeCall orderChangeCall,
+                                                 final IOrder orderToChange,
+                                                 final OrderCallRequest orderCallRequest) {
+        final OrderCallExecutorResult executorResult = orderCallExecutor.run(() -> {
+            orderChangeCall.change();
+            return orderToChange;
+        });
+        registerOrderCallRequest(executorResult, orderCallRequest);
+        return executorResult.exceptionOpt().isPresent()
+                ? Observable.error(executorResult.exceptionOpt().get())
+                : orderEventGateway
+                        .observable()
+                        .filter(orderEvent -> orderEvent.order() == orderToChange);
+    }
+
+    private void registerOrderCallRequest(final OrderCallExecutorResult orderExecutorResult,
+                                          final OrderCallRequest orderCallRequest) {
+        if (orderExecutorResult.orderOpt().isPresent())
+            orderEventGateway.registerOrderRequest(orderExecutorResult.orderOpt().get(),
+                                                   orderCallRequest);
     }
 }

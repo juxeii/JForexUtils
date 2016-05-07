@@ -39,6 +39,7 @@ public class Position {
 
     public Position(final Instrument instrument,
                     final OrderUtilObservable orderUtilObservable,
+                    final Observable<OrderEvent> orderEventObservable,
                     final RestoreSLTPPolicy restoreSLTPPolicy,
                     final ConcurrentUtil concurrentUtil) {
         this.instrument = instrument;
@@ -46,7 +47,7 @@ public class Position {
         this.restoreSLTPPolicy = restoreSLTPPolicy;
         this.concurrentUtil = concurrentUtil;
 
-        orderUtilObservable.orderEventObservable()
+        orderEventObservable
                 .filter(orderEvent -> orderEvent.order().getInstrument() == instrument)
                 .doOnNext(orderEvent -> logger.info("Received " + orderEvent.type() + " for position "
                         + instrument + " with label " + orderEvent.order().getLabel()))

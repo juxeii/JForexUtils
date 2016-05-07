@@ -83,6 +83,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
         position = new Position(instrumentEURUSD,
                                 orderUtilObservableMock,
+                                orderEventSubject,
                                 restoreSLTPPolicyMock,
                                 concurrentUtilMock);
         position.positionEventTypeObs().subscribe(positionSubscriber);
@@ -91,7 +92,6 @@ public class PositionTest extends InstrumentUtilForTest {
     private void setUpMocks() {
         when(restoreSLTPPolicyMock.restoreSL(any())).thenReturn(restoreSL);
         when(restoreSLTPPolicyMock.restoreTP(any())).thenReturn(restoreTP);
-        when(orderUtilObservableMock.orderEventObservable()).thenReturn(orderEventSubject);
         when(concurrentUtilMock.timerObservable(1500L, TimeUnit.MILLISECONDS)).thenReturn(timerSubject);
     }
 

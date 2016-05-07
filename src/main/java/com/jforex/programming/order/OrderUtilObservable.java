@@ -5,28 +5,21 @@ import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
 import java.util.Collection;
-import java.util.Optional;
 
-import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.OrderEventTypesInfo;
 import com.jforex.programming.position.PositionTaskRejectException;
+
+import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 
 public class OrderUtilObservable {
 
     private final OrderUtil orderUtil;
-    private final Observable<OrderEvent> orderEventObservable;
 
-    public OrderUtilObservable(final OrderUtil orderUtil,
-                               final Observable<OrderEvent> orderEventObservable) {
+    public OrderUtilObservable(final OrderUtil orderUtil) {
         this.orderUtil = orderUtil;
-        this.orderEventObservable = orderEventObservable;
-    }
-
-    public Observable<OrderEvent> orderEventObservable() {
-        return orderEventObservable;
     }
 
     public Observable<IOrder> submit(final OrderParams orderParams) {
@@ -43,8 +36,7 @@ public class OrderUtilObservable {
     public Observable<IOrder> close(final IOrder orderToClose) {
         return isClosed.test(orderToClose)
                 ? Observable.just(orderToClose)
-                : changeObs(orderUtil.close(orderToClose),
-                            orderToClose,
+                : createObs(orderUtil.close(orderToClose),
                             OrderEventTypesInfo.closeEvents);
     }
 
@@ -52,8 +44,7 @@ public class OrderUtilObservable {
                                        final String newLabel) {
         return orderToChangeLabel.getLabel().equals(newLabel)
                 ? Observable.just(orderToChangeLabel)
-                : changeObs(orderUtil.setLabel(orderToChangeLabel, newLabel),
-                            orderToChangeLabel,
+                : createObs(orderUtil.setLabel(orderToChangeLabel, newLabel),
                             OrderEventTypesInfo.changeLabelEvents);
     }
 
@@ -61,8 +52,7 @@ public class OrderUtilObservable {
                                      final long newGTT) {
         return orderToChangeGTT.getGoodTillTime() == newGTT
                 ? Observable.just(orderToChangeGTT)
-                : changeObs(orderUtil.setGTT(orderToChangeGTT, newGTT),
-                            orderToChangeGTT,
+                : createObs(orderUtil.setGTT(orderToChangeGTT, newGTT),
                             OrderEventTypesInfo.changeGTTEvents);
     }
 
@@ -70,8 +60,7 @@ public class OrderUtilObservable {
                                            final double newOpenPrice) {
         return orderToChangeOpenPrice.getOpenPrice() == newOpenPrice
                 ? Observable.just(orderToChangeOpenPrice)
-                : changeObs(orderUtil.setOpenPrice(orderToChangeOpenPrice, newOpenPrice),
-                            orderToChangeOpenPrice,
+                : createObs(orderUtil.setOpenPrice(orderToChangeOpenPrice, newOpenPrice),
                             OrderEventTypesInfo.changeOpenPriceEvents);
     }
 
@@ -79,8 +68,7 @@ public class OrderUtilObservable {
                                         final double newAmount) {
         return orderToChangeAmount.getRequestedAmount() == newAmount
                 ? Observable.just(orderToChangeAmount)
-                : changeObs(orderUtil.setAmount(orderToChangeAmount, newAmount),
-                            orderToChangeAmount,
+                : createObs(orderUtil.setAmount(orderToChangeAmount, newAmount),
                             OrderEventTypesInfo.changeAmountEvents);
     }
 
@@ -88,8 +76,7 @@ public class OrderUtilObservable {
                                     final double newSL) {
         return isSLSetTo(newSL).test(orderToChangeSL)
                 ? Observable.just(orderToChangeSL)
-                : changeObs(orderUtil.setSL(orderToChangeSL, newSL),
-                            orderToChangeSL,
+                : createObs(orderUtil.setSL(orderToChangeSL, newSL),
                             OrderEventTypesInfo.changeSLEvents);
     }
 
@@ -97,37 +84,14 @@ public class OrderUtilObservable {
                                     final double newTP) {
         return isTPSetTo(newTP).test(orderToChangeTP)
                 ? Observable.just(orderToChangeTP)
-                : changeObs(orderUtil.setTP(orderToChangeTP, newTP),
-                            orderToChangeTP,
+                : createObs(orderUtil.setTP(orderToChangeTP, newTP),
                             OrderEventTypesInfo.changeTPEvents);
     }
 
-    private Observable<IOrder> changeObs(final Optional<Exception> exceptionOpt,
-                                         final IOrder orderToChange,
+    private Observable<IOrder> createObs(final Observable<OrderEvent> eventObs,
                                          final OrderEventTypesInfo orderEventData) {
-        return exceptionOpt.isPresent()
-                ? Observable.error(exceptionOpt.get())
-                : Observable
-                        .just(orderToChange)
-                        .flatMap(order -> orderChangeCallObservable(order, orderEventData));
-    }
-
-    private Observable<IOrder> createObs(final OrderCreateResult createResult,
-                                         final OrderEventTypesInfo orderEventData) {
-        final Optional<Exception> exceptionOpt = createResult.exceptionOpt();
-        return exceptionOpt.isPresent()
-                ? Observable.error(exceptionOpt.get())
-                : Observable
-                        .just(createResult.orderOpt().get())
-                        .flatMap(order -> orderChangeCallObservable(order, orderEventData));
-    }
-
-    private final Observable<IOrder> orderChangeCallObservable(final IOrder order,
-                                                               final OrderEventTypesInfo orderEventData) {
         return Observable.create(subscriber -> {
-            orderEventObservable
-                    .filter(orderEvent -> orderEvent.order() == order)
-                    .filter(orderEvent -> orderEventData.all().contains(orderEvent.type()))
+            eventObs.filter(orderEvent -> orderEventData.all().contains(orderEvent.type()))
                     .flatMap(orderEvent -> orderEventEvaluationObs(orderEvent, orderEventData))
                     .subscribe(orderEvent -> {
                         subscriber.onNext(orderEvent.order());
