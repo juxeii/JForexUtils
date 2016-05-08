@@ -19,7 +19,7 @@ import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.PARTIAL_FILL_OK;
 import static com.jforex.programming.order.event.OrderEventType.PRICE_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.SL_CHANGE_OK;
-import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITIONAL_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.TP_CHANGE_OK;
 
@@ -33,6 +33,7 @@ import com.jforex.programming.order.event.OrderEventType;
 public final class OrderEventTypesInfo {
 
     private final ImmutableSet<OrderEventType> doneEventTypes;
+    private final ImmutableSet<OrderEventType> intermediateTypes;
     private final ImmutableSet<OrderEventType> rejectEventTypes;
     private final ImmutableSet<OrderEventType> allTypes;
 
@@ -40,14 +41,20 @@ public final class OrderEventTypesInfo {
                                 final EnumSet<OrderEventType> rejectEventTypes) {
         this.doneEventTypes = Sets.immutableEnumSet(doneEventTypes);
         this.rejectEventTypes = Sets.immutableEnumSet(rejectEventTypes);
+        intermediateTypes = Sets.immutableEnumSet(SUBMIT_OK);
 
         final EnumSet<OrderEventType> tmpAllTypes = doneEventTypes;
+        tmpAllTypes.addAll(intermediateTypes);
         tmpAllTypes.addAll(rejectEventTypes);
         allTypes = Sets.immutableEnumSet(tmpAllTypes);
     }
 
     public final boolean isDoneType(final OrderEventType orderEventType) {
         return doneEventTypes.contains(orderEventType);
+    }
+
+    public final boolean isIntermediateType(final OrderEventType orderEventType) {
+        return intermediateTypes.contains(orderEventType);
     }
 
     public final boolean isRejectType(final OrderEventType orderEventType) {
@@ -59,7 +66,7 @@ public final class OrderEventTypesInfo {
     }
 
     public final static OrderEventTypesInfo submitEvents =
-            new OrderEventTypesInfo(EnumSet.of(FULL_FILL_OK, PARTIAL_FILL_OK, SUBMIT_CONDITIONAL_OK),
+            new OrderEventTypesInfo(EnumSet.of(FULL_FILL_OK, PARTIAL_FILL_OK),
                                     EnumSet.of(FILL_REJECTED, SUBMIT_REJECTED));
 
     public final static OrderEventTypesInfo mergeEvents =

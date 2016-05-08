@@ -2,8 +2,6 @@ package com.jforex.programming.position.test;
 
 import static com.jforex.programming.misc.JForexUtil.pfs;
 import static com.jforex.programming.misc.JForexUtil.uss;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -24,11 +22,10 @@ import com.google.common.base.Supplier;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderUtilObservable;
+import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
-import com.jforex.programming.position.PositionEventType;
 import com.jforex.programming.position.PositionTaskRejectException;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -40,7 +37,6 @@ import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
-import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
@@ -52,12 +48,11 @@ public class PositionTest extends InstrumentUtilForTest {
     @Mock
     private RestoreSLTPPolicy restoreSLTPPolicyMock;
     @Mock
-    private OrderUtilObservable orderUtilObservableMock;
+    private OrderUtil orderUtilMock;
     @Mock
     private ConcurrentUtil concurrentUtilMock;
     private Subject<OrderEvent, OrderEvent> orderEventSubject;
     private Subject<Long, Long> timerSubject;
-    private final TestSubscriber<PositionEventType> positionSubscriber = new TestSubscriber<>();
     private OrderParams orderParamsBuy;
     private OrderParams orderParamsSell;
     private Set<IOrder> toMergeOrders;
@@ -82,11 +77,10 @@ public class PositionTest extends InstrumentUtilForTest {
         setUpMocks();
 
         position = new Position(instrumentEURUSD,
-                                orderUtilObservableMock,
+                                orderUtilMock,
                                 orderEventSubject,
                                 restoreSLTPPolicyMock,
                                 concurrentUtilMock);
-        position.positionEventTypeObs().subscribe(positionSubscriber);
     }
 
     private void setUpMocks() {
@@ -95,33 +89,33 @@ public class PositionTest extends InstrumentUtilForTest {
         when(concurrentUtilMock.timerObservable(1500L, TimeUnit.MILLISECONDS)).thenReturn(timerSubject);
     }
 
-    private Subject<IOrder, IOrder> setUpSubmit(final OrderParams orderParams) {
-        return setUpObservable(() -> orderUtilObservableMock.submit(orderParams));
+    private Subject<OrderEvent, OrderEvent> setUpSubmit(final OrderParams orderParams) {
+        return setUpObservable(() -> orderUtilMock.submit(orderParams));
     }
 
-    private Subject<IOrder, IOrder> setUpSL(final IOrder order,
-                                            final double newSL) {
-        return setUpObservable(() -> orderUtilObservableMock.setSL(order, newSL));
+    private Subject<OrderEvent, OrderEvent> setUpSL(final IOrder order,
+                                                    final double newSL) {
+        return setUpObservable(() -> orderUtilMock.setSL(order, newSL));
     }
 
-    private Subject<IOrder, IOrder> setUpTP(final IOrder order,
-                                            final double newTP) {
-        return setUpObservable(() -> orderUtilObservableMock.setTP(order, newTP));
+    private Subject<OrderEvent, OrderEvent> setUpTP(final IOrder order,
+                                                    final double newTP) {
+        return setUpObservable(() -> orderUtilMock.setTP(order, newTP));
     }
 
-    private Subject<IOrder, IOrder> setUpMerge(final String mergeLabel,
-                                               final Collection<IOrder> toMergeOrders) {
-        return setUpObservable(() -> orderUtilObservableMock.merge(eq(mergeLabel), any()));
+    private Subject<OrderEvent, OrderEvent> setUpMerge(final String mergeLabel,
+                                                       final Collection<IOrder> toMergeOrders) {
+        return setUpObservable(() -> orderUtilMock.merge(eq(mergeLabel), any()));
     }
 
-    private Subject<IOrder, IOrder> setUpClose(final IOrder order) {
-        return setUpObservable(() -> orderUtilObservableMock.close(order));
+    private Subject<OrderEvent, OrderEvent> setUpClose(final IOrder order) {
+        return setUpObservable(() -> orderUtilMock.close(order));
     }
 
-    private Subject<IOrder, IOrder> setUpObservable(final Supplier<Observable<IOrder>> orderSupplier) {
-        final Subject<IOrder, IOrder> orderSubject = PublishSubject.create();
-        when(orderSupplier.get()).thenReturn(orderSubject);
-        return orderSubject;
+    private Subject<OrderEvent, OrderEvent> setUpObservable(final Supplier<Observable<OrderEvent>> orderEventSupplier) {
+        final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
+        when(orderEventSupplier.get()).thenReturn(orderEventSubject);
+        return orderEventSubject;
     }
 
     private boolean isRepositoryEmpty() {
@@ -144,7 +138,7 @@ public class PositionTest extends InstrumentUtilForTest {
         position.submit(orderParamsBuy);
         position.submit(orderParamsBuy);
 
-        verify(orderUtilObservableMock, times(2)).submit(orderParamsBuy);
+        verify(orderUtilMock, times(2)).submit(orderParamsBuy);
     }
 
     public class SubmitWithException {
@@ -158,7 +152,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
         @Test
         public void testSubmitOnOrderUtilIsCalled() {
-            verify(orderUtilObservableMock).submit(orderParamsBuy);
+            verify(orderUtilMock).submit(orderParamsBuy);
         }
 
         @Test
@@ -169,7 +163,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
     public class SubmitNoException {
 
-        protected Subject<IOrder, IOrder> buySubmitSubject;
+        protected Subject<OrderEvent, OrderEvent> buySubmitSubject;
 
         @Before
         public void setUp() {
@@ -178,7 +172,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
             position.submit(orderParamsBuy);
 
-            verify(orderUtilObservableMock).submit(orderParamsBuy);
+            verify(orderUtilMock).submit(orderParamsBuy);
         }
 
         @Test
@@ -214,7 +208,7 @@ public class PositionTest extends InstrumentUtilForTest {
                 public void setUp() {
                     buyOrder.setState(IOrder.State.FILLED);
 
-                    buySubmitSubject.onNext(buyOrder);
+                    buySubmitSubject.onNext(new OrderEvent(buyOrder, OrderEventType.FULL_FILL_OK));
                     buySubmitSubject.onCompleted();
                 }
 
@@ -224,22 +218,13 @@ public class PositionTest extends InstrumentUtilForTest {
                 }
 
                 @Test
-                public void testSubmitEventWasSent() {
-                    positionSubscriber.assertNoErrors();
-                    positionSubscriber.assertValueCount(1);
-
-                    assertThat(positionSubscriber.getOnNextEvents().get(0),
-                               equalTo(PositionEventType.SUBMITTED));
-                }
-
-                @Test
                 public void testMultipleCloseCallsAreBlocked() {
                     setUpClose(buyOrder);
 
                     position.close();
                     position.close();
 
-                    verify(orderUtilObservableMock).close(buyOrder);
+                    verify(orderUtilMock).close(buyOrder);
                 }
 
                 public class CloseOnSL {
@@ -274,7 +259,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                 public class SecondSubmit {
 
-                    protected Subject<IOrder, IOrder> sellSubmitSubject;
+                    protected Subject<OrderEvent, OrderEvent> sellSubmitSubject;
 
                     @Before
                     public void setUp() {
@@ -283,7 +268,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         position.submit(orderParamsSell);
 
-                        verify(orderUtilObservableMock).submit(orderParamsSell);
+                        verify(orderUtilMock).submit(orderParamsSell);
                     }
 
                     public class FullFillMessageForSecondOrder {
@@ -292,7 +277,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         public void setUp() {
                             sellOrder.setState(IOrder.State.FILLED);
 
-                            sellSubmitSubject.onNext(sellOrder);
+                            sellSubmitSubject.onNext(new OrderEvent(sellOrder, OrderEventType.FULL_FILL_OK));
                             sellSubmitSubject.onCompleted();
                         }
 
@@ -303,34 +288,25 @@ public class PositionTest extends InstrumentUtilForTest {
                         }
 
                         @Test
-                        public void testSubmitEventWasSent() {
-                            positionSubscriber.assertNoErrors();
-                            positionSubscriber.assertValueCount(2);
-
-                            assertThat(positionSubscriber.getOnNextEvents().get(1),
-                                       equalTo(PositionEventType.SUBMITTED));
-                        }
-
-                        @Test
                         public void testMultipleMergeCallsAreBlocked() {
                             setUpMerge(mergeLabel, toMergeOrders);
 
                             position.merge(mergeLabel);
                             position.merge(mergeLabel);
 
-                            // verify(orderUtilObservableMock).merge(eq(mergeLabel),
+                            // verify(orderUtilMock).merge(eq(mergeLabel),
                             // any());
                         }
 
                         public class MergeCall {
 
-                            protected Subject<IOrder, IOrder> buyRemoveTPSubject;
-                            protected Subject<IOrder, IOrder> sellRemoveTPSubject;
-                            protected Subject<IOrder, IOrder> buyRemoveSLSubject;
-                            protected Subject<IOrder, IOrder> sellRemoveSLSubject;
-                            protected Subject<IOrder, IOrder> mergeSubject;
-                            protected Subject<IOrder, IOrder> mergeRestoreSLSubject;
-                            protected Subject<IOrder, IOrder> mergeRestoreTPSubject;
+                            protected Subject<OrderEvent, OrderEvent> buyRemoveTPSubject;
+                            protected Subject<OrderEvent, OrderEvent> sellRemoveTPSubject;
+                            protected Subject<OrderEvent, OrderEvent> buyRemoveSLSubject;
+                            protected Subject<OrderEvent, OrderEvent> sellRemoveSLSubject;
+                            protected Subject<OrderEvent, OrderEvent> mergeSubject;
+                            protected Subject<OrderEvent, OrderEvent> mergeRestoreSLSubject;
+                            protected Subject<OrderEvent, OrderEvent> mergeRestoreTPSubject;
 
                             @Before
                             public void setUp() {
@@ -347,8 +323,8 @@ public class PositionTest extends InstrumentUtilForTest {
 
                             @Test
                             public void testRemoveTPIsCalled() {
-                                verify(orderUtilObservableMock).setTP(buyOrder, pfs.NO_TAKE_PROFIT_PRICE());
-                                verify(orderUtilObservableMock).setTP(sellOrder, pfs.NO_TAKE_PROFIT_PRICE());
+                                verify(orderUtilMock).setTP(buyOrder, pfs.NO_TAKE_PROFIT_PRICE());
+                                verify(orderUtilMock).setTP(sellOrder, pfs.NO_TAKE_PROFIT_PRICE());
                             }
 
                             public class RemovedTPOnSellRejected {
@@ -357,7 +333,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                 public void setUp() {
                                     buyOrder.setTakeProfitPrice(pfs.NO_TAKE_PROFIT_PRICE());
 
-                                    buyRemoveTPSubject.onNext(buyOrder);
+                                    buyRemoveTPSubject.onNext(new OrderEvent(buyOrder, OrderEventType.TP_CHANGE_OK));
                                     buyRemoveTPSubject.onCompleted();
                                     final OrderEvent orderEvent =
                                             new OrderEvent(sellOrder, OrderEventType.CHANGE_TP_REJECTED);
@@ -367,7 +343,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                                 @Test
                                 public void testRetryIsDoneOnRemoveTP() {
-//                                    verify(orderUtilObservableMock, times(2)).setTP(sellOrder,
+//                                    verify(orderUtilMock, times(2)).setTP(sellOrder,
 //                                                                                    pfs.NO_TAKE_PROFIT_PRICE());
                                 }
                             }
@@ -379,16 +355,16 @@ public class PositionTest extends InstrumentUtilForTest {
                                     buyOrder.setTakeProfitPrice(pfs.NO_TAKE_PROFIT_PRICE());
                                     sellOrder.setTakeProfitPrice(pfs.NO_TAKE_PROFIT_PRICE());
 
-                                    buyRemoveTPSubject.onNext(buyOrder);
+                                    buyRemoveTPSubject.onNext(new OrderEvent(buyOrder, OrderEventType.TP_CHANGE_OK));
                                     buyRemoveTPSubject.onCompleted();
-                                    sellRemoveTPSubject.onNext(sellOrder);
+                                    sellRemoveTPSubject.onNext(new OrderEvent(sellOrder, OrderEventType.TP_CHANGE_OK));
                                     sellRemoveTPSubject.onCompleted();
                                 }
 
                                 @Test
                                 public void testRemoveSLIsCalled() {
-                                    verify(orderUtilObservableMock).setSL(buyOrder, pfs.NO_STOP_LOSS_PRICE());
-                                    verify(orderUtilObservableMock).setSL(sellOrder, pfs.NO_STOP_LOSS_PRICE());
+                                    verify(orderUtilMock).setSL(buyOrder, pfs.NO_STOP_LOSS_PRICE());
+                                    verify(orderUtilMock).setSL(sellOrder, pfs.NO_STOP_LOSS_PRICE());
                                 }
 
                                 public class RemovedSLs {
@@ -398,15 +374,17 @@ public class PositionTest extends InstrumentUtilForTest {
                                         buyOrder.setStopLossPrice(pfs.NO_STOP_LOSS_PRICE());
                                         sellOrder.setStopLossPrice(pfs.NO_STOP_LOSS_PRICE());
 
-                                        buyRemoveSLSubject.onNext(buyOrder);
+                                        buyRemoveSLSubject
+                                                .onNext(new OrderEvent(buyOrder, OrderEventType.SL_CHANGE_OK));
                                         buyRemoveSLSubject.onCompleted();
-                                        sellRemoveSLSubject.onNext(sellOrder);
+                                        sellRemoveSLSubject
+                                                .onNext(new OrderEvent(sellOrder, OrderEventType.SL_CHANGE_OK));
                                         sellRemoveSLSubject.onCompleted();
                                     }
 
                                     @Test
                                     public void testMergeIsCalled() {
-                                        verify(orderUtilObservableMock).merge(eq(mergeLabel), any());
+                                        verify(orderUtilMock).merge(eq(mergeLabel), any());
                                     }
 
                                     public class MergedOrders {
@@ -417,43 +395,43 @@ public class PositionTest extends InstrumentUtilForTest {
                                             sellOrder.setState(IOrder.State.CLOSED);
                                             mergeOrder.setState(IOrder.State.FILLED);
 
-                                            mergeSubject.onNext(mergeOrder);
+                                            mergeSubject.onNext(new OrderEvent(mergeOrder, OrderEventType.MERGE_OK));
                                             mergeSubject.onCompleted();
                                         }
 
                                         @Test
                                         public void testRestoreSLIsCalled() {
-                                            verify(orderUtilObservableMock).setSL(mergeOrder, restoreSL);
+                                            verify(orderUtilMock).setSL(mergeOrder, restoreSL);
                                         }
 
                                         public class RestoredSL {
 
                                             @Before
                                             public void setUp() {
-                                                mergeRestoreSLSubject.onNext(mergeOrder);
+                                                mergeRestoreSLSubject
+                                                        .onNext(new OrderEvent(mergeOrder,
+                                                                               OrderEventType.SL_CHANGE_OK));
                                                 mergeRestoreSLSubject.onCompleted();
                                             }
 
                                             @Test
                                             public void testRestoreTPIsCalled() {
-                                                verify(orderUtilObservableMock).setTP(mergeOrder, restoreTP);
+                                                verify(orderUtilMock).setTP(mergeOrder, restoreTP);
                                             }
 
                                             public class RestoredTP {
 
                                                 @Before
                                                 public void setUp() {
-                                                    mergeRestoreTPSubject.onNext(mergeOrder);
+                                                    mergeRestoreTPSubject
+                                                            .onNext(new OrderEvent(mergeOrder,
+                                                                                   OrderEventType.TP_CHANGE_OK));
                                                     mergeRestoreTPSubject.onCompleted();
                                                 }
 
                                                 @Test
                                                 public void testMergeEventWasSent() {
-                                                    positionSubscriber.assertNoErrors();
-                                                    positionSubscriber.assertValueCount(3);
-
-                                                    assertThat(positionSubscriber.getOnNextEvents().get(2),
-                                                               equalTo(PositionEventType.MERGED));
+                                                    // TODO
                                                 }
                                             }
                                         }
@@ -466,7 +444,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                 public class CloseCall {
 
-                    protected Subject<IOrder, IOrder> closeSubject;
+                    protected Subject<OrderEvent, OrderEvent> closeSubject;
 
                     @Before
                     public void setUp() {
@@ -474,7 +452,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         position.close();
 
-                        verify(orderUtilObservableMock).close(buyOrder);
+                        verify(orderUtilMock).close(buyOrder);
                     }
 
                     @Test
@@ -488,7 +466,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         public void setUp() {
                             buyOrder.setState(IOrder.State.CLOSED);
 
-                            closeSubject.onNext(buyOrder);
+                            closeSubject.onNext(new OrderEvent(buyOrder, OrderEventType.CLOSE_OK));
                             closeSubject.onCompleted();
                         }
 
@@ -512,7 +490,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         @Test
                         public void testRetryIsDoneForClose() {
-                            verify(orderUtilObservableMock, times(2)).close(buyOrder);
+                            verify(orderUtilMock, times(2)).close(buyOrder);
                         }
                     }
                 }
@@ -531,13 +509,6 @@ public class PositionTest extends InstrumentUtilForTest {
             @Test
             public void testPositionHasNoOrder() {
                 assertTrue(isRepositoryEmpty());
-            }
-
-            @Test
-            public void testErrorEventWasSent() {
-                positionSubscriber.assertNoErrors();
-                assertThat(positionSubscriber.getOnNextEvents().get(0),
-                           equalTo(PositionEventType.ERROR));
             }
         }
     }

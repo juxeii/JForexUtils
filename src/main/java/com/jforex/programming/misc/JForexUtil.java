@@ -9,7 +9,6 @@ import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.OrderUtilObservable;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.NoRestorePolicy;
@@ -49,7 +48,6 @@ public class JForexUtil implements MessageConsumer {
     private BarQuoteProvider barQuoteProvider;
 
     private OrderUtil orderUtil;
-    private OrderUtilObservable orderUtilObservable;
     private PositionFactory positionRepository;
     private OrderEventGateway orderEventGateway;
     private OrderCallExecutor orderCallExecutor;
@@ -113,8 +111,7 @@ public class JForexUtil implements MessageConsumer {
     private void initOrderRelated() {
         orderCallExecutor = new OrderCallExecutor(concurrentUtil);
         orderUtil = new OrderUtil(context.getEngine(), orderCallExecutor, orderEventGateway);
-        orderUtilObservable = new OrderUtilObservable(orderUtil);
-        positionRepository = new PositionFactory(orderUtilObservable, orderEventGateway.observable(), concurrentUtil);
+        positionRepository = new PositionFactory(orderUtil, orderEventGateway.observable(), concurrentUtil);
     }
 
     public IContext context() {

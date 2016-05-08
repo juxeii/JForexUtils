@@ -1,9 +1,9 @@
 package com.jforex.programming.position;
 
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
-import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -25,11 +25,11 @@ public class PositionOrders {
     private final ConcurrentMap<IOrder, OrderProcessState> orderRepository =
             new MapMaker().weakKeys().makeMap();
 
-    public void add(final IOrder order) {
+    public synchronized void add(final IOrder order) {
         orderRepository.put(order, OrderProcessState.IDLE);
     }
 
-    public void remove(final IOrder order) {
+    public synchronized void remove(final IOrder order) {
         orderRepository.remove(order);
     }
 
@@ -37,7 +37,7 @@ public class PositionOrders {
         return orderRepository.containsKey(order);
     }
 
-    public void markAllActive() {
+    public synchronized void markAllActive() {
         orderRepository.replaceAll((k, v) -> OrderProcessState.ACTIVE);
     }
 
@@ -52,15 +52,15 @@ public class PositionOrders {
                 .sum();
     }
 
-    public Collection<IOrder> filter(final Predicate<IOrder> orderPredicate) {
+    public Set<IOrder> filter(final Predicate<IOrder> orderPredicate) {
         return orderRepository
                 .keySet()
                 .stream()
                 .filter(orderPredicate)
-                .collect(toList());
+                .collect(toSet());
     }
 
-    public Collection<IOrder> filterIdle(final Predicate<IOrder> orderPredicate) {
+    public Set<IOrder> filterIdle(final Predicate<IOrder> orderPredicate) {
         return orderRepository
                 .entrySet()
                 .stream()
@@ -69,7 +69,7 @@ public class PositionOrders {
                 .keySet();
     }
 
-    public Collection<IOrder> orders() {
+    public Set<IOrder> orders() {
         return ImmutableSet.copyOf(orderRepository.keySet());
     }
 }

@@ -20,8 +20,6 @@ public final class PositionSwitcher {
                             final OrderParamsSupplier orderParamsSupplier) {
         this.position = position;
         this.orderParamsSupplier = orderParamsSupplier;
-        position.positionEventTypeObs()
-                .subscribe(this::onPositionEvent);
     }
 
     public final void sendBuySignal() {
@@ -54,14 +52,7 @@ public final class PositionSwitcher {
         mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + adaptedOrderParams.label();
         position.submit(adaptedOrderParams);
         isBusy = true;
-    }
-
-    private void onPositionEvent(final PositionEventType positionEventType) {
-        if (positionEventType == PositionEventType.SUBMITTED)
-            position.merge(mergeLabel);
-        else if (positionEventType == PositionEventType.MERGED
-                || positionEventType == PositionEventType.ERROR)
-            isBusy = false;
+        position.merge(mergeLabel);
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {

@@ -46,7 +46,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderEventGateway orderEventGatewayMock;
     @Captor
     private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
-    private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
+    private Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
     private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
@@ -66,12 +66,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void setUp() {
         initCommonTestFramework();
 
+        orderEventSubject = PublishSubject.create();
         orderExecutorResult = new OrderCallExecutorResult(Optional.of(orderUnderTest),
                                                           Optional.empty());
         orderExecutorResultWithException = new OrderCallExecutorResult(Optional.empty(),
                                                                        Optional.of(jfException));
         setUpMocks();
-
         orderUtil = new OrderUtil(engineMock,
                                   orderCallExecutorMock,
                                   orderEventGatewayMock);
@@ -147,6 +147,18 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         orderUtil.submit(orderParams).subscribe(subscriber);
 
         subscriber.assertError(JFException.class);
+    }
+
+    @Test
+    public void testSubmitObservableCompletesOnFullFill() {
+        orderUtil.submit(orderParams).subscribe(subscriber);
+
+        orderEventSubject.onNext(new OrderEvent(orderUnderTest,
+                                                OrderEventType.FULL_FILL_OK));
+
+        subscriber.assertValueCount(1);
+        subscriber.getOnNextEvents().get(0);
+        subscriber.assertCompleted();
     }
 
     @Test

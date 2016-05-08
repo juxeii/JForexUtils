@@ -15,28 +15,27 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.position.Position;
-import com.jforex.programming.position.PositionEventType;
 import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
+import com.dukascopy.api.IEngine.OrderCommand;
 
 public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     private PositionSwitcher positionSwitcher;
 
-    @Mock private Position position;
-    @Mock private OrderParamsSupplier orderParamsSupplierMock;
-    @Captor private ArgumentCaptor<OrderParams> orderParamsCaptor;
-    private Subject<PositionEventType, PositionEventType> positionEventSubject;
+    @Mock
+    private Position position;
+    @Mock
+    private OrderParamsSupplier orderParamsSupplierMock;
+    @Captor
+    private ArgumentCaptor<OrderParams> orderParamsCaptor;
     private final OrderParams orderParamsBUY = OrderParamsForTest.paramsBuyEURUSD();
     private final OrderParams orderParamsSELL = OrderParamsForTest.paramsSellEURUSD();
     private final String buyMergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + orderParamsBUY.label();
@@ -45,14 +44,12 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     @Before
     public void setUp() {
         initCommonTestFramework();
-        positionEventSubject = PublishSubject.create();
         setUpMocks();
 
         positionSwitcher = new PositionSwitcher(position, orderParamsSupplierMock);
     }
 
     private void setUpMocks() {
-        when(position.positionEventTypeObs()).thenReturn(positionEventSubject);
         when(orderParamsSupplierMock.forCommand(OrderCommand.BUY)).thenReturn(orderParamsBUY);
         when(orderParamsSupplierMock.forCommand(OrderCommand.SELL)).thenReturn(orderParamsSELL);
     }
@@ -118,9 +115,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         positionSwitcher.sendBuySignal();
         verify(position).submit(any());
 
-        positionEventSubject.onNext(PositionEventType.SUBMITTED);
-        positionEventSubject.onNext(PositionEventType.MERGED);
-
         positionSwitcher.sendBuySignal();
         verify(position, times(2)).submit(any());
     }
@@ -150,9 +144,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
         positionSwitcher.sendSellSignal();
         verify(position).submit(any());
-
-        positionEventSubject.onNext(PositionEventType.SUBMITTED);
-        positionEventSubject.onNext(PositionEventType.MERGED);
 
         positionSwitcher.sendSellSignal();
         verify(position, times(2)).submit(any());
