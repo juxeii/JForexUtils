@@ -123,8 +123,10 @@ public class Position {
 
     public void merge(final String mergeLabel) {
         final Set<IOrder> filledOrders = filledOrders();
-        if (filledOrders.size() < 2)
+        if (filledOrders.size() < 2) {
+            positionEventPublisher.onNext(PositionEvent.MERGETASK_DONE);
             return;
+        }
 
         orderRepository.markAllActive();
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders);
