@@ -1,4 +1,4 @@
-package com.jforex.programming.position;
+package com.jforex.programming.order.event;
 
 import static com.jforex.programming.order.event.OrderEventType.AMOUNT_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_AMOUNT_REJECTED;
@@ -28,19 +28,22 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.call.OrderCallRequest;
 
-public final class OrderEventTypesInfo {
+public final class OrderEventTypeData {
 
     private final ImmutableSet<OrderEventType> doneEventTypes;
     private final ImmutableSet<OrderEventType> intermediateTypes;
     private final ImmutableSet<OrderEventType> rejectEventTypes;
     private final ImmutableSet<OrderEventType> allTypes;
+    private final OrderCallRequest callRequest;
 
-    private OrderEventTypesInfo(final EnumSet<OrderEventType> doneEventTypes,
-                                final EnumSet<OrderEventType> rejectEventTypes) {
+    private OrderEventTypeData(final EnumSet<OrderEventType> doneEventTypes,
+                               final EnumSet<OrderEventType> rejectEventTypes,
+                               final OrderCallRequest callRequest) {
         this.doneEventTypes = Sets.immutableEnumSet(doneEventTypes);
         this.rejectEventTypes = Sets.immutableEnumSet(rejectEventTypes);
+        this.callRequest = callRequest;
         intermediateTypes = Sets.immutableEnumSet(SUBMIT_OK);
 
         final EnumSet<OrderEventType> tmpAllTypes = doneEventTypes;
@@ -65,39 +68,52 @@ public final class OrderEventTypesInfo {
         return allTypes;
     }
 
-    public final static OrderEventTypesInfo submitEvents =
-            new OrderEventTypesInfo(EnumSet.of(FULL_FILL_OK, PARTIAL_FILL_OK),
-                                    EnumSet.of(FILL_REJECTED, SUBMIT_REJECTED));
+    public final OrderCallRequest callRequest() {
+        return callRequest;
+    }
 
-    public final static OrderEventTypesInfo mergeEvents =
-            new OrderEventTypesInfo(EnumSet.of(MERGE_OK, MERGE_CLOSE_OK),
-                                    EnumSet.of(MERGE_REJECTED));
+    public final static OrderEventTypeData submitEvents =
+            new OrderEventTypeData(EnumSet.of(FULL_FILL_OK, PARTIAL_FILL_OK),
+                                   EnumSet.of(FILL_REJECTED, SUBMIT_REJECTED),
+                                   OrderCallRequest.SUBMIT);
 
-    public final static OrderEventTypesInfo closeEvents =
-            new OrderEventTypesInfo(EnumSet.of(CLOSE_OK),
-                                    EnumSet.of(CLOSE_REJECTED));
+    public final static OrderEventTypeData mergeEvents =
+            new OrderEventTypeData(EnumSet.of(MERGE_OK, MERGE_CLOSE_OK),
+                                   EnumSet.of(MERGE_REJECTED),
+                                   OrderCallRequest.MERGE);
 
-    public final static OrderEventTypesInfo changeLabelEvents =
-            new OrderEventTypesInfo(EnumSet.of(LABEL_CHANGE_OK),
-                                    EnumSet.of(CHANGE_LABEL_REJECTED));
+    public final static OrderEventTypeData closeEvents =
+            new OrderEventTypeData(EnumSet.of(CLOSE_OK),
+                                   EnumSet.of(CLOSE_REJECTED),
+                                   OrderCallRequest.CLOSE);
 
-    public final static OrderEventTypesInfo changeGTTEvents =
-            new OrderEventTypesInfo(EnumSet.of(GTT_CHANGE_OK),
-                                    EnumSet.of(CHANGE_GTT_REJECTED));
+    public final static OrderEventTypeData changeLabelEvents =
+            new OrderEventTypeData(EnumSet.of(LABEL_CHANGE_OK),
+                                   EnumSet.of(CHANGE_LABEL_REJECTED),
+                                   OrderCallRequest.CHANGE_LABEL);
 
-    public final static OrderEventTypesInfo changeOpenPriceEvents =
-            new OrderEventTypesInfo(EnumSet.of(PRICE_CHANGE_OK),
-                                    EnumSet.of(CHANGE_OPENPRICE_REJECTED));
+    public final static OrderEventTypeData changeGTTEvents =
+            new OrderEventTypeData(EnumSet.of(GTT_CHANGE_OK),
+                                   EnumSet.of(CHANGE_GTT_REJECTED),
+                                   OrderCallRequest.CHANGE_GTT);
 
-    public final static OrderEventTypesInfo changeAmountEvents =
-            new OrderEventTypesInfo(EnumSet.of(AMOUNT_CHANGE_OK),
-                                    EnumSet.of(CHANGE_AMOUNT_REJECTED));
+    public final static OrderEventTypeData changeOpenPriceEvents =
+            new OrderEventTypeData(EnumSet.of(PRICE_CHANGE_OK),
+                                   EnumSet.of(CHANGE_OPENPRICE_REJECTED),
+                                   OrderCallRequest.CHANGE_OPENPRICE);
 
-    public final static OrderEventTypesInfo changeSLEvents =
-            new OrderEventTypesInfo(EnumSet.of(SL_CHANGE_OK),
-                                    EnumSet.of(CHANGE_SL_REJECTED));
+    public final static OrderEventTypeData changeAmountEvents =
+            new OrderEventTypeData(EnumSet.of(AMOUNT_CHANGE_OK),
+                                   EnumSet.of(CHANGE_AMOUNT_REJECTED),
+                                   OrderCallRequest.CHANGE_AMOUNT);
 
-    public final static OrderEventTypesInfo changeTPEvents =
-            new OrderEventTypesInfo(EnumSet.of(TP_CHANGE_OK),
-                                    EnumSet.of(CHANGE_TP_REJECTED));
+    public final static OrderEventTypeData changeSLEvents =
+            new OrderEventTypeData(EnumSet.of(SL_CHANGE_OK),
+                                   EnumSet.of(CHANGE_SL_REJECTED),
+                                   OrderCallRequest.CHANGE_SL);
+
+    public final static OrderEventTypeData changeTPEvents =
+            new OrderEventTypeData(EnumSet.of(TP_CHANGE_OK),
+                                   EnumSet.of(CHANGE_TP_REJECTED),
+                                   OrderCallRequest.CHANGE_TP);
 }

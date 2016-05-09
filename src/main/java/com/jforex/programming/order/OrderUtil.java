@@ -11,7 +11,7 @@ import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.position.OrderEventTypesInfo;
+import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.PositionTaskRejectException;
 
 import com.dukascopy.api.IEngine;
@@ -45,72 +45,61 @@ public class OrderUtil {
                                                                       orderParams.takeProfitPrice(),
                                                                       orderParams.goodTillTime(),
                                                                       orderParams.comment());
-        return runOrderSupplierCall(submitCall,
-                                    OrderCallRequest.SUBMIT,
-                                    OrderEventTypesInfo.submitEvents);
+        return runOrderSupplierCall(submitCall, OrderEventTypeData.submitEvents);
     }
 
     public Observable<OrderEvent> merge(final String mergeOrderLabel,
                                         final Collection<IOrder> toMergeOrders) {
         final OrderSupplierCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
-        return runOrderSupplierCall(mergeCall,
-                                    OrderCallRequest.MERGE,
-                                    OrderEventTypesInfo.mergeEvents);
+        return runOrderSupplierCall(mergeCall, OrderEventTypeData.mergeEvents);
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
         return runChangeCall(() -> orderToClose.close(),
                              orderToClose,
-                             OrderCallRequest.CLOSE,
-                             OrderEventTypesInfo.closeEvents);
+                             OrderEventTypeData.closeEvents);
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
                                            final String newLabel) {
         return runChangeCall(() -> orderToChangeLabel.setLabel(newLabel),
                              orderToChangeLabel,
-                             OrderCallRequest.CHANGE_LABEL,
-                             OrderEventTypesInfo.changeLabelEvents);
+                             OrderEventTypeData.changeLabelEvents);
     }
 
     public Observable<OrderEvent> setGTT(final IOrder orderToChangeGTT,
                                          final long newGTT) {
         return runChangeCall(() -> orderToChangeGTT.setGoodTillTime(newGTT),
                              orderToChangeGTT,
-                             OrderCallRequest.CHANGE_GTT,
-                             OrderEventTypesInfo.changeGTTEvents);
+                             OrderEventTypeData.changeGTTEvents);
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
         return runChangeCall(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
                              orderToChangeOpenPrice,
-                             OrderCallRequest.CHANGE_OPENPRICE,
-                             OrderEventTypesInfo.changeOpenPriceEvents);
+                             OrderEventTypeData.changeOpenPriceEvents);
     }
 
     public Observable<OrderEvent> setAmount(final IOrder orderToChangeAmount,
                                             final double newAmount) {
         return runChangeCall(() -> orderToChangeAmount.setRequestedAmount(newAmount),
                              orderToChangeAmount,
-                             OrderCallRequest.CHANGE_AMOUNT,
-                             OrderEventTypesInfo.changeAmountEvents);
+                             OrderEventTypeData.changeAmountEvents);
     }
 
     public Observable<OrderEvent> setSL(final IOrder orderToChangeSL,
                                         final double newSL) {
         return runChangeCall(() -> orderToChangeSL.setStopLossPrice(newSL),
                              orderToChangeSL,
-                             OrderCallRequest.CHANGE_SL,
-                             OrderEventTypesInfo.changeSLEvents);
+                             OrderEventTypeData.changeSLEvents);
     }
 
     public Observable<OrderEvent> setTP(final IOrder orderToChangeTP,
                                         final double newTP) {
         return runChangeCall(() -> orderToChangeTP.setTakeProfitPrice(newTP),
                              orderToChangeTP,
-                             OrderCallRequest.CHANGE_TP,
-                             OrderEventTypesInfo.changeTPEvents);
+                             OrderEventTypeData.changeTPEvents);
     }
 
     public Observable<OrderEvent> setSLWithPips(final IOrder orderToChangeSL,
@@ -132,21 +121,20 @@ public class OrderUtil {
     }
 
     private Observable<OrderEvent> runOrderSupplierCall(final OrderSupplierCall orderSupplierCall,
-                                                        final OrderCallRequest orderCallRequest,
-                                                        final OrderEventTypesInfo orderEventTypesInfo) {
-        final OrderCallExecutorResult orderExecutorResult = createResult(orderSupplierCall, orderCallRequest);
-        return createObs(orderExecutorResult, orderEventTypesInfo);
+                                                        final OrderEventTypeData orderEventTypeData) {
+        final OrderCallExecutorResult orderExecutorResult =
+                createResult(orderSupplierCall, orderEventTypeData.callRequest());
+        return createObs(orderExecutorResult, orderEventTypeData);
     }
 
     private Observable<OrderEvent> runChangeCall(final OrderChangeCall orderChangeCall,
                                                  final IOrder orderToChange,
-                                                 final OrderCallRequest orderCallRequest,
-                                                 final OrderEventTypesInfo orderEventTypesInfo) {
+                                                 final OrderEventTypeData orderEventTypeData) {
         final OrderSupplierCall orderSupplierCall = () -> {
             orderChangeCall.change();
             return orderToChange;
         };
-        return runOrderSupplierCall(orderSupplierCall, orderCallRequest, orderEventTypesInfo);
+        return runOrderSupplierCall(orderSupplierCall, orderEventTypeData);
     }
 
     private OrderCallExecutorResult createResult(final OrderSupplierCall orderSupplierCall,
@@ -157,26 +145,26 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> createObs(final OrderCallExecutorResult orderExecutorResult,
-                                            final OrderEventTypesInfo orderEventTypesInfo) {
+                                            final OrderEventTypeData orderEventTypeData) {
         return orderExecutorResult.exceptionOpt().isPresent()
                 ? Observable.error(orderExecutorResult.exceptionOpt().get())
                 : Observable.create(subscriber -> {
                     orderEventGateway.observable()
                             .filter(orderEvent -> orderEvent.order() == orderExecutorResult.orderOpt().get())
-                            .filter(orderEvent -> orderEventTypesInfo.all().contains(orderEvent.type()))
-                            .subscribe(orderEvent -> evaluateOrderEvent(orderEvent, orderEventTypesInfo, subscriber));
+                            .filter(orderEvent -> orderEventTypeData.all().contains(orderEvent.type()))
+                            .subscribe(orderEvent -> evaluateOrderEvent(orderEvent, orderEventTypeData, subscriber));
                 });
     }
 
     private final void evaluateOrderEvent(final OrderEvent orderEvent,
-                                          final OrderEventTypesInfo orderEventTypesInfo,
+                                          final OrderEventTypeData orderEventTypeData,
                                           final Subscriber<? super OrderEvent> subscriber) {
         final OrderEventType orderEventType = orderEvent.type();
-        if (orderEventTypesInfo.isRejectType(orderEventType))
+        if (orderEventTypeData.isRejectType(orderEventType))
             subscriber.onError(new PositionTaskRejectException("", orderEvent));
         else {
             subscriber.onNext(orderEvent);
-            if (orderEventTypesInfo.isDoneType(orderEventType))
+            if (orderEventTypeData.isDoneType(orderEventType))
                 subscriber.onCompleted();
         }
     }

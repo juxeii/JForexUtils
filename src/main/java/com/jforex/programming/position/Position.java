@@ -21,6 +21,7 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -64,10 +65,11 @@ public class Position {
 
     private void checkOnOrderCloseEvent(final OrderEvent orderEvent) {
         final IOrder order = orderEvent.order();
-        if (endOfOrderEventTypes.contains(orderEvent.type())) {
+        final OrderEventType orderEventType = orderEvent.type();
+        if (endOfOrderEventTypes.contains(orderEventType)) {
             orderRepository.remove(order);
             logger.info("Removed " + order.getLabel() + " from " + instrument
-                    + " repositiory because of event type " + orderEvent.type());
+                    + " repositiory because of event type " + orderEventType);
         }
     }
 
@@ -94,27 +96,33 @@ public class Position {
     public Observable<OrderEvent> submit(final OrderParams orderParams) {
         logger.info("Start submit for " + orderParams.label());
         final Observable<OrderEvent> submitObs = orderUtil.submit(orderParams);
-        submitObs.subscribe(this::onSubmitEvent);
+        submitObs.subscribe(this::onSubmitEvent, e -> logger.error("Position submit for " + instrument + " failed!"));
         return submitObs;
     }
 
     private void onSubmitEvent(final OrderEvent orderEvent) {
         final IOrder order = orderEvent.order();
-        if (isOpened.test(order))
+        if (isFilled.test(order))
             orderRepository.add(order);
     }
 
-    public synchronized void merge(final String mergeLabel) {
+    public Observable<OrderEvent> merge(final String mergeLabel) {
         final Set<IOrder> filledOrders = filledOrders();
         if (filledOrders.size() < 2)
-            return;
+            return Observable.empty();
 
         orderRepository.markAllActive();
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders);
-        mergeSequenceObs(mergeLabel, filledOrders, restoreSLTPData);
+
+        final Observable<OrderEvent> mergeObs =
+                removeTPSLObs(filledOrders)
+                        .concatWith(mergeOrderObs(mergeLabel, filledOrders))
+                        .flatMap(oe -> restoreSLTPObs(oe.order(), restoreSLTPData.sl(), restoreSLTPData.tp()));
+        mergeObs.subscribe(o -> {}, e -> logger.error("Position merge for " + instrument + " failed!"));
+        return mergeObs;
     }
 
-    public synchronized void close() {
+    public void close() {
         orderRepository.markAllActive();
         Observable.from(orderRepository.filterIdle(isFilled.or(isOpened)))
                 .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
@@ -130,42 +138,32 @@ public class Position {
             orderRepository.remove(order);
     }
 
-    private Observable<IOrder> mergeSequenceObs(final String mergeLabel,
-                                                final Set<IOrder> filledOrders,
-                                                final RestoreSLTPData restoreSLTPData) {
-        final Observable<IOrder> mergeAndRestoreObs = mergeOrderObs(mergeLabel, filledOrders)
-                .flatMap(order -> restoreSLTPObs(order, restoreSLTPData.sl(), restoreSLTPData.tp()));
-
-        return removeTPSLObs(filledOrders).concatWith(mergeAndRestoreObs);
-    }
-
-    private Observable<IOrder> removeTPSLObs(final Set<IOrder> filledOrders) {
+    private Observable<OrderEvent> removeTPSLObs(final Set<IOrder> filledOrders) {
         return Observable.from(filledOrders)
                 .flatMap(order -> Observable.concat(changeTPOrderObs(order, pfs.NO_TAKE_PROFIT_PRICE()),
                                                     changeSLOrderObs(order, pfs.NO_STOP_LOSS_PRICE())));
     }
 
-    private Observable<IOrder> restoreSLTPObs(final IOrder mergedOrder,
-                                              final double restoreSL,
-                                              final double restoreTP) {
+    private Observable<OrderEvent> restoreSLTPObs(final IOrder mergedOrder,
+                                                  final double restoreSL,
+                                                  final double restoreTP) {
         return Observable.just(mergedOrder)
                 .filter(isFilled::test)
                 .flatMap(order -> Observable.concat(changeSLOrderObs(order, restoreSL),
                                                     changeTPOrderObs(order, restoreTP)));
     }
 
-    private Observable<IOrder> mergeOrderObs(final String mergeLabel,
-                                             final Set<IOrder> filledOrders) {
+    private Observable<OrderEvent> mergeOrderObs(final String mergeLabel,
+                                                 final Set<IOrder> filledOrders) {
         return Observable.just(mergeLabel)
                 .flatMap(order -> orderUtil.merge(mergeLabel, filledOrders))
                 .doOnNext(label -> logger.debug("Start merge with label: " + label + " for " + instrument))
                 .retryWhen(this::shouldRetry)
-                .doOnNext(this::onSubmitEvent)
-                .flatMap(oe -> Observable.just(oe.order()));
+                .doOnNext(this::onSubmitEvent);
     }
 
-    private Observable<IOrder> changeSLOrderObs(final IOrder orderToChangeSL,
-                                                final double newSL) {
+    private Observable<OrderEvent> changeSLOrderObs(final IOrder orderToChangeSL,
+                                                    final double newSL) {
         return Observable.just(orderToChangeSL)
                 .filter(order -> isSLSetTo(newSL).test(orderToChangeSL))
                 .flatMap(order -> orderUtil.setSL(order, newSL))
@@ -174,13 +172,11 @@ public class Position {
                 .retryWhen(this::shouldRetry)
                 .doOnNext(oe -> logger.debug("Changed SL from " + oe.order().getStopLossPrice()
                         + " to " + oe.order().getStopLossPrice() + " for order " + oe.order().getLabel()
-                        + " and position "
-                        + instrument))
-                .flatMap(oe -> Observable.just(orderToChangeSL));
+                        + " and position " + instrument));
     }
 
-    private Observable<IOrder> changeTPOrderObs(final IOrder orderToChangeTP,
-                                                final double newTP) {
+    private Observable<OrderEvent> changeTPOrderObs(final IOrder orderToChangeTP,
+                                                    final double newTP) {
         return Observable.just(orderToChangeTP)
                 .filter(order -> isTPSetTo(newTP).test(orderToChangeTP))
                 .flatMap(order -> orderUtil.setTP(order, newTP))
@@ -189,9 +185,7 @@ public class Position {
                 .retryWhen(this::shouldRetry)
                 .doOnNext(oe -> logger.debug("Changed TP from " + oe.order().getTakeProfitPrice()
                         + " to " + oe.order().getTakeProfitPrice() + " for order " + oe.order().getLabel()
-                        + " and position "
-                        + instrument))
-                .flatMap(oe -> Observable.just(orderToChangeTP));
+                        + " and position " + instrument));
     }
 
     private Observable<?> shouldRetry(final Observable<? extends Throwable> attempts) {

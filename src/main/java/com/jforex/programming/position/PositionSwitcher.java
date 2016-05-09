@@ -50,8 +50,15 @@ public final class PositionSwitcher {
         final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + adaptedOrderParams.label();
-        position.submit(adaptedOrderParams);
+        position.submit(adaptedOrderParams)
+                .subscribe(oe -> {},
+                           t -> {},
+                           this::onSubmitCompleted);
         isBusy = true;
+        position.merge(mergeLabel);
+    }
+
+    private final void onSubmitCompleted() {
         position.merge(mergeLabel);
     }
 
