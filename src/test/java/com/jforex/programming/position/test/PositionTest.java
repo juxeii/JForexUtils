@@ -1,9 +1,7 @@
 package com.jforex.programming.position.test;
 
 import static com.jforex.programming.misc.JForexUtil.pfs;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -21,8 +19,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderParams;
@@ -36,6 +32,9 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
+
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -47,9 +46,12 @@ public class PositionTest extends InstrumentUtilForTest {
 
     private Position position;
 
-    @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
-    @Mock private OrderUtil orderUtilMock;
-    @Mock private ConcurrentUtil concurrentUtilMock;
+    @Mock
+    private RestoreSLTPPolicy restoreSLTPPolicyMock;
+    @Mock
+    private OrderUtil orderUtilMock;
+    @Mock
+    private ConcurrentUtil concurrentUtilMock;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final Subject<Long, Long> retryTimerSubject = PublishSubject.create();
     private final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
@@ -134,22 +136,6 @@ public class PositionTest extends InstrumentUtilForTest {
         subject.onError(rejectException);
     }
 
-    private void assertRejectEvent(final TestSubscriber<OrderEvent> subscriber) {
-        subscriber.assertError(OrderCallRejectException.class);
-        subscriber.assertValueCount(0);
-    }
-
-    private void assertOrderEventNotification(final TestSubscriber<OrderEvent> subscriber,
-                                              final IOrder order,
-                                              final OrderEventType orderEventType) {
-        subscriber.assertNoErrors();
-        subscriber.assertValueCount(1);
-
-        final OrderEvent orderEvent = subscriber.getOnNextEvents().get(0);
-        assertThat(orderEvent.order(), equalTo(order));
-        assertThat(orderEvent.type(), equalTo(orderEventType));
-    }
-
     @Test
     public void testCloseOnEmptyPositionDoesNotCallOnOrderUtil() {
         position.close();
@@ -174,7 +160,7 @@ public class PositionTest extends InstrumentUtilForTest {
             buyOrder.setState(IOrder.State.CREATED);
             buySubmitSubject = setUpSubmit(orderParamsBuy);
 
-            position.submit(orderParamsBuy).subscribe(buySubmitSubscriber);
+            position.submit(orderParamsBuy);
         }
 
         @Test
@@ -199,11 +185,6 @@ public class PositionTest extends InstrumentUtilForTest {
             public void testNoRetryIsDone() {
                 verify(orderUtilMock).submitOrder(orderParamsBuy);
             }
-
-            @Test
-            public void testBuySubmitSubscriberIsNotifiedOfReject() {
-                assertRejectEvent(buySubmitSubscriber);
-            }
         }
 
         public class FillRejectMessage {
@@ -223,11 +204,6 @@ public class PositionTest extends InstrumentUtilForTest {
             public void testNoRetryIsDone() {
                 verify(orderUtilMock).submitOrder(orderParamsBuy);
             }
-
-            @Test
-            public void testBuySubmitSubscriberIsNotifiedOfReject() {
-                assertRejectEvent(buySubmitSubscriber);
-            }
         }
 
         public class FillMessage {
@@ -242,12 +218,6 @@ public class PositionTest extends InstrumentUtilForTest {
             @Test
             public void testPositionHasBuyOrder() {
                 assertTrue(positionHasOrder(buyOrder));
-            }
-
-            @Test
-            public void testSubmitSubscriberIsNotified() {
-                assertOrderEventNotification(buySubmitSubscriber, buyOrder, OrderEventType.FULL_FILL_OK);
-                buySubmitSubscriber.assertCompleted();
             }
 
             public class CloseOnSL {
@@ -316,7 +286,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     sellOrder.setState(IOrder.State.CREATED);
                     sellSubmitSubject = setUpSubmit(orderParamsSell);
 
-                    position.submit(orderParamsSell).subscribe(sellSubmitSubscriber);
+                    position.submit(orderParamsSell);
                 }
 
                 @Test
@@ -336,12 +306,6 @@ public class PositionTest extends InstrumentUtilForTest {
                     @Test
                     public void testPositionHasBuyOrder() {
                         assertTrue(positionHasOrder(sellOrder));
-                    }
-
-                    @Test
-                    public void testSubmitSubscriberIsNotified() {
-                        assertOrderEventNotification(sellSubmitSubscriber, sellOrder, OrderEventType.FULL_FILL_OK);
-                        sellSubmitSubscriber.assertCompleted();
                     }
 
                     @Test

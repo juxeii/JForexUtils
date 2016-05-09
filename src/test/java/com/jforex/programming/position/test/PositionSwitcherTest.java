@@ -16,20 +16,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
-import com.jforex.programming.order.call.OrderCallRejectException;
-import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionEvent;
 import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IEngine.OrderCommand;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -40,12 +37,13 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     private PositionSwitcher positionSwitcher;
 
-    @Mock private Position positionMock;
-    @Mock private OrderParamsSupplier orderParamsSupplierMock;
-    @Captor private ArgumentCaptor<OrderParams> orderParamsCaptor;
-    private final Subject<OrderEvent, OrderEvent> submitSubject = PublishSubject.create();
-    private final Subject<OrderEvent, OrderEvent> mergeSubject = PublishSubject.create();
-    private final IOrderForTest testOrder = IOrderForTest.buyOrderEURUSD();
+    @Mock
+    private Position positionMock;
+    @Mock
+    private OrderParamsSupplier orderParamsSupplierMock;
+    @Captor
+    private ArgumentCaptor<OrderParams> orderParamsCaptor;
+    private final Subject<PositionEvent, PositionEvent> positionEventSubject = PublishSubject.create();
     private final OrderParams orderParamsBUY = OrderParamsForTest.paramsBuyEURUSD();
     private final OrderParams orderParamsSELL = OrderParamsForTest.paramsSellEURUSD();
     private final String buyLabel = orderParamsBUY.label();
@@ -65,11 +63,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         when(orderParamsSupplierMock.forCommand(OrderCommand.BUY)).thenReturn(orderParamsBUY);
         when(orderParamsSupplierMock.forCommand(OrderCommand.SELL)).thenReturn(orderParamsSELL);
 
-        when(positionMock.submit(any())).thenReturn(submitSubject);
-        when(positionMock.submit(any())).thenReturn(submitSubject);
-
-        when(positionMock.merge(buyMergeLabel)).thenReturn(mergeSubject);
-        when(positionMock.merge(sellMergeLabel)).thenReturn(mergeSubject);
+        when(positionMock.positionEventObs()).thenReturn(positionEventSubject);
     }
 
     private void verifyNoPositionCommands() {
@@ -98,21 +92,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         final double expectedAmount = MathUtil.roundAmount(orderParams.amount() + Math.abs(signedExposure));
         when(positionMock.signedExposure()).thenReturn(signedExposure);
         return expectedAmount;
-    }
-
-    private void sendOrderEvent(final Subject<OrderEvent, OrderEvent> subject,
-                                final IOrder order,
-                                final OrderEventType orderEventType) {
-        final OrderEvent orderEvent = new OrderEvent(order, orderEventType);
-        subject.onNext(orderEvent);
-    }
-
-    private void sendRejectEvent(final Subject<OrderEvent, OrderEvent> subject,
-                                 final IOrder order,
-                                 final OrderEventType rejectEventType) {
-        final OrderEvent rejectEvent = new OrderEvent(order, rejectEventType);
-        final OrderCallRejectException rejectException = new OrderCallRejectException("", rejectEvent);
-        subject.onError(rejectException);
     }
 
     @Test
@@ -191,8 +170,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
             public void setUp() {
                 setPositionOrderDirection(OrderDirection.LONG);
 
-                sendOrderEvent(submitSubject, testOrder, OrderEventType.FULL_FILL_OK);
-                submitSubject.onCompleted();
+                positionEventSubject.onNext(PositionEvent.SUBMITTASK_DONE);
             }
 
             @Test
@@ -227,42 +205,11 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                 verify(positionMock, never()).close();
             }
 
-            public class AfterMergeErrorMessage {
-
-                @Before
-                public void setUp() {
-                    testOrder.setState(IOrder.State.CANCELED);
-                    sendRejectEvent(mergeSubject, testOrder, OrderEventType.MERGE_REJECTED);
-                }
-
-                @Test
-                public void testBuySingalIsBlockedSincePositionIsLONG() {
-                    positionSwitcher.sendBuySignal();
-
-                    verify(positionMock).submit(any());
-                }
-
-                @Test
-                public void testSellSignalIsNoLongerBlocked() {
-                    positionSwitcher.sendSellSignal();
-
-                    verify(positionMock, times(2)).submit(any());
-                }
-
-                @Test
-                public void testFlatSingalIsNoLongerBlocked() {
-                    positionSwitcher.sendFlatSignal();
-
-                    verify(positionMock).close();
-                }
-            }
-
             public class AfterMergeOKMessage {
 
                 @Before
                 public void setUp() {
-                    sendOrderEvent(mergeSubject, testOrder, OrderEventType.MERGE_OK);
-                    mergeSubject.onCompleted();
+                    positionEventSubject.onNext(PositionEvent.MERGETASK_DONE);
                 }
 
                 @Test
@@ -326,8 +273,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
             public void setUp() {
                 setPositionOrderDirection(OrderDirection.SHORT);
 
-                sendOrderEvent(submitSubject, testOrder, OrderEventType.FULL_FILL_OK);
-                submitSubject.onCompleted();
+                positionEventSubject.onNext(PositionEvent.SUBMITTASK_DONE);
             }
 
             @Test
@@ -362,42 +308,11 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                 verify(positionMock, never()).close();
             }
 
-            public class AfterMergeErrorMessage {
-
-                @Before
-                public void setUp() {
-                    testOrder.setState(IOrder.State.CANCELED);
-                    sendRejectEvent(mergeSubject, testOrder, OrderEventType.MERGE_REJECTED);
-                }
-
-                @Test
-                public void testSellSingalIsBlockedSincePositionIsSHORT() {
-                    positionSwitcher.sendSellSignal();
-
-                    verify(positionMock).submit(any());
-                }
-
-                @Test
-                public void testBuySignalIsNoLongerBlocked() {
-                    positionSwitcher.sendBuySignal();
-
-                    verify(positionMock, times(2)).submit(any());
-                }
-
-                @Test
-                public void testFlatSingalIsNoLongerBlocked() {
-                    positionSwitcher.sendFlatSignal();
-
-                    verify(positionMock).close();
-                }
-            }
-
             public class AfterMergeOKMessage {
 
                 @Before
                 public void setUp() {
-                    sendOrderEvent(mergeSubject, testOrder, OrderEventType.MERGE_OK);
-                    mergeSubject.onCompleted();
+                    positionEventSubject.onNext(PositionEvent.MERGETASK_DONE);
                 }
 
                 @Test
