@@ -210,12 +210,17 @@ public class Position {
                 .retryWhen(this::shouldRetry);
     }
 
-    private Observable<?> shouldRetry(final Observable<? extends Throwable> attempts) {
-        return attempts.zipWith(Observable.range(1, pfs.MAX_NUM_RETRIES_ON_FAIL()),
-                                (exc, att) -> exc)
-                .doOnNext(exc -> logRetry((OrderCallRejectException) exc))
-                .flatMap(exc -> concurrentUtil.timerObservable(pfs.ON_FAIL_RETRY_WAITING_TIME(),
-                                                               TimeUnit.MILLISECONDS));
+    private Observable<?> shouldRetry(final Observable<? extends Throwable> throwable) {
+        return throwable.flatMap(error -> {
+            if (error instanceof OrderCallRejectException) {
+                return throwable.zipWith(Observable.range(1, pfs.MAX_NUM_RETRIES_ON_FAIL()),
+                                         (exc, att) -> exc)
+                        .doOnNext(exc -> logRetry((OrderCallRejectException) exc))
+                        .flatMap(exc -> concurrentUtil.timerObservable(pfs.ON_FAIL_RETRY_WAITING_TIME(),
+                                                                       TimeUnit.MILLISECONDS));
+            }
+            return Observable.error(error);
+        });
     }
 
     private void logRetry(final OrderCallRejectException rejectException) {

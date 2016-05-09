@@ -136,6 +136,12 @@ public class PositionTest extends InstrumentUtilForTest {
         subject.onError(rejectException);
     }
 
+    private void sendJFException(final Subject<OrderEvent, OrderEvent> subject,
+                                 final IOrder order,
+                                 final OrderEventType rejectEventType) {
+        subject.onError(jfException);
+    }
+
     @Test
     public void testCloseOnEmptyPositionDoesNotCallOnOrderUtil() {
         position.close();
@@ -347,6 +353,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                             @Before
                             public void setUp() {
+                                // sellRemoveTPSubject.onError(jfException);
                                 sendRejectEvent(sellRemoveTPSubject, sellOrder, OrderEventType.CHANGE_TP_REJECTED);
 
                                 retryTimerSubject.onNext(1L);
