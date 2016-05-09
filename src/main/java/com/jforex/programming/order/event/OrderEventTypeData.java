@@ -17,7 +17,7 @@ import static com.jforex.programming.order.event.OrderEventType.MERGE_CLOSE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.PARTIAL_FILL_OK;
-import static com.jforex.programming.order.event.OrderEventType.PRICE_CHANGE_OK;
+import static com.jforex.programming.order.event.OrderEventType.OPENPRICE_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.SL_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
@@ -98,14 +98,14 @@ public final class OrderEventTypeData {
                                    OrderCallRequest.CHANGE_GTT);
 
     public final static OrderEventTypeData changeOpenPriceEvents =
-            new OrderEventTypeData(EnumSet.of(PRICE_CHANGE_OK),
+            new OrderEventTypeData(EnumSet.of(OPENPRICE_CHANGE_OK),
                                    EnumSet.of(CHANGE_OPENPRICE_REJECTED),
                                    OrderCallRequest.CHANGE_OPENPRICE);
 
     public final static OrderEventTypeData changeAmountEvents =
             new OrderEventTypeData(EnumSet.of(AMOUNT_CHANGE_OK),
                                    EnumSet.of(CHANGE_AMOUNT_REJECTED),
-                                   OrderCallRequest.CHANGE_AMOUNT);
+                                   OrderCallRequest.CHANGE_REQUESTED_AMOUNT);
 
     public final static OrderEventTypeData changeSLEvents =
             new OrderEventTypeData(EnumSet.of(SL_CHANGE_OK),

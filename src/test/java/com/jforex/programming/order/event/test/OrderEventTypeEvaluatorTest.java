@@ -189,7 +189,7 @@ public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
 
     @Test
     public void testPriceChangeOKIsMappedCorrect() {
-        assertCorrectEventTypeMapping(OrderEventType.PRICE_CHANGE_OK,
+        assertCorrectEventTypeMapping(OrderEventType.OPENPRICE_CHANGE_OK,
                                       IMessage.Type.ORDER_CHANGED_OK,
                                       IMessage.Reason.ORDER_CHANGED_PRICE);
     }
@@ -220,7 +220,7 @@ public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
     public void testAmountChangeRejectIsMappedCorrect() {
         assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_AMOUNT_REJECTED,
                                                      IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     OrderCallRequest.CHANGE_AMOUNT);
+                                                     OrderCallRequest.CHANGE_REQUESTED_AMOUNT);
     }
 
     @Test

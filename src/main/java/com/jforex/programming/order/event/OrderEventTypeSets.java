@@ -21,7 +21,7 @@ import static com.jforex.programming.order.event.OrderEventType.MERGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.PARTIAL_CLOSE_OK;
 import static com.jforex.programming.order.event.OrderEventType.PARTIAL_FILL_OK;
-import static com.jforex.programming.order.event.OrderEventType.PRICE_CHANGE_OK;
+import static com.jforex.programming.order.event.OrderEventType.OPENPRICE_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.SL_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITIONAL_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
@@ -78,7 +78,7 @@ public final class OrderEventTypeSets {
                                                         LABEL_CHANGE_OK,
                                                         SL_CHANGE_OK,
                                                         TP_CHANGE_OK,
-                                                        PRICE_CHANGE_OK,
+                                                        OPENPRICE_CHANGE_OK,
                                                         MERGE_OK,
                                                         CHANGE_REJECTED,
                                                         CHANGE_AMOUNT_REJECTED,

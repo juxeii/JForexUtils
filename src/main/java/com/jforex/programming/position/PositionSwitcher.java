@@ -3,11 +3,10 @@ package com.jforex.programming.position;
 import static com.jforex.programming.misc.JForexUtil.uss;
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
-
-import com.dukascopy.api.IEngine.OrderCommand;
 
 public final class PositionSwitcher {
 
@@ -41,25 +40,25 @@ public final class PositionSwitcher {
     }
 
     public final boolean canSwitchTo(final OrderDirection desiredDirection) {
-        return isDirection(OrderDirection.FLAT) || !isDirection(desiredDirection)
+        final boolean test = isDirection(OrderDirection.FLAT) || !isDirection(desiredDirection)
                 ? !isBusy
                 : false;
+        System.out.println("can switch " + test + " isbusy " + isBusy);
+        return test;
     }
 
-    private final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
+    private final synchronized void executeOrderCommandSignal(final OrderDirection desiredDirection) {
         final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + adaptedOrderParams.label();
         position.submit(adaptedOrderParams)
-                .subscribe(oe -> {},
-                           t -> {},
-                           this::onSubmitCompleted);
-        isBusy = true;
-        position.merge(mergeLabel);
-    }
-
-    private final void onSubmitCompleted() {
-        position.merge(mergeLabel);
+                .doOnSubscribe(() -> isBusy = true)
+                .doOnSubscribe(() -> System.out.println("Submit subscribe with mergelabel " + mergeLabel))
+                .doOnTerminate(() -> System.out.println("Submit terminated"))
+                .concatWith(position.merge(mergeLabel))
+                .subscribe(orderEvent -> {},
+                           error -> isBusy = false,
+                           () -> isBusy = false);
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {

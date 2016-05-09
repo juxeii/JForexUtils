@@ -1,9 +1,13 @@
 package com.jforex.programming.position.test;
 
+import static com.jforex.programming.misc.JForexUtil.pfs;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -17,21 +21,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
-import com.jforex.programming.position.PositionTaskRejectException;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -44,20 +47,17 @@ public class PositionTest extends InstrumentUtilForTest {
 
     private Position position;
 
-    @Mock
-    private RestoreSLTPPolicy restoreSLTPPolicyMock;
-    @Mock
-    private OrderUtil orderUtilMock;
-    @Mock
-    private ConcurrentUtil concurrentUtilMock;
+    @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
+    @Mock private OrderUtil orderUtilMock;
+    @Mock private ConcurrentUtil concurrentUtilMock;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
-    private final Subject<Long, Long> timerSubject = PublishSubject.create();
-    private OrderParams orderParamsBuy;
-    private OrderParams orderParamsSell;
-    private Set<IOrder> toMergeOrders;
-    private final String mergeLabel = "MergeLabel";
+    private final Subject<Long, Long> retryTimerSubject = PublishSubject.create();
+    private final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
+    private final OrderParams orderParamsSell = OrderParamsForTest.paramsSellEURUSD();
     private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
+    private final String mergeLabel = "MergeLabel";
+    private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrder, sellOrder);
     private final IOrderForTest mergeOrder = IOrderForTest.buyOrderEURUSD();
     private final double restoreSL = 1.12345;
     private final double restoreTP = 1.12543;
@@ -66,9 +66,6 @@ public class PositionTest extends InstrumentUtilForTest {
     public void setUp() throws JFException {
         initCommonTestFramework();
 
-        orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
-        orderParamsSell = OrderParamsForTest.paramsSellEURUSD();
-        toMergeOrders = Sets.newHashSet(buyOrder, sellOrder);
         mergeOrder.setLabel(mergeLabel);
         setUpMocks();
 
@@ -82,11 +79,30 @@ public class PositionTest extends InstrumentUtilForTest {
     private void setUpMocks() {
         when(restoreSLTPPolicyMock.restoreSL(any())).thenReturn(restoreSL);
         when(restoreSLTPPolicyMock.restoreTP(any())).thenReturn(restoreTP);
-        when(concurrentUtilMock.timerObservable(1500L, TimeUnit.MILLISECONDS)).thenReturn(timerSubject);
+        when(concurrentUtilMock.timerObservable(1500L, TimeUnit.MILLISECONDS)).thenReturn(retryTimerSubject);
     }
 
     private Subject<OrderEvent, OrderEvent> setUpSubmit(final OrderParams orderParams) {
-        return setUpObservable(() -> orderUtilMock.submit(orderParams));
+        return setUpObservable(() -> orderUtilMock.submitOrder(orderParams));
+    }
+
+    private Subject<OrderEvent, OrderEvent> setUpClose(final IOrder order) {
+        return setUpObservable(() -> orderUtilMock.close(order));
+    }
+
+    private Subject<OrderEvent, OrderEvent> setUpSL(final IOrder order,
+                                                    final double newSL) {
+        return setUpObservable(() -> orderUtilMock.setStopLossPrice(order, newSL));
+    }
+
+    private Subject<OrderEvent, OrderEvent> setUpTP(final IOrder order,
+                                                    final double newTP) {
+        return setUpObservable(() -> orderUtilMock.setTakeProfitPrice(order, newTP));
+    }
+
+    private Subject<OrderEvent, OrderEvent> setUpMerge(final String mergeLabel,
+                                                       final Set<IOrder> toMergeOrders) {
+        return setUpObservable(() -> orderUtilMock.mergeOrders(eq(mergeLabel), any()));
     }
 
     private Subject<OrderEvent, OrderEvent> setUpObservable(final Supplier<Observable<OrderEvent>> orderEventSupplier) {
@@ -103,6 +119,37 @@ public class PositionTest extends InstrumentUtilForTest {
         return position.filter(order -> true).isEmpty();
     }
 
+    private void sendOrderEvent(final Subject<OrderEvent, OrderEvent> subject,
+                                final IOrder order,
+                                final OrderEventType orderEventType) {
+        final OrderEvent orderEvent = new OrderEvent(order, orderEventType);
+        subject.onNext(orderEvent);
+    }
+
+    private void sendRejectEvent(final Subject<OrderEvent, OrderEvent> subject,
+                                 final IOrder order,
+                                 final OrderEventType rejectEventType) {
+        final OrderEvent rejectEvent = new OrderEvent(order, rejectEventType);
+        final OrderCallRejectException rejectException = new OrderCallRejectException("", rejectEvent);
+        subject.onError(rejectException);
+    }
+
+    private void assertRejectEvent(final TestSubscriber<OrderEvent> subscriber) {
+        subscriber.assertError(OrderCallRejectException.class);
+        subscriber.assertValueCount(0);
+    }
+
+    private void assertOrderEventNotification(final TestSubscriber<OrderEvent> subscriber,
+                                              final IOrder order,
+                                              final OrderEventType orderEventType) {
+        subscriber.assertNoErrors();
+        subscriber.assertValueCount(1);
+
+        final OrderEvent orderEvent = subscriber.getOnNextEvents().get(0);
+        assertThat(orderEvent.order(), equalTo(order));
+        assertThat(orderEvent.type(), equalTo(orderEventType));
+    }
+
     @Test
     public void testCloseOnEmptyPositionDoesNotCallOnOrderUtil() {
         position.close();
@@ -117,32 +164,30 @@ public class PositionTest extends InstrumentUtilForTest {
         verifyZeroInteractions(orderUtilMock);
     }
 
-    public class AfterSubmit {
+    public class Submit {
 
         protected Subject<OrderEvent, OrderEvent> buySubmitSubject;
-        protected final TestSubscriber<OrderEvent> submitSubscriber = new TestSubscriber<>();
+        protected final TestSubscriber<OrderEvent> buySubmitSubscriber = new TestSubscriber<>();
 
         @Before
         public void setUp() {
             buyOrder.setState(IOrder.State.CREATED);
             buySubmitSubject = setUpSubmit(orderParamsBuy);
 
-            position.submit(orderParamsBuy).subscribe(submitSubscriber);
+            position.submit(orderParamsBuy).subscribe(buySubmitSubscriber);
         }
 
         @Test
         public void testSubmitIsCalledOnOrderUtil() {
-            verify(orderUtilMock).submit(orderParamsBuy);
+            verify(orderUtilMock).submitOrder(orderParamsBuy);
         }
 
-        public class AfterFillRejectMessage {
+        public class SubmitRejectMessage {
 
             @Before
             public void setUp() {
                 buyOrder.setState(IOrder.State.CANCELED);
-                buySubmitSubject.onError(new PositionTaskRejectException("",
-                                                                         new OrderEvent(buyOrder,
-                                                                                        OrderEventType.FILL_REJECTED)));
+                sendRejectEvent(buySubmitSubject, buyOrder, OrderEventType.SUBMIT_REJECTED);
             }
 
             @Test
@@ -152,22 +197,46 @@ public class PositionTest extends InstrumentUtilForTest {
 
             @Test
             public void testNoRetryIsDone() {
-                verify(orderUtilMock).submit(orderParamsBuy);
+                verify(orderUtilMock).submitOrder(orderParamsBuy);
             }
 
             @Test
-            public void testSubmitSubscriberIsNotifiedOfReject() {
-                submitSubscriber.assertError(PositionTaskRejectException.class);
-                submitSubscriber.assertValueCount(0);
+            public void testBuySubmitSubscriberIsNotifiedOfReject() {
+                assertRejectEvent(buySubmitSubscriber);
             }
         }
 
-        public class AfterFillMessage {
+        public class FillRejectMessage {
+
+            @Before
+            public void setUp() {
+                buyOrder.setState(IOrder.State.CANCELED);
+                sendRejectEvent(buySubmitSubject, buyOrder, OrderEventType.FILL_REJECTED);
+            }
+
+            @Test
+            public void testPositionHasNoOrder() {
+                assertTrue(isRepositoryEmpty());
+            }
+
+            @Test
+            public void testNoRetryIsDone() {
+                verify(orderUtilMock).submitOrder(orderParamsBuy);
+            }
+
+            @Test
+            public void testBuySubmitSubscriberIsNotifiedOfReject() {
+                assertRejectEvent(buySubmitSubscriber);
+            }
+        }
+
+        public class FillMessage {
 
             @Before
             public void setUp() {
                 buyOrder.setState(IOrder.State.FILLED);
-                buySubmitSubject.onNext(new OrderEvent(buyOrder, OrderEventType.FULL_FILL_OK));
+                sendOrderEvent(buySubmitSubject, buyOrder, OrderEventType.FULL_FILL_OK);
+                buySubmitSubject.onCompleted();
             }
 
             @Test
@@ -177,12 +246,392 @@ public class PositionTest extends InstrumentUtilForTest {
 
             @Test
             public void testSubmitSubscriberIsNotified() {
-                submitSubscriber.assertNoErrors();
-                submitSubscriber.assertValueCount(1);
+                assertOrderEventNotification(buySubmitSubscriber, buyOrder, OrderEventType.FULL_FILL_OK);
+                buySubmitSubscriber.assertCompleted();
+            }
 
-                final OrderEvent orderEvent = submitSubscriber.getOnNextEvents().get(0);
-                assertThat(orderEvent.order(), equalTo(buyOrder));
-                assertThat(orderEvent.type(), equalTo(OrderEventType.FULL_FILL_OK));
+            public class CloseOnSL {
+
+                @Before
+                public void setUp() {
+                    buyOrder.setState(IOrder.State.CLOSED);
+
+                    sendOrderEvent(orderEventSubject, buyOrder, OrderEventType.CLOSED_BY_SL);
+                }
+
+                @Test
+                public void testPositionHasNoOrder() {
+                    assertTrue(isRepositoryEmpty());
+                }
+            }
+
+            public class CloseOnTP {
+
+                @Before
+                public void setUp() {
+                    buyOrder.setState(IOrder.State.CLOSED);
+
+                    sendOrderEvent(orderEventSubject, buyOrder, OrderEventType.CLOSED_BY_TP);
+                }
+
+                @Test
+                public void testPositionHasNoOrder() {
+                    assertTrue(isRepositoryEmpty());
+                }
+            }
+
+            public class Close {
+
+                protected Subject<OrderEvent, OrderEvent> buyCloseSubject;
+
+                @Before
+                public void setUp() {
+                    buyOrder.setState(IOrder.State.FILLED);
+                    buyCloseSubject = setUpClose(buyOrder);
+
+                    position.close();
+
+                    buyOrder.setState(IOrder.State.CLOSED);
+                    sendOrderEvent(buyCloseSubject, buyOrder, OrderEventType.CLOSE_OK);
+                }
+
+                @Test
+                public void testCloseIsCalledOnOrderUtil() {
+                    verify(orderUtilMock).close(buyOrder);
+                }
+
+                @Test
+                public void testPositionHasNoOrder() {
+                    assertTrue(isRepositoryEmpty());
+                }
+            }
+
+            public class SecondSubmit {
+
+                protected Subject<OrderEvent, OrderEvent> sellSubmitSubject;
+                protected final TestSubscriber<OrderEvent> sellSubmitSubscriber = new TestSubscriber<>();
+
+                @Before
+                public void setUp() {
+                    sellOrder.setState(IOrder.State.CREATED);
+                    sellSubmitSubject = setUpSubmit(orderParamsSell);
+
+                    position.submit(orderParamsSell).subscribe(sellSubmitSubscriber);
+                }
+
+                @Test
+                public void testSubmitIsCalledOnOrderUtil() {
+                    verify(orderUtilMock).submitOrder(orderParamsSell);
+                }
+
+                public class SecondFillMessage {
+
+                    @Before
+                    public void setUp() {
+                        sellOrder.setState(IOrder.State.FILLED);
+                        sendOrderEvent(sellSubmitSubject, sellOrder, OrderEventType.FULL_FILL_OK);
+                        sellSubmitSubject.onCompleted();
+                    }
+
+                    @Test
+                    public void testPositionHasBuyOrder() {
+                        assertTrue(positionHasOrder(sellOrder));
+                    }
+
+                    @Test
+                    public void testSubmitSubscriberIsNotified() {
+                        assertOrderEventNotification(sellSubmitSubscriber, sellOrder, OrderEventType.FULL_FILL_OK);
+                        sellSubmitSubscriber.assertCompleted();
+                    }
+
+                    @Test
+                    public void testPositionHasBuyAndSellOrder() {
+                        assertTrue(positionHasOrder(buyOrder));
+                        assertTrue(positionHasOrder(sellOrder));
+                    }
+
+                    public class MergeCall {
+
+                        protected Subject<OrderEvent, OrderEvent> buyRemoveTPSubject;
+                        protected Subject<OrderEvent, OrderEvent> sellRemoveTPSubject;
+                        protected Subject<OrderEvent, OrderEvent> buyRemoveSLSubject;
+                        protected Subject<OrderEvent, OrderEvent> sellRemoveSLSubject;
+                        protected Subject<OrderEvent, OrderEvent> mergeSubject;
+                        protected Subject<OrderEvent, OrderEvent> restoreSLSubject;
+                        protected Subject<OrderEvent, OrderEvent> restoreTPSubject;
+
+                        @Before
+                        public void setUp() {
+                            buyRemoveTPSubject = setUpTP(buyOrder, pfs.NO_TAKE_PROFIT_PRICE());
+                            sellRemoveTPSubject = setUpTP(sellOrder, pfs.NO_TAKE_PROFIT_PRICE());
+                            buyRemoveSLSubject = setUpSL(buyOrder, pfs.NO_STOP_LOSS_PRICE());
+                            sellRemoveSLSubject = setUpSL(sellOrder, pfs.NO_STOP_LOSS_PRICE());
+                            mergeSubject = setUpMerge(mergeLabel, toMergeOrders);
+                            restoreSLSubject = setUpSL(mergeOrder, restoreSL);
+                            restoreTPSubject = setUpTP(mergeOrder, restoreTP);
+
+                            position.merge(mergeLabel);
+                        }
+
+                        @Test
+                        public void testRemoveTPIsCalled() {
+                            verify(orderUtilMock).setTakeProfitPrice(buyOrder, pfs.NO_TAKE_PROFIT_PRICE());
+                            verify(orderUtilMock).setTakeProfitPrice(sellOrder, pfs.NO_TAKE_PROFIT_PRICE());
+                        }
+
+                        public class RemovedTPOnSellRejected {
+
+                            @Before
+                            public void setUp() {
+                                sendRejectEvent(sellRemoveTPSubject, sellOrder, OrderEventType.CHANGE_TP_REJECTED);
+
+                                retryTimerSubject.onNext(1L);
+                            }
+
+                            @Test
+                            public void testRetryCallOnSellOrderIsDone() {
+                                verify(orderUtilMock, times(2)).setTakeProfitPrice(sellOrder,
+                                                                                   pfs.NO_TAKE_PROFIT_PRICE());
+                            }
+                        }
+
+                        public class RemovedTPs {
+
+                            @Before
+                            public void setUp() {
+                                buyOrder.setTakeProfitPrice(pfs.NO_TAKE_PROFIT_PRICE());
+                                sellOrder.setTakeProfitPrice(pfs.NO_TAKE_PROFIT_PRICE());
+
+                                sendOrderEvent(buyRemoveTPSubject, buyOrder, OrderEventType.TP_CHANGE_OK);
+                                sendOrderEvent(sellRemoveTPSubject, sellOrder, OrderEventType.TP_CHANGE_OK);
+                                buyRemoveTPSubject.onCompleted();
+                                sellRemoveTPSubject.onCompleted();
+                            }
+
+                            @Test
+                            public void testRemoveSLIsCalled() {
+                                verify(orderUtilMock).setStopLossPrice(buyOrder, pfs.NO_STOP_LOSS_PRICE());
+                                verify(orderUtilMock).setStopLossPrice(sellOrder, pfs.NO_STOP_LOSS_PRICE());
+                            }
+
+                            public class RemovedSLs {
+
+                                @Before
+                                public void setUp() {
+                                    buyOrder.setStopLossPrice(pfs.NO_STOP_LOSS_PRICE());
+                                    sellOrder.setStopLossPrice(pfs.NO_STOP_LOSS_PRICE());
+
+                                    sendOrderEvent(buyRemoveSLSubject, buyOrder, OrderEventType.SL_CHANGE_OK);
+                                    sendOrderEvent(sellRemoveSLSubject, sellOrder, OrderEventType.SL_CHANGE_OK);
+                                    buyRemoveSLSubject.onCompleted();
+                                    sellRemoveSLSubject.onCompleted();
+                                }
+
+                                @Test
+                                public void testMergeIsCalled() {
+                                    verify(orderUtilMock).mergeOrders(eq(mergeLabel), any());
+                                }
+
+                                public class AfterMergeRejectMessage {
+
+                                    @Before
+                                    public void setUp() {
+                                        mergeOrder.setState(IOrder.State.CANCELED);
+
+                                        sendRejectEvent(mergeSubject, mergeOrder, OrderEventType.MERGE_REJECTED);
+                                        retryTimerSubject.onNext(1L);
+                                    }
+
+                                    @Test
+                                    public void testPositionHasBuyAndSellOrder() {
+                                        assertTrue(positionHasOrder(buyOrder));
+                                        assertTrue(positionHasOrder(sellOrder));
+                                    }
+
+                                    @Test
+                                    public void testRetryCallIsDone() {
+                                        verify(orderUtilMock, times(2)).mergeOrders(eq(mergeLabel), any());
+                                    }
+                                }
+
+                                public class AfterMergeCloseOKMessage {
+
+                                    @Before
+                                    public void setUp() {
+                                        mergeOrder.setState(IOrder.State.CLOSED);
+
+                                        sendOrderEvent(orderEventSubject, buyOrder, OrderEventType.CLOSED_BY_MERGE);
+                                        sendOrderEvent(orderEventSubject, sellOrder, OrderEventType.CLOSED_BY_MERGE);
+                                        sendOrderEvent(orderEventSubject, mergeOrder, OrderEventType.MERGE_CLOSE_OK);
+                                        mergeSubject.onCompleted();
+                                    }
+
+                                    @Test
+                                    public void testPositionHasNoOrders() {
+                                        assertTrue(isRepositoryEmpty());
+                                    }
+                                }
+
+                                public class AfterMergeMessage {
+
+                                    @Before
+                                    public void setUp() {
+                                        buyOrder.setState(IOrder.State.CLOSED);
+                                        sellOrder.setState(IOrder.State.CLOSED);
+                                        mergeOrder.setState(IOrder.State.FILLED);
+                                        mergeOrder.setStopLossPrice(pfs.NO_STOP_LOSS_PRICE());
+                                        mergeOrder.setTakeProfitPrice(pfs.NO_TAKE_PROFIT_PRICE());
+
+                                        sendOrderEvent(orderEventSubject, buyOrder, OrderEventType.CLOSED_BY_MERGE);
+                                        sendOrderEvent(orderEventSubject, sellOrder, OrderEventType.CLOSED_BY_MERGE);
+                                        sendOrderEvent(mergeSubject, mergeOrder, OrderEventType.MERGE_OK);
+                                        mergeSubject.onCompleted();
+                                    }
+
+                                    @Test
+                                    public void testPositionHasOnlyMergeOrder() {
+                                        assertTrue(positionHasOrder(mergeOrder));
+                                    }
+
+                                    @Test
+                                    public void testRestoreSLIsCalled() {
+                                        verify(orderUtilMock).setStopLossPrice(mergeOrder, restoreSL);
+                                    }
+
+                                    public class RestoredSL {
+
+                                        @Before
+                                        public void setUp() {
+                                            mergeOrder.setStopLossPrice(restoreSL);
+
+                                            sendOrderEvent(restoreSLSubject, mergeOrder, OrderEventType.SL_CHANGE_OK);
+                                            restoreSLSubject.onCompleted();
+                                        }
+
+                                        @Test
+                                        public void testRestoreTPIsCalled() {
+                                            verify(orderUtilMock).setTakeProfitPrice(mergeOrder, restoreTP);
+                                        }
+
+                                        public class RestoredTPReject {
+
+                                            @Before
+                                            public void setUp() {
+                                                sendRejectEvent(restoreTPSubject, mergeOrder,
+                                                                OrderEventType.CHANGE_TP_REJECTED);
+
+                                                retryTimerSubject.onNext(1L);
+                                            }
+
+                                            @Test
+                                            public void testRetryCallOnMergeOrderIsDone() {
+                                                verify(orderUtilMock, times(2)).setTakeProfitPrice(mergeOrder,
+                                                                                                   restoreTP);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    public class ClosePosition {
+
+                        protected Subject<OrderEvent, OrderEvent> buyCloseSubject;
+                        protected Subject<OrderEvent, OrderEvent> sellCloseSubject;
+
+                        @Before
+                        public void setUp() {
+                            buyOrder.setState(IOrder.State.FILLED);
+                            sellOrder.setState(IOrder.State.FILLED);
+                            buyCloseSubject = setUpClose(buyOrder);
+                            sellCloseSubject = setUpClose(sellOrder);
+
+                            position.close();
+
+                            buyOrder.setState(IOrder.State.CLOSED);
+                            sendOrderEvent(buyCloseSubject, buyOrder, OrderEventType.CLOSE_OK);
+                        }
+
+                        @Test
+                        public void testCloseIsCalledOnOrderUtil() {
+                            verify(orderUtilMock).close(buyOrder);
+                            verify(orderUtilMock).close(sellOrder);
+                        }
+
+                        @Test
+                        public void testPositionHasNowOnlySellOrder() {
+                            assertFalse(positionHasOrder(buyOrder));
+                            assertTrue(positionHasOrder(sellOrder));
+                        }
+
+                        public class AfterSecondClosePosition {
+
+                            @Before
+                            public void setUp() {
+                                position.close();
+                            }
+
+                            @Test
+                            public void testCloseIsNotCalledOnOrderUtilSinceAllOrdersAreMarkedAsActive() {
+                                verify(orderUtilMock, times(1)).close(sellOrder);
+                            }
+                        }
+
+                        public class CloseSellOrderReject {
+
+                            protected Subject<OrderEvent, OrderEvent> sellCloseSubject2;
+
+                            @Before
+                            public void setUp() {
+                                sellCloseSubject2 = setUpClose(sellOrder);
+                                sendRejectEvent(sellCloseSubject, sellOrder, OrderEventType.CLOSE_REJECTED);
+                                retryTimerSubject.onNext(1L);
+                            }
+
+                            @Test
+                            public void testPositionHasOnlySellOrder() {
+                                assertFalse(positionHasOrder(buyOrder));
+                                assertTrue(positionHasOrder(sellOrder));
+                            }
+
+                            @Test
+                            public void testRetryCallOnSellOrderIsDone() {
+                                verify(orderUtilMock, times(2)).close(sellOrder);
+                            }
+
+                            public class CloseSellOrder {
+
+                                @Before
+                                public void setUp() {
+                                    sellOrder.setState(IOrder.State.CLOSED);
+
+                                    sendOrderEvent(sellCloseSubject2, sellOrder, OrderEventType.CLOSE_OK);
+                                }
+
+                                @Test
+                                public void testPositionHasNoOrder() {
+                                    assertTrue(isRepositoryEmpty());
+                                }
+                            }
+                        }
+
+                        public class CloseSellOrder {
+
+                            @Before
+                            public void setUp() {
+                                sellOrder.setState(IOrder.State.CLOSED);
+
+                                sendOrderEvent(sellCloseSubject, sellOrder, OrderEventType.CLOSE_OK);
+                            }
+
+                            @Test
+                            public void testPositionHasNoOrder() {
+                                assertTrue(isRepositoryEmpty());
+                            }
+                        }
+                    }
+                }
             }
         }
     }

@@ -73,14 +73,14 @@ public final class OrderEventTypeEvaluator {
                     .put(IMessage.Reason.ORDER_CHANGED_TP, OrderEventType.TP_CHANGE_OK)
                     .put(IMessage.Reason.ORDER_CHANGED_AMOUNT,
                          OrderEventType.AMOUNT_CHANGE_OK)
-                    .put(IMessage.Reason.ORDER_CHANGED_PRICE, OrderEventType.PRICE_CHANGE_OK)
+                    .put(IMessage.Reason.ORDER_CHANGED_PRICE, OrderEventType.OPENPRICE_CHANGE_OK)
                     .put(IMessage.Reason.ORDER_CHANGED_GTT, OrderEventType.GTT_CHANGE_OK)
                     .put(IMessage.Reason.ORDER_CHANGED_LABEL, OrderEventType.LABEL_CHANGE_OK)
                     .build());
 
     private final static Map<OrderCallRequest, OrderEventType> changeRejectEventByRequest =
             Maps.immutableEnumMap(ImmutableMap.<OrderCallRequest, OrderEventType> builder()
-                    .put(OrderCallRequest.CHANGE_AMOUNT,
+                    .put(OrderCallRequest.CHANGE_REQUESTED_AMOUNT,
                          OrderEventType.CHANGE_AMOUNT_REJECTED)
                     .put(OrderCallRequest.CHANGE_LABEL, OrderEventType.CHANGE_LABEL_REJECTED)
                     .put(OrderCallRequest.CHANGE_GTT, OrderEventType.CHANGE_GTT_REJECTED)

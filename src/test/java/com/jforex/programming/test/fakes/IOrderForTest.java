@@ -11,9 +11,6 @@ import static org.mockito.Mockito.spy;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.test.common.OrderParamsForTest;
-
 import com.dukascopy.api.ICloseOrder;
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IFillOrder;
@@ -22,6 +19,8 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.test.common.OrderParamsForTest;
 
 public class IOrderForTest implements IOrder {
 
@@ -257,10 +256,6 @@ public class IOrderForTest implements IOrder {
         this.stopLossPrice = stopLossPrice;
     }
 
-    public void setStopLossPriceNoServerCall(final double stopLossPrice) {
-        this.stopLossPrice = stopLossPrice;
-    }
-
     @Override
     public void setStopLossPrice(final double arg0,
                                  final OfferSide arg1) {
@@ -274,10 +269,6 @@ public class IOrderForTest implements IOrder {
 
     @Override
     public void setTakeProfitPrice(final double takeProfitPrice) {
-        this.takeProfitPrice = takeProfitPrice;
-    }
-
-    public void setTakeProfitPriceNoServerCall(final double takeProfitPrice) {
         this.takeProfitPrice = takeProfitPrice;
     }
 

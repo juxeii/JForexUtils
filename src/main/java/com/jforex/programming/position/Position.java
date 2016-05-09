@@ -16,15 +16,15 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -95,7 +95,7 @@ public class Position {
 
     public Observable<OrderEvent> submit(final OrderParams orderParams) {
         logger.info("Start submit for " + orderParams.label());
-        final Observable<OrderEvent> submitObs = orderUtil.submit(orderParams);
+        final Observable<OrderEvent> submitObs = orderUtil.submitOrder(orderParams);
         submitObs.subscribe(this::onSubmitEvent, e -> logger.error("Position submit for " + instrument + " failed!"));
         return submitObs;
     }
@@ -123,8 +123,9 @@ public class Position {
     }
 
     public void close() {
+        final Set<IOrder> ordersToClose = orderRepository.filterIdle(isFilled.or(isOpened));
         orderRepository.markAllActive();
-        Observable.from(orderRepository.filterIdle(isFilled.or(isOpened)))
+        Observable.from(ordersToClose)
                 .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
                 .filter(order -> !isClosed.test(order))
                 .flatMap(order -> orderUtil.close(order))
@@ -156,8 +157,8 @@ public class Position {
     private Observable<OrderEvent> mergeOrderObs(final String mergeLabel,
                                                  final Set<IOrder> filledOrders) {
         return Observable.just(mergeLabel)
-                .flatMap(order -> orderUtil.merge(mergeLabel, filledOrders))
                 .doOnNext(label -> logger.debug("Start merge with label: " + label + " for " + instrument))
+                .flatMap(order -> orderUtil.mergeOrders(mergeLabel, filledOrders))
                 .retryWhen(this::shouldRetry)
                 .doOnNext(this::onSubmitEvent);
     }
@@ -165,38 +166,32 @@ public class Position {
     private Observable<OrderEvent> changeSLOrderObs(final IOrder orderToChangeSL,
                                                     final double newSL) {
         return Observable.just(orderToChangeSL)
-                .filter(order -> isSLSetTo(newSL).test(orderToChangeSL))
-                .flatMap(order -> orderUtil.setSL(order, newSL))
-                .doOnNext(oe -> logger.debug("Start to change SL from " + oe.order().getStopLossPrice() + " to "
-                        + newSL + " for order " + oe.order().getLabel() + " and position " + instrument))
-                .retryWhen(this::shouldRetry)
-                .doOnNext(oe -> logger.debug("Changed SL from " + oe.order().getStopLossPrice()
-                        + " to " + oe.order().getStopLossPrice() + " for order " + oe.order().getLabel()
-                        + " and position " + instrument));
+                .filter(order -> !isSLSetTo(newSL).test(orderToChangeSL))
+                .doOnNext(order -> logger.debug("Start to change SL from " + order.getStopLossPrice() + " to "
+                        + newSL + " for order " + order.getLabel() + " and position " + instrument))
+                .flatMap(order -> orderUtil.setStopLossPrice(order, newSL))
+                .retryWhen(this::shouldRetry);
     }
 
     private Observable<OrderEvent> changeTPOrderObs(final IOrder orderToChangeTP,
                                                     final double newTP) {
         return Observable.just(orderToChangeTP)
-                .filter(order -> isTPSetTo(newTP).test(orderToChangeTP))
-                .flatMap(order -> orderUtil.setTP(order, newTP))
-                .doOnNext(oe -> logger.debug("Start to change TP from " + oe.order().getTakeProfitPrice() + " to "
-                        + newTP + " for order " + oe.order().getLabel() + " and position " + instrument))
-                .retryWhen(this::shouldRetry)
-                .doOnNext(oe -> logger.debug("Changed TP from " + oe.order().getTakeProfitPrice()
-                        + " to " + oe.order().getTakeProfitPrice() + " for order " + oe.order().getLabel()
-                        + " and position " + instrument));
+                .filter(order -> !isTPSetTo(newTP).test(orderToChangeTP))
+                .doOnNext(order -> logger.debug("Start to change TP from " + order.getTakeProfitPrice() + " to "
+                        + newTP + " for order " + order.getLabel() + " and position " + instrument))
+                .flatMap(order -> orderUtil.setTakeProfitPrice(order, newTP))
+                .retryWhen(this::shouldRetry);
     }
 
     private Observable<?> shouldRetry(final Observable<? extends Throwable> attempts) {
         return attempts.zipWith(Observable.range(1, pfs.MAX_NUM_RETRIES_ON_FAIL()),
                                 (exc, att) -> exc)
-                .doOnNext(exc -> logRetry((PositionTaskRejectException) exc))
+                .doOnNext(exc -> logRetry((OrderCallRejectException) exc))
                 .flatMap(exc -> concurrentUtil.timerObservable(pfs.ON_FAIL_RETRY_WAITING_TIME(),
                                                                TimeUnit.MILLISECONDS));
     }
 
-    private void logRetry(final PositionTaskRejectException rejectException) {
+    private void logRetry(final OrderCallRejectException rejectException) {
         final IOrder order = rejectException.orderEvent().order();
         logger.warn("Received reject type " + rejectException.orderEvent().type() + " for order " + order.getLabel()
                 + "!" + " Will retry task in " + pfs.ON_FAIL_RETRY_WAITING_TIME() + " milliseconds...");

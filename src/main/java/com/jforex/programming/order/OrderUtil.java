@@ -2,9 +2,11 @@ package com.jforex.programming.order;
 
 import java.util.Collection;
 
-import com.jforex.programming.misc.CalculationUtil;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
+import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.call.OrderChangeCall;
 import com.jforex.programming.order.call.OrderSupplierCall;
@@ -12,10 +14,6 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-import com.jforex.programming.position.PositionTaskRejectException;
-
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -34,7 +32,7 @@ public class OrderUtil {
         this.orderEventGateway = orderEventGateway;
     }
 
-    public Observable<OrderEvent> submit(final OrderParams orderParams) {
+    public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
         final OrderSupplierCall submitCall = () -> engine.submitOrder(orderParams.label(),
                                                                       orderParams.instrument(),
                                                                       orderParams.orderCommand(),
@@ -48,8 +46,8 @@ public class OrderUtil {
         return runOrderSupplierCall(submitCall, OrderEventTypeData.submitEvents);
     }
 
-    public Observable<OrderEvent> merge(final String mergeOrderLabel,
-                                        final Collection<IOrder> toMergeOrders) {
+    public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
+                                              final Collection<IOrder> toMergeOrders) {
         final OrderSupplierCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
         return runOrderSupplierCall(mergeCall, OrderEventTypeData.mergeEvents);
     }
@@ -67,8 +65,8 @@ public class OrderUtil {
                              OrderEventTypeData.changeLabelEvents);
     }
 
-    public Observable<OrderEvent> setGTT(final IOrder orderToChangeGTT,
-                                         final long newGTT) {
+    public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
+                                                  final long newGTT) {
         return runChangeCall(() -> orderToChangeGTT.setGoodTillTime(newGTT),
                              orderToChangeGTT,
                              OrderEventTypeData.changeGTTEvents);
@@ -81,43 +79,25 @@ public class OrderUtil {
                              OrderEventTypeData.changeOpenPriceEvents);
     }
 
-    public Observable<OrderEvent> setAmount(final IOrder orderToChangeAmount,
-                                            final double newAmount) {
+    public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
+                                                     final double newAmount) {
         return runChangeCall(() -> orderToChangeAmount.setRequestedAmount(newAmount),
                              orderToChangeAmount,
                              OrderEventTypeData.changeAmountEvents);
     }
 
-    public Observable<OrderEvent> setSL(final IOrder orderToChangeSL,
-                                        final double newSL) {
+    public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
+                                                   final double newSL) {
         return runChangeCall(() -> orderToChangeSL.setStopLossPrice(newSL),
                              orderToChangeSL,
                              OrderEventTypeData.changeSLEvents);
     }
 
-    public Observable<OrderEvent> setTP(final IOrder orderToChangeTP,
-                                        final double newTP) {
+    public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
+                                                     final double newTP) {
         return runChangeCall(() -> orderToChangeTP.setTakeProfitPrice(newTP),
                              orderToChangeTP,
                              OrderEventTypeData.changeTPEvents);
-    }
-
-    public Observable<OrderEvent> setSLWithPips(final IOrder orderToChangeSL,
-                                                final double referencePrice,
-                                                final double pips) {
-        final double newSL = CalculationUtil.addPips(orderToChangeSL.getInstrument(),
-                                                     referencePrice,
-                                                     orderToChangeSL.isLong() ? -pips : pips);
-        return setSL(orderToChangeSL, newSL);
-    }
-
-    public Observable<OrderEvent> setTPWithPips(final IOrder orderToChangeTP,
-                                                final double referencePrice,
-                                                final double pips) {
-        final double newTP = CalculationUtil.addPips(orderToChangeTP.getInstrument(),
-                                                     referencePrice,
-                                                     orderToChangeTP.isLong() ? pips : -pips);
-        return setTP(orderToChangeTP, newTP);
     }
 
     private Observable<OrderEvent> runOrderSupplierCall(final OrderSupplierCall orderSupplierCall,
@@ -161,7 +141,7 @@ public class OrderUtil {
                                           final Subscriber<? super OrderEvent> subscriber) {
         final OrderEventType orderEventType = orderEvent.type();
         if (orderEventTypeData.isRejectType(orderEventType))
-            subscriber.onError(new PositionTaskRejectException("", orderEvent));
+            subscriber.onError(new OrderCallRejectException("", orderEvent));
         else {
             subscriber.onNext(orderEvent);
             if (orderEventTypeData.isDoneType(orderEventType))
