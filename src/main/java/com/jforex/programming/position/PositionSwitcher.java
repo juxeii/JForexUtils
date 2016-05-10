@@ -15,7 +15,7 @@ public final class PositionSwitcher {
     private final Position position;
     private final OrderParamsSupplier orderParamsSupplier;
     private String mergeLabel;
-    private boolean isBusy = false;
+    private PositionSwitcherFSM fsm = PositionSwitcherFSM.FLAT;
 
     private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
@@ -28,43 +28,40 @@ public final class PositionSwitcher {
                 .subscribe(this::processPositionEvent);
     }
 
+    private void processPositionEvent(final PositionEvent positonEvent) {
+        if (positonEvent == PositionEvent.SUBMITTASK_DONE)
+            fsm = fsm.triggerSubmitDone(this);
+        else if (positonEvent == PositionEvent.MERGETASK_DONE)
+            fsm = fsm.triggerMergeDone(position.direction());
+        else if (positonEvent == PositionEvent.CLOSETASK_DONE)
+            fsm = fsm.triggerCloseDone();
+    }
+
     public final void sendBuySignal() {
-        sendSwitchSignal(OrderDirection.LONG);
+        fsm = fsm.sendBuySignal(this);
     }
 
     public final void sendSellSignal() {
-        sendSwitchSignal(OrderDirection.SHORT);
+        fsm = fsm.sendSellSignal(this);
     }
 
     public final void sendFlatSignal() {
-        if (!isDirection(OrderDirection.FLAT) && !isBusy)
-            position.close();
+        fsm = fsm.sendFlatSignal(this);
     }
 
-    private final void sendSwitchSignal(final OrderDirection desiredDirection) {
-        if (canSwitchTo(desiredDirection))
-            executeOrderCommandSignal(desiredDirection);
+    protected void startMerge() {
+        position.merge(mergeLabel);
     }
 
-    public final boolean canSwitchTo(final OrderDirection desiredDirection) {
-        return isDirection(OrderDirection.FLAT) || !isDirection(desiredDirection)
-                ? !isBusy
-                : false;
+    protected void startClose() {
+        position.close();
     }
 
-    private final synchronized void executeOrderCommandSignal(final OrderDirection desiredDirection) {
+    protected final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
         final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         mergeLabel = userSettings.defaultMergePrefix() + adaptedOrderParams.label();
         position.submit(adaptedOrderParams);
-        isBusy = true;
-    }
-
-    private void processPositionEvent(final PositionEvent positonEvent) {
-        if (positonEvent == PositionEvent.SUBMITTASK_DONE)
-            position.merge(mergeLabel);
-        else if (positonEvent == PositionEvent.MERGETASK_DONE)
-            isBusy = false;
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {
@@ -74,9 +71,5 @@ public final class PositionSwitcher {
                 .withOrderCommand(newOrderCommand)
                 .withAmount(orderParams.amount() + absPositionExposure)
                 .build();
-    }
-
-    private final boolean isDirection(final OrderDirection direction) {
-        return position.direction() == direction;
     }
 }

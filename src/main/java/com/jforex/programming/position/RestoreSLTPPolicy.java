@@ -1,12 +1,12 @@
 package com.jforex.programming.position;
 
-import java.util.Collection;
+import java.util.Set;
 
 import com.dukascopy.api.IOrder;
 
 public interface RestoreSLTPPolicy {
 
-    public double restoreSL(Collection<IOrder> ordersForMerge);
+    public double restoreSL(Set<IOrder> ordersForMerge);
 
-    public double restoreTP(Collection<IOrder> ordersForMerge);
+    public double restoreTP(Set<IOrder> ordersForMerge);
 }

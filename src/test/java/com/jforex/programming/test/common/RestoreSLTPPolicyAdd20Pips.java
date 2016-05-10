@@ -1,6 +1,6 @@
 package com.jforex.programming.test.common;
 
-import java.util.Collection;
+import java.util.Set;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.CalculationUtil;
@@ -17,16 +17,16 @@ public class RestoreSLTPPolicyAdd20Pips implements RestoreSLTPPolicy {
     }
 
     @Override
-    public double restoreSL(final Collection<IOrder> mergedOrders) {
+    public double restoreSL(final Set<IOrder> mergedOrders) {
         return getValue(mergedOrders, 1);
     }
 
     @Override
-    public double restoreTP(final Collection<IOrder> mergedOrders) {
+    public double restoreTP(final Set<IOrder> mergedOrders) {
         return getValue(mergedOrders, -1);
     }
 
-    private double getValue(final Collection<IOrder> mergedOrders,
+    private double getValue(final Set<IOrder> mergedOrders,
                             final double factor) {
         final IOrder someOrder = mergedOrders.iterator().next();
         final double signedPositionAmount = OrderStaticUtil.combinedSignedAmount(mergedOrders);

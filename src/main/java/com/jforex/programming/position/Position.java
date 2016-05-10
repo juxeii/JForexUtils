@@ -8,7 +8,6 @@ import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -90,7 +89,7 @@ public class Position {
         return orderRepository.signedExposure();
     }
 
-    public Collection<IOrder> filter(final Predicate<IOrder> orderPredicate) {
+    public Set<IOrder> filter(final Predicate<IOrder> orderPredicate) {
         return orderRepository.filter(orderPredicate);
     }
 
@@ -105,12 +104,9 @@ public class Position {
     public void submit(final OrderParams orderParams) {
         logger.info("Start submit for " + orderParams.label());
         orderUtil.submitOrder(orderParams)
+                .doOnTerminate(() -> positionEventPublisher.onNext(PositionEvent.SUBMITTASK_DONE))
                 .subscribe(this::onSubmitEvent,
-                           e -> {
-                               logger.error("Position submit for " + instrument + " failed!");
-                               positionEventPublisher.onNext(PositionEvent.SUBMITTASK_DONE);
-                           },
-                           () -> positionEventPublisher.onNext(PositionEvent.SUBMITTASK_DONE));
+                           throwable -> {});
     }
 
     private void onSubmitEvent(final OrderEvent orderEvent) {
@@ -131,13 +127,10 @@ public class Position {
 
         removeTPSLObs(filledOrders)
                 .concatWith(mergeOrderObs(mergeLabel, filledOrders))
-                .flatMap(oe -> restoreSLTPObs(oe.order(), restoreSLTPData.sl(), restoreSLTPData.tp()))
-                .subscribe(o -> {},
-                           e -> {
-                               logger.error("Position merge for " + instrument + " failed!");
-                               positionEventPublisher.onNext(PositionEvent.MERGETASK_DONE);
-                           },
-                           () -> positionEventPublisher.onNext(PositionEvent.MERGETASK_DONE));
+                .flatMap(orderEvent -> restoreSLTPObs(orderEvent.order(), restoreSLTPData.sl(), restoreSLTPData.tp()))
+                .doOnTerminate(() -> positionEventPublisher.onNext(PositionEvent.MERGETASK_DONE))
+                .subscribe(orderEvent -> {},
+                           throwable -> {});
     }
 
     public void close() {
@@ -147,15 +140,11 @@ public class Position {
         Observable.from(ordersToClose)
                 .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
                 .filter(order -> !isClosed.test(order))
-                .doOnNext(o -> logger.info("Closing order " + o.getLabel()))
                 .flatMap(order -> orderUtil.close(order))
                 .retryWhen(this::shouldRetry)
+                .doOnTerminate(() -> positionEventPublisher.onNext(PositionEvent.CLOSETASK_DONE))
                 .subscribe(this::onCloseEvent,
-                           e -> {
-                               logger.error("Close position for " + instrument + " failed!");
-                               positionEventPublisher.onNext(PositionEvent.CLOSETASK_DONE);
-                           },
-                           () -> positionEventPublisher.onNext(PositionEvent.CLOSETASK_DONE));
+                           throwable -> {});
     }
 
     private void onCloseEvent(final OrderEvent orderEvent) {

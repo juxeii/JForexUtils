@@ -1,6 +1,6 @@
 package com.jforex.programming.position;
 
-import java.util.Collection;
+import java.util.Set;
 
 import com.dukascopy.api.IOrder;
 
@@ -10,7 +10,7 @@ public final class RestoreSLTPData {
     private final double restoreTP;
 
     public RestoreSLTPData(final RestoreSLTPPolicy restoreSLTPPolicy,
-                           final Collection<IOrder> filledOrders) {
+                           final Set<IOrder> filledOrders) {
         restoreSL = restoreSLTPPolicy.restoreSL(filledOrders);
         restoreTP = restoreSLTPPolicy.restoreTP(filledOrders);
     }

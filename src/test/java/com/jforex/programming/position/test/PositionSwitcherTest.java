@@ -221,19 +221,59 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                     verify(positionMock, times(2)).submit(any());
                 }
 
-                @Test
-                public void testFlatSingalIsNoLongerBlocked() {
-                    positionSwitcher.sendFlatSignal();
+                public class AfterClose {
 
-                    verify(positionMock).close();
+                    @Before
+                    public void setUp() {
+                        positionSwitcher.sendFlatSignal();
+                    }
+
+                    @Test
+                    public void testCloseIsCalledOnPosition() {
+                        verify(positionMock).close();
+                    }
+
+                    @Test
+                    public void testBuySingalIsBlockedSincePositionIsBusy() {
+                        positionSwitcher.sendBuySignal();
+
+                        verify(positionMock).submit(any());
+                    }
+
+                    @Test
+                    public void testSellSingalIsBlockedSincePositionIsBusy() {
+                        positionSwitcher.sendSellSignal();
+
+                        verify(positionMock).submit(any());
+                    }
+
+                    public class AfterCloseOKMessage {
+
+                        @Before
+                        public void setUp() {
+                            setPositionOrderDirection(OrderDirection.FLAT);
+
+                            positionEventSubject.onNext(PositionEvent.CLOSETASK_DONE);
+                        }
+
+                        @Test
+                        public void testBuySignalIsNoLonerBlocked() {
+                            positionSwitcher.sendBuySignal();
+
+                            verify(positionMock, times(2)).submit(any());
+                        }
+
+                        @Test
+                        public void testSellSignalIsNoLonerBlocked() {
+                            positionSwitcher.sendSellSignal();
+
+                            verify(positionMock, times(2)).submit(any());
+                        }
+                    }
                 }
             }
         }
     }
-
-    /*
-     * fhfffffffffffffffffffffffff
-     */
 
     public class SellSignal {
 
