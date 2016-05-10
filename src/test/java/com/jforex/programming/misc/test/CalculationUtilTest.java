@@ -1,6 +1,5 @@
 package com.jforex.programming.misc.test;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -10,14 +9,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
 
 public class CalculationUtilTest extends CurrencyUtilForTest {
 
@@ -57,7 +55,7 @@ public class CalculationUtilTest extends CurrencyUtilForTest {
     }
 
     private double scaledAmount(final double amount) {
-        return MathUtil.roundAmount(amount / pfs.AMOUNT_BASE());
+        return MathUtil.roundAmount(amount / platformSettings.baseAmount());
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.jforex.programming.order.test;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
 import static com.jforex.programming.order.OrderStaticUtil.buyOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.combinedDirection;
 import static com.jforex.programming.order.OrderStaticUtil.combinedSignedAmount;
@@ -33,14 +32,13 @@ import java.util.function.Predicate;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.jforex.programming.order.OrderDirection;
-import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
-
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.order.OrderDirection;
+import com.jforex.programming.test.common.InstrumentUtilForTest;
+import com.jforex.programming.test.fakes.IOrderForTest;
 
 public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
@@ -176,7 +174,7 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         final double sl = 1.34521;
         final Predicate<IOrder> slPredicate = isNoSLSet;
 
-        firstOrderEURUSD.setStopLossPrice(pfs.NO_STOP_LOSS_PRICE());
+        firstOrderEURUSD.setStopLossPrice(platformSettings.noSLPrice());
         assertTrue(slPredicate.test(firstOrderEURUSD));
 
         firstOrderEURUSD.setStopLossPrice(sl);
@@ -188,7 +186,7 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         final double tp = 1.34521;
         final Predicate<IOrder> tpPredicate = isNoTPSet;
 
-        firstOrderEURUSD.setTakeProfitPrice(pfs.NO_TAKE_PROFIT_PRICE());
+        firstOrderEURUSD.setTakeProfitPrice(platformSettings.noTPPrice());
         assertTrue(tpPredicate.test(firstOrderEURUSD));
 
         firstOrderEURUSD.setTakeProfitPrice(tp);

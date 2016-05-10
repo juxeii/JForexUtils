@@ -5,6 +5,15 @@ import java.util.concurrent.Executors;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderMessageData;
@@ -19,18 +28,7 @@ import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
-import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
-
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.Period;
 
 import rx.Observable;
 import rx.Subscription;
@@ -68,8 +66,7 @@ public class JForexUtil implements MessageConsumer {
 
     private Subscription eventGatewaySubscription;
 
-    public final static PlatformSettings pfs = ConfigFactory.create(PlatformSettings.class);
-    public final static UserSettings uss = ConfigFactory.create(UserSettings.class);
+    private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
     public JForexUtil(final IContext context) {
         this.context = context;
@@ -179,7 +176,7 @@ public class JForexUtil implements MessageConsumer {
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
-        if (uss.ENABLE_WEEKEND_QUOTE_FILTER() && !DateTimeUtil.isWeekendMillis(tick.getTime()))
+        if (userSettings.enableWeekendQuoteFilter() && !DateTimeUtil.isWeekendMillis(tick.getTime()))
             tickQuotePublisher.onNext(new TickQuote(instrument, tick));
     }
 
@@ -187,7 +184,7 @@ public class JForexUtil implements MessageConsumer {
                       final Period period,
                       final IBar askBar,
                       final IBar bidBar) {
-        if (uss.ENABLE_WEEKEND_QUOTE_FILTER() && !DateTimeUtil.isWeekendMillis(askBar.getTime()))
+        if (userSettings.enableWeekendQuoteFilter() && !DateTimeUtil.isWeekendMillis(askBar.getTime()))
             barQuotePublisher.onNext(new BarQuote(instrument, period, askBar, bidBar));
     }
 }

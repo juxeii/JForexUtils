@@ -1,17 +1,14 @@
 package com.jforex.programming.order.test;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
-import static com.jforex.programming.misc.JForexUtil.uss;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.test.common.InstrumentUtilForTest;
-
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class OrderParamsTest extends InstrumentUtilForTest {
 
@@ -34,26 +31,26 @@ public class OrderParamsTest extends InstrumentUtilForTest {
         instrument = instrumentEURUSD;
         orderCommand = OrderCommand.BUY;
         amount = 0.1;
-        price = uss.ORDER_DEFAULT_PRICE();
-        slippage = uss.ORDER_DEFAULT_SLIPPAGE();
+        price = userSettings.defaultOpenPrice();
+        slippage = userSettings.defaultSlippage();
         stopLossPrice = 1.3254;
         takeProfitPrice = 1.3275;
-        goodTillTime = uss.ORDER_DEFAULT_GOOD_TILL_TIME();
+        goodTillTime = userSettings.defaultGTT();
         comment = "Test comment";
     }
 
     private void createTestParams() {
         orderParams = OrderParams.forInstrument(instrument)
-                                 .withOrderCommand(orderCommand)
-                                 .withAmount(amount)
-                                 .withLabel(label)
-                                 .price(price)
-                                 .slippage(slippage)
-                                 .stopLossPrice(stopLossPrice)
-                                 .takeProfitPrice(takeProfitPrice)
-                                 .goodTillTime(goodTillTime)
-                                 .comment(comment)
-                                 .build();
+                .withOrderCommand(orderCommand)
+                .withAmount(amount)
+                .withLabel(label)
+                .price(price)
+                .slippage(slippage)
+                .stopLossPrice(stopLossPrice)
+                .takeProfitPrice(takeProfitPrice)
+                .goodTillTime(goodTillTime)
+                .comment(comment)
+                .build();
     }
 
     private void fillOrderParamsWithOptionalValues() {
@@ -65,10 +62,10 @@ public class OrderParamsTest extends InstrumentUtilForTest {
     private void fillOrderParamsWithoutOptionalValues() {
         initializeOrderParamsTestValues();
         orderParams = OrderParams.forInstrument(instrument)
-                                 .withOrderCommand(orderCommand)
-                                 .withAmount(amount)
-                                 .withLabel(label)
-                                 .build();
+                .withOrderCommand(orderCommand)
+                .withAmount(amount)
+                .withLabel(label)
+                .build();
     }
 
     public void assertMandatoryValues(final OrderParams orderParams) {
@@ -83,11 +80,11 @@ public class OrderParamsTest extends InstrumentUtilForTest {
         fillOrderParamsWithoutOptionalValues();
 
         assertMandatoryValues(orderParams);
-        assertThat(orderParams.price(), equalTo(uss.ORDER_DEFAULT_PRICE()));
-        assertThat(orderParams.slippage(), equalTo(uss.ORDER_DEFAULT_SLIPPAGE()));
-        assertThat(orderParams.stopLossPrice(), equalTo(pfs.NO_STOP_LOSS_PRICE()));
-        assertThat(orderParams.takeProfitPrice(), equalTo(pfs.NO_TAKE_PROFIT_PRICE()));
-        assertThat(orderParams.goodTillTime(), equalTo(uss.ORDER_DEFAULT_GOOD_TILL_TIME()));
+        assertThat(orderParams.price(), equalTo(userSettings.defaultOpenPrice()));
+        assertThat(orderParams.slippage(), equalTo(userSettings.defaultSlippage()));
+        assertThat(orderParams.stopLossPrice(), equalTo(platformSettings.noSLPrice()));
+        assertThat(orderParams.takeProfitPrice(), equalTo(platformSettings.noTPPrice()));
+        assertThat(orderParams.goodTillTime(), equalTo(userSettings.defaultGTT()));
         assertThat(orderParams.comment(), equalTo(""));
     }
 

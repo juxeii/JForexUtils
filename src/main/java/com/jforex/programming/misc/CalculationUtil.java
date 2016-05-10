@@ -1,20 +1,24 @@
 package com.jforex.programming.misc;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
 import static com.jforex.programming.misc.MathUtil.isValueDivisibleByX;
 import static com.jforex.programming.misc.MathUtil.roundAmount;
 import static com.jforex.programming.misc.MathUtil.roundPips;
 import static com.jforex.programming.misc.MathUtil.roundPrice;
+
+import org.aeonbits.owner.ConfigFactory;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.instrument.InstrumentBuilder;
 import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.settings.PlatformSettings;
 
 public final class CalculationUtil {
 
     private final TickQuoteProvider tickQuoteProvider;
+
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
     public CalculationUtil(final TickQuoteProvider tickQuoteProvider) {
         this.tickQuoteProvider = tickQuoteProvider;
@@ -86,6 +90,6 @@ public final class CalculationUtil {
     }
 
     public final static double scaleToPlatformAmount(final double amount) {
-        return roundAmount(amount / pfs.AMOUNT_BASE());
+        return roundAmount(amount / platformSettings.baseAmount());
     }
 }

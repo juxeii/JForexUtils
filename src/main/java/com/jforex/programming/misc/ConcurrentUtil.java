@@ -1,6 +1,5 @@
 package com.jforex.programming.misc;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.concurrent.Callable;
@@ -8,11 +7,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IContext;
+import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Observable;
 import rx.Scheduler;
@@ -24,6 +25,7 @@ public class ConcurrentUtil {
     private final ExecutorService executorService;
     private final Scheduler scheduler;
 
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private final static Logger logger = LogManager.getLogger(ConcurrentUtil.class);
 
     public ConcurrentUtil(final IContext context,
@@ -48,7 +50,7 @@ public class ConcurrentUtil {
     public void onStop() {
         executorService.shutdownNow();
         try {
-            executorService.awaitTermination(pfs.EXECUTORSERVICE_AWAITTERMINATION_TIMEOUT(), MILLISECONDS);
+            executorService.awaitTermination(platformSettings.terminationTimeoutExecutorService(), MILLISECONDS);
         } catch (final InterruptedException e) {
             logger.error("Exception occured while shutdown executor! Message: " + e.getMessage());
         }
@@ -60,7 +62,7 @@ public class ConcurrentUtil {
     }
 
     public static boolean isStrategyThread() {
-        return StringUtils.startsWith(threadName(), pfs.STRATEGY_THREAD_PREFIX());
+        return StringUtils.startsWith(threadName(), platformSettings.strategyThreadPrefix());
     }
 
     public static String threadName() {

@@ -1,20 +1,22 @@
 package com.jforex.programming.order;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
-
 import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import org.aeonbits.owner.ConfigFactory;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.OfferSide;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.jforex.programming.settings.PlatformSettings;
 
 public final class OrderStaticUtil {
+
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
     private OrderStaticUtil() {
     }
@@ -59,8 +61,8 @@ public final class OrderStaticUtil {
         return orderTPPredicate.apply(tp);
     }
 
-    public final static Predicate<IOrder> isNoSLSet = isSLSetTo(pfs.NO_STOP_LOSS_PRICE());
-    public final static Predicate<IOrder> isNoTPSet = isTPSetTo(pfs.NO_TAKE_PROFIT_PRICE());
+    public final static Predicate<IOrder> isNoSLSet = isSLSetTo(platformSettings.noSLPrice());
+    public final static Predicate<IOrder> isNoTPSet = isTPSetTo(platformSettings.noTPPrice());
 
     public final static OrderDirection direction(final IOrder order) {
         if (order != null && isFilled.test(order))

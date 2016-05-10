@@ -1,7 +1,5 @@
 package com.jforex.programming.test.fakes;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
-import static com.jforex.programming.misc.JForexUtil.uss;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyDouble;
 import static org.mockito.Matchers.anyLong;
@@ -10,6 +8,8 @@ import static org.mockito.Mockito.spy;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import org.aeonbits.owner.ConfigFactory;
 
 import com.dukascopy.api.ICloseOrder;
 import com.dukascopy.api.IEngine.OrderCommand;
@@ -20,6 +20,8 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.test.common.OrderParamsForTest;
 
 public class IOrderForTest implements IOrder {
@@ -37,6 +39,9 @@ public class IOrderForTest implements IOrder {
     private final String comment;
     private IOrder.State orderState = IOrder.State.CREATED;
     private String id;
+
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
     private IOrderForTest(final Builder builder) {
         label = builder.label;
@@ -323,12 +328,12 @@ public class IOrderForTest implements IOrder {
             this.orderCommand = orderCommand;
             this.amount = amount;
 
-            stopLossPrice = pfs.NO_STOP_LOSS_PRICE();
-            takeProfitPrice = pfs.NO_TAKE_PROFIT_PRICE();
-            goodTillTime = uss.ORDER_DEFAULT_GOOD_TILL_TIME();
-            openPrice = 0;
+            stopLossPrice = platformSettings.noSLPrice();
+            takeProfitPrice = platformSettings.noTPPrice();
+            goodTillTime = userSettings.defaultGTT();
+            openPrice = userSettings.defaultOpenPrice();
             requestedAmount = 0;
-            comment = uss.ORDER_DEFAULT_COMMENT();
+            comment = userSettings.defaultOrderComment();
         }
 
         public Builder stopLossPrice(final double stopLossPrice) {

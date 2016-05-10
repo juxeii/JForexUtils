@@ -1,6 +1,5 @@
 package com.jforex.programming.position.test;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -16,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +33,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionEvent;
 import com.jforex.programming.position.RestoreSLTPPolicy;
+import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
@@ -48,6 +49,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
     private Position position;
 
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
     @Mock private OrderUtil orderUtilMock;
     @Mock private ConcurrentUtil concurrentUtilMock;
@@ -63,8 +65,8 @@ public class PositionTest extends InstrumentUtilForTest {
     private final IOrderForTest mergeOrder = IOrderForTest.buyOrderEURUSD();
     private final double restoreSL = 1.12345;
     private final double restoreTP = 1.12543;
-    private final double noSLPrice = pfs.NO_STOP_LOSS_PRICE();
-    private final double noTPPrice = pfs.NO_TAKE_PROFIT_PRICE();
+    private final double noSLPrice = platformSettings.noSLPrice();
+    private final double noTPPrice = platformSettings.noTPPrice();
 
     @Before
     public void setUp() throws JFException {

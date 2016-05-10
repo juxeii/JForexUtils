@@ -1,6 +1,5 @@
 package com.jforex.programming.position.test;
 
-import static com.jforex.programming.misc.JForexUtil.uss;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -16,6 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
@@ -26,8 +26,6 @@ import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
@@ -37,19 +35,16 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     private PositionSwitcher positionSwitcher;
 
-    @Mock
-    private Position positionMock;
-    @Mock
-    private OrderParamsSupplier orderParamsSupplierMock;
-    @Captor
-    private ArgumentCaptor<OrderParams> orderParamsCaptor;
+    @Mock private Position positionMock;
+    @Mock private OrderParamsSupplier orderParamsSupplierMock;
+    @Captor private ArgumentCaptor<OrderParams> orderParamsCaptor;
     private final Subject<PositionEvent, PositionEvent> positionEventSubject = PublishSubject.create();
     private final OrderParams orderParamsBUY = OrderParamsForTest.paramsBuyEURUSD();
     private final OrderParams orderParamsSELL = OrderParamsForTest.paramsSellEURUSD();
     private final String buyLabel = orderParamsBUY.label();
     private final String sellLabel = orderParamsSELL.label();
-    private final String buyMergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + buyLabel;
-    private final String sellMergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + sellLabel;
+    private final String buyMergeLabel = userSettings.defaultMergePrefix() + buyLabel;
+    private final String sellMergeLabel = userSettings.defaultMergePrefix() + sellLabel;
 
     @Before
     public void setUp() {

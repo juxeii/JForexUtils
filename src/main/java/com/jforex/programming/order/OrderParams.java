@@ -1,10 +1,11 @@
 package com.jforex.programming.order;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
-import static com.jforex.programming.misc.JForexUtil.uss;
+import org.aeonbits.owner.ConfigFactory;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.settings.UserSettings;
 
 public final class OrderParams {
 
@@ -135,10 +136,10 @@ public final class OrderParams {
     }
 
     private static class Builder implements WithOrderCommand,
-                                 WithAmount,
-                                 WithLabel,
-                                 WithOptions,
-                                 Clone {
+            WithAmount,
+            WithLabel,
+            WithOptions,
+            Clone {
 
         private String label;
         private Instrument instrument;
@@ -152,14 +153,17 @@ public final class OrderParams {
         private long goodTillTime;
         private String comment;
 
+        private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+        private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+
         private Builder(final Instrument instrument) {
             this.instrument = instrument;
-            price = uss.ORDER_DEFAULT_PRICE();
-            slippage = uss.ORDER_DEFAULT_SLIPPAGE();
-            stopLossPrice = pfs.NO_STOP_LOSS_PRICE();
-            takeProfitPrice = pfs.NO_TAKE_PROFIT_PRICE();
-            goodTillTime = uss.ORDER_DEFAULT_GOOD_TILL_TIME();
-            comment = uss.ORDER_DEFAULT_COMMENT();
+            price = userSettings.defaultOpenPrice();
+            slippage = userSettings.defaultSlippage();
+            stopLossPrice = platformSettings.noSLPrice();
+            takeProfitPrice = platformSettings.noTPPrice();
+            goodTillTime = userSettings.defaultGTT();
+            comment = userSettings.defaultOrderComment();
         }
 
         private Builder(final OrderParams orderSpecification) {

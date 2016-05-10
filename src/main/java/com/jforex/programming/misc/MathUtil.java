@@ -1,19 +1,21 @@
 package com.jforex.programming.misc;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
-
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.aeonbits.owner.ConfigFactory;
 import org.paukov.combinatorics.Factory;
 import org.paukov.combinatorics.Generator;
 
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.instrument.InstrumentUtil;
+import com.jforex.programming.settings.PlatformSettings;
 
 public final class MathUtil {
+
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
     private MathUtil() {
     }
@@ -42,16 +44,16 @@ public final class MathUtil {
     public final static double roundDouble(final double unroundedValue,
                                            final int digitPrecision) {
         return BigDecimal.valueOf(unroundedValue)
-                         .setScale(digitPrecision, BigDecimal.ROUND_HALF_UP)
-                         .doubleValue();
+                .setScale(digitPrecision, BigDecimal.ROUND_HALF_UP)
+                .doubleValue();
     }
 
     public final static double roundAmount(final double rawAmount) {
-        return roundDouble(rawAmount, pfs.AMOUNT_PRECISION());
+        return roundDouble(rawAmount, platformSettings.amountPrecision());
     }
 
     public final static double roundPips(final double pips) {
-        return roundDouble(pips, pfs.PIP_PRECISION());
+        return roundDouble(pips, platformSettings.pipPrecision());
     }
 
     public final static double roundPrice(final double rawPrice,
@@ -62,7 +64,7 @@ public final class MathUtil {
     public final static boolean isValueDivisibleByX(final double value,
                                                     final double divisor) {
         return BigDecimal.valueOf(value)
-                         .remainder(BigDecimal.valueOf(divisor))
-                         .doubleValue() == 0;
+                .remainder(BigDecimal.valueOf(divisor))
+                .doubleValue() == 0;
     }
 }

@@ -1,13 +1,14 @@
 package com.jforex.programming.position;
 
-import static com.jforex.programming.misc.JForexUtil.uss;
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
 
+import org.aeonbits.owner.ConfigFactory;
+
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
-
-import com.dukascopy.api.IEngine.OrderCommand;
+import com.jforex.programming.settings.UserSettings;
 
 public final class PositionSwitcher {
 
@@ -15,6 +16,8 @@ public final class PositionSwitcher {
     private final OrderParamsSupplier orderParamsSupplier;
     private String mergeLabel;
     private boolean isBusy = false;
+
+    private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
     public PositionSwitcher(final Position position,
                             final OrderParamsSupplier orderParamsSupplier) {
@@ -52,7 +55,7 @@ public final class PositionSwitcher {
     private final synchronized void executeOrderCommandSignal(final OrderDirection desiredDirection) {
         final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
-        mergeLabel = uss.ORDER_MERGE_LABEL_PREFIX() + adaptedOrderParams.label();
+        mergeLabel = userSettings.defaultMergePrefix() + adaptedOrderParams.label();
         position.submit(adaptedOrderParams);
         isBusy = true;
     }

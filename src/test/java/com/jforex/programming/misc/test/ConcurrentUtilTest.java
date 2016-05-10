@@ -1,6 +1,5 @@
 package com.jforex.programming.misc.test;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -76,8 +75,8 @@ public class ConcurrentUtilTest extends CommonUtilForTest {
         concurrentUtil.onStop();
 
         verify(executorServiceMock).shutdownNow();
-        verify(executorServiceMock).awaitTermination(pfs.EXECUTORSERVICE_AWAITTERMINATION_TIMEOUT(),
-                TimeUnit.MILLISECONDS);
+        verify(executorServiceMock).awaitTermination(platformSettings.terminationTimeoutExecutorService(),
+                                                     TimeUnit.MILLISECONDS);
     }
 
     @Test
@@ -89,7 +88,7 @@ public class ConcurrentUtilTest extends CommonUtilForTest {
 
     @Test
     public void testIsNotStrategyThread() {
-        Thread.currentThread().setName("Not" + pfs.STRATEGY_THREAD_PREFIX());
+        Thread.currentThread().setName("Not" + platformSettings.strategyThreadPrefix());
 
         assertFalse(ConcurrentUtil.isStrategyThread());
     }
@@ -98,6 +97,6 @@ public class ConcurrentUtilTest extends CommonUtilForTest {
     public void testThreadNameReturnsCorrectName() {
         setStrategyThread();
 
-        assertThat(ConcurrentUtil.threadName(), equalTo(pfs.STRATEGY_THREAD_PREFIX()));
+        assertThat(ConcurrentUtil.threadName(), equalTo(platformSettings.strategyThreadPrefix()));
     }
 }

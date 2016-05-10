@@ -4,48 +4,51 @@ import org.aeonbits.owner.Config;
 
 public interface PlatformSettings extends Config {
 
-    @DefaultValue("10")
-    public double MIN_SL_TP_DISTANCE_PIPS();
+    @DefaultValue("10.0")
+    public double minSLPipDistance();
 
-    @DefaultValue("0")
-    public double NO_STOP_LOSS_PRICE();
+    @DefaultValue("10.0")
+    public double minTPPipDistance();
 
-    @DefaultValue("0")
-    public double NO_TAKE_PROFIT_PRICE();
+    @DefaultValue("0.0")
+    public double noSLPrice();
+
+    @DefaultValue("0.0")
+    public double noTPPrice();
 
     @DefaultValue("0.001")
-    public double AMOUNT_MIN();
+    public double minAmount();
 
-    @DefaultValue("1")
-    public double AMOUNT_MAX();
+    @DefaultValue("1.0")
+    public double maxAmount();
 
-    @DefaultValue("1000000")
-    public double AMOUNT_BASE();
+    @DefaultValue("1000000.0")
+    public double baseAmount();
 
     @DefaultValue("6")
-    public int AMOUNT_PRECISION();
+    public int amountPrecision();
 
     @DefaultValue("4")
-    public int PIPVALUE_PRECISION();
+    public int pipValuePrecision();
 
     @DefaultValue("1")
-    public int PIP_FRACTION();
+    public int pipFraction();
 
     @DefaultValue("1")
-    public int PIP_PRECISION();
+    public int pipPrecision();
 
     @DefaultValue("Strategy")
-    public String STRATEGY_THREAD_PREFIX();
+    public String strategyThreadPrefix();
 
     @DefaultValue("\\w{1,256}")
-    public String VALID_LABEL_REGEX();
+    public String labelRegex();
 
     @DefaultValue("3")
-    public int MAX_NUM_RETRIES_ON_FAIL();
+    public int maxRetriesOnOrderFail();
 
     @DefaultValue("1500")
-    public long ON_FAIL_RETRY_WAITING_TIME();
+    public long delayOnOrderFailRetry();
 
     @DefaultValue("100")
-    public long EXECUTORSERVICE_AWAITTERMINATION_TIMEOUT();
+    public long terminationTimeoutExecutorService();
 }

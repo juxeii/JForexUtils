@@ -1,6 +1,5 @@
 package com.jforex.programming.position;
 
-import static com.jforex.programming.misc.JForexUtil.pfs;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
@@ -14,6 +13,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,6 +27,7 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Observable;
 
@@ -39,6 +40,7 @@ public class Position {
     private final PositionOrders orderRepository = new PositionOrders();
     private final JFObservable<PositionEvent> positionEventPublisher = new JFObservable<>();
 
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private static final Logger logger = LogManager.getLogger(Position.class);
 
     public Position(final Instrument instrument,
@@ -164,8 +166,8 @@ public class Position {
 
     private Observable<OrderEvent> removeTPSLObs(final Set<IOrder> filledOrders) {
         return Observable.from(filledOrders)
-                .flatMap(order -> Observable.concat(changeTPOrderObs(order, pfs.NO_TAKE_PROFIT_PRICE()),
-                                                    changeSLOrderObs(order, pfs.NO_STOP_LOSS_PRICE())));
+                .flatMap(order -> Observable.concat(changeTPOrderObs(order, platformSettings.noTPPrice()),
+                                                    changeSLOrderObs(order, platformSettings.noSLPrice())));
     }
 
     private Observable<OrderEvent> restoreSLTPObs(final IOrder mergedOrder,
@@ -208,13 +210,12 @@ public class Position {
 
     private Observable<?> shouldRetry(final Observable<? extends Throwable> throwable) {
         return throwable.flatMap(error -> {
-            if (error instanceof OrderCallRejectException) {
-                return throwable.zipWith(Observable.range(1, pfs.MAX_NUM_RETRIES_ON_FAIL()),
+            if (error instanceof OrderCallRejectException)
+                return throwable.zipWith(Observable.range(1, platformSettings.maxRetriesOnOrderFail()),
                                          (exc, att) -> exc)
                         .doOnNext(exc -> logRetry((OrderCallRejectException) exc))
-                        .flatMap(exc -> concurrentUtil.timerObservable(pfs.ON_FAIL_RETRY_WAITING_TIME(),
+                        .flatMap(exc -> concurrentUtil.timerObservable(platformSettings.delayOnOrderFailRetry(),
                                                                        TimeUnit.MILLISECONDS));
-            }
             return Observable.error(error);
         });
     }
@@ -222,6 +223,6 @@ public class Position {
     private void logRetry(final OrderCallRejectException rejectException) {
         final IOrder order = rejectException.orderEvent().order();
         logger.warn("Received reject type " + rejectException.orderEvent().type() + " for order " + order.getLabel()
-                + "!" + " Will retry task in " + pfs.ON_FAIL_RETRY_WAITING_TIME() + " milliseconds...");
+                + "!" + " Will retry task in " + platformSettings.delayOnOrderFailRetry() + " milliseconds...");
     }
 }
