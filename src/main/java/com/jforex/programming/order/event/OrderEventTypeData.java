@@ -72,47 +72,47 @@ public final class OrderEventTypeData {
         return callRequest;
     }
 
-    public final static OrderEventTypeData submitEvents =
+    public final static OrderEventTypeData submitData =
             new OrderEventTypeData(EnumSet.of(FULL_FILL_OK, PARTIAL_FILL_OK),
                                    EnumSet.of(FILL_REJECTED, SUBMIT_REJECTED),
                                    OrderCallRequest.SUBMIT);
 
-    public final static OrderEventTypeData mergeEvents =
+    public final static OrderEventTypeData mergeData =
             new OrderEventTypeData(EnumSet.of(MERGE_OK, MERGE_CLOSE_OK),
                                    EnumSet.of(MERGE_REJECTED),
                                    OrderCallRequest.MERGE);
 
-    public final static OrderEventTypeData closeEvents =
+    public final static OrderEventTypeData closeData =
             new OrderEventTypeData(EnumSet.of(CLOSE_OK),
                                    EnumSet.of(CLOSE_REJECTED),
                                    OrderCallRequest.CLOSE);
 
-    public final static OrderEventTypeData changeLabelEvents =
+    public final static OrderEventTypeData changeLabelData =
             new OrderEventTypeData(EnumSet.of(LABEL_CHANGE_OK),
                                    EnumSet.of(CHANGE_LABEL_REJECTED),
                                    OrderCallRequest.CHANGE_LABEL);
 
-    public final static OrderEventTypeData changeGTTEvents =
+    public final static OrderEventTypeData changeGTTData =
             new OrderEventTypeData(EnumSet.of(GTT_CHANGE_OK),
                                    EnumSet.of(CHANGE_GTT_REJECTED),
                                    OrderCallRequest.CHANGE_GTT);
 
-    public final static OrderEventTypeData changeOpenPriceEvents =
+    public final static OrderEventTypeData changeOpenPriceData =
             new OrderEventTypeData(EnumSet.of(OPENPRICE_CHANGE_OK),
                                    EnumSet.of(CHANGE_OPENPRICE_REJECTED),
                                    OrderCallRequest.CHANGE_OPENPRICE);
 
-    public final static OrderEventTypeData changeAmountEvents =
+    public final static OrderEventTypeData changeAmountData =
             new OrderEventTypeData(EnumSet.of(AMOUNT_CHANGE_OK),
                                    EnumSet.of(CHANGE_AMOUNT_REJECTED),
                                    OrderCallRequest.CHANGE_REQUESTED_AMOUNT);
 
-    public final static OrderEventTypeData changeSLEvents =
+    public final static OrderEventTypeData changeSLData =
             new OrderEventTypeData(EnumSet.of(SL_CHANGE_OK),
                                    EnumSet.of(CHANGE_SL_REJECTED),
                                    OrderCallRequest.CHANGE_SL);
 
-    public final static OrderEventTypeData changeTPEvents =
+    public final static OrderEventTypeData changeTPData =
             new OrderEventTypeData(EnumSet.of(TP_CHANGE_OK),
                                    EnumSet.of(CHANGE_TP_REJECTED),
                                    OrderCallRequest.CHANGE_TP);

@@ -6,7 +6,7 @@ import com.dukascopy.api.IOrder;
 
 public interface RestoreSLTPPolicy {
 
-    abstract double restoreSL(Collection<IOrder> ordersForMerge);
+    public double restoreSL(Collection<IOrder> ordersForMerge);
 
-    abstract double restoreTP(Collection<IOrder> ordersForMerge);
+    public double restoreTP(Collection<IOrder> ordersForMerge);
 }
