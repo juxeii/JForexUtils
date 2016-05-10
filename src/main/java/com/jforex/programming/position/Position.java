@@ -2,6 +2,7 @@ package com.jforex.programming.position;
 
 import static com.jforex.programming.misc.JForexUtil.pfs;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
@@ -16,6 +17,8 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.misc.JFObservable;
 import com.jforex.programming.order.OrderDirection;
@@ -24,9 +27,6 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -106,18 +106,14 @@ public class Position {
                 .subscribe(this::onSubmitEvent,
                            e -> {
                                logger.error("Position submit for " + instrument + " failed!");
-                               logger.info("SENDING SUBMIT DONE");
                                positionEventPublisher.onNext(PositionEvent.SUBMITTASK_DONE);
                            },
-                           () -> {
-                               logger.info("SENDING SUBMIT DONE");
-                               positionEventPublisher.onNext(PositionEvent.SUBMITTASK_DONE);
-                           });
+                           () -> positionEventPublisher.onNext(PositionEvent.SUBMITTASK_DONE));
     }
 
     private void onSubmitEvent(final OrderEvent orderEvent) {
         final IOrder order = orderEvent.order();
-        if (isFilled.test(order))
+        if (isFilled.test(order) || (isConditional.test(order) && isOpened.test(order)))
             orderRepository.add(order);
     }
 
@@ -137,21 +133,19 @@ public class Position {
                 .subscribe(o -> {},
                            e -> {
                                logger.error("Position merge for " + instrument + " failed!");
-                               logger.info("SENDING MERGETASK_DONE");
                                positionEventPublisher.onNext(PositionEvent.MERGETASK_DONE);
                            },
-                           () -> {
-                               logger.info("SENDING MERGETASK_DONE");
-                               positionEventPublisher.onNext(PositionEvent.MERGETASK_DONE);
-                           });
+                           () -> positionEventPublisher.onNext(PositionEvent.MERGETASK_DONE));
     }
 
     public void close() {
         final Set<IOrder> ordersToClose = orderRepository.filterIdle(isFilled.or(isOpened));
         orderRepository.markAllActive();
+
         Observable.from(ordersToClose)
                 .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
                 .filter(order -> !isClosed.test(order))
+                .doOnNext(o -> logger.info("Closing order " + o.getLabel()))
                 .flatMap(order -> orderUtil.close(order))
                 .retryWhen(this::shouldRetry)
                 .subscribe(this::onCloseEvent,

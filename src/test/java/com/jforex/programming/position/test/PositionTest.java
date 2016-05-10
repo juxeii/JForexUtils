@@ -1,7 +1,9 @@
 package com.jforex.programming.position.test;
 
 import static com.jforex.programming.misc.JForexUtil.pfs;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -19,6 +21,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderParams;
@@ -27,13 +31,11 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionEvent;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -46,14 +48,12 @@ public class PositionTest extends InstrumentUtilForTest {
 
     private Position position;
 
-    @Mock
-    private RestoreSLTPPolicy restoreSLTPPolicyMock;
-    @Mock
-    private OrderUtil orderUtilMock;
-    @Mock
-    private ConcurrentUtil concurrentUtilMock;
+    @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
+    @Mock private OrderUtil orderUtilMock;
+    @Mock private ConcurrentUtil concurrentUtilMock;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final Subject<Long, Long> retryTimerSubject = PublishSubject.create();
+    private final TestSubscriber<PositionEvent> positionEventSubscriber = new TestSubscriber<>();
     private final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
     private final OrderParams orderParamsSell = OrderParamsForTest.paramsSellEURUSD();
     private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
@@ -63,6 +63,8 @@ public class PositionTest extends InstrumentUtilForTest {
     private final IOrderForTest mergeOrder = IOrderForTest.buyOrderEURUSD();
     private final double restoreSL = 1.12345;
     private final double restoreTP = 1.12543;
+    private final double noSLPrice = pfs.NO_STOP_LOSS_PRICE();
+    private final double noTPPrice = pfs.NO_TAKE_PROFIT_PRICE();
 
     @Before
     public void setUp() throws JFException {
@@ -76,6 +78,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                 orderEventSubject,
                                 restoreSLTPPolicyMock,
                                 concurrentUtilMock);
+        position.positionEventObs().subscribe(positionEventSubscriber);
     }
 
     private void setUpMocks() {
@@ -136,10 +139,11 @@ public class PositionTest extends InstrumentUtilForTest {
         subject.onError(rejectException);
     }
 
-    private void sendJFException(final Subject<OrderEvent, OrderEvent> subject,
-                                 final IOrder order,
-                                 final OrderEventType rejectEventType) {
-        subject.onError(jfException);
+    private void assertPositionEvent(final PositionEvent positionEvent,
+                                     final int eventNumber) {
+        positionEventSubscriber.assertNoErrors();
+        positionEventSubscriber.assertValueCount(eventNumber);
+        assertThat(positionEventSubscriber.getOnNextEvents().get(eventNumber - 1), equalTo(positionEvent));
     }
 
     @Test
@@ -150,10 +154,24 @@ public class PositionTest extends InstrumentUtilForTest {
     }
 
     @Test
+    public void testCloseOnEmptyPositionPublishCloseTaskEvent() {
+        position.close();
+
+        assertPositionEvent(PositionEvent.CLOSETASK_DONE, 1);
+    }
+
+    @Test
     public void testMergeOnEmptyPositionDoesNotCallOnOrderUtil() {
         position.merge(mergeLabel);
 
         verifyZeroInteractions(orderUtilMock);
+    }
+
+    @Test
+    public void testMergeOnEmptyPositionPublishMergeTaskEvent() {
+        position.merge(mergeLabel);
+
+        assertPositionEvent(PositionEvent.MERGETASK_DONE, 1);
     }
 
     public class Submit {
@@ -174,6 +192,13 @@ public class PositionTest extends InstrumentUtilForTest {
             verify(orderUtilMock).submitOrder(orderParamsBuy);
         }
 
+        @Test
+        public void testOnSubmitJFExceptionNoRetryIsDone() {
+            buySubmitSubject.onError(jfException);
+
+            verify(orderUtilMock).submitOrder(orderParamsBuy);
+        }
+
         public class SubmitRejectMessage {
 
             @Before
@@ -190,6 +215,11 @@ public class PositionTest extends InstrumentUtilForTest {
             @Test
             public void testNoRetryIsDone() {
                 verify(orderUtilMock).submitOrder(orderParamsBuy);
+            }
+
+            @Test
+            public void testSubmitTaskEventIsSent() {
+                assertPositionEvent(PositionEvent.SUBMITTASK_DONE, 1);
             }
         }
 
@@ -210,6 +240,11 @@ public class PositionTest extends InstrumentUtilForTest {
             public void testNoRetryIsDone() {
                 verify(orderUtilMock).submitOrder(orderParamsBuy);
             }
+
+            @Test
+            public void testSubmitTaskEventIsSent() {
+                assertPositionEvent(PositionEvent.SUBMITTASK_DONE, 1);
+            }
         }
 
         public class FillMessage {
@@ -224,6 +259,11 @@ public class PositionTest extends InstrumentUtilForTest {
             @Test
             public void testPositionHasBuyOrder() {
                 assertTrue(positionHasOrder(buyOrder));
+            }
+
+            @Test
+            public void testSubmitTaskEventIsSent() {
+                assertPositionEvent(PositionEvent.SUBMITTASK_DONE, 1);
             }
 
             public class CloseOnSL {
@@ -269,6 +309,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     buyOrder.setState(IOrder.State.CLOSED);
                     sendOrderEvent(buyCloseSubject, buyOrder, OrderEventType.CLOSE_OK);
+                    buyCloseSubject.onCompleted();
                 }
 
                 @Test
@@ -279,6 +320,11 @@ public class PositionTest extends InstrumentUtilForTest {
                 @Test
                 public void testPositionHasNoOrder() {
                     assertTrue(isRepositoryEmpty());
+                }
+
+                @Test
+                public void testCloseTaskEventIsSent() {
+                    assertPositionEvent(PositionEvent.CLOSETASK_DONE, 2);
                 }
             }
 
@@ -320,6 +366,11 @@ public class PositionTest extends InstrumentUtilForTest {
                         assertTrue(positionHasOrder(sellOrder));
                     }
 
+                    @Test
+                    public void testSubmitTaskEventIsSent() {
+                        assertPositionEvent(PositionEvent.SUBMITTASK_DONE, 2);
+                    }
+
                     public class MergeCall {
 
                         protected Subject<OrderEvent, OrderEvent> buyRemoveTPSubject;
@@ -332,10 +383,10 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         @Before
                         public void setUp() {
-                            buyRemoveTPSubject = setUpTP(buyOrder, pfs.NO_TAKE_PROFIT_PRICE());
-                            sellRemoveTPSubject = setUpTP(sellOrder, pfs.NO_TAKE_PROFIT_PRICE());
-                            buyRemoveSLSubject = setUpSL(buyOrder, pfs.NO_STOP_LOSS_PRICE());
-                            sellRemoveSLSubject = setUpSL(sellOrder, pfs.NO_STOP_LOSS_PRICE());
+                            buyRemoveTPSubject = setUpTP(buyOrder, noTPPrice);
+                            sellRemoveTPSubject = setUpTP(sellOrder, noTPPrice);
+                            buyRemoveSLSubject = setUpSL(buyOrder, noSLPrice);
+                            sellRemoveSLSubject = setUpSL(sellOrder, noSLPrice);
                             mergeSubject = setUpMerge(mergeLabel, toMergeOrders);
                             restoreSLSubject = setUpSL(mergeOrder, restoreSL);
                             restoreTPSubject = setUpTP(mergeOrder, restoreTP);
@@ -345,15 +396,21 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         @Test
                         public void testRemoveTPIsCalled() {
-                            verify(orderUtilMock).setTakeProfitPrice(buyOrder, pfs.NO_TAKE_PROFIT_PRICE());
-                            verify(orderUtilMock).setTakeProfitPrice(sellOrder, pfs.NO_TAKE_PROFIT_PRICE());
+                            verify(orderUtilMock).setTakeProfitPrice(buyOrder, noTPPrice);
+                            verify(orderUtilMock).setTakeProfitPrice(sellOrder, noTPPrice);
+                        }
+
+                        @Test
+                        public void testOnRemoveTPJFExceptionNoRetryIsDone() {
+                            sellRemoveTPSubject.onError(jfException);
+
+                            verify(orderUtilMock).setTakeProfitPrice(sellOrder, noTPPrice);
                         }
 
                         public class RemovedTPOnSellRejected {
 
                             @Before
                             public void setUp() {
-                                // sellRemoveTPSubject.onError(jfException);
                                 sendRejectEvent(sellRemoveTPSubject, sellOrder, OrderEventType.CHANGE_TP_REJECTED);
 
                                 retryTimerSubject.onNext(1L);
@@ -361,8 +418,8 @@ public class PositionTest extends InstrumentUtilForTest {
 
                             @Test
                             public void testRetryCallOnSellOrderIsDone() {
-                                verify(orderUtilMock, times(2)).setTakeProfitPrice(sellOrder,
-                                                                                   pfs.NO_TAKE_PROFIT_PRICE());
+                                verify(orderUtilMock, times(2))
+                                        .setTakeProfitPrice(sellOrder, noTPPrice);
                             }
                         }
 
@@ -370,8 +427,8 @@ public class PositionTest extends InstrumentUtilForTest {
 
                             @Before
                             public void setUp() {
-                                buyOrder.setTakeProfitPrice(pfs.NO_TAKE_PROFIT_PRICE());
-                                sellOrder.setTakeProfitPrice(pfs.NO_TAKE_PROFIT_PRICE());
+                                buyOrder.setTakeProfitPrice(noTPPrice);
+                                sellOrder.setTakeProfitPrice(noTPPrice);
 
                                 sendOrderEvent(buyRemoveTPSubject, buyOrder, OrderEventType.TP_CHANGE_OK);
                                 sendOrderEvent(sellRemoveTPSubject, sellOrder, OrderEventType.TP_CHANGE_OK);
@@ -381,16 +438,23 @@ public class PositionTest extends InstrumentUtilForTest {
 
                             @Test
                             public void testRemoveSLIsCalled() {
-                                verify(orderUtilMock).setStopLossPrice(buyOrder, pfs.NO_STOP_LOSS_PRICE());
-                                verify(orderUtilMock).setStopLossPrice(sellOrder, pfs.NO_STOP_LOSS_PRICE());
+                                verify(orderUtilMock).setStopLossPrice(buyOrder, noSLPrice);
+                                verify(orderUtilMock).setStopLossPrice(sellOrder, noSLPrice);
+                            }
+
+                            @Test
+                            public void testOnRemoveSLJFExceptionNoRetryIsDone() {
+                                sellRemoveSLSubject.onError(jfException);
+
+                                verify(orderUtilMock).setStopLossPrice(sellOrder, noSLPrice);
                             }
 
                             public class RemovedSLs {
 
                                 @Before
                                 public void setUp() {
-                                    buyOrder.setStopLossPrice(pfs.NO_STOP_LOSS_PRICE());
-                                    sellOrder.setStopLossPrice(pfs.NO_STOP_LOSS_PRICE());
+                                    buyOrder.setStopLossPrice(noSLPrice);
+                                    sellOrder.setStopLossPrice(noSLPrice);
 
                                     sendOrderEvent(buyRemoveSLSubject, buyOrder, OrderEventType.SL_CHANGE_OK);
                                     sendOrderEvent(sellRemoveSLSubject, sellOrder, OrderEventType.SL_CHANGE_OK);
@@ -450,8 +514,8 @@ public class PositionTest extends InstrumentUtilForTest {
                                         buyOrder.setState(IOrder.State.CLOSED);
                                         sellOrder.setState(IOrder.State.CLOSED);
                                         mergeOrder.setState(IOrder.State.FILLED);
-                                        mergeOrder.setStopLossPrice(pfs.NO_STOP_LOSS_PRICE());
-                                        mergeOrder.setTakeProfitPrice(pfs.NO_TAKE_PROFIT_PRICE());
+                                        mergeOrder.setStopLossPrice(noSLPrice);
+                                        mergeOrder.setTakeProfitPrice(noTPPrice);
 
                                         sendOrderEvent(orderEventSubject, buyOrder, OrderEventType.CLOSED_BY_MERGE);
                                         sendOrderEvent(orderEventSubject, sellOrder, OrderEventType.CLOSED_BY_MERGE);
@@ -466,6 +530,13 @@ public class PositionTest extends InstrumentUtilForTest {
 
                                     @Test
                                     public void testRestoreSLIsCalled() {
+                                        verify(orderUtilMock).setStopLossPrice(mergeOrder, restoreSL);
+                                    }
+
+                                    @Test
+                                    public void testOnRestoreSLJFExceptionNoRetryIsDone() {
+                                        restoreSLSubject.onError(jfException);
+
                                         verify(orderUtilMock).setStopLossPrice(mergeOrder, restoreSL);
                                     }
 
@@ -484,6 +555,29 @@ public class PositionTest extends InstrumentUtilForTest {
                                             verify(orderUtilMock).setTakeProfitPrice(mergeOrder, restoreTP);
                                         }
 
+                                        @Test
+                                        public void testOnRestoreTPJFExceptionNoRetryIsDone() {
+                                            restoreTPSubject.onError(jfException);
+
+                                            verify(orderUtilMock)
+                                                    .setTakeProfitPrice(mergeOrder, restoreTP);
+                                        }
+
+                                        public class RestoredTPMessage {
+
+                                            @Before
+                                            public void setUp() {
+                                                sendOrderEvent(restoreTPSubject, mergeOrder,
+                                                               OrderEventType.TP_CHANGE_OK);
+                                                restoreTPSubject.onCompleted();
+                                            }
+
+                                            @Test
+                                            public void testMergeTaskEventIsSent() {
+                                                assertPositionEvent(PositionEvent.MERGETASK_DONE, 3);
+                                            }
+                                        }
+
                                         public class RestoredTPReject {
 
                                             @Before
@@ -496,8 +590,8 @@ public class PositionTest extends InstrumentUtilForTest {
 
                                             @Test
                                             public void testRetryCallOnMergeOrderIsDone() {
-                                                verify(orderUtilMock, times(2)).setTakeProfitPrice(mergeOrder,
-                                                                                                   restoreTP);
+                                                verify(orderUtilMock, times(2))
+                                                        .setTakeProfitPrice(mergeOrder, restoreTP);
                                             }
                                         }
                                     }
@@ -522,6 +616,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                             buyOrder.setState(IOrder.State.CLOSED);
                             sendOrderEvent(buyCloseSubject, buyOrder, OrderEventType.CLOSE_OK);
+                            buyCloseSubject.onCompleted();
                         }
 
                         @Test
@@ -534,6 +629,13 @@ public class PositionTest extends InstrumentUtilForTest {
                         public void testPositionHasNowOnlySellOrder() {
                             assertFalse(positionHasOrder(buyOrder));
                             assertTrue(positionHasOrder(sellOrder));
+                        }
+
+                        @Test
+                        public void testOnCloseJFExceptionNoRetryIsDone() {
+                            buyCloseSubject.onError(jfException);
+
+                            verify(orderUtilMock).close(buyOrder);
                         }
 
                         public class AfterSecondClosePosition {
@@ -578,6 +680,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                     sellOrder.setState(IOrder.State.CLOSED);
 
                                     sendOrderEvent(sellCloseSubject2, sellOrder, OrderEventType.CLOSE_OK);
+                                    sellCloseSubject2.onCompleted();
                                 }
 
                                 @Test
@@ -594,11 +697,17 @@ public class PositionTest extends InstrumentUtilForTest {
                                 sellOrder.setState(IOrder.State.CLOSED);
 
                                 sendOrderEvent(sellCloseSubject, sellOrder, OrderEventType.CLOSE_OK);
+                                sellCloseSubject.onCompleted();
                             }
 
                             @Test
                             public void testPositionHasNoOrder() {
                                 assertTrue(isRepositoryEmpty());
+                            }
+
+                            @Test
+                            public void testCloseTaskEventIsSent() {
+                                assertPositionEvent(PositionEvent.CLOSETASK_DONE, 3);
                             }
                         }
                     }
