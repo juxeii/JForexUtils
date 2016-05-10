@@ -18,9 +18,11 @@ import static com.jforex.programming.order.OrderStaticUtil.orderSLPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.orderTPPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.sellOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.signedAmount;
+import static com.jforex.programming.order.OrderStaticUtil.slPriceWithPips;
 import static com.jforex.programming.order.OrderStaticUtil.statePredicate;
 import static com.jforex.programming.order.OrderStaticUtil.switchCommand;
 import static com.jforex.programming.order.OrderStaticUtil.switchDirection;
+import static com.jforex.programming.order.OrderStaticUtil.tpPriceWithPips;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -36,23 +38,35 @@ import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
 public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
-    private final IOrderForTest firstOrderEURUSD = IOrderForTest.buyOrderEURUSD();
-    private final IOrderForTest secondOrderEURUSD = IOrderForTest.buyOrderEURUSD();
+    private final IOrderForTest buyOrderEURUSD = IOrderForTest.buyOrderEURUSD();
+    private final IOrderForTest sellOrderEURUSD = IOrderForTest.sellOrderEURUSD();
     private Set<IOrder> orders;
+    private final double currentPriceForSLTP = 1.32165;
+    private final double pipsToSLTP = 17.4;
 
     @Before
     public void setUp() throws JFException {
-        firstOrderEURUSD.setState(IOrder.State.FILLED);
-        secondOrderEURUSD.setState(IOrder.State.FILLED);
-        secondOrderEURUSD.setLabel("SecondOrderLabel");
+        buyOrderEURUSD.setState(IOrder.State.FILLED);
+        sellOrderEURUSD.setState(IOrder.State.FILLED);
+        sellOrderEURUSD.setLabel("SecondOrderLabel");
 
-        orders = createSet(firstOrderEURUSD, secondOrderEURUSD);
+        orders = createSet(buyOrderEURUSD, sellOrderEURUSD);
+    }
+
+    private void assertSLTPCalculation(final IOrder order,
+                                       final double calculatedPrice,
+                                       final int factor) {
+        final double expectedPrice = CalculationUtil.addPips(order.getInstrument(),
+                                                             currentPriceForSLTP,
+                                                             factor * pipsToSLTP);
+        assertThat(calculatedPrice, equalTo(expectedPrice));
     }
 
     @Test
@@ -77,48 +91,48 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     public void testStatePredicateIsCorrect() {
         final Predicate<IOrder> orderCancelPredicate = statePredicate.apply(IOrder.State.CANCELED);
 
-        firstOrderEURUSD.setState(IOrder.State.CANCELED);
-        assertTrue(orderCancelPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setState(IOrder.State.CANCELED);
+        assertTrue(orderCancelPredicate.test(buyOrderEURUSD));
 
-        firstOrderEURUSD.setState(IOrder.State.OPENED);
-        assertFalse(orderCancelPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setState(IOrder.State.OPENED);
+        assertFalse(orderCancelPredicate.test(buyOrderEURUSD));
     }
 
     @Test
     public void testOpenPredicateIsCorrect() {
-        firstOrderEURUSD.setState(IOrder.State.OPENED);
-        assertTrue(isOpened.test(firstOrderEURUSD));
+        buyOrderEURUSD.setState(IOrder.State.OPENED);
+        assertTrue(isOpened.test(buyOrderEURUSD));
 
-        firstOrderEURUSD.setState(IOrder.State.CANCELED);
-        assertFalse(isOpened.test(firstOrderEURUSD));
+        buyOrderEURUSD.setState(IOrder.State.CANCELED);
+        assertFalse(isOpened.test(buyOrderEURUSD));
     }
 
     @Test
     public void testFilledPredicateIsCorrect() {
-        firstOrderEURUSD.setState(IOrder.State.FILLED);
-        assertTrue(isFilled.test(firstOrderEURUSD));
+        buyOrderEURUSD.setState(IOrder.State.FILLED);
+        assertTrue(isFilled.test(buyOrderEURUSD));
 
-        firstOrderEURUSD.setState(IOrder.State.CANCELED);
-        assertFalse(isFilled.test(firstOrderEURUSD));
+        buyOrderEURUSD.setState(IOrder.State.CANCELED);
+        assertFalse(isFilled.test(buyOrderEURUSD));
     }
 
     @Test
     public void testClosedPredicateIsCorrect() {
-        firstOrderEURUSD.setState(IOrder.State.CLOSED);
-        assertTrue(isClosed.test(firstOrderEURUSD));
+        buyOrderEURUSD.setState(IOrder.State.CLOSED);
+        assertTrue(isClosed.test(buyOrderEURUSD));
 
-        firstOrderEURUSD.setState(IOrder.State.CANCELED);
-        assertFalse(isClosed.test(firstOrderEURUSD));
+        buyOrderEURUSD.setState(IOrder.State.CANCELED);
+        assertFalse(isClosed.test(buyOrderEURUSD));
     }
 
     @Test
     public void testConditionalPredicateIsCorrect() {
-        firstOrderEURUSD.setState(IOrder.State.OPENED);
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUYLIMIT);
-        assertTrue(isConditional.test(firstOrderEURUSD));
+        buyOrderEURUSD.setState(IOrder.State.OPENED);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUYLIMIT);
+        assertTrue(isConditional.test(buyOrderEURUSD));
 
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUY);
-        assertFalse(isConditional.test(firstOrderEURUSD));
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        assertFalse(isConditional.test(buyOrderEURUSD));
     }
 
     @Test
@@ -126,11 +140,11 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         final double sl = 1.34521;
         final Predicate<IOrder> slPredicate = orderSLPredicate.apply(sl);
 
-        firstOrderEURUSD.setStopLossPrice(sl);
-        assertTrue(slPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setStopLossPrice(sl);
+        assertTrue(slPredicate.test(buyOrderEURUSD));
 
-        firstOrderEURUSD.setStopLossPrice(sl + 0.1);
-        assertFalse(slPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setStopLossPrice(sl + 0.1);
+        assertFalse(slPredicate.test(buyOrderEURUSD));
     }
 
     @Test
@@ -138,11 +152,11 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         final double tp = 1.34521;
         final Predicate<IOrder> tpPredicate = orderTPPredicate.apply(tp);
 
-        firstOrderEURUSD.setTakeProfitPrice(tp);
-        assertTrue(tpPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setTakeProfitPrice(tp);
+        assertTrue(tpPredicate.test(buyOrderEURUSD));
 
-        firstOrderEURUSD.setTakeProfitPrice(tp + 0.1);
-        assertFalse(tpPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setTakeProfitPrice(tp + 0.1);
+        assertFalse(tpPredicate.test(buyOrderEURUSD));
     }
 
     @Test
@@ -150,11 +164,11 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         final double sl = 1.34521;
         final Predicate<IOrder> slPredicate = isSLSetTo(sl);
 
-        firstOrderEURUSD.setStopLossPrice(sl);
-        assertTrue(slPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setStopLossPrice(sl);
+        assertTrue(slPredicate.test(buyOrderEURUSD));
 
-        firstOrderEURUSD.setStopLossPrice(sl + 0.1);
-        assertFalse(slPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setStopLossPrice(sl + 0.1);
+        assertFalse(slPredicate.test(buyOrderEURUSD));
     }
 
     @Test
@@ -162,11 +176,11 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         final double tp = 1.34521;
         final Predicate<IOrder> tpPredicate = isTPSetTo(tp);
 
-        firstOrderEURUSD.setTakeProfitPrice(tp);
-        assertTrue(tpPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setTakeProfitPrice(tp);
+        assertTrue(tpPredicate.test(buyOrderEURUSD));
 
-        firstOrderEURUSD.setTakeProfitPrice(tp + 0.1);
-        assertFalse(tpPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setTakeProfitPrice(tp + 0.1);
+        assertFalse(tpPredicate.test(buyOrderEURUSD));
     }
 
     @Test
@@ -174,11 +188,11 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         final double sl = 1.34521;
         final Predicate<IOrder> slPredicate = isNoSLSet;
 
-        firstOrderEURUSD.setStopLossPrice(platformSettings.noSLPrice());
-        assertTrue(slPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setStopLossPrice(platformSettings.noSLPrice());
+        assertTrue(slPredicate.test(buyOrderEURUSD));
 
-        firstOrderEURUSD.setStopLossPrice(sl);
-        assertFalse(slPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setStopLossPrice(sl);
+        assertFalse(slPredicate.test(buyOrderEURUSD));
     }
 
     @Test
@@ -186,11 +200,11 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         final double tp = 1.34521;
         final Predicate<IOrder> tpPredicate = isNoTPSet;
 
-        firstOrderEURUSD.setTakeProfitPrice(platformSettings.noTPPrice());
-        assertTrue(tpPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setTakeProfitPrice(platformSettings.noTPPrice());
+        assertTrue(tpPredicate.test(buyOrderEURUSD));
 
-        firstOrderEURUSD.setTakeProfitPrice(tp);
-        assertFalse(tpPredicate.test(firstOrderEURUSD));
+        buyOrderEURUSD.setTakeProfitPrice(tp);
+        assertFalse(tpPredicate.test(buyOrderEURUSD));
     }
 
     @Test
@@ -200,30 +214,30 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void testOrderDirectionIsLongForBuyCommand() {
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUY);
 
-        assertThat(direction(firstOrderEURUSD), equalTo(OrderDirection.LONG));
+        assertThat(direction(buyOrderEURUSD), equalTo(OrderDirection.LONG));
     }
 
     @Test
     public void testOrderDirectionIsShortForSellCommand() {
-        firstOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.SELL);
 
-        assertThat(direction(firstOrderEURUSD), equalTo(OrderDirection.SHORT));
+        assertThat(direction(buyOrderEURUSD), equalTo(OrderDirection.SHORT));
     }
 
     @Test
     public void testCombinedDirectionIsLONGForBothOrdersHaveBuyCommands() {
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUY);
-        secondOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        sellOrderEURUSD.setOrderCommand(OrderCommand.BUY);
 
         assertThat(combinedDirection(orders), equalTo(OrderDirection.LONG));
     }
 
     @Test
     public void testCombinedDirectionIsLONGForBothOrdersHaveSellCommands() {
-        firstOrderEURUSD.setOrderCommand(OrderCommand.SELL);
-        secondOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        sellOrderEURUSD.setOrderCommand(OrderCommand.SELL);
 
         assertThat(combinedDirection(orders), equalTo(OrderDirection.SHORT));
     }
@@ -231,10 +245,10 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     @Test
     public void testCombinedDirectionIsFlatForBothOrdersCancelOut() {
         final double amount = 0.12;
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUY);
-        secondOrderEURUSD.setOrderCommand(OrderCommand.SELL);
-        firstOrderEURUSD.setAmount(amount);
-        secondOrderEURUSD.setAmount(amount);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        sellOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        buyOrderEURUSD.setAmount(amount);
+        sellOrderEURUSD.setAmount(amount);
 
         assertThat(combinedDirection(orders), equalTo(OrderDirection.FLAT));
     }
@@ -243,10 +257,10 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     public void testCombinedDirectionIsLongWhenBuyIsBiggerThanSell() {
         final double buyAmount = 0.12;
         final double sellAmount = 0.11;
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUY);
-        secondOrderEURUSD.setOrderCommand(OrderCommand.SELL);
-        firstOrderEURUSD.setAmount(buyAmount);
-        secondOrderEURUSD.setAmount(sellAmount);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        sellOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        buyOrderEURUSD.setAmount(buyAmount);
+        sellOrderEURUSD.setAmount(sellAmount);
 
         assertThat(combinedDirection(orders), equalTo(OrderDirection.LONG));
     }
@@ -255,10 +269,10 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     public void testCombinedDirectionIsShortWhenSellIsBiggerThanBuy() {
         final double buyAmount = 0.11;
         final double sellAmount = 0.12;
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUY);
-        secondOrderEURUSD.setOrderCommand(OrderCommand.SELL);
-        firstOrderEURUSD.setAmount(buyAmount);
-        secondOrderEURUSD.setAmount(sellAmount);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        sellOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        buyOrderEURUSD.setAmount(buyAmount);
+        sellOrderEURUSD.setAmount(sellAmount);
 
         assertThat(combinedDirection(orders), equalTo(OrderDirection.SHORT));
     }
@@ -266,48 +280,48 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     @Test
     public void testSignedAmountIsPositiveForBuyCommand() {
         final double buyAmount = 0.11;
-        firstOrderEURUSD.setAmount(buyAmount);
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        buyOrderEURUSD.setAmount(buyAmount);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUY);
 
-        assertThat(signedAmount(firstOrderEURUSD), equalTo(buyAmount));
+        assertThat(signedAmount(buyOrderEURUSD), equalTo(buyAmount));
         assertThat(signedAmount(buyAmount, OrderCommand.BUY), equalTo(buyAmount));
     }
 
     @Test
     public void testSignedAmountIsNegativeForSellCommand() {
         final double sellAmount = 0.11;
-        firstOrderEURUSD.setAmount(sellAmount);
-        firstOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        buyOrderEURUSD.setAmount(sellAmount);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.SELL);
 
-        assertThat(signedAmount(firstOrderEURUSD), equalTo(-sellAmount));
+        assertThat(signedAmount(buyOrderEURUSD), equalTo(-sellAmount));
         assertThat(signedAmount(sellAmount, OrderCommand.SELL), equalTo(-sellAmount));
     }
 
     @Test
     public void testCombinedSignedAmountIsPositiveForBothOrdersHaveBuyCommands() {
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUY);
-        secondOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        sellOrderEURUSD.setOrderCommand(OrderCommand.BUY);
 
         assertThat(combinedSignedAmount(orders),
-                   equalTo(firstOrderEURUSD.getAmount() + secondOrderEURUSD.getAmount()));
+                   equalTo(buyOrderEURUSD.getAmount() + sellOrderEURUSD.getAmount()));
     }
 
     @Test
     public void testCombinedSignedAmountIsNegativeForBothOrdersHaveSellCommands() {
-        firstOrderEURUSD.setOrderCommand(OrderCommand.SELL);
-        secondOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        sellOrderEURUSD.setOrderCommand(OrderCommand.SELL);
 
         assertThat(combinedSignedAmount(orders),
-                   equalTo(-firstOrderEURUSD.getAmount() - secondOrderEURUSD.getAmount()));
+                   equalTo(-buyOrderEURUSD.getAmount() - sellOrderEURUSD.getAmount()));
     }
 
     @Test
     public void testCombinedSignedAmountIsZeroForBothOrdersCancelOut() {
         final double amount = 0.12;
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUY);
-        secondOrderEURUSD.setOrderCommand(OrderCommand.SELL);
-        firstOrderEURUSD.setAmount(amount);
-        secondOrderEURUSD.setAmount(amount);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        sellOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        buyOrderEURUSD.setAmount(amount);
+        sellOrderEURUSD.setAmount(amount);
 
         assertThat(combinedSignedAmount(orders),
                    equalTo(0.0));
@@ -317,10 +331,10 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     public void testCombinedSignedAmountIsPositiveWhenBuyIsBiggerThanSell() {
         final double buyAmount = 0.12;
         final double sellAmount = 0.11;
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUY);
-        secondOrderEURUSD.setOrderCommand(OrderCommand.SELL);
-        firstOrderEURUSD.setAmount(buyAmount);
-        secondOrderEURUSD.setAmount(sellAmount);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        sellOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        buyOrderEURUSD.setAmount(buyAmount);
+        sellOrderEURUSD.setAmount(sellAmount);
 
         assertThat(combinedSignedAmount(orders),
                    equalTo(buyAmount - sellAmount));
@@ -330,10 +344,10 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     public void testCombinedSignedAmountIsNegativeWhenSellIsBiggerThanBuy() {
         final double buyAmount = 0.11;
         final double sellAmount = 0.12;
-        firstOrderEURUSD.setOrderCommand(OrderCommand.BUY);
-        secondOrderEURUSD.setOrderCommand(OrderCommand.SELL);
-        firstOrderEURUSD.setAmount(buyAmount);
-        secondOrderEURUSD.setAmount(sellAmount);
+        buyOrderEURUSD.setOrderCommand(OrderCommand.BUY);
+        sellOrderEURUSD.setOrderCommand(OrderCommand.SELL);
+        buyOrderEURUSD.setAmount(buyAmount);
+        sellOrderEURUSD.setAmount(sellAmount);
 
         assertThat(combinedSignedAmount(orders),
                    equalTo(buyAmount - sellAmount));
@@ -378,5 +392,33 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         assertThat(switchDirection(OrderDirection.FLAT), equalTo(OrderDirection.FLAT));
         assertThat(switchDirection(OrderDirection.LONG), equalTo(OrderDirection.SHORT));
         assertThat(switchDirection(OrderDirection.SHORT), equalTo(OrderDirection.LONG));
+    }
+
+    @Test
+    public void testCalculateSLPriceWithPipsIsCorrectForBuyOrder() {
+        final double slPrice = slPriceWithPips(buyOrderEURUSD, currentPriceForSLTP, pipsToSLTP);
+
+        assertSLTPCalculation(buyOrderEURUSD, slPrice, -1);
+    }
+
+    @Test
+    public void testCalculateSLPriceWithPipsIsCorrectForSellOrder() {
+        final double slPrice = slPriceWithPips(sellOrderEURUSD, currentPriceForSLTP, pipsToSLTP);
+
+        assertSLTPCalculation(sellOrderEURUSD, slPrice, 1);
+    }
+
+    @Test
+    public void testCalculateTPPriceWithPipsIsCorrectForBuyOrder() {
+        final double tpPrice = tpPriceWithPips(buyOrderEURUSD, currentPriceForSLTP, pipsToSLTP);
+
+        assertSLTPCalculation(buyOrderEURUSD, tpPrice, 1);
+    }
+
+    @Test
+    public void testCalculateTPPriceWithPipsIsCorrectForSellOrder() {
+        final double tpPrice = tpPriceWithPips(sellOrderEURUSD, currentPriceForSLTP, pipsToSLTP);
+
+        assertSLTPCalculation(sellOrderEURUSD, tpPrice, -1);
     }
 }

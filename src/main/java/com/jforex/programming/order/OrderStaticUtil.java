@@ -12,6 +12,7 @@ import com.dukascopy.api.OfferSide;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.settings.PlatformSettings;
 
 public final class OrderStaticUtil {
@@ -121,5 +122,21 @@ public final class OrderStaticUtil {
         return orderDirection == OrderDirection.LONG
                 ? OrderDirection.SHORT
                 : OrderDirection.LONG;
+    }
+
+    public final static double slPriceWithPips(final IOrder order,
+                                               final double price,
+                                               final double pips) {
+        return CalculationUtil.addPips(order.getInstrument(),
+                                       price,
+                                       order.isLong() ? -pips : pips);
+    }
+
+    public final static double tpPriceWithPips(final IOrder order,
+                                               final double price,
+                                               final double pips) {
+        return CalculationUtil.addPips(order.getInstrument(),
+                                       price,
+                                       order.isLong() ? pips : -pips);
     }
 }
