@@ -21,6 +21,7 @@ public final class PositionSwitcher {
     private final OrderParamsSupplier orderParamsSupplier;
     private String mergeLabel;
     private Map<PositionEvent, Runnable> positionEventActions;
+    private Map<OrderDirection, FSMState> nextStatesByDirection;
 
     private enum FSMState {
         FLAT,
@@ -47,20 +48,24 @@ public final class PositionSwitcher {
         this.position = position;
         this.orderParamsSupplier = orderParamsSupplier;
 
-        subscribeToPositionEvents();
+        configurePositionEventActions();
         configureFSM();
+        subscribeToPositionEvents();
     }
 
-    private final void subscribeToPositionEvents() {
-        position.positionEventObs()
-                .subscribe(this::processPositionEvent);
-    }
-
-    private final void configureFSM() {
+    private final void configurePositionEventActions() {
         positionEventActions = ImmutableMap.<PositionEvent, Runnable> builder()
                 .put(PositionEvent.SUBMITTASK_DONE, () -> position.merge(mergeLabel))
                 .put(PositionEvent.MERGETASK_DONE, () -> fsm.fire(FSMTrigger.MERGE_DONE))
                 .put(PositionEvent.CLOSETASK_DONE, () -> fsm.fire(FSMTrigger.CLOSE_DONE))
+                .build();
+    }
+
+    private final void configureFSM() {
+        nextStatesByDirection = ImmutableMap.<OrderDirection, FSMState> builder()
+                .put(OrderDirection.FLAT, FSMState.FLAT)
+                .put(OrderDirection.LONG, FSMState.LONG)
+                .put(OrderDirection.SHORT, FSMState.SHORT)
                 .build();
 
         fsmConfig.configure(FSMState.FLAT)
@@ -82,22 +87,16 @@ public final class PositionSwitcher {
                 .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG))
                 .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT))
                 .onEntryFrom(FSMTrigger.FLAT, () -> position.close())
-                .permitDynamic(FSMTrigger.MERGE_DONE, () -> {
-                    final OrderDirection orderDirection = position.direction();
-                    if (orderDirection == OrderDirection.FLAT)
-                        return FSMState.FLAT;
-                    if (orderDirection == OrderDirection.LONG)
-                        return FSMState.LONG;
-                    return FSMState.SHORT;
-                })
+                .permitDynamic(FSMTrigger.MERGE_DONE, () -> nextStatesByDirection.get(position.direction()))
                 .permit(FSMTrigger.CLOSE_DONE, FSMState.FLAT)
                 .ignore(FSMTrigger.FLAT)
                 .ignore(FSMTrigger.BUY)
                 .ignore(FSMTrigger.SELL);
     }
 
-    private final void processPositionEvent(final PositionEvent positonEvent) {
-        positionEventActions.get(positonEvent).run();
+    private final void subscribeToPositionEvents() {
+        position.positionEventObs()
+                .subscribe(positonEvent -> positionEventActions.get(positonEvent).run());
     }
 
     public final void sendBuySignal() {
