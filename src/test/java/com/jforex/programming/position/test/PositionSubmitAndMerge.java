@@ -26,7 +26,7 @@ public final class PositionSubmitAndMerge {
 
     public final void submitAndMerge(final OrderParams orderParams,
                                      final String mergeLabel) {
-        position.submit(orderParams);
         submitDoneObs.subscribe(positonEvent -> position.merge(mergeLabel));
+        position.submit(orderParams);
     }
 }
