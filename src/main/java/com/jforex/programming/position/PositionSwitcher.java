@@ -13,13 +13,14 @@ import com.google.common.collect.ImmutableMap;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
+import com.jforex.programming.position.test.PositionSubmitAndMerge;
 import com.jforex.programming.settings.UserSettings;
 
 public final class PositionSwitcher {
 
     private final Position position;
+    private final PositionSubmitAndMerge positionSubmitAndMerge;
     private final OrderParamsSupplier orderParamsSupplier;
-    private String mergeLabel;
     private Map<PositionEvent, Runnable> positionEventActions;
     private Map<OrderDirection, FSMState> nextStatesByDirection;
 
@@ -47,6 +48,7 @@ public final class PositionSwitcher {
                             final OrderParamsSupplier orderParamsSupplier) {
         this.position = position;
         this.orderParamsSupplier = orderParamsSupplier;
+        positionSubmitAndMerge = new PositionSubmitAndMerge(position);
 
         configurePositionEventActions();
         configureFSM();
@@ -55,7 +57,6 @@ public final class PositionSwitcher {
 
     private final void configurePositionEventActions() {
         positionEventActions = ImmutableMap.<PositionEvent, Runnable> builder()
-                .put(PositionEvent.SUBMITTASK_DONE, () -> position.merge(mergeLabel))
                 .put(PositionEvent.MERGETASK_DONE, () -> fsm.fire(FSMTrigger.MERGE_DONE))
                 .put(PositionEvent.CLOSETASK_DONE, () -> fsm.fire(FSMTrigger.CLOSE_DONE))
                 .build();
@@ -96,6 +97,8 @@ public final class PositionSwitcher {
 
     private final void subscribeToPositionEvents() {
         position.positionEventObs()
+                .filter(positonEvent -> positonEvent == PositionEvent.MERGETASK_DONE
+                        || positonEvent == PositionEvent.CLOSETASK_DONE)
                 .subscribe(positonEvent -> positionEventActions.get(positonEvent).run());
     }
 
@@ -114,8 +117,8 @@ public final class PositionSwitcher {
     private final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
         final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
-        mergeLabel = userSettings.defaultMergePrefix() + adaptedOrderParams.label();
-        position.submit(adaptedOrderParams);
+        final String mergeLabel = userSettings.defaultMergePrefix() + adaptedOrderParams.label();
+        positionSubmitAndMerge.submitAndMerge(adaptedOrderParams, mergeLabel);
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {
