@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableMap;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
-import com.jforex.programming.position.test.PositionSubmitAndMerge;
 import com.jforex.programming.settings.UserSettings;
 
 public final class PositionSwitcher {

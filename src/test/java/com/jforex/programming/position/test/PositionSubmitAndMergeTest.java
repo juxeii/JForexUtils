@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionEvent;
+import com.jforex.programming.position.PositionSubmitAndMerge;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 
