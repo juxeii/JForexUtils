@@ -18,6 +18,8 @@ public final class JFObservable<T> {
     }
 
     public final void onNext(final T observableInstance) {
+        System.out.println("Number of subscribers for type " + observableInstance.getClass().toString() + ": "
+                + subscribers.size());
         subscribers.forEach(consumer -> consumer.onNext(observableInstance));
     }
 
