@@ -5,6 +5,8 @@ import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
 import org.aeonbits.owner.ConfigFactory;
 
 import com.dukascopy.api.IEngine.OrderCommand;
+import com.github.oxo42.stateless4j.StateMachine;
+import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
@@ -15,7 +17,25 @@ public final class PositionSwitcher {
     private final Position position;
     private final OrderParamsSupplier orderParamsSupplier;
     private String mergeLabel;
-    private PositionSwitcherFSM fsm = PositionSwitcherFSM.FLAT;
+
+    private enum FSMState {
+        FLAT,
+        LONG,
+        SHORT,
+        BUSY
+    }
+
+    private enum FSMTrigger {
+        FLAT,
+        BUY,
+        SELL,
+        SUBMIT_DONE,
+        MERGE_DONE,
+        CLOSE_DONE
+    }
+
+    private final StateMachineConfig<FSMState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
+    private final StateMachine<FSMState, FSMTrigger> fsm = new StateMachine<>(FSMState.FLAT, fsmConfig);
 
     private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
@@ -24,40 +44,75 @@ public final class PositionSwitcher {
         this.position = position;
         this.orderParamsSupplier = orderParamsSupplier;
 
+        subscribeToPositionEvents();
+        configureFSM();
+    }
+
+    private void subscribeToPositionEvents() {
         position.positionEventObs()
                 .subscribe(this::processPositionEvent);
     }
 
+    private void configureFSM() {
+        fsmConfig.configure(FSMState.FLAT)
+                .permit(FSMTrigger.BUY, FSMState.BUSY)
+                .permit(FSMTrigger.SELL, FSMState.BUSY)
+                .ignore(FSMTrigger.FLAT);
+
+        fsmConfig.configure(FSMState.LONG)
+                .permit(FSMTrigger.FLAT, FSMState.BUSY)
+                .permit(FSMTrigger.SELL, FSMState.BUSY)
+                .ignore(FSMTrigger.BUY);
+
+        fsmConfig.configure(FSMState.SHORT)
+                .permit(FSMTrigger.FLAT, FSMState.BUSY)
+                .permit(FSMTrigger.BUY, FSMState.BUSY)
+                .ignore(FSMTrigger.SELL);
+
+        fsmConfig.configure(FSMState.BUSY)
+                .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG))
+                .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT))
+                .onEntryFrom(FSMTrigger.FLAT, () -> position.close())
+                .permitDynamic(FSMTrigger.SUBMIT_DONE, () -> {
+                    position.merge(mergeLabel);
+                    return FSMState.BUSY;
+                })
+                .permitDynamic(FSMTrigger.MERGE_DONE, () -> {
+                    final OrderDirection orderDirection = position.direction();
+                    if (orderDirection == OrderDirection.FLAT)
+                        return FSMState.FLAT;
+                    if (orderDirection == OrderDirection.LONG)
+                        return FSMState.LONG;
+                    return FSMState.SHORT;
+                })
+                .permit(FSMTrigger.CLOSE_DONE, FSMState.FLAT)
+                .ignore(FSMTrigger.FLAT)
+                .ignore(FSMTrigger.BUY)
+                .ignore(FSMTrigger.SELL);
+    }
+
     private void processPositionEvent(final PositionEvent positonEvent) {
         if (positonEvent == PositionEvent.SUBMITTASK_DONE)
-            fsm = fsm.triggerSubmitDone(this);
+            fsm.fire(FSMTrigger.SUBMIT_DONE);
         else if (positonEvent == PositionEvent.MERGETASK_DONE)
-            fsm = fsm.triggerMergeDone(position.direction());
+            fsm.fire(FSMTrigger.MERGE_DONE);
         else if (positonEvent == PositionEvent.CLOSETASK_DONE)
-            fsm = fsm.triggerCloseDone();
+            fsm.fire(FSMTrigger.CLOSE_DONE);
     }
 
     public final void sendBuySignal() {
-        fsm = fsm.sendBuySignal(this);
+        fsm.fire(FSMTrigger.BUY);
     }
 
     public final void sendSellSignal() {
-        fsm = fsm.sendSellSignal(this);
+        fsm.fire(FSMTrigger.SELL);
     }
 
     public final void sendFlatSignal() {
-        fsm = fsm.sendFlatSignal(this);
+        fsm.fire(FSMTrigger.FLAT);
     }
 
-    protected void startMerge() {
-        position.merge(mergeLabel);
-    }
-
-    protected void startClose() {
-        position.close();
-    }
-
-    protected final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
+    private final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
         final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         mergeLabel = userSettings.defaultMergePrefix() + adaptedOrderParams.label();

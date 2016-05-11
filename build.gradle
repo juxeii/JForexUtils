@@ -47,6 +47,7 @@ dependencies {
    compile 'org.apache.commons:commons-collections4:4.0'
    compile 'org.apache.commons:commons-lang3:3.4'
    compile 'org.aeonbits.owner:owner:1.0.8'
+   compile 'com.github.oxo42:stateless4j:2.5.0'
    
    testCompile 'de.bechte.junit:junit-hierarchicalcontextrunner:4.12.0'
    testCompile 'org.hamcrest:hamcrest-all:1.3'
