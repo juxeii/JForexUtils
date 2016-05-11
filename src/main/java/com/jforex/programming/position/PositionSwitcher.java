@@ -2,11 +2,14 @@ package com.jforex.programming.position;
 
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
 
+import java.util.Map;
+
 import org.aeonbits.owner.ConfigFactory;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
+import com.google.common.collect.ImmutableMap;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
@@ -17,6 +20,7 @@ public final class PositionSwitcher {
     private final Position position;
     private final OrderParamsSupplier orderParamsSupplier;
     private String mergeLabel;
+    private Map<PositionEvent, Runnable> positionEventActions;
 
     private enum FSMState {
         FLAT,
@@ -29,7 +33,6 @@ public final class PositionSwitcher {
         FLAT,
         BUY,
         SELL,
-        SUBMIT_DONE,
         MERGE_DONE,
         CLOSE_DONE
     }
@@ -48,12 +51,18 @@ public final class PositionSwitcher {
         configureFSM();
     }
 
-    private void subscribeToPositionEvents() {
+    private final void subscribeToPositionEvents() {
         position.positionEventObs()
                 .subscribe(this::processPositionEvent);
     }
 
-    private void configureFSM() {
+    private final void configureFSM() {
+        positionEventActions = ImmutableMap.<PositionEvent, Runnable> builder()
+                .put(PositionEvent.SUBMITTASK_DONE, () -> position.merge(mergeLabel))
+                .put(PositionEvent.MERGETASK_DONE, () -> fsm.fire(FSMTrigger.MERGE_DONE))
+                .put(PositionEvent.CLOSETASK_DONE, () -> fsm.fire(FSMTrigger.CLOSE_DONE))
+                .build();
+
         fsmConfig.configure(FSMState.FLAT)
                 .permit(FSMTrigger.BUY, FSMState.BUSY)
                 .permit(FSMTrigger.SELL, FSMState.BUSY)
@@ -73,10 +82,6 @@ public final class PositionSwitcher {
                 .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG))
                 .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT))
                 .onEntryFrom(FSMTrigger.FLAT, () -> position.close())
-                .permitDynamic(FSMTrigger.SUBMIT_DONE, () -> {
-                    position.merge(mergeLabel);
-                    return FSMState.BUSY;
-                })
                 .permitDynamic(FSMTrigger.MERGE_DONE, () -> {
                     final OrderDirection orderDirection = position.direction();
                     if (orderDirection == OrderDirection.FLAT)
@@ -91,13 +96,8 @@ public final class PositionSwitcher {
                 .ignore(FSMTrigger.SELL);
     }
 
-    private void processPositionEvent(final PositionEvent positonEvent) {
-        if (positonEvent == PositionEvent.SUBMITTASK_DONE)
-            fsm.fire(FSMTrigger.SUBMIT_DONE);
-        else if (positonEvent == PositionEvent.MERGETASK_DONE)
-            fsm.fire(FSMTrigger.MERGE_DONE);
-        else if (positonEvent == PositionEvent.CLOSETASK_DONE)
-            fsm.fire(FSMTrigger.CLOSE_DONE);
+    private final void processPositionEvent(final PositionEvent positonEvent) {
+        positionEventActions.get(positonEvent).run();
     }
 
     public final void sendBuySignal() {
