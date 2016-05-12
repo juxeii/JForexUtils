@@ -1,5 +1,7 @@
 package com.jforex.programming.connection;
 
+import java.util.concurrent.TimeUnit;
+
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,12 +11,16 @@ import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Completable;
+import rx.Completable.CompletableSubscriber;
 import rx.Observable;
+import rx.Scheduler;
+import rx.schedulers.Schedulers;
 
 public final class ConnectionKeeper {
 
     private Completable lightReconnectCompletable;
     private Completable reloginCompletable;
+    private Scheduler scheduler = Schedulers.computation();
     private final AuthentificationUtil authentificationUtil;
     private final LoginCredentials loginCredentials;
     private final StateMachineConfig<FSMState, ConnectionState> fsmConfig = new StateMachineConfig<>();
@@ -48,30 +54,25 @@ public final class ConnectionKeeper {
         lightReconnectCompletable = Completable.create(subscriber -> {
             logger.debug("Try to do a light reconnection...");
             authentificationUtil.reconnect();
-            connectionStateObs.take(1)
-                    .subscribe(connectionState -> {
-                        if (connectionState == ConnectionState.CONNECTED)
-                            subscriber.onCompleted();
-                        else {
-                            logger.debug("Light reconnect failed!");
-                            subscriber.onError(new ReconnectException());
-                        }
-                    });
-        }).retry(platformSettings.noOfLightReconnects() - 1);
+            initNextConnectionStateObs(connectionStateObs, subscriber);
+        });
 
         reloginCompletable = Completable.create(subscriber -> {
             logger.debug("Try to relogin...");
             authentificationUtil.login(loginCredentials);
-            connectionStateObs.take(1)
-                    .subscribe(connectionState -> {
-                        if (connectionState == ConnectionState.CONNECTED)
-                            subscriber.onCompleted();
-                        else {
-                            logger.debug("Relogin reconnect failed!");
-                            subscriber.onError(new ReconnectException());
-                        }
-                    });
+            initNextConnectionStateObs(connectionStateObs, subscriber);
         });
+    }
+
+    private void initNextConnectionStateObs(final Observable<ConnectionState> connectionStateObs,
+                                            final CompletableSubscriber subscriber) {
+        connectionStateObs.take(1)
+                .subscribe(connectionState -> {
+                    if (connectionState == ConnectionState.CONNECTED)
+                        subscriber.onCompleted();
+                    else
+                        subscriber.onError(new ReconnectException());
+                });
     }
 
     private final void configureFSM() {
@@ -89,6 +90,14 @@ public final class ConnectionKeeper {
                 .ignore(ConnectionState.DISCONNECTED);
     }
 
+    public void setReloginTimeOutScheduler(final Scheduler scheduler) {
+        this.scheduler = scheduler;
+    }
+
+    private Scheduler scheduler() {
+        return scheduler;
+    }
+
     private final void onConnectionStateUpdate(final ConnectionState connectionState) {
         if (connectionState == ConnectionState.CONNECTED)
             logger.debug("Connect message received.");
@@ -98,14 +107,19 @@ public final class ConnectionKeeper {
     }
 
     private final void startReconnectStrategy() {
-        lightReconnectCompletable.subscribe(exc -> {
-            logger.debug("Light reconnect failed, try to relogin!");
-            startReloginStrategy();
-        }, () -> logger.debug("Light reconnect successful!"));
+        lightReconnectCompletable
+                .retry(platformSettings.noOfLightReconnects() - 1)
+                .subscribe(exc -> {
+                    logger.debug("Light reconnect failed, try to relogin!");
+                    startReloginStrategy();
+                }, () -> logger.debug("Light reconnect successful!"));
     }
 
     private final void startReloginStrategy() {
-        reloginCompletable.subscribe(exc -> logger.debug("Relogin failed!"),
-                                     () -> logger.debug("Relogin successful!"));
+        reloginCompletable
+                .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS, scheduler())
+                .retry()
+                .subscribe(exc -> logger.debug("Relogin failed!"),
+                           () -> logger.debug("Relogin successful!"));
     }
 }

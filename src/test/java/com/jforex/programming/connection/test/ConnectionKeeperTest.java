@@ -6,6 +6,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.TimeUnit;
+
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,14 +23,18 @@ import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import rx.schedulers.TestScheduler;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
 public class ConnectionKeeperTest extends CommonUtilForTest {
 
+    private ConnectionKeeper connectionKeeper;
+
     @Mock private AuthentificationUtil authentificationUtilMock;
     private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
+    private final TestScheduler scheduler = new TestScheduler();
     private final static String jnlpAddress = "http://jnlp.test.address";
     private final static String userName = "username";
     private final static String password = "password";
@@ -44,9 +50,10 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
                                                 userName,
                                                 password);
         noOfLightReconnects = platformSettings.noOfLightReconnects();
-        new ConnectionKeeper(connectionStateObs,
-                             authentificationUtilMock,
-                             loginCredentials);
+        connectionKeeper = new ConnectionKeeper(connectionStateObs,
+                                                authentificationUtilMock,
+                                                loginCredentials);
+        connectionKeeper.setReloginTimeOutScheduler(scheduler);
     }
 
     public class IsInLoginState {
@@ -121,6 +128,33 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
                     @Test
                     public void testLoginIsCalled() {
                         verify(authentificationUtilMock).login(loginCredentials);
+                    }
+
+                    public class AfterReloginTimeout {
+
+                        @Before
+                        public void setUp() {
+                            scheduler.advanceTimeBy(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS);
+                        }
+
+                        @Test
+                        public void testLoginIsCalledTwice() {
+                            verify(authentificationUtilMock, times(2)).login(loginCredentials);
+                        }
+
+                        public class AfterConnectMessage {
+
+                            @Before
+                            public void setUp() {
+                                connectionStateObs.onNext(ConnectionState.CONNECTED);
+                            }
+
+                            @Test
+                            public void testNoMoreLightReconnectsOrLogins() {
+                                verify(authentificationUtilMock, times(noOfLightReconnects)).reconnect();
+                                verify(authentificationUtilMock, times(2)).login(loginCredentials);
+                            }
+                        }
                     }
                 }
             }
