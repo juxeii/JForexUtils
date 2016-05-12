@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -21,8 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderParams;
@@ -38,6 +37,9 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
+
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -50,9 +52,12 @@ public class PositionTest extends InstrumentUtilForTest {
     private Position position;
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
-    @Mock private OrderUtil orderUtilMock;
-    @Mock private ConcurrentUtil concurrentUtilMock;
+    @Mock
+    private RestoreSLTPPolicy restoreSLTPPolicyMock;
+    @Mock
+    private OrderUtil orderUtilMock;
+    @Mock
+    private ConcurrentUtil concurrentUtilMock;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final Subject<Long, Long> retryTimerSubject = PublishSubject.create();
     private final TestSubscriber<PositionEvent> positionEventSubscriber = new TestSubscriber<>();
@@ -266,6 +271,14 @@ public class PositionTest extends InstrumentUtilForTest {
             @Test
             public void testSubmitTaskEventIsSent() {
                 assertPositionEvent(PositionEvent.SUBMITTASK_DONE, 1);
+            }
+
+            @Test
+            public void testMergeDoesNotCallOnOrderUtilSinceNothingToMerge() {
+                position.merge(mergeLabel);
+
+                verify(orderUtilMock, never()).mergeOrders(mergeLabel, toMergeOrders);
+                assertPositionEvent(PositionEvent.MERGETASK_DONE, 2);
             }
 
             public class CloseOnSL {
@@ -526,11 +539,6 @@ public class PositionTest extends InstrumentUtilForTest {
                                     }
 
                                     @Test
-                                    public void testPositionHasOnlyMergeOrder() {
-                                        assertTrue(positionHasOrder(mergeOrder));
-                                    }
-
-                                    @Test
                                     public void testRestoreSLIsCalled() {
                                         verify(orderUtilMock).setStopLossPrice(mergeOrder, restoreSL);
                                     }
@@ -577,6 +585,11 @@ public class PositionTest extends InstrumentUtilForTest {
                                             @Test
                                             public void testMergeTaskEventIsSent() {
                                                 assertPositionEvent(PositionEvent.MERGETASK_DONE, 3);
+                                            }
+
+                                            @Test
+                                            public void testPositionHasMergeOrder() {
+                                                assertTrue(positionHasOrder(mergeOrder));
                                             }
                                         }
 
