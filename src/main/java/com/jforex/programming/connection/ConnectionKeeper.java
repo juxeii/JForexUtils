@@ -94,10 +94,6 @@ public final class ConnectionKeeper {
         this.scheduler = scheduler;
     }
 
-    private Scheduler scheduler() {
-        return scheduler;
-    }
-
     private final void onConnectionStateUpdate(final ConnectionState connectionState) {
         if (connectionState == ConnectionState.CONNECTED)
             logger.debug("Connect message received.");
@@ -117,7 +113,7 @@ public final class ConnectionKeeper {
 
     private final void startReloginStrategy() {
         reloginCompletable
-                .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS, scheduler())
+                .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS, scheduler)
                 .retry()
                 .subscribe(exc -> logger.debug("Relogin failed!"),
                            () -> logger.debug("Relogin successful!"));
