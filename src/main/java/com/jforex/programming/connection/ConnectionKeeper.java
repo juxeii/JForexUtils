@@ -31,7 +31,7 @@ public final class ConnectionKeeper {
                 authentificationUtil.state() == LoginState.LOGGED_IN) {
             logger.warn("Disconnect message received, starting reconnect strategy...");
             startReconnectStrategy();
-        } else if (connectionState == ConnectionState.CONNECTED) {
+        } else {
             logger.debug("Connect message received.");
             resetReconnectData();
         }

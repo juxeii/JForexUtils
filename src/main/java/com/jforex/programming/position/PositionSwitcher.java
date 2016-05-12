@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.google.common.collect.ImmutableMap;
@@ -14,8 +15,6 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.settings.UserSettings;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-
 public final class PositionSwitcher {
 
     private final Position position;
@@ -23,6 +22,8 @@ public final class PositionSwitcher {
     private final OrderParamsSupplier orderParamsSupplier;
     private Map<PositionEvent, Runnable> positionEventActions;
     private Map<OrderDirection, FSMState> nextStatesByDirection;
+    private final StateMachineConfig<FSMState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
+    private final StateMachine<FSMState, FSMTrigger> fsm = new StateMachine<>(FSMState.FLAT, fsmConfig);
 
     private enum FSMState {
         FLAT,
@@ -38,9 +39,6 @@ public final class PositionSwitcher {
         MERGE_DONE,
         CLOSE_DONE
     }
-
-    private final StateMachineConfig<FSMState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
-    private final StateMachine<FSMState, FSMTrigger> fsm = new StateMachine<>(FSMState.FLAT, fsmConfig);
 
     private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 

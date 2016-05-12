@@ -2,9 +2,10 @@ package com.jforex.programming.connection;
 
 import java.util.Optional;
 
-import com.jforex.programming.misc.JFObservable;
-
 import com.dukascopy.api.system.IClient;
+import com.github.oxo42.stateless4j.StateMachine;
+import com.github.oxo42.stateless4j.StateMachineConfig;
+import com.jforex.programming.misc.JFObservable;
 
 import rx.Observable;
 
@@ -12,12 +13,52 @@ public final class AuthentificationUtil {
 
     private final IClient client;
     private final JFObservable<LoginState> loginStatePublisher = new JFObservable<>();
-    private LoginState loginState = LoginState.LOGGED_OUT;
+    private final StateMachineConfig<LoginState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
+    private final StateMachine<LoginState, FSMTrigger> fsm = new StateMachine<>(LoginState.LOGGED_OUT, fsmConfig);
+
+    private enum FSMTrigger {
+        CONNECTED,
+        DISCONNECTED,
+        LOGOUT
+    }
 
     public AuthentificationUtil(final IClient client,
                                 final Observable<ConnectionState> connectionStateObs) {
         this.client = client;
-        connectionStateObs.subscribe(this::onConnectionState);
+
+        initConnectionStateObs(connectionStateObs);
+        configureFSM();
+    }
+
+    private final void initConnectionStateObs(final Observable<ConnectionState> connectionStateObs) {
+        connectionStateObs.subscribe(connectionState -> {
+            if (connectionState == ConnectionState.CONNECTED)
+                fsm.fire(FSMTrigger.CONNECTED);
+            else
+                fsm.fire(FSMTrigger.DISCONNECTED);
+        });
+    }
+
+    private final void configureFSM() {
+        fsmConfig.configure(LoginState.LOGGED_OUT)
+                .onEntry(() -> loginStatePublisher.onNext(LoginState.LOGGED_OUT))
+                .permit(FSMTrigger.CONNECTED, LoginState.LOGGED_IN)
+                .ignore(FSMTrigger.DISCONNECTED)
+                .ignore(FSMTrigger.LOGOUT);
+
+        fsmConfig.configure(LoginState.LOGGED_IN)
+                .onEntry(() -> loginStatePublisher.onNext(LoginState.LOGGED_IN))
+                .permit(FSMTrigger.LOGOUT, LoginState.LOGGED_OUT)
+                .ignore(FSMTrigger.CONNECTED)
+                .ignore(FSMTrigger.DISCONNECTED);
+    }
+
+    public final Observable<LoginState> loginStateObs() {
+        return loginStatePublisher.get();
+    }
+
+    public final LoginState state() {
+        return fsm.getState();
     }
 
     public final Optional<Exception> login(final LoginCredentials loginCredentials) {
@@ -45,35 +86,12 @@ public final class AuthentificationUtil {
     public final void logout() {
         if (isLoggedIn()) {
             client.disconnect();
-            updateState(LoginState.LOGGED_OUT);
+            fsm.fire(FSMTrigger.LOGOUT);
         }
     }
 
     private boolean isLoggedIn() {
         return state() == LoginState.LOGGED_IN;
-    }
-
-    public final Observable<LoginState> loginStateObs() {
-        return loginStatePublisher.get();
-    }
-
-    private final void onConnectionState(final ConnectionState connectionState) {
-        if (isLoginTrigger(connectionState))
-            updateState(LoginState.LOGGED_IN);
-    }
-
-    private boolean isLoginTrigger(final ConnectionState connectionState) {
-        return connectionState == ConnectionState.CONNECTED &&
-                loginState == LoginState.LOGGED_OUT;
-    }
-
-    private final synchronized void updateState(final LoginState loginState) {
-        this.loginState = loginState;
-        loginStatePublisher.onNext(loginState);
-    }
-
-    public final LoginState state() {
-        return loginState;
     }
 
     public final void reconnect() {
