@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.IEngine.OrderCommand;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.google.common.collect.ImmutableMap;
@@ -14,6 +13,8 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.settings.UserSettings;
+
+import com.dukascopy.api.IEngine.OrderCommand;
 
 public final class PositionSwitcher {
 
@@ -71,17 +72,23 @@ public final class PositionSwitcher {
         fsmConfig.configure(FSMState.FLAT)
                 .permit(FSMTrigger.BUY, FSMState.BUSY)
                 .permit(FSMTrigger.SELL, FSMState.BUSY)
-                .ignore(FSMTrigger.FLAT);
+                .ignore(FSMTrigger.FLAT)
+                .ignore(FSMTrigger.CLOSE_DONE)
+                .ignore(FSMTrigger.MERGE_DONE);
 
         fsmConfig.configure(FSMState.LONG)
                 .permit(FSMTrigger.FLAT, FSMState.BUSY)
                 .permit(FSMTrigger.SELL, FSMState.BUSY)
-                .ignore(FSMTrigger.BUY);
+                .ignore(FSMTrigger.BUY)
+                .ignore(FSMTrigger.CLOSE_DONE)
+                .ignore(FSMTrigger.MERGE_DONE);
 
         fsmConfig.configure(FSMState.SHORT)
                 .permit(FSMTrigger.FLAT, FSMState.BUSY)
                 .permit(FSMTrigger.BUY, FSMState.BUSY)
-                .ignore(FSMTrigger.SELL);
+                .ignore(FSMTrigger.SELL)
+                .ignore(FSMTrigger.CLOSE_DONE)
+                .ignore(FSMTrigger.MERGE_DONE);
 
         fsmConfig.configure(FSMState.BUSY)
                 .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG))
