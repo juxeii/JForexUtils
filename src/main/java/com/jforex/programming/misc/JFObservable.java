@@ -18,7 +18,7 @@ public final class JFObservable<T> {
     }
 
     public final void onNext(final T observableInstance) {
-        subscribers.forEach(consumer -> consumer.onNext(observableInstance));
+        subscribers.forEach(subscriber -> subscriber.onNext(observableInstance));
     }
 
     private final void subscribe(final Subscriber<? super T> subscriber) {

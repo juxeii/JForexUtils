@@ -2,8 +2,6 @@ package com.jforex.programming.order;
 
 import java.util.Collection;
 
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -14,6 +12,9 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
+
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -140,12 +141,14 @@ public class OrderUtil {
                                           final OrderEventTypeData orderEventTypeData,
                                           final Subscriber<? super OrderEvent> subscriber) {
         final OrderEventType orderEventType = orderEvent.type();
-        if (orderEventTypeData.isRejectType(orderEventType))
-            subscriber.onError(new OrderCallRejectException("", orderEvent));
-        else {
-            subscriber.onNext(orderEvent);
-            if (orderEventTypeData.isDoneType(orderEventType))
-                subscriber.onCompleted();
+        if (!subscriber.isUnsubscribed()) {
+            if (orderEventTypeData.isRejectType(orderEventType))
+                subscriber.onError(new OrderCallRejectException("", orderEvent));
+            else {
+                subscriber.onNext(orderEvent);
+                if (orderEventTypeData.isDoneType(orderEventType))
+                    subscriber.onCompleted();
+            }
         }
     }
 
