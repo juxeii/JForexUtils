@@ -9,7 +9,7 @@ import com.jforex.programming.misc.JFObservable;
 
 import rx.Observable;
 
-public final class AuthentificationUtil {
+public class AuthentificationUtil {
 
     private final IClient client;
     private final JFObservable<LoginState> loginStatePublisher = new JFObservable<>();
@@ -57,11 +57,11 @@ public final class AuthentificationUtil {
         return loginStatePublisher.get();
     }
 
-    public final LoginState state() {
+    public LoginState state() {
         return fsm.getState();
     }
 
-    public final Optional<Exception> login(final LoginCredentials loginCredentials) {
+    public Optional<Exception> login(final LoginCredentials loginCredentials) {
         return connectClient(loginCredentials.jnlpAddress(),
                              loginCredentials.username(),
                              loginCredentials.password(),
@@ -94,7 +94,7 @@ public final class AuthentificationUtil {
         return state() == LoginState.LOGGED_IN;
     }
 
-    public final void reconnect() {
+    public void reconnect() {
         if (isLoggedIn())
             client.reconnect();
     }
