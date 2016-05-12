@@ -16,8 +16,6 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.misc.JFObservable;
 import com.jforex.programming.order.OrderDirection;
@@ -27,6 +25,9 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.settings.PlatformSettings;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -104,13 +105,13 @@ public class Position {
     public void submit(final OrderParams orderParams) {
         logger.info("Start submit for " + orderParams.label());
         orderUtil.submitOrder(orderParams)
+                .flatMap(orderEvent -> Observable.just(orderEvent.order()))
                 .doOnTerminate(() -> positionEventPublisher.onNext(PositionEvent.SUBMITTASK_DONE))
                 .subscribe(this::onSubmitEvent,
                            throwable -> {});
     }
 
-    private void onSubmitEvent(final OrderEvent orderEvent) {
-        final IOrder order = orderEvent.order();
+    private void onSubmitEvent(final IOrder order) {
         if (isFilled.test(order) || (isConditional.test(order) && isOpened.test(order)))
             orderRepository.add(order);
     }
@@ -127,10 +128,10 @@ public class Position {
 
         removeTPSLObs(filledOrders)
                 .concatWith(mergeOrderObs(mergeLabel, filledOrders))
-                .flatMap(orderEvent -> restoreSLTPObs(orderEvent.order(), restoreSLTPData.sl(), restoreSLTPData.tp()))
+                .flatMap(order -> restoreSLTPObs(order, restoreSLTPData.sl(), restoreSLTPData.tp()))
                 .doOnTerminate(() -> positionEventPublisher.onNext(PositionEvent.MERGETASK_DONE))
-                .subscribe(orderEvent -> {},
-                           throwable -> {});
+                .subscribe(order -> {},
+                           throwable -> logger.error("Merging position " + instrument + " failed!"));
     }
 
     public void close() {
@@ -142,38 +143,41 @@ public class Position {
                 .filter(order -> !isClosed.test(order))
                 .flatMap(order -> orderUtil.close(order))
                 .retryWhen(this::shouldRetry)
+                .flatMap(orderEvent -> Observable.just(orderEvent.order()))
                 .doOnTerminate(() -> positionEventPublisher.onNext(PositionEvent.CLOSETASK_DONE))
                 .subscribe(this::onCloseEvent,
-                           throwable -> {});
+                           throwable -> logger.error("Closing position " + instrument + " failed!"));
     }
 
-    private void onCloseEvent(final OrderEvent orderEvent) {
-        final IOrder order = orderEvent.order();
+    private void onCloseEvent(final IOrder order) {
         if (isClosed.test(order))
             orderRepository.remove(order);
     }
 
-    private Observable<OrderEvent> removeTPSLObs(final Set<IOrder> filledOrders) {
+    private Observable<IOrder> removeTPSLObs(final Set<IOrder> filledOrders) {
         return Observable.from(filledOrders)
                 .flatMap(order -> Observable.concat(changeTPOrderObs(order, platformSettings.noTPPrice()),
-                                                    changeSLOrderObs(order, platformSettings.noSLPrice())));
+                                                    changeSLOrderObs(order, platformSettings.noSLPrice())))
+                .flatMap(orderEvent -> Observable.just(orderEvent.order()));
     }
 
-    private Observable<OrderEvent> restoreSLTPObs(final IOrder mergedOrder,
-                                                  final double restoreSL,
-                                                  final double restoreTP) {
+    private Observable<IOrder> restoreSLTPObs(final IOrder mergedOrder,
+                                              final double restoreSL,
+                                              final double restoreTP) {
         return Observable.just(mergedOrder)
                 .filter(isFilled::test)
                 .flatMap(order -> Observable.concat(changeSLOrderObs(order, restoreSL),
-                                                    changeTPOrderObs(order, restoreTP)));
+                                                    changeTPOrderObs(order, restoreTP)))
+                .flatMap(orderEvent -> Observable.just(orderEvent.order()));
     }
 
-    private Observable<OrderEvent> mergeOrderObs(final String mergeLabel,
-                                                 final Set<IOrder> filledOrders) {
+    private Observable<IOrder> mergeOrderObs(final String mergeLabel,
+                                             final Set<IOrder> filledOrders) {
         return Observable.just(mergeLabel)
                 .doOnNext(label -> logger.debug("Start merge with label: " + label + " for " + instrument))
                 .flatMap(order -> orderUtil.mergeOrders(mergeLabel, filledOrders))
                 .retryWhen(this::shouldRetry)
+                .flatMap(orderEvent -> Observable.just(orderEvent.order()))
                 .doOnNext(this::onSubmitEvent);
     }
 
