@@ -1,22 +1,23 @@
 package com.jforex.programming.connection.test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.google.common.base.Supplier;
 import com.jforex.programming.connection.AuthentificationUtil;
+import com.jforex.programming.connection.ConnectException;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
@@ -27,7 +28,9 @@ import com.dukascopy.api.system.JFAuthenticationException;
 import com.dukascopy.api.system.JFVersionException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import rx.Completable;
 import rx.observers.TestSubscriber;
+import rx.schedulers.TestScheduler;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
@@ -40,6 +43,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     private IClient clientMock;
     private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
     private final TestSubscriber<LoginState> loginStateSubscriber = new TestSubscriber<>();
+    private final TestScheduler scheduler = new TestScheduler();
     private final static String jnlpAddress = "http://jnlp.test.address";
     private final static String userName = "username";
     private final static String password = "password";
@@ -59,14 +63,15 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
                                                        pin);
 
         authentificationUtil = new AuthentificationUtil(clientMock, connectionStateObs);
+        authentificationUtil.setLoginTimeOutScheduler(scheduler);
         authentificationUtil.loginStateObs().subscribe(loginStateSubscriber);
     }
 
-    private Optional<Exception> login() {
+    private Completable login() {
         return authentificationUtil.login(loginCredentials);
     }
 
-    private Optional<Exception> loginWithPin() {
+    private Completable loginWithPin() {
         return authentificationUtil.login(loginCredentialsWithPin);
     }
 
@@ -93,13 +98,14 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         assertLoginExceptionForLoginType(this::loginWithPin, exceptionType);
     }
 
-    private void assertLoginExceptionForLoginType(final Supplier<Optional<Exception>> loginCall,
+    private void assertLoginExceptionForLoginType(final Supplier<Completable> loginCall,
                                                   final Class<? extends Exception> exceptionType) {
         setExceptionOnConnect(exceptionType);
 
-        final Optional<Exception> exceptionOpt = loginCall.get();
+        final TestSubscriber<?> loginSubscriber = new TestSubscriber<>();
+        loginCall.get().subscribe(loginSubscriber);
 
-        assertThat(exceptionOpt.get().getClass(), equalTo(exceptionType));
+        loginSubscriber.assertError(exceptionType);
     }
 
     private void assertLoginStateNotification(final LoginState loginState,
@@ -113,7 +119,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     @Test
     public void testLoginStateAfterCreationIsLoggedOut() {
-        assertThat(authentificationUtil.state(), equalTo(LoginState.LOGGED_OUT));
+        assertThat(authentificationUtil.loginState(), equalTo(LoginState.LOGGED_OUT));
     }
 
     @Test
@@ -147,19 +153,20 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     @Test
     public void testLoginWithPinCallsClientWithPin() {
-        final Optional<Exception> exceptionOpt = loginWithPin();
+        loginWithPin();
 
         verifyConnectCall(loginCredentialsWithPin, 1);
-        assertFalse(exceptionOpt.isPresent());
     }
 
     public class AfterLogin {
 
+        protected final TestSubscriber<?> loginCompletionSubscriber = new TestSubscriber<>();
+
         @Before
         public void setUp() {
-            final Optional<Exception> exceptionOpt = login();
+            login().subscribe(loginCompletionSubscriber);
 
-            assertFalse(exceptionOpt.isPresent());
+            loginCompletionSubscriber.assertNoErrors();
         }
 
         @Test
@@ -169,12 +176,12 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
         @Test
         public void testLoginStateStillLoggedOut() {
-            assertThat(authentificationUtil.state(), equalTo(LoginState.LOGGED_OUT));
+            assertThat(authentificationUtil.loginState(), equalTo(LoginState.LOGGED_OUT));
         }
 
         @Test
-        public void testNoLoginNotificationYet() {
-            loginStateSubscriber.assertNoValues();
+        public void testNoLoginCompletionYet() {
+            loginCompletionSubscriber.assertNotCompleted();
         }
 
         @Test
@@ -191,6 +198,68 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
             verify(clientMock, times(0)).disconnect();
         }
 
+        public class AfterDisconnectedMessage {
+
+            @Before
+            public void setUp() {
+                connectionStateObs.onNext(ConnectionState.DISCONNECTED);
+            }
+
+            @Test
+            public void testLoginStateIsStillLoggedOut() {
+                assertThat(authentificationUtil.loginState(), equalTo(LoginState.LOGGED_OUT));
+            }
+
+            @Test
+            public void testNoNotificationHappens() {
+                loginStateSubscriber.assertNoErrors();
+                loginStateSubscriber.assertValueCount(0);
+            }
+
+            @Test
+            public void testLoginCompletionError() {
+                loginCompletionSubscriber.assertError(ConnectException.class);
+            }
+
+            @Test
+            public void testReconnectionIsStillNotPossible() {
+                authentificationUtil.reconnect();
+
+                verify(clientMock, never()).reconnect();
+            }
+        }
+
+        public class AfterLoginTimeOut {
+
+            @Before
+            public void setUp() {
+                scheduler.advanceTimeBy(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS);
+            }
+
+            @Test
+            public void testLoginStateIsStillLoggedOut() {
+                assertThat(authentificationUtil.loginState(), equalTo(LoginState.LOGGED_OUT));
+            }
+
+            @Test
+            public void testNoNotificationHappens() {
+                loginStateSubscriber.assertNoErrors();
+                loginStateSubscriber.assertValueCount(0);
+            }
+
+            @Test
+            public void testLoginCompletionError() {
+                loginCompletionSubscriber.assertError(TimeoutException.class);
+            }
+
+            @Test
+            public void testReconnectionIsStillNotPossible() {
+                authentificationUtil.reconnect();
+
+                verify(clientMock, never()).reconnect();
+            }
+        }
+
         public class AfterConnectedMessage {
 
             @Before
@@ -200,12 +269,17 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
             @Test
             public void testLoginStateIsLoggedIN() {
-                assertThat(authentificationUtil.state(), equalTo(LoginState.LOGGED_IN));
+                assertThat(authentificationUtil.loginState(), equalTo(LoginState.LOGGED_IN));
             }
 
             @Test
             public void testNotificationForLoginHappens() {
                 assertLoginStateNotification(LoginState.LOGGED_IN, 0);
+            }
+
+            @Test
+            public void testLoginCompletion() {
+                loginCompletionSubscriber.assertCompleted();
             }
 
             @Test
@@ -229,7 +303,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
                 @Test
                 public void testLoginStateIsLoggedOut() {
-                    assertThat(authentificationUtil.state(), equalTo(LoginState.LOGGED_OUT));
+                    assertThat(authentificationUtil.loginState(), equalTo(LoginState.LOGGED_OUT));
                 }
 
                 @Test
@@ -254,11 +328,11 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
                 @Test
                 public void testLoginStateIsStillLoggedIN() {
-                    assertThat(authentificationUtil.state(), equalTo(LoginState.LOGGED_IN));
+                    assertThat(authentificationUtil.loginState(), equalTo(LoginState.LOGGED_IN));
                 }
 
                 @Test
-                public void testNoNotificationHappens() {
+                public void testNoFurtherNotificationHappens() {
                     loginStateSubscriber.assertNoErrors();
                     loginStateSubscriber.assertValueCount(1);
                 }

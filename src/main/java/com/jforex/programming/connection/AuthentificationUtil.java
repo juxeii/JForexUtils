@@ -1,18 +1,28 @@
 package com.jforex.programming.connection;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
-import com.dukascopy.api.system.IClient;
+import org.aeonbits.owner.ConfigFactory;
+
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.misc.JFObservable;
+import com.jforex.programming.settings.PlatformSettings;
 
+import com.dukascopy.api.system.IClient;
+
+import rx.Completable;
 import rx.Observable;
+import rx.Scheduler;
+import rx.schedulers.Schedulers;
 
 public class AuthentificationUtil {
 
     private final IClient client;
     private final JFObservable<LoginState> loginStatePublisher = new JFObservable<>();
+    private final Observable<ConnectionState> connectionStateObs;
+    private Scheduler scheduler = Schedulers.computation();
     private final StateMachineConfig<LoginState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
     private final StateMachine<LoginState, FSMTrigger> fsm = new StateMachine<>(LoginState.LOGGED_OUT, fsmConfig);
 
@@ -22,12 +32,19 @@ public class AuthentificationUtil {
         LOGOUT
     }
 
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+
     public AuthentificationUtil(final IClient client,
                                 final Observable<ConnectionState> connectionStateObs) {
         this.client = client;
+        this.connectionStateObs = connectionStateObs;
 
         initConnectionStateObs(connectionStateObs);
         configureFSM();
+    }
+
+    public void setLoginTimeOutScheduler(final Scheduler scheduler) {
+        this.scheduler = scheduler;
     }
 
     private final void initConnectionStateObs(final Observable<ConnectionState> connectionStateObs) {
@@ -57,15 +74,26 @@ public class AuthentificationUtil {
         return loginStatePublisher.get();
     }
 
-    public LoginState state() {
+    public LoginState loginState() {
         return fsm.getState();
     }
 
-    public Optional<Exception> login(final LoginCredentials loginCredentials) {
-        return connectClient(loginCredentials.jnlpAddress(),
-                             loginCredentials.username(),
-                             loginCredentials.password(),
-                             loginCredentials.pinOpt());
+    public Completable login(final LoginCredentials loginCredentials) {
+        final Optional<Exception> exceptionOpt = connectClient(loginCredentials.jnlpAddress(),
+                                                               loginCredentials.username(),
+                                                               loginCredentials.password(),
+                                                               loginCredentials.pinOpt());
+        return exceptionOpt.isPresent()
+                ? Completable.error(exceptionOpt.get())
+                : Completable.create(subscriber -> {
+                    connectionStateObs.take(1)
+                            .subscribe(connectionState -> {
+                                if (connectionState == ConnectionState.CONNECTED)
+                                    subscriber.onCompleted();
+                                else
+                                    subscriber.onError(new ConnectException());
+                            });
+                }).timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS, scheduler);
     }
 
     private final Optional<Exception> connectClient(final String jnlpAddress,
@@ -91,7 +119,7 @@ public class AuthentificationUtil {
     }
 
     private boolean isLoggedIn() {
-        return state() == LoginState.LOGGED_IN;
+        return loginState() == LoginState.LOGGED_IN;
     }
 
     public void reconnect() {

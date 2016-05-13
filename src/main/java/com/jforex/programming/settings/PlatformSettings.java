@@ -75,6 +75,6 @@ public interface PlatformSettings extends Config {
     public int noOfLightReconnects();
 
     @Key("env.logintimeoutseconds")
-    @DefaultValue("10")
+    @DefaultValue("20")
     public int logintimeoutseconds();
 }

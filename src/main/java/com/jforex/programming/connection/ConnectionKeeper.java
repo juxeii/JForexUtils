@@ -31,10 +31,6 @@ public final class ConnectionKeeper {
         RECONNECTING
     }
 
-    private final class ReconnectException extends Exception {
-        private final static long serialVersionUID = 1L;
-    }
-
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private final static Logger logger = LogManager.getLogger(ConnectionKeeper.class);
 
@@ -71,14 +67,14 @@ public final class ConnectionKeeper {
                     if (connectionState == ConnectionState.CONNECTED)
                         subscriber.onCompleted();
                     else
-                        subscriber.onError(new ReconnectException());
+                        subscriber.onError(new ConnectException());
                 });
     }
 
     private final void configureFSM() {
         fsmConfig.configure(FSMState.IDLE)
                 .permitDynamic(ConnectionState.DISCONNECTED, () -> {
-                    return authentificationUtil.state() == LoginState.LOGGED_IN
+                    return authentificationUtil.loginState() == LoginState.LOGGED_IN
                             ? FSMState.RECONNECTING
                             : FSMState.IDLE;
                 })

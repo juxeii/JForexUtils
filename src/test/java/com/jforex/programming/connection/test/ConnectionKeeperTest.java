@@ -32,7 +32,8 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
 
     private ConnectionKeeper connectionKeeper;
 
-    @Mock private AuthentificationUtil authentificationUtilMock;
+    @Mock
+    private AuthentificationUtil authentificationUtilMock;
     private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
     private final TestScheduler scheduler = new TestScheduler();
     private final static String jnlpAddress = "http://jnlp.test.address";
@@ -60,7 +61,7 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            when(authentificationUtilMock.state()).thenReturn(LoginState.LOGGED_IN);
+            when(authentificationUtilMock.loginState()).thenReturn(LoginState.LOGGED_IN);
         }
 
         @Test

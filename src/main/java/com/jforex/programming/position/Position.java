@@ -16,8 +16,6 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.misc.JFObservable;
 import com.jforex.programming.order.OrderDirection;
@@ -26,6 +24,9 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -142,13 +143,19 @@ public class Position {
     }
 
     private void onOrderAdd(final IOrder order) {
-        if (isFilled.test(order) || (isConditional.test(order) && isOpened.test(order)))
+        if (isFilled.test(order) || (isConditional.test(order) && isOpened.test(order))) {
+            logger.debug("Adding order " + order.getLabel() + " to position " + instrument + " Orderstate: "
+                    + order.getState());
             orderRepository.add(order);
+        }
     }
 
     private void onOrderRemove(final IOrder order) {
-        if (isClosed.test(order))
+        if (isClosed.test(order)) {
+            logger.debug("Removing order " + order.getLabel() + " of position " + instrument + " Orderstate: "
+                    + order.getState());
             orderRepository.remove(order);
+        }
     }
 
     private Observable<Set<IOrder>> removeTPSLObs(final Set<IOrder> filledOrders) {
