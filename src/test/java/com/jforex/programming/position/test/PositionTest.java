@@ -20,8 +20,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderParams;
@@ -36,6 +34,9 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
+
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -48,9 +49,12 @@ public class PositionTest extends InstrumentUtilForTest {
     private Position position;
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
-    @Mock private OrderUtil orderUtilMock;
-    @Mock private ConcurrentUtil concurrentUtilMock;
+    @Mock
+    private RestoreSLTPPolicy restoreSLTPPolicyMock;
+    @Mock
+    private OrderUtil orderUtilMock;
+    @Mock
+    private ConcurrentUtil concurrentUtilMock;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final Subject<Long, Long> retryTimerSubject = PublishSubject.create();
     private final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
@@ -137,7 +141,7 @@ public class PositionTest extends InstrumentUtilForTest {
         subject.onError(rejectException);
     }
 
-    private void assertCompletableSubscriber(final TestSubscriber completableSubscriber) {
+    private void assertCompletableSubscriber(final TestSubscriber<Long> completableSubscriber) {
         completableSubscriber.assertNoErrors();
         completableSubscriber.assertCompleted();
     }
@@ -151,7 +155,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
     @Test
     public void testCloseOnEmptyPositionPublishCloseTaskEvent() {
-        final TestSubscriber completableSubscriber = new TestSubscriber<>();
+        final TestSubscriber<Long> completableSubscriber = new TestSubscriber<>();
         position.close().subscribe(completableSubscriber);
 
         assertCompletableSubscriber(completableSubscriber);
@@ -166,7 +170,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
     @Test
     public void testMergeOnEmptyPositionPublishMergeTaskEvent() {
-        final TestSubscriber completableSubscriber = new TestSubscriber<>();
+        final TestSubscriber<Long> completableSubscriber = new TestSubscriber<>();
         position.merge(mergeLabel).subscribe(completableSubscriber);
 
         assertCompletableSubscriber(completableSubscriber);
@@ -176,7 +180,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
         protected Subject<OrderEvent, OrderEvent> buySubmitSubject;
         protected final TestSubscriber<OrderEvent> buySubmitSubscriber = new TestSubscriber<>();
-        protected final TestSubscriber completableBuySubscriber = new TestSubscriber<>();
+        protected final TestSubscriber<Long> completableBuySubscriber = new TestSubscriber<>();
 
         @Before
         public void setUp() {
@@ -310,7 +314,7 @@ public class PositionTest extends InstrumentUtilForTest {
             public class Close {
 
                 protected Subject<OrderEvent, OrderEvent> buyCloseSubject;
-                protected final TestSubscriber completableCloseSubscriber =
+                protected final TestSubscriber<Long> completableCloseSubscriber =
                         new TestSubscriber<>();
 
                 @Before
@@ -389,7 +393,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         protected Subject<OrderEvent, OrderEvent> restoreSLSubject;
                         protected Subject<OrderEvent, OrderEvent> restoreTPSubject;
 
-                        protected final TestSubscriber completableMergeSubscriber =
+                        protected final TestSubscriber<Long> completableMergeSubscriber =
                                 new TestSubscriber<>();
 
                         @Before
@@ -668,7 +672,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         protected Subject<OrderEvent, OrderEvent> buyCloseSubject;
                         protected Subject<OrderEvent, OrderEvent> sellCloseSubject;
 
-                        protected final TestSubscriber completableCloseSubscriber =
+                        protected final TestSubscriber<Long> completableCloseSubscriber =
                                 new TestSubscriber<>();
 
                         @Before

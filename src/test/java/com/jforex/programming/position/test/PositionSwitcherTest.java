@@ -15,7 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IEngine.OrderCommand;
+import com.jforex.programming.misc.JFObservable;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
@@ -25,6 +25,8 @@ import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 
+import com.dukascopy.api.IEngine.OrderCommand;
+
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
 
@@ -33,9 +35,15 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     private PositionSwitcher positionSwitcher;
 
-    @Mock private Position positionMock;
-    @Mock private OrderParamsSupplier orderParamsSupplierMock;
-    @Captor private ArgumentCaptor<OrderParams> orderParamsCaptor;
+    @Mock
+    private Position positionMock;
+    @Mock
+    private OrderParamsSupplier orderParamsSupplierMock;
+    @Captor
+    private ArgumentCaptor<OrderParams> orderParamsCaptor;
+    private final JFObservable<Long> submitCompleter = new JFObservable<>();
+    private final JFObservable<Long> mergeCompleter = new JFObservable<>();
+    private final JFObservable<Long> closeCompleter = new JFObservable<>();
     private final OrderParams orderParamsBUY = OrderParamsForTest.paramsBuyEURUSD();
     private final OrderParams orderParamsSELL = OrderParamsForTest.paramsSellEURUSD();
     private final String buyLabel = orderParamsBUY.label();
@@ -55,8 +63,9 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         when(orderParamsSupplierMock.forCommand(OrderCommand.BUY)).thenReturn(orderParamsBUY);
         when(orderParamsSupplierMock.forCommand(OrderCommand.SELL)).thenReturn(orderParamsSELL);
 
-        when(positionMock.submit(any())).thenReturn(Completable.complete());
-        when(positionMock.merge(any())).thenReturn(Completable.complete());
+        when(positionMock.submit(any())).thenReturn(Completable.fromObservable(submitCompleter.get().take(1)));
+        when(positionMock.merge(any())).thenReturn(Completable.fromObservable(mergeCompleter.get().take(1)));
+        when(positionMock.close()).thenReturn(Completable.fromObservable(closeCompleter.get().take(1)));
     }
 
     private void verifyNoPositionCommands() {
@@ -157,11 +166,13 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
             }
         }
 
-        public class AfterSubmitOKMessage {
+        public class AfterSubmitCompleted {
 
             @Before
             public void setUp() {
                 setPositionOrderDirection(OrderDirection.LONG);
+
+                submitCompleter.onNext(1L);
             }
 
             @Test
@@ -196,11 +207,11 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                 verify(positionMock, never()).close();
             }
 
-            public class AfterMergeOKMessage {
+            public class AfterMergeCompleted {
 
                 @Before
                 public void setUp() {
-                    ;
+                    mergeCompleter.onNext(1L);
                 }
 
                 @Test
@@ -243,11 +254,13 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                         verify(positionMock).submit(any());
                     }
 
-                    public class AfterCloseOKMessage {
+                    public class AfterCloseCompleted {
 
                         @Before
                         public void setUp() {
                             setPositionOrderDirection(OrderDirection.FLAT);
+
+                            closeCompleter.onNext(1L);
                         }
 
                         @Test
@@ -296,11 +309,13 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
             }
         }
 
-        public class AfterSubmitOKMessage {
+        public class AfterSubmitCompleted {
 
             @Before
             public void setUp() {
                 setPositionOrderDirection(OrderDirection.SHORT);
+
+                submitCompleter.onNext(1L);
             }
 
             @Test
@@ -335,11 +350,11 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                 verify(positionMock, never()).close();
             }
 
-            public class AfterMergeOKMessage {
+            public class AfterMergeCompleted {
 
                 @Before
                 public void setUp() {
-                    ;
+                    mergeCompleter.onNext(1L);
                 }
 
                 @Test
@@ -361,6 +376,30 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                     positionSwitcher.sendFlatSignal();
 
                     verify(positionMock).close();
+                }
+
+                public class AfterCloseCompleted {
+
+                    @Before
+                    public void setUp() {
+                        setPositionOrderDirection(OrderDirection.FLAT);
+
+                        closeCompleter.onNext(1L);
+                    }
+
+                    @Test
+                    public void testBuySignalIsNoLonerBlocked() {
+                        positionSwitcher.sendBuySignal();
+
+                        verify(positionMock, times(2)).submit(any());
+                    }
+
+                    @Test
+                    public void testuySignalIsNoLonerBlocked() {
+                        positionSwitcher.sendBuySignal();
+
+                        verify(positionMock, times(2)).submit(any());
+                    }
                 }
             }
         }

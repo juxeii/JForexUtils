@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.IEngine.OrderCommand;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.google.common.collect.ImmutableMap;
@@ -15,7 +14,7 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.settings.UserSettings;
 
-import rx.Completable;
+import com.dukascopy.api.IEngine.OrderCommand;
 
 public final class PositionSwitcher {
 
@@ -79,10 +78,8 @@ public final class PositionSwitcher {
                 .ignore(FSMTrigger.MERGE_DONE);
 
         fsmConfig.configure(FSMState.BUSY)
-                .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG)
-                        .subscribe(() -> fsm.fire(FSMTrigger.MERGE_DONE)))
-                .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT)
-                        .subscribe(() -> fsm.fire(FSMTrigger.MERGE_DONE)))
+                .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG))
+                .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT))
                 .onEntryFrom(FSMTrigger.FLAT, () -> position.close().subscribe(() -> fsm.fire(FSMTrigger.CLOSE_DONE)))
                 .permitDynamic(FSMTrigger.MERGE_DONE, () -> nextStatesByDirection.get(position.direction()))
                 .permit(FSMTrigger.CLOSE_DONE, FSMState.FLAT)
@@ -103,14 +100,13 @@ public final class PositionSwitcher {
         fsm.fire(FSMTrigger.FLAT);
     }
 
-    private final Completable executeOrderCommandSignal(final OrderDirection desiredDirection) {
+    private final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
         final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         final String mergeLabel = userSettings.defaultMergePrefix() + adaptedOrderParams.label();
-        return position.submit(adaptedOrderParams)
-                .concatWith(position.merge(mergeLabel));
-        // positionSubmitAndMerge.submitAndMerge(adaptedOrderParams,
-        // mergeLabel);
+        position.submit(adaptedOrderParams)
+                .concatWith(position.merge(mergeLabel))
+                .subscribe(() -> fsm.fire(FSMTrigger.MERGE_DONE));
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {
