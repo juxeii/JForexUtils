@@ -12,9 +12,7 @@ public final class PositionSubmitAndMerge {
 
     public final void submitAndMerge(final OrderParams orderParams,
                                      final String mergeLabel) {
-        position.positionEventObs()
-                .takeFirst(positonEvent -> positonEvent == PositionEvent.SUBMITTASK_DONE)
-                .subscribe(submitEvent -> position.merge(mergeLabel));
-        position.submit(orderParams);
+        position.submit(orderParams)
+                .concatWith(position.merge(mergeLabel));
     }
 }

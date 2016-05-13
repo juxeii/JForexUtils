@@ -15,12 +15,12 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.settings.UserSettings;
 
+import rx.Completable;
+
 public final class PositionSwitcher {
 
     private final Position position;
-    private final PositionSubmitAndMerge positionSubmitAndMerge;
     private final OrderParamsSupplier orderParamsSupplier;
-    private Map<PositionEvent, Runnable> positionEventActions;
     private Map<OrderDirection, FSMState> nextStatesByDirection;
     private final StateMachineConfig<FSMState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
     private final StateMachine<FSMState, FSMTrigger> fsm = new StateMachine<>(FSMState.FLAT, fsmConfig);
@@ -46,18 +46,8 @@ public final class PositionSwitcher {
                             final OrderParamsSupplier orderParamsSupplier) {
         this.position = position;
         this.orderParamsSupplier = orderParamsSupplier;
-        positionSubmitAndMerge = new PositionSubmitAndMerge(position);
 
-        configurePositionEventActions();
         configureFSM();
-        subscribeToPositionEvents();
-    }
-
-    private final void configurePositionEventActions() {
-        positionEventActions = ImmutableMap.<PositionEvent, Runnable> builder()
-                .put(PositionEvent.MERGETASK_DONE, () -> fsm.fire(FSMTrigger.MERGE_DONE))
-                .put(PositionEvent.CLOSETASK_DONE, () -> fsm.fire(FSMTrigger.CLOSE_DONE))
-                .build();
     }
 
     private final void configureFSM() {
@@ -89,21 +79,16 @@ public final class PositionSwitcher {
                 .ignore(FSMTrigger.MERGE_DONE);
 
         fsmConfig.configure(FSMState.BUSY)
-                .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG))
-                .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT))
-                .onEntryFrom(FSMTrigger.FLAT, () -> position.close())
+                .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG)
+                        .subscribe(() -> fsm.fire(FSMTrigger.MERGE_DONE)))
+                .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT)
+                        .subscribe(() -> fsm.fire(FSMTrigger.MERGE_DONE)))
+                .onEntryFrom(FSMTrigger.FLAT, () -> position.close().subscribe(() -> fsm.fire(FSMTrigger.CLOSE_DONE)))
                 .permitDynamic(FSMTrigger.MERGE_DONE, () -> nextStatesByDirection.get(position.direction()))
                 .permit(FSMTrigger.CLOSE_DONE, FSMState.FLAT)
                 .ignore(FSMTrigger.FLAT)
                 .ignore(FSMTrigger.BUY)
                 .ignore(FSMTrigger.SELL);
-    }
-
-    private final void subscribeToPositionEvents() {
-        position.positionEventObs()
-                .filter(positonEvent -> positonEvent == PositionEvent.MERGETASK_DONE
-                        || positonEvent == PositionEvent.CLOSETASK_DONE)
-                .subscribe(positonEvent -> positionEventActions.get(positonEvent).run());
     }
 
     public final void sendBuySignal() {
@@ -118,11 +103,14 @@ public final class PositionSwitcher {
         fsm.fire(FSMTrigger.FLAT);
     }
 
-    private final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
+    private final Completable executeOrderCommandSignal(final OrderDirection desiredDirection) {
         final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         final String mergeLabel = userSettings.defaultMergePrefix() + adaptedOrderParams.label();
-        positionSubmitAndMerge.submitAndMerge(adaptedOrderParams, mergeLabel);
+        return position.submit(adaptedOrderParams)
+                .concatWith(position.merge(mergeLabel));
+        // positionSubmitAndMerge.submitAndMerge(adaptedOrderParams,
+        // mergeLabel);
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {

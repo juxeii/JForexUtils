@@ -21,14 +21,12 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.position.Position;
-import com.jforex.programming.position.PositionEvent;
 import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
+import rx.Completable;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PositionSwitcherTest extends InstrumentUtilForTest {
@@ -38,7 +36,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     @Mock private Position positionMock;
     @Mock private OrderParamsSupplier orderParamsSupplierMock;
     @Captor private ArgumentCaptor<OrderParams> orderParamsCaptor;
-    private final Subject<PositionEvent, PositionEvent> positionEventSubject = PublishSubject.create();
     private final OrderParams orderParamsBUY = OrderParamsForTest.paramsBuyEURUSD();
     private final OrderParams orderParamsSELL = OrderParamsForTest.paramsSellEURUSD();
     private final String buyLabel = orderParamsBUY.label();
@@ -58,7 +55,8 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         when(orderParamsSupplierMock.forCommand(OrderCommand.BUY)).thenReturn(orderParamsBUY);
         when(orderParamsSupplierMock.forCommand(OrderCommand.SELL)).thenReturn(orderParamsSELL);
 
-        when(positionMock.positionEventObs()).thenReturn(positionEventSubject);
+        when(positionMock.submit(any())).thenReturn(Completable.complete());
+        when(positionMock.merge(any())).thenReturn(Completable.complete());
     }
 
     private void verifyNoPositionCommands() {
@@ -164,8 +162,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 setPositionOrderDirection(OrderDirection.LONG);
-
-                positionEventSubject.onNext(PositionEvent.SUBMITTASK_DONE);
             }
 
             @Test
@@ -204,7 +200,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
                 @Before
                 public void setUp() {
-                    positionEventSubject.onNext(PositionEvent.MERGETASK_DONE);
+                    ;
                 }
 
                 @Test
@@ -252,8 +248,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                         @Before
                         public void setUp() {
                             setPositionOrderDirection(OrderDirection.FLAT);
-
-                            positionEventSubject.onNext(PositionEvent.CLOSETASK_DONE);
                         }
 
                         @Test
@@ -307,8 +301,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 setPositionOrderDirection(OrderDirection.SHORT);
-
-                positionEventSubject.onNext(PositionEvent.SUBMITTASK_DONE);
             }
 
             @Test
@@ -347,7 +339,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
                 @Before
                 public void setUp() {
-                    positionEventSubject.onNext(PositionEvent.MERGETASK_DONE);
+                    ;
                 }
 
                 @Test

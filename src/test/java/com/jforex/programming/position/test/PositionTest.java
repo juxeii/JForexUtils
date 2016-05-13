@@ -1,8 +1,6 @@
 package com.jforex.programming.position.test;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -32,7 +30,6 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
-import com.jforex.programming.position.PositionEvent;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -56,7 +53,6 @@ public class PositionTest extends InstrumentUtilForTest {
     @Mock private ConcurrentUtil concurrentUtilMock;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final Subject<Long, Long> retryTimerSubject = PublishSubject.create();
-    private final TestSubscriber<PositionEvent> positionEventSubscriber = new TestSubscriber<>();
     private final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
     private final OrderParams orderParamsSell = OrderParamsForTest.paramsSellEURUSD();
     private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
@@ -81,7 +77,6 @@ public class PositionTest extends InstrumentUtilForTest {
                                 orderEventSubject,
                                 restoreSLTPPolicyMock,
                                 concurrentUtilMock);
-        position.positionEventObs().subscribe(positionEventSubscriber);
     }
 
     private void setUpMocks() {
@@ -142,11 +137,9 @@ public class PositionTest extends InstrumentUtilForTest {
         subject.onError(rejectException);
     }
 
-    private void assertPositionEvent(final PositionEvent positionEvent,
-                                     final int eventNumber) {
-        positionEventSubscriber.assertNoErrors();
-        positionEventSubscriber.assertValueCount(eventNumber);
-        assertThat(positionEventSubscriber.getOnNextEvents().get(eventNumber - 1), equalTo(positionEvent));
+    private void assertCompletableSubscriber(final TestSubscriber completableSubscriber) {
+        completableSubscriber.assertNoErrors();
+        completableSubscriber.assertCompleted();
     }
 
     @Test
@@ -158,9 +151,10 @@ public class PositionTest extends InstrumentUtilForTest {
 
     @Test
     public void testCloseOnEmptyPositionPublishCloseTaskEvent() {
-        position.close();
+        final TestSubscriber completableSubscriber = new TestSubscriber<>();
+        position.close().subscribe(completableSubscriber);
 
-        assertPositionEvent(PositionEvent.CLOSETASK_DONE, 1);
+        assertCompletableSubscriber(completableSubscriber);
     }
 
     @Test
@@ -172,22 +166,24 @@ public class PositionTest extends InstrumentUtilForTest {
 
     @Test
     public void testMergeOnEmptyPositionPublishMergeTaskEvent() {
-        position.merge(mergeLabel);
+        final TestSubscriber completableSubscriber = new TestSubscriber<>();
+        position.merge(mergeLabel).subscribe(completableSubscriber);
 
-        assertPositionEvent(PositionEvent.MERGETASK_DONE, 1);
+        assertCompletableSubscriber(completableSubscriber);
     }
 
     public class Submit {
 
         protected Subject<OrderEvent, OrderEvent> buySubmitSubject;
         protected final TestSubscriber<OrderEvent> buySubmitSubscriber = new TestSubscriber<>();
+        protected final TestSubscriber completableBuySubscriber = new TestSubscriber<>();
 
         @Before
         public void setUp() {
             buyOrder.setState(IOrder.State.CREATED);
             buySubmitSubject = setUpSubmit(orderParamsBuy);
 
-            position.submit(orderParamsBuy);
+            position.submit(orderParamsBuy).subscribe(completableBuySubscriber);
         }
 
         @Test
@@ -200,7 +196,11 @@ public class PositionTest extends InstrumentUtilForTest {
             buySubmitSubject.onError(jfException);
 
             verify(orderUtilMock).submitOrder(orderParamsBuy);
-            assertPositionEvent(PositionEvent.SUBMITTASK_DONE, 1);
+        }
+
+        @Test
+        public void testCompletableBuyNotYetDone() {
+            completableBuySubscriber.assertNotCompleted();
         }
 
         public class SubmitRejectMessage {
@@ -222,8 +222,8 @@ public class PositionTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void testSubmitTaskEventIsSent() {
-                assertPositionEvent(PositionEvent.SUBMITTASK_DONE, 1);
+            public void testCompletableBuyDone() {
+                assertCompletableSubscriber(completableBuySubscriber);
             }
         }
 
@@ -246,8 +246,8 @@ public class PositionTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void testSubmitTaskEventIsSent() {
-                assertPositionEvent(PositionEvent.SUBMITTASK_DONE, 1);
+            public void testCompletableBuyDone() {
+                assertCompletableSubscriber(completableBuySubscriber);
             }
         }
 
@@ -266,16 +266,15 @@ public class PositionTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void testSubmitTaskEventIsSent() {
-                assertPositionEvent(PositionEvent.SUBMITTASK_DONE, 1);
-            }
-
-            @Test
             public void testMergeDoesNotCallOnOrderUtilSinceNothingToMerge() {
                 position.merge(mergeLabel);
 
                 verify(orderUtilMock, never()).mergeOrders(mergeLabel, toMergeOrders);
-                assertPositionEvent(PositionEvent.MERGETASK_DONE, 2);
+            }
+
+            @Test
+            public void testCompletableBuyDone() {
+                assertCompletableSubscriber(completableBuySubscriber);
             }
 
             public class CloseOnSL {
@@ -311,13 +310,15 @@ public class PositionTest extends InstrumentUtilForTest {
             public class Close {
 
                 protected Subject<OrderEvent, OrderEvent> buyCloseSubject;
+                protected final TestSubscriber completableCloseSubscriber =
+                        new TestSubscriber<>();
 
                 @Before
                 public void setUp() {
                     buyOrder.setState(IOrder.State.FILLED);
                     buyCloseSubject = setUpClose(buyOrder);
 
-                    position.close();
+                    position.close().subscribe(completableCloseSubscriber);
 
                     buyOrder.setState(IOrder.State.CLOSED);
                     sendOrderEvent(buyCloseSubject, buyOrder, OrderEventType.CLOSE_OK);
@@ -335,8 +336,8 @@ public class PositionTest extends InstrumentUtilForTest {
                 }
 
                 @Test
-                public void testCloseTaskEventIsSent() {
-                    assertPositionEvent(PositionEvent.CLOSETASK_DONE, 2);
+                public void testCompletableCloseDone() {
+                    assertCompletableSubscriber(completableCloseSubscriber);
                 }
             }
 
@@ -378,11 +379,6 @@ public class PositionTest extends InstrumentUtilForTest {
                         assertTrue(positionHasOrder(sellOrder));
                     }
 
-                    @Test
-                    public void testSubmitTaskEventIsSent() {
-                        assertPositionEvent(PositionEvent.SUBMITTASK_DONE, 2);
-                    }
-
                     public class MergeCall {
 
                         protected Subject<OrderEvent, OrderEvent> buyRemoveTPSubject;
@@ -392,6 +388,9 @@ public class PositionTest extends InstrumentUtilForTest {
                         protected Subject<OrderEvent, OrderEvent> mergeSubject;
                         protected Subject<OrderEvent, OrderEvent> restoreSLSubject;
                         protected Subject<OrderEvent, OrderEvent> restoreTPSubject;
+
+                        protected final TestSubscriber completableMergeSubscriber =
+                                new TestSubscriber<>();
 
                         @Before
                         public void setUp() {
@@ -403,7 +402,7 @@ public class PositionTest extends InstrumentUtilForTest {
                             restoreSLSubject = setUpSL(mergeOrder, restoreSL);
                             restoreTPSubject = setUpTP(mergeOrder, restoreTP);
 
-                            position.merge(mergeLabel);
+                            position.merge(mergeLabel).subscribe(completableMergeSubscriber);
                         }
 
                         @Test
@@ -417,7 +416,11 @@ public class PositionTest extends InstrumentUtilForTest {
                             sellRemoveTPSubject.onError(jfException);
 
                             verify(orderUtilMock).setTakeProfitPrice(sellOrder, noTPPrice);
-                            assertPositionEvent(PositionEvent.MERGETASK_DONE, 3);
+                        }
+
+                        @Test
+                        public void testCompletableMergeNotYetDone() {
+                            completableMergeSubscriber.assertNotCompleted();
                         }
 
                         public class RemovedTPOnSellRejected {
@@ -433,6 +436,11 @@ public class PositionTest extends InstrumentUtilForTest {
                             public void testRetryCallOnSellOrderIsDone() {
                                 verify(orderUtilMock, times(2))
                                         .setTakeProfitPrice(sellOrder, noTPPrice);
+                            }
+
+                            @Test
+                            public void testCompletableMergeNotYetDone() {
+                                completableMergeSubscriber.assertNotCompleted();
                             }
                         }
 
@@ -460,7 +468,11 @@ public class PositionTest extends InstrumentUtilForTest {
                                 sellRemoveSLSubject.onError(jfException);
 
                                 verify(orderUtilMock).setStopLossPrice(sellOrder, noSLPrice);
-                                assertPositionEvent(PositionEvent.MERGETASK_DONE, 3);
+                            }
+
+                            @Test
+                            public void testCompletableMergeNotYetDone() {
+                                completableMergeSubscriber.assertNotCompleted();
                             }
 
                             public class RemovedSLs {
@@ -486,7 +498,11 @@ public class PositionTest extends InstrumentUtilForTest {
                                     mergeSubject.onError(jfException);
 
                                     verify(orderUtilMock).mergeOrders(eq(mergeLabel), any());
-                                    assertPositionEvent(PositionEvent.MERGETASK_DONE, 3);
+                                }
+
+                                @Test
+                                public void testCompletableMergeNotYetDone() {
+                                    completableMergeSubscriber.assertNotCompleted();
                                 }
 
                                 public class AfterMergeRejectMessage {
@@ -509,6 +525,11 @@ public class PositionTest extends InstrumentUtilForTest {
                                     public void testRetryCallIsDone() {
                                         verify(orderUtilMock, times(2)).mergeOrders(eq(mergeLabel), any());
                                     }
+
+                                    @Test
+                                    public void testCompletableMergeNotYetDone() {
+                                        completableMergeSubscriber.assertNotCompleted();
+                                    }
                                 }
 
                                 public class AfterMergeCloseOKMessage {
@@ -526,6 +547,11 @@ public class PositionTest extends InstrumentUtilForTest {
                                     @Test
                                     public void testPositionHasNoOrders() {
                                         assertTrue(isRepositoryEmpty());
+                                    }
+
+                                    @Test
+                                    public void testCompletableMergeDone() {
+                                        assertCompletableSubscriber(completableMergeSubscriber);
                                     }
                                 }
 
@@ -557,6 +583,11 @@ public class PositionTest extends InstrumentUtilForTest {
                                         verify(orderUtilMock).setStopLossPrice(mergeOrder, restoreSL);
                                     }
 
+                                    @Test
+                                    public void testCompletableMergeNotYetDone() {
+                                        completableMergeSubscriber.assertNotCompleted();
+                                    }
+
                                     public class RestoredSL {
 
                                         @Before
@@ -580,6 +611,11 @@ public class PositionTest extends InstrumentUtilForTest {
                                                     .setTakeProfitPrice(mergeOrder, restoreTP);
                                         }
 
+                                        @Test
+                                        public void testCompletableMergeNotYetDone() {
+                                            completableMergeSubscriber.assertNotCompleted();
+                                        }
+
                                         public class RestoredTPMessage {
 
                                             @Before
@@ -590,8 +626,8 @@ public class PositionTest extends InstrumentUtilForTest {
                                             }
 
                                             @Test
-                                            public void testMergeTaskEventIsSent() {
-                                                assertPositionEvent(PositionEvent.MERGETASK_DONE, 3);
+                                            public void testCompletableMergeDone() {
+                                                assertCompletableSubscriber(completableMergeSubscriber);
                                             }
 
                                             @Test
@@ -615,6 +651,11 @@ public class PositionTest extends InstrumentUtilForTest {
                                                 verify(orderUtilMock, times(2))
                                                         .setTakeProfitPrice(mergeOrder, restoreTP);
                                             }
+
+                                            @Test
+                                            public void testCompletableMergeNotYetDone() {
+                                                completableMergeSubscriber.assertNotCompleted();
+                                            }
                                         }
                                     }
                                 }
@@ -627,6 +668,9 @@ public class PositionTest extends InstrumentUtilForTest {
                         protected Subject<OrderEvent, OrderEvent> buyCloseSubject;
                         protected Subject<OrderEvent, OrderEvent> sellCloseSubject;
 
+                        protected final TestSubscriber completableCloseSubscriber =
+                                new TestSubscriber<>();
+
                         @Before
                         public void setUp() {
                             buyOrder.setState(IOrder.State.FILLED);
@@ -634,7 +678,7 @@ public class PositionTest extends InstrumentUtilForTest {
                             buyCloseSubject = setUpClose(buyOrder);
                             sellCloseSubject = setUpClose(sellOrder);
 
-                            position.close();
+                            position.close().subscribe(completableCloseSubscriber);
 
                             buyOrder.setState(IOrder.State.CLOSED);
                             sendOrderEvent(buyCloseSubject, buyOrder, OrderEventType.CLOSE_OK);
@@ -659,7 +703,11 @@ public class PositionTest extends InstrumentUtilForTest {
                             sellCloseSubject.onError(jfException);
 
                             verify(orderUtilMock).close(buyOrder);
-                            assertPositionEvent(PositionEvent.CLOSETASK_DONE, 3);
+                        }
+
+                        @Test
+                        public void testCompletableNotYetDone() {
+                            completableCloseSubscriber.assertNotCompleted();
                         }
 
                         public class AfterSecondClosePosition {
@@ -672,6 +720,11 @@ public class PositionTest extends InstrumentUtilForTest {
                             @Test
                             public void testCloseIsNotCalledOnOrderUtilSinceAllOrdersAreMarkedAsActive() {
                                 verify(orderUtilMock, times(1)).close(sellOrder);
+                            }
+
+                            @Test
+                            public void testCompletableNotYetDone() {
+                                completableCloseSubscriber.assertNotCompleted();
                             }
                         }
 
@@ -695,6 +748,11 @@ public class PositionTest extends InstrumentUtilForTest {
                             @Test
                             public void testRetryCallOnSellOrderIsDone() {
                                 verify(orderUtilMock, times(2)).close(sellOrder);
+                            }
+
+                            @Test
+                            public void testCompletableNotYetDone() {
+                                completableCloseSubscriber.assertNotCompleted();
                             }
 
                             public class CloseSellOrder {
@@ -730,8 +788,8 @@ public class PositionTest extends InstrumentUtilForTest {
                             }
 
                             @Test
-                            public void testCloseTaskEventIsSent() {
-                                assertPositionEvent(PositionEvent.CLOSETASK_DONE, 3);
+                            public void testCompletableDone() {
+                                assertCompletableSubscriber(completableCloseSubscriber);
                             }
                         }
                     }

@@ -27,6 +27,7 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
+import rx.Completable;
 import rx.Observable;
 
 public class Position {
@@ -36,7 +37,7 @@ public class Position {
     private final RestoreSLTPPolicy restoreSLTPPolicy;
     private final ConcurrentUtil concurrentUtil;
     private final PositionOrders orderRepository = new PositionOrders();
-    private final JFObservable<PositionEvent> positionEventPublisher = new JFObservable<>();
+    private final JFObservable<Long> positionEventPublisher = new JFObservable<>();
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private static final Logger logger = LogManager.getLogger(Position.class);
@@ -69,10 +70,6 @@ public class Position {
         return instrument;
     }
 
-    public Observable<PositionEvent> positionEventObs() {
-        return positionEventPublisher.get();
-    }
-
     public OrderDirection direction() {
         return orderRepository.direction();
     }
@@ -93,43 +90,55 @@ public class Position {
         return orderRepository.filterIdle(isFilled);
     }
 
-    public void submit(final OrderParams orderParams) {
+    public Completable submit(final OrderParams orderParams) {
         Observable.just(orderParams)
                 .doOnNext(params -> logger.debug("Start submit task with label "
                         + params.label() + " for " + instrument + " position."))
                 .flatMap(params -> orderUtil.submitOrder(orderParams))
                 .flatMap(orderEvent -> Observable.just(orderEvent.order()))
-                .doOnTerminate(() -> positionEventPublisher.onNext(PositionEvent.SUBMITTASK_DONE))
+                .doOnTerminate(() -> positionEventPublisher.onNext(1L))
                 .subscribe(this::onOrderAdd,
                            throwable -> logger.error("Submit for position " + instrument + " failed!"));
+
+        return Completable.fromObservable(positionEventPublisher.get().take(1));
     }
 
-    public void merge(final String mergeLabel) {
-        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, filledOrders());
+    public Completable merge(final String mergeLabel) {
+        final Set<IOrder> toMergeOrders = filledOrders();
+        if (toMergeOrders.size() < 2)
+            return Completable.complete();
 
-        Observable.just(filledOrders())
-                .filter(filledOrders -> filledOrders.size() > 1)
+        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, toMergeOrders);
+
+        Observable.just(toMergeOrders)
                 .doOnNext(filledOrders -> logger.debug("Starting merge task for " + instrument + " position"))
                 .doOnNext(filledOrders -> orderRepository.markAllActive())
                 .flatMap(filledOrders -> removeTPSLObs(filledOrders))
                 .concatMap(filledOrders -> mergeOrderObs(mergeLabel, filledOrders))
                 .flatMap(mergeOrder -> restoreSLTPObs(mergeOrder, restoreSLTPData.sl(), restoreSLTPData.tp()))
-                .doOnTerminate(() -> positionEventPublisher.onNext(PositionEvent.MERGETASK_DONE))
+                .doOnTerminate(() -> positionEventPublisher.onNext(1L))
                 .subscribe(this::onOrderAdd,
                            throwable -> logger.error("Merging position " + instrument + " failed!"));
+
+        return Completable.fromObservable(positionEventPublisher.get().take(1));
     }
 
-    public void close() {
-        Observable.from(orderRepository.filterIdle(isFilled.or(isOpened)))
+    public Completable close() {
+        final Set<IOrder> ordersToClose = orderRepository.filterIdle(isFilled.or(isOpened));
+        if (ordersToClose.isEmpty())
+            return Completable.complete();
+
+        Observable.from(ordersToClose)
                 .doOnSubscribe(() -> logger.debug("Starting to close " + instrument + " position"))
                 .doOnNext(filledOrders -> orderRepository.markAllActive())
-                .filter(order -> !isClosed.test(order))
                 .flatMap(order -> orderUtil.close(order))
                 .retryWhen(this::shouldRetry)
                 .flatMap(orderEvent -> Observable.just(orderEvent.order()))
-                .doOnTerminate(() -> positionEventPublisher.onNext(PositionEvent.CLOSETASK_DONE))
+                .doOnTerminate(() -> positionEventPublisher.onNext(1L))
                 .subscribe(this::onOrderRemove,
                            throwable -> logger.error("Closing position " + instrument + " failed!"));
+
+        return Completable.fromObservable(positionEventPublisher.get().take(1));
     }
 
     private void onOrderAdd(final IOrder order) {
