@@ -8,11 +8,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.dukascopy.api.IOrder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
+
+import com.dukascopy.api.IOrder;
 
 public final class PositionOrders {
 
@@ -33,6 +34,10 @@ public final class PositionOrders {
 
     public final boolean contains(final IOrder order) {
         return orderRepository.containsKey(order);
+    }
+
+    public final int size() {
+        return orderRepository.size();
     }
 
     public final synchronized void markAllActive() {

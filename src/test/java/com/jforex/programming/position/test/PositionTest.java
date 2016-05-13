@@ -592,6 +592,11 @@ public class PositionTest extends InstrumentUtilForTest {
                                         completableMergeSubscriber.assertNotCompleted();
                                     }
 
+                                    @Test
+                                    public void testPositionHasMergeOrder() {
+                                        assertTrue(positionHasOrder(mergeOrder));
+                                    }
+
                                     public class RestoredSL {
 
                                         @Before
@@ -632,11 +637,6 @@ public class PositionTest extends InstrumentUtilForTest {
                                             @Test
                                             public void testCompletableMergeDone() {
                                                 assertCompletableSubscriber(completableMergeSubscriber);
-                                            }
-
-                                            @Test
-                                            public void testPositionHasMergeOrder() {
-                                                assertTrue(positionHasOrder(mergeOrder));
                                             }
                                         }
 
