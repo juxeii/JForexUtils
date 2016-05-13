@@ -22,6 +22,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderParams;
@@ -37,9 +39,6 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
-
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -52,12 +51,9 @@ public class PositionTest extends InstrumentUtilForTest {
     private Position position;
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    @Mock
-    private RestoreSLTPPolicy restoreSLTPPolicyMock;
-    @Mock
-    private OrderUtil orderUtilMock;
-    @Mock
-    private ConcurrentUtil concurrentUtilMock;
+    @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
+    @Mock private OrderUtil orderUtilMock;
+    @Mock private ConcurrentUtil concurrentUtilMock;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final Subject<Long, Long> retryTimerSubject = PublishSubject.create();
     private final TestSubscriber<PositionEvent> positionEventSubscriber = new TestSubscriber<>();
@@ -204,6 +200,7 @@ public class PositionTest extends InstrumentUtilForTest {
             buySubmitSubject.onError(jfException);
 
             verify(orderUtilMock).submitOrder(orderParamsBuy);
+            assertPositionEvent(PositionEvent.SUBMITTASK_DONE, 1);
         }
 
         public class SubmitRejectMessage {
@@ -420,6 +417,7 @@ public class PositionTest extends InstrumentUtilForTest {
                             sellRemoveTPSubject.onError(jfException);
 
                             verify(orderUtilMock).setTakeProfitPrice(sellOrder, noTPPrice);
+                            assertPositionEvent(PositionEvent.MERGETASK_DONE, 3);
                         }
 
                         public class RemovedTPOnSellRejected {
@@ -462,6 +460,7 @@ public class PositionTest extends InstrumentUtilForTest {
                                 sellRemoveSLSubject.onError(jfException);
 
                                 verify(orderUtilMock).setStopLossPrice(sellOrder, noSLPrice);
+                                assertPositionEvent(PositionEvent.MERGETASK_DONE, 3);
                             }
 
                             public class RemovedSLs {
@@ -480,6 +479,14 @@ public class PositionTest extends InstrumentUtilForTest {
                                 @Test
                                 public void testMergeIsCalled() {
                                     verify(orderUtilMock).mergeOrders(eq(mergeLabel), any());
+                                }
+
+                                @Test
+                                public void testOnMergeJFExceptionNoRetryIsDone() {
+                                    mergeSubject.onError(jfException);
+
+                                    verify(orderUtilMock).mergeOrders(eq(mergeLabel), any());
+                                    assertPositionEvent(PositionEvent.MERGETASK_DONE, 3);
                                 }
 
                                 public class AfterMergeRejectMessage {
@@ -649,8 +656,10 @@ public class PositionTest extends InstrumentUtilForTest {
                         @Test
                         public void testOnCloseJFExceptionNoRetryIsDone() {
                             buyCloseSubject.onError(jfException);
+                            sellCloseSubject.onError(jfException);
 
                             verify(orderUtilMock).close(buyOrder);
+                            assertPositionEvent(PositionEvent.CLOSETASK_DONE, 3);
                         }
 
                         public class AfterSecondClosePosition {

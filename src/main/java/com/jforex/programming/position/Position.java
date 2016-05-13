@@ -16,6 +16,8 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.misc.JFObservable;
 import com.jforex.programming.order.OrderDirection;
@@ -24,9 +26,6 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
