@@ -105,10 +105,12 @@ public class Position {
 
     public Completable merge(final String mergeLabel) {
         final Set<IOrder> toMergeOrders = filledOrders();
+        logger.debug("Merge called for " + instrument + " position with label " + mergeLabel + " size "
+                + toMergeOrders.size());
         if (toMergeOrders.size() < 2)
             return Completable.complete();
 
-        logger.debug("Starting merge task for " + instrument + " position");
+        logger.debug("Starting merge task for " + instrument + " position with label " + mergeLabel);
         orderRepository.markAllActive();
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, toMergeOrders);
 

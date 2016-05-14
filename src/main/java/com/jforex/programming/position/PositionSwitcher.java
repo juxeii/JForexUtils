@@ -106,14 +106,8 @@ public final class PositionSwitcher {
         final String mergeLabel = userSettings.defaultMergePrefix() + adaptedOrderParams.label();
 
         position.submit(adaptedOrderParams)
-                .doOnTerminate(() -> startMerge(mergeLabel))
-                .subscribe();
-    }
-
-    private void startMerge(final String mergeLabel) {
-        position.merge(mergeLabel)
-                .doOnTerminate(() -> fsm.fire(FSMTrigger.MERGE_DONE))
-                .subscribe();
+                .subscribe(() -> position.merge(mergeLabel)
+                        .subscribe(() -> fsm.fire(FSMTrigger.MERGE_DONE)));
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {
