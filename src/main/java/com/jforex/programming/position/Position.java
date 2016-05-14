@@ -164,44 +164,44 @@ public class Position {
 
     private Completable removeTPSLObs(final Set<IOrder> filledOrders) {
         return Completable.fromObservable(Observable.from(filledOrders)
-                .flatMap(order -> Observable.concat(changeTPOrderObs(order, platformSettings.noTPPrice()),
-                                                    changeSLOrderObs(order, platformSettings.noSLPrice()))));
+                .doOnNext(order -> Completable.concat(changeTPOrderObs(order, platformSettings.noTPPrice()),
+                                                      changeSLOrderObs(order, platformSettings.noSLPrice()))));
     }
 
     private Completable restoreSLTPObs(final IOrder mergedOrder,
                                        final RestoreSLTPData restoreSLTPData) {
-        return Completable.fromObservable(Observable.just(mergedOrder)
-                .flatMap(order -> Observable.concat(changeSLOrderObs(order, restoreSLTPData.sl()),
-                                                    changeTPOrderObs(order, restoreSLTPData.tp()))));
+        return Completable.concat(changeSLOrderObs(mergedOrder, restoreSLTPData.sl()),
+                                  changeTPOrderObs(mergedOrder, restoreSLTPData.tp()));
     }
 
     private Observable<IOrder> mergeOrderObs(final String mergeLabel,
                                              final Set<IOrder> filledOrders) {
-        return Observable.just(mergeLabel)
-                .doOnNext(label -> logger.debug("Start merge with label: " + label + " for " + instrument))
-                .flatMap(order -> orderUtil.mergeOrders(mergeLabel, filledOrders))
+        logger.debug("Start merge with label " + mergeLabel + " for " + instrument);
+        return orderUtil.mergeOrders(mergeLabel, filledOrders)
                 .retryWhen(this::shouldRetry)
                 .flatMap(orderEvent -> Observable.just(orderEvent.order()));
     }
 
-    private Observable<OrderEvent> changeSLOrderObs(final IOrder orderToChangeSL,
-                                                    final double newSL) {
-        return Observable.just(orderToChangeSL)
+    private Completable changeSLOrderObs(final IOrder orderToChangeSL,
+                                         final double newSL) {
+        logger.debug("Called changeSLOrderObs for " + orderToChangeSL.getLabel() + " with new SL " + newSL);
+        return Completable.fromObservable(Observable.just(orderToChangeSL)
                 .filter(order -> !isSLSetTo(newSL).test(orderToChangeSL))
                 .doOnNext(order -> logger.debug("Start to change SL from " + order.getStopLossPrice() + " to "
                         + newSL + " for order " + order.getLabel() + " and position " + instrument))
                 .flatMap(order -> orderUtil.setStopLossPrice(order, newSL))
-                .retryWhen(this::shouldRetry);
+                .retryWhen(this::shouldRetry));
     }
 
-    private Observable<OrderEvent> changeTPOrderObs(final IOrder orderToChangeTP,
-                                                    final double newTP) {
-        return Observable.just(orderToChangeTP)
+    private Completable changeTPOrderObs(final IOrder orderToChangeTP,
+                                         final double newTP) {
+        logger.debug("Called changeTPOrderObs for " + orderToChangeTP.getLabel() + " with new SL " + newTP);
+        return Completable.fromObservable(Observable.just(orderToChangeTP)
                 .filter(order -> !isTPSetTo(newTP).test(orderToChangeTP))
                 .doOnNext(order -> logger.debug("Start to change TP from " + order.getTakeProfitPrice() + " to "
                         + newTP + " for order " + order.getLabel() + " and position " + instrument))
                 .flatMap(order -> orderUtil.setTakeProfitPrice(order, newTP))
-                .retryWhen(this::shouldRetry);
+                .retryWhen(this::shouldRetry));
     }
 
     private Observable<?> shouldRetry(final Observable<? extends Throwable> throwable) {
