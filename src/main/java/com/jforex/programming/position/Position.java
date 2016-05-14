@@ -105,8 +105,6 @@ public class Position {
 
     public Completable merge(final String mergeLabel) {
         final Set<IOrder> toMergeOrders = filledOrders();
-        logger.debug("Merge called for " + instrument + " position with label " + mergeLabel + " size "
-                + toMergeOrders.size());
         if (toMergeOrders.size() < 2)
             return Completable.complete();
 
@@ -115,15 +113,22 @@ public class Position {
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, toMergeOrders);
 
         removeTPSLObs(toMergeOrders)
-                .endWith(mergeOrderObs(mergeLabel, toMergeOrders))
+                .doOnCompleted(() -> mergeAndRestore(mergeLabel, toMergeOrders, restoreSLTPData))
+                .subscribe();
+
+        return Completable.fromObservable(positionEventPublisher.get().take(1));
+    }
+
+    private void mergeAndRestore(final String mergeLabel,
+                                 final Set<IOrder> toMergeOrders,
+                                 final RestoreSLTPData restoreSLTPData) {
+        mergeOrderObs(mergeLabel, toMergeOrders)
                 .doOnNext(this::onOrderAdd)
                 .flatMap(mergeOrder -> restoreSLTPObs(mergeOrder, restoreSLTPData).toObservable())
                 .doOnTerminate(() -> positionEventPublisher.onNext(1L))
                 .subscribe(order -> {},
                            throwable -> logger.error("Merging position " + instrument + " failed!"),
                            () -> logger.debug("Merging position " + instrument + " successful."));
-
-        return Completable.fromObservable(positionEventPublisher.get().take(1));
     }
 
     public Completable close() {
@@ -163,9 +168,11 @@ public class Position {
     }
 
     private Completable removeTPSLObs(final Set<IOrder> filledOrders) {
+        logger.debug("Called removeTPSLObs for " + instrument + " with filledOrders size " + filledOrders.size());
         return Completable.fromObservable(Observable.from(filledOrders)
-                .doOnNext(order -> Completable.concat(changeTPOrderObs(order, platformSettings.noTPPrice()),
-                                                      changeSLOrderObs(order, platformSettings.noSLPrice()))));
+                .flatMap(order -> Completable.concat(changeTPOrderObs(order, platformSettings.noTPPrice()),
+                                                     changeSLOrderObs(order, platformSettings.noSLPrice()))
+                        .toObservable()));
     }
 
     private Completable restoreSLTPObs(final IOrder mergedOrder,
@@ -177,7 +184,8 @@ public class Position {
     private Observable<IOrder> mergeOrderObs(final String mergeLabel,
                                              final Set<IOrder> filledOrders) {
         logger.debug("Start merge with label " + mergeLabel + " for " + instrument);
-        return orderUtil.mergeOrders(mergeLabel, filledOrders)
+        return Observable.defer(() -> orderUtil.mergeOrders(mergeLabel, filledOrders))
+                .doOnError(t -> logger.info("MERGE RETRY for " + mergeLabel))
                 .retryWhen(this::shouldRetry)
                 .flatMap(orderEvent -> Observable.just(orderEvent.order()));
     }
