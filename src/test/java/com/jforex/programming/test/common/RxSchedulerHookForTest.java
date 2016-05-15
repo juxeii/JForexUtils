@@ -2,27 +2,22 @@ package com.jforex.programming.test.common;
 
 import rx.Scheduler;
 import rx.plugins.RxJavaSchedulersHook;
+import rx.schedulers.Schedulers;
 
 public class RxSchedulerHookForTest extends RxJavaSchedulersHook {
 
-    private final Scheduler scheduler;
-
-    public RxSchedulerHookForTest(final Scheduler scheduler) {
-        this.scheduler = scheduler;
-    }
-
     @Override
     public Scheduler getIOScheduler() {
-        return scheduler;
+        return Schedulers.immediate();
     }
 
     @Override
     public Scheduler getNewThreadScheduler() {
-        return scheduler;
+        return Schedulers.immediate();
     }
 
     @Override
     public Scheduler getComputationScheduler() {
-        return scheduler;
+        return Schedulers.immediate();
     }
 }

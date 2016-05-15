@@ -141,7 +141,7 @@ public class OrderUtil {
                                           final OrderEventTypeData orderEventTypeData,
                                           final Subscriber<? super OrderEvent> subscriber) {
         final OrderEventType orderEventType = orderEvent.type();
-        if (!subscriber.isUnsubscribed()) {
+        if (!subscriber.isUnsubscribed())
             if (orderEventTypeData.isRejectType(orderEventType))
                 subscriber.onError(new OrderCallRejectException("", orderEvent));
             else {
@@ -149,7 +149,6 @@ public class OrderUtil {
                 if (orderEventTypeData.isDoneType(orderEventType))
                     subscriber.onCompleted();
             }
-        }
     }
 
     private void registerOrderCallRequest(final OrderCallExecutorResult orderExecutorResult,
