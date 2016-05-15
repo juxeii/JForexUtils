@@ -141,7 +141,7 @@ public class Position {
 
         Observable.from(ordersToClose)
                 .flatMap(order -> orderUtil.close(order))
-                .retryWhen(this::shouldRetry)
+                .retry(this::shouldRetry)
                 .doOnNext(orderEvent -> onOrderRemove(orderEvent.order()))
                 .doOnTerminate(() -> positionEventPublisher.onNext(1L))
                 .subscribe(orderEvent -> {},
@@ -186,7 +186,7 @@ public class Position {
         logger.debug("Start merge with label " + mergeLabel + " for " + instrument);
         return Observable.defer(() -> orderUtil.mergeOrders(mergeLabel, filledOrders))
                 .doOnError(t -> logger.info("MERGE RETRY for " + mergeLabel))
-                .retryWhen(this::shouldRetry)
+                .retry(this::shouldRetry)
                 .flatMap(orderEvent -> Observable.just(orderEvent.order()));
     }
 
@@ -198,7 +198,7 @@ public class Position {
                 .doOnNext(order -> logger.debug("Start to change SL from " + order.getStopLossPrice() + " to "
                         + newSL + " for order " + order.getLabel() + " and position " + instrument))
                 .flatMap(order -> orderUtil.setStopLossPrice(order, newSL))
-                .retryWhen(this::shouldRetry));
+                .retry(this::shouldRetry));
     }
 
     private Completable changeTPOrderObs(final IOrder orderToChangeTP,
@@ -209,19 +209,20 @@ public class Position {
                 .doOnNext(order -> logger.debug("Start to change TP from " + order.getTakeProfitPrice() + " to "
                         + newTP + " for order " + order.getLabel() + " and position " + instrument))
                 .flatMap(order -> orderUtil.setTakeProfitPrice(order, newTP))
-                .retryWhen(this::shouldRetry));
+                .retry(this::shouldRetry));
     }
 
-    private Observable<?> shouldRetry(final Observable<? extends Throwable> throwable) {
-        return throwable.flatMap(error -> {
-            if (error instanceof OrderCallRejectException)
-                return throwable.zipWith(Observable.range(1, platformSettings.maxRetriesOnOrderFail()),
-                                         (exc, att) -> exc)
-                        .doOnNext(exc -> logRetry((OrderCallRejectException) exc))
-                        .flatMap(exc -> concurrentUtil.timerObservable(platformSettings.delayOnOrderFailRetry(),
-                                                                       TimeUnit.MILLISECONDS));
-            return Observable.error(error);
-        });
+    public boolean shouldRetry(final int retryCount,
+                               final Throwable throwable) {
+        if (throwable instanceof OrderCallRejectException &&
+                retryCount <= platformSettings.maxRetriesOnOrderFail()) {
+            logRetry((OrderCallRejectException) throwable);
+            concurrentUtil.timerObservable(platformSettings.delayOnOrderFailRetry(), TimeUnit.MILLISECONDS)
+                    .toBlocking()
+                    .subscribe(i -> {});
+            return true;
+        }
+        return false;
     }
 
     private void logRetry(final OrderCallRejectException rejectException) {
