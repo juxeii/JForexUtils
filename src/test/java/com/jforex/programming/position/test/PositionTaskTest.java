@@ -41,7 +41,7 @@ public class PositionTaskTest extends InstrumentUtilForTest {
     @Mock
     private ConcurrentUtil concurrentUtilMock;
     private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
-    // private final int noOfRetries = platformSettings.maxRetriesOnOrderFail();
+    private final int noOfRetries = platformSettings.maxRetriesOnOrderFail();
     private OrderCallRejectException rejectException;
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
@@ -62,8 +62,14 @@ public class PositionTaskTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(concurrentUtilMock.timerObservable(platformSettings.delayOnOrderFailRetry(),
-                                                TimeUnit.MILLISECONDS)).thenReturn(Observable.just(0L));
+        when(concurrentUtilMock
+                .timerObservable(platformSettings.delayOnOrderFailRetry(),
+                                 TimeUnit.MILLISECONDS)).thenReturn(Observable.just(0L));
+    }
+
+    private void verifyConcurrentUtilCalls(final int times) {
+        verify(concurrentUtilMock, times(times))
+                .timerObservable(platformSettings.delayOnOrderFailRetry(), TimeUnit.MILLISECONDS);
     }
 
     public class SetSLCompletableSetup {
@@ -121,12 +127,17 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                 }
             }
 
-            public class SLChangeReject {
+            public class SLChangeRejectWithAllRetriesAndSuccess {
 
                 @Before
                 public void setUp() {
+                    @SuppressWarnings("unchecked")
+                    final Observable<OrderEvent> rejectObservables[] = new Observable[noOfRetries];
+                    for (int i = 0; i < noOfRetries - 1; ++i)
+                        rejectObservables[i] = Observable.error(rejectException);
+
                     when(orderUtilMock.setStopLossPrice(buyOrder, toSetSL))
-                            .thenReturn(Observable.error(rejectException))
+                            .thenReturn(Observable.error(rejectException), rejectObservables)
                             .thenReturn(Observable.empty());
 
                     positionTask.setSLCompletable(buyOrder, toSetSL).subscribe(setSLSubscriber);
@@ -134,7 +145,12 @@ public class PositionTaskTest extends InstrumentUtilForTest {
 
                 @Test
                 public void testRetryCallIsDone() {
-                    verify(orderUtilMock, times(2)).setStopLossPrice(buyOrder, toSetSL);
+                    verify(orderUtilMock, times(1 + noOfRetries)).setStopLossPrice(buyOrder, toSetSL);
+                }
+
+                @Test
+                public void testRetryWaitOnConcurrentUtilIsCalled() {
+                    verifyConcurrentUtilCalls(noOfRetries);
                 }
 
                 @Test
@@ -144,33 +160,55 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                 }
             }
 
-            public class TwoSLChangeRejects {
+            public class SLChangeRejectWithMoreRejectsThanRetries {
 
                 @Before
                 public void setUp() {
+                    @SuppressWarnings("unchecked")
+                    final Observable<OrderEvent> rejectObservables[] = new Observable[noOfRetries];
+                    for (int i = 0; i < noOfRetries; ++i)
+                        rejectObservables[i] = Observable.error(rejectException);
+
                     when(orderUtilMock.setStopLossPrice(buyOrder, toSetSL))
-                            .thenReturn(Observable.error(rejectException))
-                            .thenReturn(Observable.error(rejectException))
-                            .thenReturn(Observable.empty());
+                            .thenReturn(Observable.error(rejectException), rejectObservables);
 
                     positionTask.setSLCompletable(buyOrder, toSetSL).subscribe(setSLSubscriber);
                 }
 
                 @Test
                 public void testRetryCallIsDone() {
-                    verify(orderUtilMock, times(3)).setStopLossPrice(buyOrder, toSetSL);
+                    verify(orderUtilMock, times(1 + noOfRetries)).setStopLossPrice(buyOrder, toSetSL);
+                }
+
+                @Test
+                public void testRetryWaitOnConcurrentUtilIsCalled() {
+                    verifyConcurrentUtilCalls(noOfRetries);
                 }
 
                 @Test
                 public void testSubscriberIsCompleted() {
-                    setSLSubscriber.assertNoErrors();
-                    setSLSubscriber.assertCompleted();
+                    setSLSubscriber.assertError(OrderCallRejectException.class);
+                }
+            }
+
+            public class OnJFException {
+
+                @Before
+                public void setUp() {
+                    when(orderUtilMock.setStopLossPrice(buyOrder, toSetSL))
+                            .thenReturn(Observable.error(jfException));
+
+                    positionTask.setSLCompletable(buyOrder, toSetSL).subscribe(setSLSubscriber);
                 }
 
                 @Test
-                public void testWaitingForRetryIsDone() {
-                    verify(concurrentUtilMock, times(2)).timerObservable(platformSettings.delayOnOrderFailRetry(),
-                                                                         TimeUnit.MILLISECONDS);
+                public void testNoRetryDoneForJFExceptions() {
+                    verify(orderUtilMock).setStopLossPrice(buyOrder, toSetSL);
+                }
+
+                @Test
+                public void testSubscriberCompletedWithJFException() {
+                    setSLSubscriber.assertError(JFException.class);
                 }
             }
         }

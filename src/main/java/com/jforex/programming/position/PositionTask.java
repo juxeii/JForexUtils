@@ -5,6 +5,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import java.util.concurrent.TimeUnit;
 
 import org.aeonbits.owner.ConfigFactory;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,39 +39,45 @@ public class PositionTask {
 
     public Completable setSLCompletable(final IOrder orderToChangeSL,
                                         final double newSL) {
-        logger.debug("Called changeSLOrderObs for " + orderToChangeSL.getLabel() + " with new SL " + newSL);
-
-        return Completable.create(subscriber -> {
-            Observable.just(orderToChangeSL)
-                    .filter(order -> !isSLSetTo(newSL).test(orderToChangeSL))
-                    .doOnNext(order -> logger.debug("Start to change SL from " + order.getStopLossPrice() + " to "
-                            + newSL + " for order " + order.getLabel() + " and position " + instrument))
-                    .flatMap(order -> orderUtil.setStopLossPrice(order, newSL))
-                    .retry(this::shouldRetry)
-                    .doOnCompleted(() -> logger.debug("Changed SL to " + orderToChangeSL.getStopLossPrice() +
-                            " for order " + orderToChangeSL.getLabel() + " and position " + instrument))
-                    .subscribe(orderEvent -> {},
-                               subscriber::onError,
-                               subscriber::onCompleted);
-        });
+        final double currentSL = orderToChangeSL.getStopLossPrice();
+        return Observable.just(orderToChangeSL)
+                .filter(order -> !isSLSetTo(newSL).test(orderToChangeSL))
+                .doOnNext(order -> logger.debug("Start to change SL from " + currentSL + " to "
+                        + newSL + " for order " + order.getLabel() + " and position " + instrument))
+                .flatMap(order -> orderUtil.setStopLossPrice(order, newSL))
+                .retryWhen(this::shouldRetry)
+                .doOnCompleted(() -> logger
+                        .debug("Changed SL from " + currentSL + " to " + newSL +
+                                " for order " + orderToChangeSL.getLabel() + " and position " + instrument))
+                .toCompletable();
     }
 
-    private boolean shouldRetry(final int retryCount,
-                                final Throwable throwable) {
-        if (throwable instanceof OrderCallRejectException &&
-                retryCount <= platformSettings.maxRetriesOnOrderFail()) {
-            logRetry((OrderCallRejectException) throwable);
-            concurrentUtil.timerObservable(platformSettings.delayOnOrderFailRetry(), TimeUnit.MILLISECONDS)
-                    .toBlocking()
-                    .subscribe(i -> {});
-            return true;
+    private Observable<?> shouldRetry(final Observable<? extends Throwable> errors) {
+        return errors
+                .flatMap(this::filterRetryError)
+                .zipWith(Observable.range(1, platformSettings.maxRetriesOnOrderFail() + 1), Pair::of)
+                .flatMap(this::evaluateRetryPair);
+    }
+
+    private Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair) {
+        return retryPair.getRight() == platformSettings.maxRetriesOnOrderFail() + 1
+                ? Observable.error(retryPair.getLeft())
+                : concurrentUtil.timerObservable(platformSettings.delayOnOrderFailRetry(),
+                                                 TimeUnit.MILLISECONDS);
+    }
+
+    private Observable<? extends Throwable> filterRetryError(final Throwable error) {
+        if (error instanceof OrderCallRejectException) {
+            logRetry((OrderCallRejectException) error);
+            return Observable.just(error);
         }
-        return false;
+        logger.error("Retry logic received unexpected error " + error.getClass().getName() + "!");
+        return Observable.error(error);
     }
 
     private void logRetry(final OrderCallRejectException rejectException) {
-        final IOrder order = rejectException.orderEvent().order();
-        logger.warn("Received reject type " + rejectException.orderEvent().type() + " for order " + order.getLabel()
+        logger.warn("Received reject type " + rejectException.orderEvent().type() +
+                " for order " + rejectException.orderEvent().order().getLabel()
                 + "!" + " Will retry task in " + platformSettings.delayOnOrderFailRetry() + " milliseconds...");
     }
 }
