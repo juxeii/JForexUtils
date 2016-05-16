@@ -110,7 +110,8 @@ public class Position {
 
         logger.debug("Starting merge task for " + instrument + " position with label " + mergeLabel);
         orderRepository.markAllActive();
-        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy, toMergeOrders);
+        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy.restoreSL(toMergeOrders),
+                                                                    restoreSLTPPolicy.restoreTP(toMergeOrders));
 
         removeTPSLObs(toMergeOrders)
                 .doOnCompleted(() -> mergeAndRestore(mergeLabel, toMergeOrders, restoreSLTPData))
