@@ -51,7 +51,7 @@ public class PositionTask {
     public Completable closeCompletable(final IOrder orderToClose) {
         return Observable.just(orderToClose)
                 .filter(order -> !isClosed.test(order))
-                .doOnNext(orderEvent -> logger.debug("Starting to close order " + orderToClose.getLabel()
+                .doOnNext(order -> logger.debug("Starting to close order " + orderToClose.getLabel()
                         + " for " + instrument + " position."))
                 .flatMap(order -> orderUtil.close(order))
                 .retryWhen(this::shouldRetry)
@@ -105,7 +105,7 @@ public class PositionTask {
 
     private Observable<?> shouldRetry(final Observable<? extends Throwable> errors) {
         return errors
-                .flatMap(this::filterRetryError)
+                .flatMap(this::filterErrorType)
                 .zipWith(Observable.range(1, maxRetries + 1), Pair::of)
                 .flatMap(this::evaluateRetryPair);
     }
@@ -117,7 +117,7 @@ public class PositionTask {
                                                  TimeUnit.MILLISECONDS);
     }
 
-    private Observable<? extends Throwable> filterRetryError(final Throwable error) {
+    private Observable<? extends Throwable> filterErrorType(final Throwable error) {
         if (error instanceof OrderCallRejectException) {
             logRetry((OrderCallRejectException) error);
             return Observable.just(error);

@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +24,6 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.PositionTask;
-import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
@@ -47,13 +45,8 @@ public class PositionTaskTest extends InstrumentUtilForTest {
     private OrderUtil orderUtilMock;
     @Mock
     private ConcurrentUtil concurrentUtilMock;
-    private final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
     private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
     private final int noOfRetries = platformSettings.maxRetriesOnOrderFail();
-
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    // private static final Logger logger =
-    // LogManager.getLogger(Position.class);
 
     @Before
     public void setUp() throws JFException {
@@ -117,6 +110,7 @@ public class PositionTaskTest extends InstrumentUtilForTest {
 
     public class SubmitObservableSetup {
 
+        protected final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
         protected TestSubscriber<IOrder> submitSubscriber = new TestSubscriber<>();
         protected Supplier<Subscription> submitSubscriptionSupplier =
                 () -> positionTask.submitObservable(orderParamsBuy).subscribe(submitSubscriber);
