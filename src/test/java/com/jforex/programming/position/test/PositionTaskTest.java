@@ -15,9 +15,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.CalculationUtil;
-import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -27,9 +28,6 @@ import com.jforex.programming.position.PositionTask;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -41,37 +39,21 @@ public class PositionTaskTest extends InstrumentUtilForTest {
 
     private PositionTask positionTask;
 
-    @Mock
-    private OrderUtil orderUtilMock;
-    @Mock
-    private ConcurrentUtil concurrentUtilMock;
+    @Mock private OrderUtil orderUtilMock;
     private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
     private final int noOfRetries = platformSettings.maxRetriesOnOrderFail();
+    private final long retryDelay = platformSettings.delayOnOrderFailRetry();
 
     @Before
     public void setUp() throws JFException {
         initCommonTestFramework();
-        setUpMocks();
 
-        positionTask = new PositionTask(instrumentEURUSD,
-                                        orderUtilMock,
-                                        concurrentUtilMock);
-    }
-
-    private void setUpMocks() {
-        when(concurrentUtilMock
-                .timerObservable(platformSettings.delayOnOrderFailRetry(),
-                                 TimeUnit.MILLISECONDS)).thenReturn(Observable.just(0L));
+        positionTask = new PositionTask(instrumentEURUSD, orderUtilMock);
     }
 
     private OrderCallRejectException createRejectException(final OrderEventType orderEventType) {
         final OrderEvent rejectEvent = new OrderEvent(buyOrder, orderEventType);
         return new OrderCallRejectException("", rejectEvent);
-    }
-
-    private void verifyConcurrentUtilCalls(final int times) {
-        verify(concurrentUtilMock, times(times))
-                .timerObservable(platformSettings.delayOnOrderFailRetry(), TimeUnit.MILLISECONDS);
     }
 
     private Observable<OrderEvent>[] createRejectObsArray(final int noOfRejects,
@@ -215,16 +197,13 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                 setUpOrderUtilAllRetriesWithSuccess(mergeSupplierCall, OrderEventType.MERGE_REJECTED);
 
                 mergeSubscriptionSupplier.get();
+
+                rxTestUtil.advanceTimeBy(retryDelay * noOfRetries, TimeUnit.MILLISECONDS);
             }
 
             @Test
             public void testRetryCallIsDone() {
                 verify(orderUtilMock, times(1 + noOfRetries)).mergeOrders(eq(mergeLabel), any());
-            }
-
-            @Test
-            public void testRetryWaitOnConcurrentUtilIsCalled() {
-                verifyConcurrentUtilCalls(noOfRetries);
             }
 
             @Test
@@ -240,16 +219,13 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                 setUpOrderUtilWithMoreRejectsThanRetries(mergeSupplierCall, OrderEventType.MERGE_REJECTED);
 
                 mergeSubscriptionSupplier.get();
+
+                rxTestUtil.advanceTimeBy(retryDelay * noOfRetries, TimeUnit.MILLISECONDS);
             }
 
             @Test
             public void testRetryCallIsDone() {
                 verify(orderUtilMock, times(1 + noOfRetries)).mergeOrders(eq(mergeLabel), any());
-            }
-
-            @Test
-            public void testRetryWaitOnConcurrentUtilIsCalled() {
-                verifyConcurrentUtilCalls(noOfRetries);
             }
 
             @Test
@@ -342,16 +318,13 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                     setUpOrderUtilAllRetriesWithSuccess(closeSupplierCall, OrderEventType.CLOSE_REJECTED);
 
                     closeCompletableCall.run();
+
+                    rxTestUtil.advanceTimeBy(retryDelay * 3, TimeUnit.MILLISECONDS);
                 }
 
                 @Test
                 public void testRetryCallIsDone() {
                     verify(orderUtilMock, times(1 + noOfRetries)).close(buyOrder);
-                }
-
-                @Test
-                public void testRetryWaitOnConcurrentUtilIsCalled() {
-                    verifyConcurrentUtilCalls(noOfRetries);
                 }
 
                 @Test
@@ -367,16 +340,13 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                     setUpOrderUtilWithMoreRejectsThanRetries(closeSupplierCall, OrderEventType.CLOSE_REJECTED);
 
                     closeCompletableCall.run();
+
+                    rxTestUtil.advanceTimeBy(retryDelay * noOfRetries, TimeUnit.MILLISECONDS);
                 }
 
                 @Test
                 public void testRetryCallIsDone() {
                     verify(orderUtilMock, times(1 + noOfRetries)).close(buyOrder);
-                }
-
-                @Test
-                public void testRetryWaitOnConcurrentUtilIsCalled() {
-                    verifyConcurrentUtilCalls(noOfRetries);
                 }
 
                 @Test
@@ -470,16 +440,13 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                     setUpOrderUtilAllRetriesWithSuccess(setSLSupplierCall, OrderEventType.CHANGE_SL_REJECTED);
 
                     setSLCompletableCall.run();
+
+                    rxTestUtil.advanceTimeBy(retryDelay * noOfRetries, TimeUnit.MILLISECONDS);
                 }
 
                 @Test
                 public void testRetryCallIsDone() {
                     verify(orderUtilMock, times(1 + noOfRetries)).setStopLossPrice(buyOrder, toSetSL);
-                }
-
-                @Test
-                public void testRetryWaitOnConcurrentUtilIsCalled() {
-                    verifyConcurrentUtilCalls(noOfRetries);
                 }
 
                 @Test
@@ -495,16 +462,13 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                     setUpOrderUtilWithMoreRejectsThanRetries(setSLSupplierCall, OrderEventType.CHANGE_SL_REJECTED);
 
                     setSLCompletableCall.run();
+
+                    rxTestUtil.advanceTimeBy(retryDelay * noOfRetries, TimeUnit.MILLISECONDS);
                 }
 
                 @Test
                 public void testRetryCallIsDone() {
                     verify(orderUtilMock, times(1 + noOfRetries)).setStopLossPrice(buyOrder, toSetSL);
-                }
-
-                @Test
-                public void testRetryWaitOnConcurrentUtilIsCalled() {
-                    verifyConcurrentUtilCalls(noOfRetries);
                 }
 
                 @Test
@@ -598,16 +562,13 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                     setUpOrderUtilAllRetriesWithSuccess(setTPSupplierCall, OrderEventType.CHANGE_TP_REJECTED);
 
                     setTPCompletableCall.run();
+
+                    rxTestUtil.advanceTimeBy(retryDelay * noOfRetries, TimeUnit.MILLISECONDS);
                 }
 
                 @Test
                 public void testRetryCallIsDone() {
                     verify(orderUtilMock, times(1 + noOfRetries)).setTakeProfitPrice(buyOrder, toSetTP);
-                }
-
-                @Test
-                public void testRetryWaitOnConcurrentUtilIsCalled() {
-                    verifyConcurrentUtilCalls(noOfRetries);
                 }
 
                 @Test
@@ -623,16 +584,13 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                     setUpOrderUtilWithMoreRejectsThanRetries(setTPSupplierCall, OrderEventType.CHANGE_TP_REJECTED);
 
                     setTPCompletableCall.run();
+
+                    rxTestUtil.advanceTimeBy(retryDelay * noOfRetries, TimeUnit.MILLISECONDS);
                 }
 
                 @Test
                 public void testRetryCallIsDone() {
                     verify(orderUtilMock, times(1 + noOfRetries)).setTakeProfitPrice(buyOrder, toSetTP);
-                }
-
-                @Test
-                public void testRetryWaitOnConcurrentUtilIsCalled() {
-                    verifyConcurrentUtilCalls(noOfRetries);
                 }
 
                 @Test

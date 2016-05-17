@@ -108,7 +108,7 @@ public class JForexUtil implements MessageConsumer {
     private void initOrderRelated() {
         orderCallExecutor = new OrderCallExecutor(concurrentUtil);
         orderUtil = new OrderUtil(context.getEngine(), orderCallExecutor, orderEventGateway);
-        positionRepository = new PositionFactory(orderUtil, orderEventGateway.observable(), concurrentUtil);
+        positionRepository = new PositionFactory(orderUtil, orderEventGateway.observable());
     }
 
     public IContext context() {

@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -27,18 +26,15 @@ public class PositionTask {
 
     private final Instrument instrument;
     private final OrderUtil orderUtil;
-    private final ConcurrentUtil concurrentUtil;
     private final int maxRetries = platformSettings.maxRetriesOnOrderFail();
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private static final Logger logger = LogManager.getLogger(Position.class);
 
     public PositionTask(final Instrument instrument,
-                        final OrderUtil orderUtil,
-                        final ConcurrentUtil concurrentUtil) {
+                        final OrderUtil orderUtil) {
         this.instrument = instrument;
         this.orderUtil = orderUtil;
-        this.concurrentUtil = concurrentUtil;
     }
 
     public Observable<IOrder> submitObservable(final OrderParams orderParams) {
@@ -65,13 +61,6 @@ public class PositionTask {
                 .retryWhen(this::shouldRetry)
                 .flatMap(orderEvent -> Observable.just(orderEvent.order()));
     }
-
-//    public Completable restoreSLTPObservable(final IOrder mergeOrder,
-//                                             final RestoreSLTPData restoreSLTPData) {
-//        final Completable restoreSL = setSLCompletable(mergeOrder, restoreSLTPData.sl());
-//        final Completable restoreTP = setTPCompletable(mergeOrder, restoreSLTPData.tp());
-//        return Completable.concat(restoreSL, restoreTP);
-//    }
 
     public Completable setSLCompletable(final IOrder orderToChangeSL,
                                         final double newSL) {
@@ -111,8 +100,9 @@ public class PositionTask {
     private Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair) {
         return retryPair.getRight() == maxRetries + 1
                 ? Observable.error(retryPair.getLeft())
-                : concurrentUtil.timerObservable(platformSettings.delayOnOrderFailRetry(),
-                                                 TimeUnit.MILLISECONDS);
+                : Observable
+                        .interval(platformSettings.delayOnOrderFailRetry(), TimeUnit.MILLISECONDS)
+                        .take(1);
     }
 
     private Observable<? extends Throwable> filterErrorType(final Throwable error) {

@@ -1,6 +1,5 @@
 package com.jforex.programming.position;
 
-import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
@@ -42,15 +41,11 @@ public class Position {
 
         orderEventObservable
                 .filter(orderEvent -> orderEvent.order().getInstrument() == instrument)
-                .doOnNext(orderEvent -> logger.info("Received " + orderEvent.type() + " for position "
-                        + instrument + " with label " + orderEvent.order().getLabel()))
                 .filter(orderEvent -> orderRepository.contains(orderEvent.order()))
-                .doOnNext(orderEvent -> logger.info("Received in repository " + orderEvent.type() + " for position "
-                        + instrument + " with label " + orderEvent.order().getLabel()))
+                .doOnNext(orderEvent -> logger.info("Received event " + orderEvent.type() + " for order "
+                        + orderEvent.order().getLabel() + "in repository for " + instrument))
                 .filter(orderEvent -> endOfOrderEventTypes.contains(orderEvent.type()))
-                .doOnNext(orderEvent -> orderRepository.remove(orderEvent.order()))
-                .doOnNext(orderEvent -> logger.info("Removed " + orderEvent.order().getLabel() + " from " + instrument
-                        + " repositiory because of event type " + orderEvent.type()))
+                .doOnNext(orderEvent -> removeOrder(orderEvent.order()))
                 .subscribe();
     }
 
@@ -81,7 +76,7 @@ public class Position {
     public Completable submit(final OrderParams orderParams) {
         logger.debug("Start submit task with label " + orderParams.label() + " for " + instrument + " position.");
         return positionTask.submitObservable(orderParams)
-                .doOnNext(this::onOrderAdd)
+                .doOnNext(this::addOrder)
                 .doOnError(e -> logger.error("Submit " + orderParams.label() + " for position "
                         + instrument + " failed!"))
                 .doOnCompleted(() -> logger.debug("Submit " + orderParams.label() + " for position "
@@ -90,30 +85,21 @@ public class Position {
     }
 
     public Completable merge(final String mergeLabel) {
-        final Set<IOrder> toMergeOrders = filledOrders();
-        if (toMergeOrders.size() < 2) {
+        final Set<IOrder> ordersToMerge = filledOrders();
+        if (ordersToMerge.size() < 2) {
             return Completable.complete();
         }
 
         logger.debug("Starting merge task for " + instrument + " position with label " + mergeLabel);
         orderRepository.markAllActive();
-        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy.restoreSL(toMergeOrders),
-                                                                    restoreSLTPPolicy.restoreTP(toMergeOrders));
+        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy.restoreSL(ordersToMerge),
+                                                                    restoreSLTPPolicy.restoreTP(ordersToMerge));
 
-        return removeTPSLObs(toMergeOrders)
-                .concatWith(mergeAndRestore(mergeLabel, toMergeOrders, restoreSLTPData));
-    }
-
-    private Completable mergeAndRestore(final String mergeLabel,
-                                        final Set<IOrder> ordersToMerge,
-                                        final RestoreSLTPData restoreSLTPData) {
-        return Observable.defer(() -> {
-            logger.debug("Starting to merge with label " + mergeLabel);
-            return positionTask.mergeObservable(mergeLabel, ordersToMerge);
-        })
-                .doOnNext(this::onOrderAdd)
-                .flatMap(mergeOrder -> restoreSLTPObs(mergeOrder, restoreSLTPData).toObservable())
-                .toCompletable();
+        return removeTPSLObs(ordersToMerge)
+                .concatWith(Observable.defer(() -> positionTask.mergeObservable(mergeLabel, ordersToMerge))
+                        .doOnNext(this::addOrder)
+                        .flatMap(mergeOrder -> restoreSLTPObs(mergeOrder, restoreSLTPData).toObservable())
+                        .toCompletable());
     }
 
     private Completable removeTPSLObs(final Set<IOrder> filledOrders) {
@@ -126,14 +112,6 @@ public class Position {
                 .flatMap(order -> positionTask.setSLCompletable(order, platformSettings.noSLPrice()).toObservable())
                 .toCompletable();
         return removeTPObs.concatWith(removeSLObs);
-    }
-
-    private void onOrderAdd(final IOrder order) {
-        if (isFilled.test(order) || (isConditional.test(order) && isOpened.test(order))) {
-            orderRepository.add(order);
-            logger.debug("Added order " + order.getLabel() + " to position " + instrument + " Orderstate: "
-                    + order.getState() + " repo size " + orderRepository.size());
-        }
     }
 
     public Completable close() {
@@ -159,5 +137,17 @@ public class Position {
                 .flatMap(order -> positionTask.setTPCompletable(order, restoreSLTPData.tp()).toObservable())
                 .toCompletable();
         return restoreSLObs.concatWith(restoreTPObs);
+    }
+
+    private void addOrder(final IOrder order) {
+        orderRepository.add(order);
+        logger.debug("Added order " + order.getLabel() + " to position " + instrument + " Orderstate: "
+                + order.getState() + " repo size " + orderRepository.size());
+    }
+
+    private void removeOrder(final IOrder order) {
+        orderRepository.remove(order);
+        logger.debug("Removed order " + order.getLabel() + " from position " + instrument + " Orderstate: "
+                + order.getState() + " repo size " + orderRepository.size());
     }
 }
