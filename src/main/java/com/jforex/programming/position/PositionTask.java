@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -24,16 +23,13 @@ import rx.Observable;
 
 public class PositionTask {
 
-    private final Instrument instrument;
     private final OrderUtil orderUtil;
     private final int maxRetries = platformSettings.maxRetriesOnOrderFail();
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private static final Logger logger = LogManager.getLogger(Position.class);
 
-    public PositionTask(final Instrument instrument,
-                        final OrderUtil orderUtil) {
-        this.instrument = instrument;
+    public PositionTask(final OrderUtil orderUtil) {
         this.orderUtil = orderUtil;
     }
 
@@ -46,17 +42,17 @@ public class PositionTask {
         return Observable.just(orderToClose)
                 .filter(order -> !isClosed.test(order))
                 .doOnNext(order -> logger.debug("Starting to close order " + orderToClose.getLabel()
-                        + " for " + instrument + " position."))
+                        + " for " + orderToClose.getInstrument() + " position."))
                 .flatMap(order -> orderUtil.close(order))
                 .retryWhen(this::shouldRetry)
                 .doOnNext(orderEvent -> logger.debug("Order " + orderToClose.getLabel() + " closed for "
-                        + instrument + " position."))
+                        + orderToClose.getInstrument() + " position."))
                 .toCompletable();
     }
 
     public Observable<IOrder> mergeObservable(final String mergeLabel,
                                               final Set<IOrder> ordersToMerge) {
-        logger.debug("Start merge with label " + mergeLabel + " for " + instrument);
+        logger.debug("Start merge with label " + mergeLabel);
         return Observable.defer(() -> orderUtil.mergeOrders(mergeLabel, ordersToMerge))
                 .retryWhen(this::shouldRetry)
                 .flatMap(orderEvent -> Observable.just(orderEvent.order()));
@@ -68,11 +64,13 @@ public class PositionTask {
         return Observable.just(orderToChangeSL)
                 .filter(order -> !isSLSetTo(newSL).test(orderToChangeSL))
                 .doOnNext(order -> logger.debug("Start to change SL from " + currentSL + " to "
-                        + newSL + " for order " + order.getLabel() + " and position " + instrument))
+                        + newSL + " for order " + order.getLabel() + " and position "
+                        + orderToChangeSL.getInstrument()))
                 .flatMap(order -> orderUtil.setStopLossPrice(order, newSL))
                 .retryWhen(this::shouldRetry)
                 .doOnNext(orderEvent -> logger.debug("Changed SL from " + currentSL + " to " + newSL +
-                        " for order " + orderToChangeSL.getLabel() + " and position " + instrument))
+                        " for order " + orderToChangeSL.getLabel() + " and position "
+                        + orderToChangeSL.getInstrument()))
                 .toCompletable();
     }
 
@@ -82,11 +80,13 @@ public class PositionTask {
         return Observable.just(orderToChangeTP)
                 .filter(order -> !isTPSetTo(newTP).test(orderToChangeTP))
                 .doOnNext(order -> logger.debug("Start to change TP from " + currentTP + " to "
-                        + newTP + " for order " + order.getLabel() + " and position " + instrument))
+                        + newTP + " for order " + order.getLabel() + " and position "
+                        + orderToChangeTP.getInstrument()))
                 .flatMap(order -> orderUtil.setTakeProfitPrice(order, newTP))
                 .retryWhen(this::shouldRetry)
                 .doOnNext(orderEvent -> logger.debug("Changed TP from " + currentTP + " to " + newTP +
-                        " for order " + orderToChangeTP.getLabel() + " and position " + instrument))
+                        " for order " + orderToChangeTP.getLabel() + " and position "
+                        + orderToChangeTP.getInstrument()))
                 .toCompletable();
     }
 

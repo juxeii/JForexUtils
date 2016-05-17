@@ -48,7 +48,7 @@ public class PositionTaskTest extends InstrumentUtilForTest {
     public void setUp() throws JFException {
         initCommonTestFramework();
 
-        positionTask = new PositionTask(instrumentEURUSD, orderUtilMock);
+        positionTask = new PositionTask(orderUtilMock);
     }
 
     private OrderCallRejectException createRejectException(final OrderEventType orderEventType) {

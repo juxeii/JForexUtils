@@ -5,27 +5,26 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
 
 import rx.Observable;
 
 public final class PositionFactory {
 
-    private final OrderUtil orderUtil;
+    private final PositionTask positionTask;
     private final Observable<OrderEvent> orderEventObservable;
     private final Map<Instrument, Position> positionByInstrument = new ConcurrentHashMap<>();
 
-    public PositionFactory(final OrderUtil orderUtil,
+    public PositionFactory(final PositionTask positionTask,
                            final Observable<OrderEvent> orderEventObservable) {
-        this.orderUtil = orderUtil;
+        this.positionTask = positionTask;
         this.orderEventObservable = orderEventObservable;
     }
 
     public final Position createNew(final Instrument instrument,
                                     final RestoreSLTPPolicy restoreSLTPPolicy) {
         return new Position(instrument,
-                            new PositionTask(instrument, orderUtil),
+                            positionTask,
                             orderEventObservable,
                             restoreSLTPPolicy);
     }

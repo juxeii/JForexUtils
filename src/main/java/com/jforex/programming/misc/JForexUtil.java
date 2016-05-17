@@ -23,6 +23,7 @@ import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.NoRestorePolicy;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.PositionTask;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -46,6 +47,7 @@ public class JForexUtil implements MessageConsumer {
     private BarQuoteProvider barQuoteProvider;
 
     private OrderUtil orderUtil;
+    private PositionTask positionTask;
     private PositionFactory positionRepository;
     private OrderEventGateway orderEventGateway;
     private OrderCallExecutor orderCallExecutor;
@@ -108,7 +110,8 @@ public class JForexUtil implements MessageConsumer {
     private void initOrderRelated() {
         orderCallExecutor = new OrderCallExecutor(concurrentUtil);
         orderUtil = new OrderUtil(context.getEngine(), orderCallExecutor, orderEventGateway);
-        positionRepository = new PositionFactory(orderUtil, orderEventGateway.observable());
+        positionTask = new PositionTask(orderUtil);
+        positionRepository = new PositionFactory(positionTask, orderEventGateway.observable());
     }
 
     public IContext context() {
