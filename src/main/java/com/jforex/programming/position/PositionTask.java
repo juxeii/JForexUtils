@@ -24,9 +24,9 @@ import rx.Observable;
 public class PositionTask {
 
     private final OrderUtil orderUtil;
-    private final int maxRetries = platformSettings.maxRetriesOnOrderFail();
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private final static int exceededRetryCount = platformSettings.maxRetriesOnOrderFail() + 1;
     private static final Logger logger = LogManager.getLogger(Position.class);
 
     public PositionTask(final OrderUtil orderUtil) {
@@ -93,12 +93,12 @@ public class PositionTask {
     private Observable<?> shouldRetry(final Observable<? extends Throwable> errors) {
         return errors
                 .flatMap(this::filterErrorType)
-                .zipWith(Observable.range(1, maxRetries + 1), Pair::of)
+                .zipWith(Observable.range(1, exceededRetryCount), Pair::of)
                 .flatMap(this::evaluateRetryPair);
     }
 
     private Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair) {
-        return retryPair.getRight() == maxRetries + 1
+        return retryPair.getRight() == exceededRetryCount
                 ? Observable.error(retryPair.getLeft())
                 : Observable
                         .interval(platformSettings.delayOnOrderFailRetry(), TimeUnit.MILLISECONDS)

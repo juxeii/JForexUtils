@@ -86,9 +86,8 @@ public class Position {
 
     public Completable merge(final String mergeLabel) {
         final Set<IOrder> ordersToMerge = filledOrders();
-        if (ordersToMerge.size() < 2) {
+        if (ordersToMerge.size() < 2)
             return Completable.complete();
-        }
 
         logger.debug("Starting merge task for " + instrument + " position with label " + mergeLabel);
         orderRepository.markAllActive();
@@ -114,18 +113,6 @@ public class Position {
         return removeTPObs.concatWith(removeSLObs);
     }
 
-    public Completable close() {
-        logger.debug("Starting to close " + instrument + " position");
-        return Observable.just(orderRepository.filterIdle(isFilled.or(isOpened)))
-                .filter(ordersToClose -> !ordersToClose.isEmpty())
-                .doOnNext(ordersToClose -> orderRepository.markAllActive())
-                .flatMap(Observable::from)
-                .flatMap(orderToClose -> positionTask.closeCompletable(orderToClose).toObservable())
-                .toCompletable()
-                .doOnError(e -> logger.error("Closing position " + instrument + " failed!"))
-                .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."));
-    }
-
     private Completable restoreSLTPObs(final IOrder mergedOrder,
                                        final RestoreSLTPData restoreSLTPData) {
         final Completable restoreSLObs = Observable.just(mergedOrder)
@@ -137,6 +124,18 @@ public class Position {
                 .flatMap(order -> positionTask.setTPCompletable(order, restoreSLTPData.tp()).toObservable())
                 .toCompletable();
         return restoreSLObs.concatWith(restoreTPObs);
+    }
+
+    public Completable close() {
+        logger.debug("Starting to close " + instrument + " position");
+        return Observable.just(orderRepository.filterIdle(isFilled.or(isOpened)))
+                .filter(ordersToClose -> !ordersToClose.isEmpty())
+                .doOnNext(ordersToClose -> orderRepository.markAllActive())
+                .flatMap(Observable::from)
+                .flatMap(orderToClose -> positionTask.closeCompletable(orderToClose).toObservable())
+                .toCompletable()
+                .doOnError(e -> logger.error("Closing position " + instrument + " failed!"))
+                .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."));
     }
 
     private void addOrder(final IOrder order) {

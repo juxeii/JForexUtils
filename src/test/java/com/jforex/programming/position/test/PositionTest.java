@@ -1,7 +1,6 @@
 package com.jforex.programming.position.test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -47,9 +46,12 @@ public class PositionTest extends InstrumentUtilForTest {
 
     private Position position;
 
-    @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
-    @Mock private PositionTask positionTaskMock;
-    @Captor private ArgumentCaptor<Set<IOrder>> toMergeOrdersCaptor;
+    @Mock
+    private RestoreSLTPPolicy restoreSLTPPolicyMock;
+    @Mock
+    private PositionTask positionTaskMock;
+    @Captor
+    private ArgumentCaptor<Set<IOrder>> toMergeOrdersCaptor;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
@@ -113,8 +115,8 @@ public class PositionTest extends InstrumentUtilForTest {
     public class SubmitSetup {
 
         private final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
-        private final TestSubscriber<OrderEvent> buySubmitSubscriber = new TestSubscriber<>();
         protected final OrderParams orderParamsSell = OrderParamsForTest.paramsSellEURUSD();
+        private final TestSubscriber<OrderEvent> buySubmitSubscriber = new TestSubscriber<>();
         protected final TestSubscriber<OrderEvent> sellsubmitSubscriber = new TestSubscriber<>();
         private final Runnable buySubmitCall =
                 () -> position.submit(orderParamsBuy).subscribe(buySubmitSubscriber);
@@ -300,9 +302,9 @@ public class PositionTest extends InstrumentUtilForTest {
                         }
 
                         @Test
-                        public void testNoRemoveSLIsCalledPositionTask() {
-                            verify(positionTaskMock, never()).setSLCompletable(buyOrder, noTPPrice);
-                            verify(positionTaskMock, never()).setSLCompletable(sellOrder, noTPPrice);
+                        public void testNoRemoveSLAndMergeIsCalledOnPositionTask() {
+                            verify(positionTaskMock, never()).setSLCompletable(buyOrder, noSLPrice);
+                            verify(positionTaskMock, never()).setSLCompletable(sellOrder, noSLPrice);
                             verify(positionTaskMock, never()).mergeObservable(eq(mergeLabel), any());
                         }
 
@@ -383,6 +385,12 @@ public class PositionTest extends InstrumentUtilForTest {
                                 }
 
                                 @Test
+                                public void testPositionHasStillBuyAndSellOrder() {
+                                    assertTrue(positionHasOrder(buyOrder));
+                                    assertTrue(positionHasOrder(sellOrder));
+                                }
+
+                                @Test
                                 public void testMergeSubscriberCompletedWithError() {
                                     mergeSubscriber.assertError(JFException.class);
                                 }
@@ -423,9 +431,8 @@ public class PositionTest extends InstrumentUtilForTest {
                                     sendOrderEvent(buyOrder, OrderEventType.CLOSED_BY_MERGE);
                                     sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_MERGE);
 
+                                    assertThat(position.orders().size(), equalTo(1));
                                     assertTrue(positionHasOrder(mergeOrder));
-                                    assertFalse(positionHasOrder(buyOrder));
-                                    assertFalse(positionHasOrder(sellOrder));
                                 }
 
                                 public class RestoreSLOK {

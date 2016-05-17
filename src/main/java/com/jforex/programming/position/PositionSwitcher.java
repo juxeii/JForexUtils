@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.google.common.collect.ImmutableMap;
@@ -13,8 +14,6 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.settings.UserSettings;
-
-import com.dukascopy.api.IEngine.OrderCommand;
 
 public final class PositionSwitcher {
 
@@ -40,6 +39,7 @@ public final class PositionSwitcher {
     }
 
     private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    private final static String defaultMergePrefix = userSettings.defaultMergePrefix();
 
     public PositionSwitcher(final Position position,
                             final OrderParamsSupplier orderParamsSupplier) {
@@ -103,11 +103,11 @@ public final class PositionSwitcher {
     private final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
         final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
-        final String mergeLabel = userSettings.defaultMergePrefix() + adaptedOrderParams.label();
+        final String mergeLabel = defaultMergePrefix + adaptedOrderParams.label();
 
         position.submit(adaptedOrderParams)
-                .subscribe(() -> position.merge(mergeLabel)
-                        .subscribe(() -> fsm.fire(FSMTrigger.MERGE_DONE)));
+                .subscribe(exc -> fsm.fire(FSMTrigger.MERGE_DONE),
+                           () -> position.merge(mergeLabel).subscribe(() -> fsm.fire(FSMTrigger.MERGE_DONE)));
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {

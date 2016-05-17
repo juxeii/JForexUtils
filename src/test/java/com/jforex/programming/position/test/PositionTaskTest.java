@@ -39,7 +39,8 @@ public class PositionTaskTest extends InstrumentUtilForTest {
 
     private PositionTask positionTask;
 
-    @Mock private OrderUtil orderUtilMock;
+    @Mock
+    private OrderUtil orderUtilMock;
     private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
     private final int noOfRetries = platformSettings.maxRetriesOnOrderFail();
     private final long retryDelay = platformSettings.delayOnOrderFailRetry();

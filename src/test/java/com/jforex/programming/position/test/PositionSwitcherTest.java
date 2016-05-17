@@ -15,6 +15,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.misc.JFObservable;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
@@ -24,8 +25,6 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
-
-import com.dukascopy.api.IEngine.OrderCommand;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
