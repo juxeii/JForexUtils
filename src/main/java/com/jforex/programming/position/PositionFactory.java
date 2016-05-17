@@ -4,11 +4,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
-
-import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -31,6 +30,7 @@ public final class PositionFactory {
                                     final RestoreSLTPPolicy restoreSLTPPolicy) {
         return new Position(instrument,
                             orderUtil,
+                            new PositionTask(instrument, orderUtil, concurrentUtil),
                             orderEventObservable,
                             restoreSLTPPolicy,
                             concurrentUtil);

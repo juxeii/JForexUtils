@@ -12,14 +12,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.settings.PlatformSettings;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -43,7 +42,6 @@ public class PositionTask {
     }
 
     public Observable<IOrder> submitObservable(final OrderParams orderParams) {
-        logger.debug("Start submit with label " + orderParams.label() + " for " + instrument + " position.");
         return Observable.defer(() -> orderUtil.submitOrder(orderParams))
                 .flatMap(orderEvent -> Observable.just(orderEvent.order()));
     }
