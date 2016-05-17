@@ -34,6 +34,7 @@ public class CommonUtilForTest {
     protected JFException jfException = new JFException("JFException for test");
     protected Optional<Exception> jfExceptionOpt = Optional.of(jfException);
     protected Optional<Exception> emptyJFExceptionOpt = Optional.empty();
+    protected final RxTestUtil rxTestUtil = RxTestUtil.get();
 
     protected final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     protected final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);

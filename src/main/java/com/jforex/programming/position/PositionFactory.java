@@ -29,11 +29,9 @@ public final class PositionFactory {
     public final Position createNew(final Instrument instrument,
                                     final RestoreSLTPPolicy restoreSLTPPolicy) {
         return new Position(instrument,
-                            orderUtil,
                             new PositionTask(instrument, orderUtil, concurrentUtil),
                             orderEventObservable,
-                            restoreSLTPPolicy,
-                            concurrentUtil);
+                            restoreSLTPPolicy);
     }
 
     public final Position forInstrument(final Instrument instrument,

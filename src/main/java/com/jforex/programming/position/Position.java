@@ -3,12 +3,9 @@ package com.jforex.programming.position;
 import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
-import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
-import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
 
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import org.aeonbits.owner.ConfigFactory;
@@ -17,12 +14,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.misc.ConcurrentUtil;
-import com.jforex.programming.misc.JFObservable;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
@@ -32,27 +25,20 @@ import rx.Observable;
 public class Position {
 
     private final Instrument instrument;
-    private final OrderUtil orderUtil;
     private final PositionTask positionTask;
     private final RestoreSLTPPolicy restoreSLTPPolicy;
-    private final ConcurrentUtil concurrentUtil;
     private final PositionOrders orderRepository = new PositionOrders();
-    private final JFObservable<Long> positionEventPublisher = new JFObservable<>();
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private static final Logger logger = LogManager.getLogger(Position.class);
 
     public Position(final Instrument instrument,
-                    final OrderUtil orderUtil,
                     final PositionTask positionTask,
                     final Observable<OrderEvent> orderEventObservable,
-                    final RestoreSLTPPolicy restoreSLTPPolicy,
-                    final ConcurrentUtil concurrentUtil) {
+                    final RestoreSLTPPolicy restoreSLTPPolicy) {
         this.instrument = instrument;
-        this.orderUtil = orderUtil;
         this.positionTask = positionTask;
         this.restoreSLTPPolicy = restoreSLTPPolicy;
-        this.concurrentUtil = concurrentUtil;
 
         orderEventObservable
                 .filter(orderEvent -> orderEvent.order().getInstrument() == instrument)
@@ -106,7 +92,6 @@ public class Position {
     public Completable merge(final String mergeLabel) {
         final Set<IOrder> toMergeOrders = filledOrders();
         if (toMergeOrders.size() < 2) {
-            logger.info("TOOOOOOOOOOOOOOO LOW");
             return Completable.complete();
         }
 
@@ -115,23 +100,40 @@ public class Position {
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy.restoreSL(toMergeOrders),
                                                                     restoreSLTPPolicy.restoreTP(toMergeOrders));
 
-        removeTPSLObs(toMergeOrders)
-                .doOnCompleted(() -> mergeAndRestore(mergeLabel, toMergeOrders, restoreSLTPData))
-                .subscribe();
-
-        return Completable.fromObservable(positionEventPublisher.get().take(1));
+        return removeTPSLObs(toMergeOrders)
+                .concatWith(mergeAndRestore(mergeLabel, toMergeOrders, restoreSLTPData));
     }
 
-    private void mergeAndRestore(final String mergeLabel,
-                                 final Set<IOrder> toMergeOrders,
-                                 final RestoreSLTPData restoreSLTPData) {
-        mergeOrderObs(mergeLabel, toMergeOrders)
+    private Completable mergeAndRestore(final String mergeLabel,
+                                        final Set<IOrder> ordersToMerge,
+                                        final RestoreSLTPData restoreSLTPData) {
+        return Observable.defer(() -> {
+            logger.debug("Starting to merge with label " + mergeLabel);
+            return positionTask.mergeObservable(mergeLabel, ordersToMerge);
+        })
                 .doOnNext(this::onOrderAdd)
                 .flatMap(mergeOrder -> restoreSLTPObs(mergeOrder, restoreSLTPData).toObservable())
-                .doOnTerminate(() -> positionEventPublisher.onNext(1L))
-                .subscribe(order -> {},
-                           throwable -> logger.error("Merging position " + instrument + " failed!"),
-                           () -> logger.debug("Merging position " + instrument + " successful."));
+                .toCompletable();
+    }
+
+    private Completable removeTPSLObs(final Set<IOrder> filledOrders) {
+        final Completable removeTPObs = Observable.from(filledOrders)
+                .doOnNext(order -> logger.debug("Remove TP from " + order.getLabel()))
+                .flatMap(order -> positionTask.setTPCompletable(order, platformSettings.noTPPrice()).toObservable())
+                .toCompletable();
+        final Completable removeSLObs = Observable.from(filledOrders)
+                .doOnNext(order -> logger.debug("Remove SL from " + order.getLabel()))
+                .flatMap(order -> positionTask.setSLCompletable(order, platformSettings.noSLPrice()).toObservable())
+                .toCompletable();
+        return removeTPObs.concatWith(removeSLObs);
+    }
+
+    private void onOrderAdd(final IOrder order) {
+        if (isFilled.test(order) || (isConditional.test(order) && isOpened.test(order))) {
+            orderRepository.add(order);
+            logger.debug("Added order " + order.getLabel() + " to position " + instrument + " Orderstate: "
+                    + order.getState() + " repo size " + orderRepository.size());
+        }
     }
 
     public Completable close() {
@@ -146,75 +148,16 @@ public class Position {
                 .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."));
     }
 
-    private void onOrderAdd(final IOrder order) {
-        if (isFilled.test(order) || (isConditional.test(order) && isOpened.test(order))) {
-            orderRepository.add(order);
-            logger.debug("Added order " + order.getLabel() + " to position " + instrument + " Orderstate: "
-                    + order.getState() + " repo size " + orderRepository.size());
-        }
-    }
-
-    private Completable removeTPSLObs(final Set<IOrder> filledOrders) {
-        logger.debug("Called removeTPSLObs for " + instrument + " with filledOrders size " + filledOrders.size());
-        return Completable.fromObservable(Observable.from(filledOrders)
-                .flatMap(order -> Completable.concat(changeTPOrderObs(order, platformSettings.noTPPrice()),
-                                                     changeSLOrderObs(order, platformSettings.noSLPrice()))
-                        .toObservable()));
-    }
-
     private Completable restoreSLTPObs(final IOrder mergedOrder,
                                        final RestoreSLTPData restoreSLTPData) {
-        return Completable.concat(changeSLOrderObs(mergedOrder, restoreSLTPData.sl()),
-                                  changeTPOrderObs(mergedOrder, restoreSLTPData.tp()));
-    }
-
-    private Observable<IOrder> mergeOrderObs(final String mergeLabel,
-                                             final Set<IOrder> filledOrders) {
-        logger.debug("Start merge with label " + mergeLabel + " for " + instrument);
-        return Observable.defer(() -> orderUtil.mergeOrders(mergeLabel, filledOrders))
-                .doOnError(t -> logger.info("MERGE RETRY for " + mergeLabel))
-                .retry(this::shouldRetry)
-                .flatMap(orderEvent -> Observable.just(orderEvent.order()));
-    }
-
-    private Completable changeSLOrderObs(final IOrder orderToChangeSL,
-                                         final double newSL) {
-        logger.debug("Called changeSLOrderObs for " + orderToChangeSL.getLabel() + " with new SL " + newSL);
-        return Completable.fromObservable(Observable.just(orderToChangeSL)
-                .filter(order -> !isSLSetTo(newSL).test(orderToChangeSL))
-                .doOnNext(order -> logger.debug("Start to change SL from " + order.getStopLossPrice() + " to "
-                        + newSL + " for order " + order.getLabel() + " and position " + instrument))
-                .flatMap(order -> orderUtil.setStopLossPrice(order, newSL))
-                .retry(this::shouldRetry));
-    }
-
-    private Completable changeTPOrderObs(final IOrder orderToChangeTP,
-                                         final double newTP) {
-        logger.debug("Called changeTPOrderObs for " + orderToChangeTP.getLabel() + " with new SL " + newTP);
-        return Completable.fromObservable(Observable.just(orderToChangeTP)
-                .filter(order -> !isTPSetTo(newTP).test(orderToChangeTP))
-                .doOnNext(order -> logger.debug("Start to change TP from " + order.getTakeProfitPrice() + " to "
-                        + newTP + " for order " + order.getLabel() + " and position " + instrument))
-                .flatMap(order -> orderUtil.setTakeProfitPrice(order, newTP))
-                .retry(this::shouldRetry));
-    }
-
-    public boolean shouldRetry(final int retryCount,
-                               final Throwable throwable) {
-        if (throwable instanceof OrderCallRejectException &&
-                retryCount <= platformSettings.maxRetriesOnOrderFail()) {
-            logRetry((OrderCallRejectException) throwable);
-            concurrentUtil.timerObservable(platformSettings.delayOnOrderFailRetry(), TimeUnit.MILLISECONDS)
-                    .toBlocking()
-                    .subscribe(i -> {});
-            return true;
-        }
-        return false;
-    }
-
-    private void logRetry(final OrderCallRejectException rejectException) {
-        final IOrder order = rejectException.orderEvent().order();
-        logger.warn("Received reject type " + rejectException.orderEvent().type() + " for order " + order.getLabel()
-                + "!" + " Will retry task in " + platformSettings.delayOnOrderFailRetry() + " milliseconds...");
+        final Completable restoreSLObs = Observable.just(mergedOrder)
+                .doOnNext(order -> logger.debug("Restore SL from " + order.getLabel()))
+                .flatMap(order -> positionTask.setSLCompletable(order, restoreSLTPData.sl()).toObservable())
+                .toCompletable();
+        final Completable restoreTPObs = Observable.just(mergedOrder)
+                .doOnNext(order -> logger.debug("Restore TP from " + order.getLabel()))
+                .flatMap(order -> positionTask.setTPCompletable(order, restoreSLTPData.tp()).toObservable())
+                .toCompletable();
+        return restoreSLObs.concatWith(restoreTPObs);
     }
 }

@@ -1,5 +1,8 @@
 package com.jforex.programming.position.test;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -9,20 +12,18 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
-import com.google.common.collect.Sets;
-import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
@@ -45,44 +46,23 @@ public class PositionTest extends InstrumentUtilForTest {
 
     private Position position;
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     @Mock private RestoreSLTPPolicy restoreSLTPPolicyMock;
-    @Mock private OrderUtil orderUtilMock;
     @Mock private PositionTask positionTaskMock;
-    @Mock private ConcurrentUtil concurrentUtilMock;
+    @Captor private ArgumentCaptor<Set<IOrder>> toMergeOrdersCaptor;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
-    private final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
-    private final OrderParams orderParamsSell = OrderParamsForTest.paramsSellEURUSD();
     private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
-    private final String mergeLabel = "MergeLabel";
-    private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrder, sellOrder);
-    private final IOrderForTest mergeOrder = IOrderForTest.buyOrderEURUSD();
-    private final double restoreSL = 1.12345;
-    private final double restoreTP = 1.12543;
-    private final double noSLPrice = platformSettings.noSLPrice();
-    private final double noTPPrice = platformSettings.noTPPrice();
+
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
     @Before
     public void setUp() throws JFException {
         initCommonTestFramework();
 
-        mergeOrder.setLabel(mergeLabel);
-        setUpMocks();
-
         position = new Position(instrumentEURUSD,
-                                orderUtilMock,
                                 positionTaskMock,
                                 orderEventSubject,
-                                restoreSLTPPolicyMock,
-                                concurrentUtilMock);
-    }
-
-    private void setUpMocks() {
-        when(restoreSLTPPolicyMock.restoreSL(any())).thenReturn(restoreSL);
-        when(restoreSLTPPolicyMock.restoreTP(any())).thenReturn(restoreTP);
-        when(concurrentUtilMock.timerObservable(platformSettings.delayOnOrderFailRetry(), TimeUnit.MILLISECONDS))
-                .thenReturn(Observable.just(0L));
+                                restoreSLTPPolicyMock);
     }
 
     private void sendOrderEvent(final IOrder order,
@@ -119,10 +99,23 @@ public class PositionTest extends InstrumentUtilForTest {
         assertSubscriberCompleted(closeSubscriber);
     }
 
+    @Test
+    public void testMergeOnEmptyPositionDoesNotCallOnPositionTask() {
+        final TestSubscriber<OrderEvent> mergeSubscriber = new TestSubscriber<>();
+
+        position.merge("TestLabel").subscribe(mergeSubscriber);
+
+        verifyZeroInteractions(positionTaskMock);
+        assertSubscriberCompleted(mergeSubscriber);
+    }
+
     public class SubmitSetup {
 
-        protected final TestSubscriber<OrderEvent> buySubmitSubscriber = new TestSubscriber<>();
-        protected Runnable buySubmitCall =
+        private final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
+        private final TestSubscriber<OrderEvent> buySubmitSubscriber = new TestSubscriber<>();
+        protected final OrderParams orderParamsSell = OrderParamsForTest.paramsSellEURUSD();
+        protected final TestSubscriber<OrderEvent> sellsubmitSubscriber = new TestSubscriber<>();
+        private final Runnable buySubmitCall =
                 () -> position.submit(orderParamsBuy).subscribe(buySubmitSubscriber);
 
         public class SubmitInProcess {
@@ -152,8 +145,6 @@ public class PositionTest extends InstrumentUtilForTest {
             }
 
             public class SecondSubmitCallIsOK {
-
-                protected final TestSubscriber<OrderEvent> sellsubmitSubscriber = new TestSubscriber<>();
 
                 @Before
                 public void setUp() {
@@ -198,6 +189,8 @@ public class PositionTest extends InstrumentUtilForTest {
 
         public class BuySubmitOK {
 
+            private final String mergeLabel = "MergeLabel";
+
             @Before
             public void setUp() {
                 buyOrder.setState(IOrder.State.FILLED);
@@ -227,6 +220,36 @@ public class PositionTest extends InstrumentUtilForTest {
                 assertSubscriberCompleted(mergeSubscriber);
             }
 
+            public class CloseOnSL {
+
+                @Before
+                public void setUp() {
+                    buyOrder.setState(IOrder.State.CLOSED);
+
+                    sendOrderEvent(buyOrder, OrderEventType.CLOSED_BY_SL);
+                }
+
+                @Test
+                public void testPositionHasNoOrder() {
+                    assertTrue(isRepositoryEmpty());
+                }
+            }
+
+            public class CloseOnTP {
+
+                @Before
+                public void setUp() {
+                    buyOrder.setState(IOrder.State.CLOSED);
+
+                    sendOrderEvent(buyOrder, OrderEventType.CLOSED_BY_TP);
+                }
+
+                @Test
+                public void testPositionHasNoOrder() {
+                    assertTrue(isRepositoryEmpty());
+                }
+            }
+
             public class SellSubmitOK {
 
                 protected final TestSubscriber<OrderEvent> sellSubmitSubscriber = new TestSubscriber<>();
@@ -250,79 +273,343 @@ public class PositionTest extends InstrumentUtilForTest {
                 public void testSellSubmitSubscriberCompleted() {
                     assertSubscriberCompleted(sellSubmitSubscriber);
                 }
-            }
 
-            public class CloseSetup {
+                public class MergeSequenceSetup {
 
-                protected final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
-                protected Runnable closeCall = () -> position.close().subscribe(closeSubscriber);
+                    private final double noSLPrice = platformSettings.noSLPrice();
+                    private final double noTPPrice = platformSettings.noTPPrice();
+                    protected final TestSubscriber<OrderEvent> mergeSubscriber = new TestSubscriber<>();
+                    protected Runnable mergeCall = () -> position.merge(mergeLabel).subscribe(mergeSubscriber);
 
-                public class CloseInProcess {
+                    public class RemoveTPFail {
 
-                    @Before
-                    public void setUp() {
-                        when(positionTaskMock.closeCompletable(buyOrder)).thenReturn(Completable.never());
+                        @Before
+                        public void setUp() {
+                            when(positionTaskMock.setTPCompletable(buyOrder, noTPPrice))
+                                    .thenReturn(Completable.error(jfException));
+                            when(positionTaskMock.setTPCompletable(sellOrder, noTPPrice))
+                                    .thenReturn(Completable.error(jfException));
 
-                        closeCall.run();
+                            mergeCall.run();
+                        }
+
+                        @Test
+                        public void testRemoveTPIsCalledPositionTask() {
+                            verify(positionTaskMock).setTPCompletable(any(), eq(noTPPrice));
+                        }
+
+                        @Test
+                        public void testNoRemoveSLIsCalledPositionTask() {
+                            verify(positionTaskMock, never()).setSLCompletable(buyOrder, noTPPrice);
+                            verify(positionTaskMock, never()).setSLCompletable(sellOrder, noTPPrice);
+                            verify(positionTaskMock, never()).mergeObservable(eq(mergeLabel), any());
+                        }
+
+                        @Test
+                        public void testMergeSubscriberCompletedWithError() {
+                            mergeSubscriber.assertError(JFException.class);
+                        }
                     }
 
-                    @Test
-                    public void testCloseIsCalledPositionTask() {
-                        verify(positionTaskMock).closeCompletable(buyOrder);
-                    }
+                    public class RemoveTPOK {
 
-                    @Test
-                    public void testCloseSubscriberNotYetCompleted() {
-                        assertSubscriberNotYetCompleted(closeSubscriber);
-                    }
+                        @Before
+                        public void setUp() {
+                            when(positionTaskMock.setTPCompletable(buyOrder, noTPPrice))
+                                    .thenReturn(Completable.complete());
+                            when(positionTaskMock.setTPCompletable(sellOrder, noTPPrice))
+                                    .thenReturn(Completable.complete());
+                        }
 
-                    @Test
-                    public void testPositionHasBuyOrder() {
-                        assertTrue(positionHasOrder(buyOrder));
+                        @Test
+                        public void testRemoveTPIsCalledPositionTask() {
+                            mergeCall.run();
+
+                            verify(positionTaskMock).setTPCompletable(buyOrder, noTPPrice);
+                            verify(positionTaskMock).setTPCompletable(sellOrder, noTPPrice);
+                        }
+
+                        public class RemoveSLInProgress {
+
+                            @Before
+                            public void setUp() {
+                                when(positionTaskMock.setSLCompletable(buyOrder, noTPPrice))
+                                        .thenReturn(Completable.never());
+                                when(positionTaskMock.setSLCompletable(sellOrder, noTPPrice))
+                                        .thenReturn(Completable.never());
+
+                                mergeCall.run();
+                            }
+
+                            @Test
+                            public void testRemoveTPIsCalledPositionTask() {
+                                verify(positionTaskMock).setTPCompletable(buyOrder, noTPPrice);
+                                verify(positionTaskMock).setTPCompletable(sellOrder, noTPPrice);
+                            }
+
+                            @Test
+                            public void testMergeSubscriberNotYetCompleted() {
+                                assertSubscriberNotYetCompleted(mergeSubscriber);
+                            }
+                        }
+
+                        public class RemoveSLOK {
+
+                            @Before
+                            public void setUp() {
+                                when(positionTaskMock.setSLCompletable(buyOrder, noSLPrice))
+                                        .thenReturn(Completable.complete());
+                                when(positionTaskMock.setSLCompletable(sellOrder, noSLPrice))
+                                        .thenReturn(Completable.complete());
+                            }
+
+                            @Test
+                            public void testRemoveSLIsCalledPositionTask() {
+                                mergeCall.run();
+
+                                verify(positionTaskMock).setSLCompletable(buyOrder, noSLPrice);
+                                verify(positionTaskMock).setSLCompletable(sellOrder, noSLPrice);
+                            }
+
+                            public class MergeCallFail {
+
+                                @Before
+                                public void setUp() {
+                                    when(positionTaskMock.mergeObservable(eq(mergeLabel), any()))
+                                            .thenReturn(Observable.error(jfException));
+
+                                    mergeCall.run();
+                                }
+
+                                @Test
+                                public void testMergeSubscriberCompletedWithError() {
+                                    mergeSubscriber.assertError(JFException.class);
+                                }
+                            }
+
+                            public class MergeCallOK {
+
+                                private final IOrderForTest mergeOrder = IOrderForTest.buyOrderEURUSD();
+
+                                @Before
+                                public void setUp() {
+                                    buyOrder.setState(IOrder.State.CLOSED);
+                                    sellOrder.setState(IOrder.State.CLOSED);
+
+                                    mergeOrder.setState(IOrder.State.FILLED);
+                                    mergeOrder.setLabel(mergeLabel);
+
+                                    when(positionTaskMock
+                                            .mergeObservable(eq(mergeLabel), toMergeOrdersCaptor.capture()))
+                                                    .thenReturn(Observable.just(mergeOrder));
+                                }
+
+                                @Test
+                                public void testMergeICalledOnPositionTaskWithCorrectOrders() {
+                                    mergeCall.run();
+
+                                    final Set<IOrder> ordersToMerge = toMergeOrdersCaptor.getValue();
+                                    verify(positionTaskMock).mergeObservable(mergeLabel, ordersToMerge);
+                                    assertThat(ordersToMerge.size(), equalTo(2));
+                                    assertTrue(ordersToMerge.contains(buyOrder));
+                                    assertTrue(ordersToMerge.contains(sellOrder));
+                                }
+
+                                @Test
+                                public void testPositionHasOnlyMergeOrder() {
+                                    mergeCall.run();
+
+                                    sendOrderEvent(buyOrder, OrderEventType.CLOSED_BY_MERGE);
+                                    sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_MERGE);
+
+                                    assertTrue(positionHasOrder(mergeOrder));
+                                    assertFalse(positionHasOrder(buyOrder));
+                                    assertFalse(positionHasOrder(sellOrder));
+                                }
+
+                                public class RestoreSLOK {
+
+                                    private final double restoreSL = 1.12345;
+                                    private final double restoreTP = 1.12543;
+
+                                    @Before
+                                    public void setUp() {
+                                        when(restoreSLTPPolicyMock.restoreSL(any())).thenReturn(restoreSL);
+                                        when(restoreSLTPPolicyMock.restoreTP(any())).thenReturn(restoreTP);
+
+                                        when(positionTaskMock.setSLCompletable(mergeOrder, restoreSL))
+                                                .thenReturn(Completable.complete());
+                                    }
+
+                                    @Test
+                                    public void testRestoreSLIsCalledOnPositionTask() {
+                                        mergeCall.run();
+
+                                        verify(positionTaskMock).setSLCompletable(mergeOrder, restoreSL);
+                                    }
+
+                                    @Test
+                                    public void testCloseSubscriberNotYetCompleted() {
+                                        assertSubscriberNotYetCompleted(mergeSubscriber);
+                                    }
+
+                                    public class RestoreTPOK {
+
+                                        @Before
+                                        public void setUp() {
+                                            when(positionTaskMock.setTPCompletable(mergeOrder, restoreTP))
+                                                    .thenReturn(Completable.complete());
+
+                                            mergeCall.run();
+                                        }
+
+                                        @Test
+                                        public void testRestoreTPIsCalledOnPositionTask() {
+                                            verify(positionTaskMock).setTPCompletable(mergeOrder, restoreTP);
+                                        }
+
+                                        @Test
+                                        public void testMergeSubscriberCompleted() {
+                                            assertSubscriberCompleted(mergeSubscriber);
+                                        }
+                                    }
+
+                                    public class RestoreTPFail {
+
+                                        @Before
+                                        public void setUp() {
+                                            when(positionTaskMock.setTPCompletable(mergeOrder, restoreTP))
+                                                    .thenReturn(Completable.error(jfException));
+
+                                            mergeCall.run();
+                                        }
+
+                                        @Test
+                                        public void testMergeSubscriberCompletedWithError() {
+                                            mergeSubscriber.assertError(JFException.class);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        public class RemoveSLFail {
+
+                            @Before
+                            public void setUp() {
+                                when(positionTaskMock.setSLCompletable(buyOrder, noTPPrice))
+                                        .thenReturn(Completable.error(jfException));
+                                when(positionTaskMock.setSLCompletable(sellOrder, noTPPrice))
+                                        .thenReturn(Completable.error(jfException));
+
+                                mergeCall.run();
+                            }
+
+                            @Test
+                            public void testRemoveTPIsCalledPositionTask() {
+                                verify(positionTaskMock).setTPCompletable(buyOrder, noTPPrice);
+                                verify(positionTaskMock).setTPCompletable(sellOrder, noTPPrice);
+                            }
+
+                            @Test
+                            public void testNoMergeCallOnPositionTask() {
+                                verify(positionTaskMock, never()).mergeObservable(eq(mergeLabel), any());
+                            }
+
+                            @Test
+                            public void testMergeSubscriberCompletedWithError() {
+                                mergeSubscriber.assertError(JFException.class);
+                            }
+                        }
                     }
                 }
 
-                public class CloseBuyOK {
+                public class CloseSetup {
 
-                    @Before
-                    public void setUp() {
-                        when(positionTaskMock.closeCompletable(buyOrder)).thenReturn(Completable.complete());
+                    protected final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
+                    protected Runnable closeCall = () -> position.close().subscribe(closeSubscriber);
 
-                        closeCall.run();
+                    public class CloseInProcess {
 
-                        buyOrder.setState(IOrder.State.CLOSED);
-                        sendOrderEvent(buyOrder, OrderEventType.CLOSE_OK);
+                        @Before
+                        public void setUp() {
+                            when(positionTaskMock.closeCompletable(buyOrder)).thenReturn(Completable.complete());
+                            when(positionTaskMock.closeCompletable(sellOrder)).thenReturn(Completable.never());
+
+                            closeCall.run();
+
+                            buyOrder.setState(IOrder.State.CLOSED);
+                        }
+
+                        @Test
+                        public void testCloseIsCalledPositionTask() {
+                            verify(positionTaskMock).closeCompletable(buyOrder);
+                            verify(positionTaskMock).closeCompletable(sellOrder);
+                        }
+
+                        @Test
+                        public void testCloseSubscriberNotYetCompleted() {
+                            assertSubscriberNotYetCompleted(closeSubscriber);
+                        }
+
+                        @Test
+                        public void testPositionHasOnlySellOrder() {
+                            assertTrue(positionHasOrder(sellOrder));
+                        }
                     }
 
-                    @Test
-                    public void testPositionHasNoOrder() {
-                        assertTrue(isRepositoryEmpty());
+                    public class CloseOK {
+
+                        @Before
+                        public void setUp() {
+                            when(positionTaskMock.closeCompletable(buyOrder)).thenReturn(Completable.complete());
+                            when(positionTaskMock.closeCompletable(sellOrder)).thenReturn(Completable.complete());
+
+                            closeCall.run();
+
+                            buyOrder.setState(IOrder.State.CLOSED);
+                            sellOrder.setState(IOrder.State.CLOSED);
+                            sendOrderEvent(buyOrder, OrderEventType.CLOSE_OK);
+                            sendOrderEvent(sellOrder, OrderEventType.CLOSE_OK);
+                        }
+
+                        @Test
+                        public void testPositionHasNoOrder() {
+                            assertTrue(isRepositoryEmpty());
+                        }
+
+                        @Test
+                        public void testSubmitSubscriberCompleted() {
+                            assertSubscriberCompleted(closeSubscriber);
+                        }
                     }
 
-                    @Test
-                    public void testSubmitSubscriberCompleted() {
-                        assertSubscriberCompleted(closeSubscriber);
-                    }
-                }
+                    public class CloseFail {
 
-                public class CloseFail {
+                        @Before
+                        public void setUp() {
+                            when(positionTaskMock.closeCompletable(buyOrder))
+                                    .thenReturn(Completable.complete());
+                            when(positionTaskMock.closeCompletable(sellOrder))
+                                    .thenReturn(Completable.error(jfException));
 
-                    @Before
-                    public void setUp() {
-                        when(positionTaskMock.closeCompletable(buyOrder))
-                                .thenReturn(Completable.error(jfException));
+                            closeCall.run();
+                        }
 
-                        closeCall.run();
-                    }
+                        @Test
+                        public void testCloseIsCalledOnOneOrder() {
+                            verify(positionTaskMock).closeCompletable(any());
+                        }
 
-                    @Test
-                    public void testPositionHasStillBuyOrder() {
-                        assertTrue(positionHasOrder(buyOrder));
-                    }
+                        @Test
+                        public void testPositionHasStillBuyOrder() {
+                            assertTrue(positionHasOrder(buyOrder));
+                        }
 
-                    @Test
-                    public void testSubmitSubscriberCompletedWithError() {
-                        closeSubscriber.assertError(JFException.class);
+                        @Test
+                        public void testCloseSubscriberCompletedWithError() {
+                            closeSubscriber.assertError(JFException.class);
+                        }
                     }
                 }
             }
