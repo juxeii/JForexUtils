@@ -1,7 +1,5 @@
 package com.jforex.programming.order;
 
-import static com.jforex.programming.order.OrderStaticUtil.isClosed;
-
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +23,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.PositionTask;
 import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Completable;
@@ -37,6 +36,7 @@ public class OrderUtil {
     private final OrderCallExecutor orderCallExecutor;
     private final OrderEventGateway orderEventGateway;
     private final PositionFactory positionFactory;
+    private final PositionTask positionTask;
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private final static int exceededRetryCount = platformSettings.maxRetriesOnOrderFail() + 1;
@@ -45,11 +45,13 @@ public class OrderUtil {
     public OrderUtil(final IEngine engine,
                      final OrderCallExecutor orderCallExecutor,
                      final OrderEventGateway orderEventGateway,
-                     final PositionFactory positionFactory) {
+                     final PositionFactory positionFactory,
+                     final PositionTask positionTask) {
         this.engine = engine;
         this.orderCallExecutor = orderCallExecutor;
         this.orderEventGateway = orderEventGateway;
         this.positionFactory = positionFactory;
+        this.positionTask = positionTask;
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
@@ -88,13 +90,7 @@ public class OrderUtil {
                 .filter(ordersToClose -> !ordersToClose.isEmpty())
                 .doOnNext(ordersToClose -> position.markOrdersActive())
                 .flatMap(Observable::from)
-                .filter(orderToClose -> !isClosed.test(orderToClose))
-                .doOnNext(orderToClose -> logger.debug("Starting to close order " + orderToClose.getLabel()
-                        + " for " + orderToClose.getInstrument() + " position."))
-                .flatMap(orderToClose -> close(orderToClose))
-                .retryWhen(this::shouldRetry)
-                .doOnNext(orderEvent -> logger.debug("Order " + orderEvent.order().getLabel() + " closed for "
-                        + orderEvent.order().getInstrument() + " position."))
+                .flatMap(orderToClose -> positionTask.closeCompletable(orderToClose).toObservable())
                 .toCompletable()
                 .doOnError(e -> logger.error("Closing position " + instrument + " failed!"))
                 .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."));

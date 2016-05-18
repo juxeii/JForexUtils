@@ -68,7 +68,7 @@ public class Position {
         return orderRepository.orders();
     }
 
-    private Set<IOrder> filledOrders() {
+    public Set<IOrder> filledOrders() {
         return orderRepository.filterIdle(isFilled);
     }
 
