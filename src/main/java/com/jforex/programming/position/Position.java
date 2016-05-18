@@ -27,13 +27,12 @@ import rx.Observable;
 public class Position {
 
     private final Instrument instrument;
+    private final ConcurrentMap<IOrder, OrderProcessState> orderRepository =
+            new MapMaker().weakKeys().makeMap();
 
     private enum OrderProcessState {
         IDLE, ACTIVE
     }
-
-    private final ConcurrentMap<IOrder, OrderProcessState> orderRepository =
-            new MapMaker().weakKeys().makeMap();
 
     private static final Logger logger = LogManager.getLogger(Position.class);
 
@@ -49,6 +48,10 @@ public class Position {
                 .filter(orderEvent -> endOfOrderEventTypes.contains(orderEvent.type()))
                 .doOnNext(orderEvent -> removeOrder(orderEvent.order()))
                 .subscribe();
+    }
+
+    public Instrument instrument() {
+        return instrument;
     }
 
     public synchronized void addOrder(final IOrder order) {
@@ -76,17 +79,21 @@ public class Position {
     }
 
     public OrderDirection direction() {
-        return OrderStaticUtil.combinedDirection(filter(isFilled));
+        return OrderStaticUtil.combinedDirection(filterOrders(isFilled));
     }
 
     public double signedExposure() {
-        return filter(isFilled)
+        return filterOrders(isFilled)
                 .stream()
                 .mapToDouble(OrderStaticUtil::signedAmount)
                 .sum();
     }
 
-    public Set<IOrder> filter(final Predicate<IOrder> orderPredicate) {
+    public Set<IOrder> orders() {
+        return ImmutableSet.copyOf(orderRepository.keySet());
+    }
+
+    public Set<IOrder> filterOrders(final Predicate<IOrder> orderPredicate) {
         return orderRepository
                 .keySet()
                 .stream()
@@ -94,7 +101,7 @@ public class Position {
                 .collect(toSet());
     }
 
-    public Set<IOrder> filterIdle(final Predicate<IOrder> orderPredicate) {
+    public Set<IOrder> notProcessingOrders(final Predicate<IOrder> orderPredicate) {
         return orderRepository
                 .entrySet()
                 .stream()
@@ -103,23 +110,15 @@ public class Position {
                 .keySet();
     }
 
-    public Set<IOrder> orders() {
-        return ImmutableSet.copyOf(orderRepository.keySet());
-    }
-
-    public Instrument instrument() {
-        return instrument;
-    }
-
     public Set<IOrder> filledOrders() {
-        return filterIdle(isFilled);
+        return notProcessingOrders(isFilled);
+    }
+
+    public Set<IOrder> ordersToClose() {
+        return notProcessingOrders(isFilled.or(isOpened));
     }
 
     public void markAllOrdersActive() {
         markAllActive();
-    }
-
-    public Set<IOrder> ordersToClose() {
-        return filterIdle(isFilled.or(isOpened));
     }
 }

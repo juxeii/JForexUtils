@@ -641,11 +641,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     private boolean isRepositoryEmpty() {
-        return position.filter(order -> true).isEmpty();
+        return position.filterOrders(order -> true).isEmpty();
     }
 
     private boolean positionHasOrder(final IOrder orderToFind) {
-        return position.filter(order -> order.getLabel().equals(orderToFind.getLabel())).size() == 1;
+        return position.filterOrders(order -> order.getLabel().equals(orderToFind.getLabel())).size() == 1;
     }
 
     private void assertSubscriberCompleted(final TestSubscriber<?> subscriber) {
