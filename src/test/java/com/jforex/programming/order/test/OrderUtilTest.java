@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -35,7 +36,6 @@ import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
 import rx.Completable;
-import rx.Observable;
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
@@ -144,16 +144,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         captureAndRunOrderCall();
 
         engineForTest.verifySubmit(orderParams, 1);
-    }
-
-    @Test
-    public void testSubmitPositionCallsOnPosition() {
-        final Observable<OrderEvent> expectedSubmitObs = Observable.empty();
-        when(positionMock.submit(orderParams)).thenReturn(expectedSubmitObs);
-
-        final Observable<OrderEvent> submitObs = orderUtil.submitPositionOrder(orderParams);
-
-        assertThat(submitObs, equalTo(expectedSubmitObs));
     }
 
     @Test
@@ -295,16 +285,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testClosePositionCallsOnPosition() {
-        final Completable expectedCompletable = Completable.complete();
-        when(positionMock.close()).thenReturn(expectedCompletable);
-
-        final Completable closeCompletable = orderUtil.closePosition(instrumentEURUSD);
-
-        assertThat(closeCompletable, equalTo(expectedCompletable));
-    }
-
-    @Test
     public void testCloseRegistersOnEventGateway() {
         orderUtil.close(orderUnderTest);
 
@@ -343,6 +323,15 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         sendOrderEvent(OrderEventType.CLOSE_REJECTED);
 
         assertRejectException();
+    }
+
+    @Test
+    public void testCloseOnEmptyPositionDoesNotCallOnIEngine() {
+        final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
+
+        orderUtil.closePosition(instrumentEURUSD).subscribe(closeSubscriber);
+
+        verifyZeroInteractions(engineMock);
     }
 
     @Test

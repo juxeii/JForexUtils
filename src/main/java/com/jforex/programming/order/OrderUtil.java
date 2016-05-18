@@ -1,6 +1,14 @@
 package com.jforex.programming.order;
 
+import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+
+import org.aeonbits.owner.ConfigFactory;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
@@ -17,6 +25,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Completable;
 import rx.Observable;
@@ -28,6 +37,10 @@ public class OrderUtil {
     private final OrderCallExecutor orderCallExecutor;
     private final OrderEventGateway orderEventGateway;
     private final PositionFactory positionFactory;
+
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private final static int exceededRetryCount = platformSettings.maxRetriesOnOrderFail() + 1;
+    private static final Logger logger = LogManager.getLogger(OrderUtil.class);
 
     public OrderUtil(final IEngine engine,
                      final OrderCallExecutor orderCallExecutor,
@@ -50,12 +63,9 @@ public class OrderUtil {
                                                                       orderParams.takeProfitPrice(),
                                                                       orderParams.goodTillTime(),
                                                                       orderParams.comment());
-        return runOrderSupplierCall(submitCall, OrderEventTypeData.submitData);
-    }
-
-    public Observable<OrderEvent> submitPositionOrder(final OrderParams orderParams) {
-        final Position position = positionFactory.forInstrument(orderParams.instrument());
-        return position.submit(orderParams);
+        return runOrderSupplierCall(submitCall, OrderEventTypeData.submitData)
+                .doOnNext(orderEvent -> position(orderParams.instrument())
+                        .addOrder(orderEvent.order()));
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
@@ -71,8 +81,23 @@ public class OrderUtil {
     }
 
     public Completable closePosition(final Instrument instrument) {
+        logger.debug("Starting to close " + instrument + " position");
         final Position position = positionFactory.forInstrument(instrument);
-        return position.close();
+
+        return Observable.just(position.filterIdle())
+                .filter(ordersToClose -> !ordersToClose.isEmpty())
+                .doOnNext(ordersToClose -> position.markOrdersActive())
+                .flatMap(Observable::from)
+                .filter(orderToClose -> !isClosed.test(orderToClose))
+                .doOnNext(orderToClose -> logger.debug("Starting to close order " + orderToClose.getLabel()
+                        + " for " + orderToClose.getInstrument() + " position."))
+                .flatMap(orderToClose -> close(orderToClose))
+                .retryWhen(this::shouldRetry)
+                .doOnNext(orderEvent -> logger.debug("Order " + orderEvent.order().getLabel() + " closed for "
+                        + orderEvent.order().getInstrument() + " position."))
+                .toCompletable()
+                .doOnError(e -> logger.error("Closing position " + instrument + " failed!"))
+                .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."));
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
@@ -178,5 +203,39 @@ public class OrderUtil {
         if (orderExecutorResult.orderOpt().isPresent())
             orderEventGateway.registerOrderRequest(orderExecutorResult.orderOpt().get(),
                                                    orderCallRequest);
+    }
+
+    public Position position(final Instrument instrument) {
+        return positionFactory.forInstrument(instrument);
+    }
+
+    private Observable<?> shouldRetry(final Observable<? extends Throwable> errors) {
+        return errors
+                .flatMap(this::filterErrorType)
+                .zipWith(Observable.range(1, exceededRetryCount), Pair::of)
+                .flatMap(this::evaluateRetryPair);
+    }
+
+    private Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair) {
+        return retryPair.getRight() == exceededRetryCount
+                ? Observable.error(retryPair.getLeft())
+                : Observable
+                        .interval(platformSettings.delayOnOrderFailRetry(), TimeUnit.MILLISECONDS)
+                        .take(1);
+    }
+
+    private Observable<? extends Throwable> filterErrorType(final Throwable error) {
+        if (error instanceof OrderCallRejectException) {
+            logRetry((OrderCallRejectException) error);
+            return Observable.just(error);
+        }
+        logger.error("Retry logic received unexpected error " + error.getClass().getName() + "!");
+        return Observable.error(error);
+    }
+
+    private void logRetry(final OrderCallRejectException rejectException) {
+        logger.warn("Received reject type " + rejectException.orderEvent().type() +
+                " for order " + rejectException.orderEvent().order().getLabel() + "!"
+                + " Will retry task in " + platformSettings.delayOnOrderFailRetry() + " milliseconds...");
     }
 }

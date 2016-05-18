@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -93,16 +92,6 @@ public class PositionTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testCloseOnEmptyPositionDoesNotCallOnPositionTask() {
-        final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
-
-        position.close().subscribe(closeSubscriber);
-
-        verifyZeroInteractions(positionTaskMock);
-        assertSubscriberCompleted(closeSubscriber);
-    }
-
-    @Test
     public void testMergeOnEmptyPositionDoesNotCallOnPositionTask() {
         final TestSubscriber<OrderEvent> mergeSubscriber = new TestSubscriber<>();
 
@@ -116,82 +105,8 @@ public class PositionTest extends InstrumentUtilForTest {
 
         private final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
         protected final OrderParams orderParamsSell = OrderParamsForTest.paramsSellEURUSD();
-        private final TestSubscriber<OrderEvent> buySubmitSubscriber = new TestSubscriber<>();
-        protected final TestSubscriber<OrderEvent> sellsubmitSubscriber = new TestSubscriber<>();
         private final Runnable buySubmitCall =
-                () -> position.submit(orderParamsBuy).subscribe(buySubmitSubscriber);
-
-        public class SubmitInProcess {
-
-            @Before
-            public void setUp() {
-                buyOrder.setState(IOrder.State.CREATED);
-
-                when(positionTaskMock.submitObservable(orderParamsBuy)).thenReturn(Observable.never());
-
-                buySubmitCall.run();
-            }
-
-            @Test
-            public void testSubmitIsCalledPositionTask() {
-                verify(positionTaskMock).submitObservable(orderParamsBuy);
-            }
-
-            @Test
-            public void testSubmitSubscriberNotYetCompleted() {
-                assertSubscriberNotYetCompleted(buySubmitSubscriber);
-            }
-
-            @Test
-            public void testPositionHasNoOrder() {
-                assertTrue(isRepositoryEmpty());
-            }
-
-            public class SecondSubmitCallIsOK {
-
-                private final OrderEvent sellOrderEvent = new OrderEvent(sellOrder, OrderEventType.SUBMIT_OK);
-
-                @Before
-                public void setUp() {
-                    sellOrder.setState(IOrder.State.FILLED);
-
-                    when(positionTaskMock.submitObservable(orderParamsSell))
-                            .thenReturn(Observable.just(sellOrderEvent));
-
-                    position.submit(orderParamsSell).subscribe(sellsubmitSubscriber);
-                }
-
-                @Test
-                public void testPositionHasSellOrder() {
-                    assertTrue(positionHasOrder(sellOrder));
-                }
-
-                @Test
-                public void testSubmitSubscriberCompleted() {
-                    assertSubscriberCompleted(sellsubmitSubscriber);
-                }
-            }
-        }
-
-        public class SubmitFail {
-
-            @Before
-            public void setUp() {
-                when(positionTaskMock.submitObservable(orderParamsBuy)).thenReturn(Observable.error(jfException));
-
-                buySubmitCall.run();
-            }
-
-            @Test
-            public void testPositionHasNoOrder() {
-                assertTrue(isRepositoryEmpty());
-            }
-
-            @Test
-            public void testSubmitSubscriberCompletedWithError() {
-                buySubmitSubscriber.assertError(JFException.class);
-            }
-        }
+                () -> position.addOrder(buyOrder);
 
         public class BuySubmitOK {
 
@@ -210,11 +125,6 @@ public class PositionTest extends InstrumentUtilForTest {
             @Test
             public void testPositionHasBuyOrder() {
                 assertTrue(positionHasOrder(buyOrder));
-            }
-
-            @Test
-            public void testSubmitSubscriberCompleted() {
-                assertSubscriberCompleted(buySubmitSubscriber);
             }
 
             @Test
@@ -260,7 +170,6 @@ public class PositionTest extends InstrumentUtilForTest {
             public class SellSubmitOK {
 
                 private final OrderEvent sellOrderEvent = new OrderEvent(sellOrder, OrderEventType.SUBMIT_OK);
-                protected final TestSubscriber<OrderEvent> sellSubmitSubscriber = new TestSubscriber<>();
 
                 @Before
                 public void setUp() {
@@ -269,18 +178,13 @@ public class PositionTest extends InstrumentUtilForTest {
                     when(positionTaskMock.submitObservable(orderParamsSell))
                             .thenReturn(Observable.just(sellOrderEvent));
 
-                    position.submit(orderParamsSell).subscribe(sellSubmitSubscriber);
+                    position.addOrder(sellOrder);
                 }
 
                 @Test
                 public void testPositionHasBuyAndSellOrder() {
                     assertTrue(positionHasOrder(buyOrder));
                     assertTrue(positionHasOrder(sellOrder));
-                }
-
-                @Test
-                public void testSellSubmitSubscriberCompleted() {
-                    assertSubscriberCompleted(sellSubmitSubscriber);
                 }
 
                 public class MergeSequenceSetup {
@@ -538,94 +442,94 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
                 }
 
-                public class CloseSetup {
-
-                    protected final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
-                    protected Runnable closeCall = () -> position.close().subscribe(closeSubscriber);
-
-                    public class CloseInProcess {
-
-                        @Before
-                        public void setUp() {
-                            when(positionTaskMock.closeCompletable(buyOrder)).thenReturn(Completable.complete());
-                            when(positionTaskMock.closeCompletable(sellOrder)).thenReturn(Completable.never());
-
-                            closeCall.run();
-
-                            buyOrder.setState(IOrder.State.CLOSED);
-                        }
-
-                        @Test
-                        public void testCloseIsCalledPositionTask() {
-                            verify(positionTaskMock).closeCompletable(buyOrder);
-                            verify(positionTaskMock).closeCompletable(sellOrder);
-                        }
-
-                        @Test
-                        public void testCloseSubscriberNotYetCompleted() {
-                            assertSubscriberNotYetCompleted(closeSubscriber);
-                        }
-
-                        @Test
-                        public void testPositionHasOnlySellOrder() {
-                            assertTrue(positionHasOrder(sellOrder));
-                        }
-                    }
-
-                    public class CloseOK {
-
-                        @Before
-                        public void setUp() {
-                            when(positionTaskMock.closeCompletable(buyOrder)).thenReturn(Completable.complete());
-                            when(positionTaskMock.closeCompletable(sellOrder)).thenReturn(Completable.complete());
-
-                            closeCall.run();
-
-                            buyOrder.setState(IOrder.State.CLOSED);
-                            sellOrder.setState(IOrder.State.CLOSED);
-                            sendOrderEvent(buyOrder, OrderEventType.CLOSE_OK);
-                            sendOrderEvent(sellOrder, OrderEventType.CLOSE_OK);
-                        }
-
-                        @Test
-                        public void testPositionHasNoOrder() {
-                            assertTrue(isRepositoryEmpty());
-                        }
-
-                        @Test
-                        public void testSubmitSubscriberCompleted() {
-                            assertSubscriberCompleted(closeSubscriber);
-                        }
-                    }
-
-                    public class CloseFail {
-
-                        @Before
-                        public void setUp() {
-                            when(positionTaskMock.closeCompletable(buyOrder))
-                                    .thenReturn(Completable.complete());
-                            when(positionTaskMock.closeCompletable(sellOrder))
-                                    .thenReturn(Completable.error(jfException));
-
-                            closeCall.run();
-                        }
-
-                        @Test
-                        public void testCloseIsCalledOnOneOrder() {
-                            verify(positionTaskMock, atLeast(1)).closeCompletable(any());
-                        }
-
-                        @Test
-                        public void testPositionHasStillBuyOrder() {
-                            assertTrue(positionHasOrder(buyOrder));
-                        }
-
-                        @Test
-                        public void testCloseSubscriberCompletedWithError() {
-                            closeSubscriber.assertError(JFException.class);
-                        }
-                    }
-                }
+//                public class CloseSetup {
+//
+//                    protected final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
+//                    protected Runnable closeCall = () -> position.close().subscribe(closeSubscriber);
+//
+//                    public class CloseInProcess {
+//
+//                        @Before
+//                        public void setUp() {
+//                            when(positionTaskMock.closeCompletable(buyOrder)).thenReturn(Completable.complete());
+//                            when(positionTaskMock.closeCompletable(sellOrder)).thenReturn(Completable.never());
+//
+//                            closeCall.run();
+//
+//                            buyOrder.setState(IOrder.State.CLOSED);
+//                        }
+//
+//                        @Test
+//                        public void testCloseIsCalledPositionTask() {
+//                            verify(positionTaskMock).closeCompletable(buyOrder);
+//                            verify(positionTaskMock).closeCompletable(sellOrder);
+//                        }
+//
+//                        @Test
+//                        public void testCloseSubscriberNotYetCompleted() {
+//                            assertSubscriberNotYetCompleted(closeSubscriber);
+//                        }
+//
+//                        @Test
+//                        public void testPositionHasOnlySellOrder() {
+//                            assertTrue(positionHasOrder(sellOrder));
+//                        }
+//                    }
+//
+//                    public class CloseOK {
+//
+//                        @Before
+//                        public void setUp() {
+//                            when(positionTaskMock.closeCompletable(buyOrder)).thenReturn(Completable.complete());
+//                            when(positionTaskMock.closeCompletable(sellOrder)).thenReturn(Completable.complete());
+//
+//                            closeCall.run();
+//
+//                            buyOrder.setState(IOrder.State.CLOSED);
+//                            sellOrder.setState(IOrder.State.CLOSED);
+//                            sendOrderEvent(buyOrder, OrderEventType.CLOSE_OK);
+//                            sendOrderEvent(sellOrder, OrderEventType.CLOSE_OK);
+//                        }
+//
+//                        @Test
+//                        public void testPositionHasNoOrder() {
+//                            assertTrue(isRepositoryEmpty());
+//                        }
+//
+//                        @Test
+//                        public void testSubmitSubscriberCompleted() {
+//                            assertSubscriberCompleted(closeSubscriber);
+//                        }
+//                    }
+//
+//                    public class CloseFail {
+//
+//                        @Before
+//                        public void setUp() {
+//                            when(positionTaskMock.closeCompletable(buyOrder))
+//                                    .thenReturn(Completable.complete());
+//                            when(positionTaskMock.closeCompletable(sellOrder))
+//                                    .thenReturn(Completable.error(jfException));
+//
+//                            closeCall.run();
+//                        }
+//
+//                        @Test
+//                        public void testCloseIsCalledOnOneOrder() {
+//                            verify(positionTaskMock, atLeast(1)).closeCompletable(any());
+//                        }
+//
+//                        @Test
+//                        public void testPositionHasStillBuyOrder() {
+//                            assertTrue(positionHasOrder(buyOrder));
+//                        }
+//
+//                        @Test
+//                        public void testCloseSubscriberCompletedWithError() {
+//                            closeSubscriber.assertError(JFException.class);
+//                        }
+//                    }
+//                }
             }
         }
     }

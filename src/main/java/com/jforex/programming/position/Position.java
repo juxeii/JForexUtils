@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderDirection;
-import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
@@ -73,16 +72,6 @@ public class Position {
         return orderRepository.filterIdle(isFilled);
     }
 
-    public Observable<OrderEvent> submit(final OrderParams orderParams) {
-        logger.debug("Start submit task with label " + orderParams.label() + " for " + instrument + " position.");
-        return positionTask.submitObservable(orderParams)
-                .doOnNext(orderEvent -> addOrder(orderEvent.order()))
-                .doOnError(e -> logger.error("Submit " + orderParams.label() + " for position "
-                        + instrument + " failed!"))
-                .doOnCompleted(() -> logger.debug("Submit " + orderParams.label() + " for position "
-                        + instrument + " was successful."));
-    }
-
     public Completable merge(final String mergeLabel) {
         final Set<IOrder> ordersToMerge = filledOrders();
         if (ordersToMerge.size() < 2)
@@ -125,25 +114,21 @@ public class Position {
         return restoreSLObs.concatWith(restoreTPObs);
     }
 
-    public Completable close() {
-        logger.debug("Starting to close " + instrument + " position");
-        return Observable.just(orderRepository.filterIdle(isFilled.or(isOpened)))
-                .filter(ordersToClose -> !ordersToClose.isEmpty())
-                .doOnNext(ordersToClose -> orderRepository.markAllActive())
-                .flatMap(Observable::from)
-                .flatMap(orderToClose -> positionTask.closeCompletable(orderToClose).toObservable())
-                .toCompletable()
-                .doOnError(e -> logger.error("Closing position " + instrument + " failed!"))
-                .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."));
+    public Set<IOrder> filterIdle() {
+        return orderRepository.filterIdle(isFilled.or(isOpened));
     }
 
-    private void addOrder(final IOrder order) {
+    public void markOrdersActive() {
+        orderRepository.markAllActive();
+    }
+
+    public void addOrder(final IOrder order) {
         orderRepository.add(order);
         logger.debug("Added order " + order.getLabel() + " to position " + instrument + " Orderstate: "
                 + order.getState() + " repo size " + orderRepository.size());
     }
 
-    private void removeOrder(final IOrder order) {
+    public void removeOrder(final IOrder order) {
         orderRepository.remove(order);
         logger.debug("Removed order " + order.getLabel() + " from position " + instrument + " Orderstate: "
                 + order.getState() + " repo size " + orderRepository.size());

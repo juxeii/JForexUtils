@@ -7,16 +7,20 @@ import java.util.Map;
 import org.aeonbits.owner.ConfigFactory;
 
 import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.Instrument;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.google.common.collect.ImmutableMap;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
+import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.settings.UserSettings;
 
 public final class PositionSwitcher {
 
+    private final Instrument instrument;
+    private final OrderUtil orderUtil;
     private final Position position;
     private final OrderParamsSupplier orderParamsSupplier;
     private Map<OrderDirection, FSMState> nextStatesByDirection;
@@ -41,10 +45,13 @@ public final class PositionSwitcher {
     private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
     private final static String defaultMergePrefix = userSettings.defaultMergePrefix();
 
-    public PositionSwitcher(final Position position,
+    public PositionSwitcher(final Instrument instrument,
+                            final OrderUtil orderUtil,
                             final OrderParamsSupplier orderParamsSupplier) {
-        this.position = position;
+        this.instrument = instrument;
+        this.orderUtil = orderUtil;
         this.orderParamsSupplier = orderParamsSupplier;
+        position = orderUtil.position(instrument);
 
         configureFSM();
     }
@@ -80,7 +87,8 @@ public final class PositionSwitcher {
         fsmConfig.configure(FSMState.BUSY)
                 .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG))
                 .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT))
-                .onEntryFrom(FSMTrigger.FLAT, () -> position.close().subscribe(() -> fsm.fire(FSMTrigger.CLOSE_DONE)))
+                .onEntryFrom(FSMTrigger.FLAT,
+                             () -> orderUtil.closePosition(instrument).subscribe(() -> fsm.fire(FSMTrigger.CLOSE_DONE)))
                 .permitDynamic(FSMTrigger.MERGE_DONE, () -> nextStatesByDirection.get(position.direction()))
                 .permit(FSMTrigger.CLOSE_DONE, FSMState.FLAT)
                 .ignore(FSMTrigger.FLAT)
@@ -105,10 +113,11 @@ public final class PositionSwitcher {
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         final String mergeLabel = defaultMergePrefix + adaptedOrderParams.label();
 
-        position.submit(adaptedOrderParams)
+        orderUtil.submitOrder(adaptedOrderParams)
                 .toCompletable()
                 .subscribe(exc -> fsm.fire(FSMTrigger.MERGE_DONE),
-                           () -> position.merge(mergeLabel).subscribe(() -> fsm.fire(FSMTrigger.MERGE_DONE)));
+                           () -> orderUtil.mergePositionOrders(mergeLabel, instrument)
+                                   .subscribe(() -> fsm.fire(FSMTrigger.MERGE_DONE)));
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {
