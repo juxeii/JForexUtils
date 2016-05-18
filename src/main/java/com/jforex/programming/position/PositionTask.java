@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Completable;
@@ -32,7 +33,7 @@ public class PositionTask {
         this.orderUtil = orderUtil;
     }
 
-    public Completable closeCompletable(final IOrder orderToClose) {
+    public Observable<OrderEvent> closeObservable(final IOrder orderToClose) {
         return Observable.just(orderToClose)
                 .filter(order -> !isClosed.test(order))
                 .doOnNext(order -> logger.debug("Starting to close order " + orderToClose.getLabel()
@@ -40,8 +41,7 @@ public class PositionTask {
                 .flatMap(order -> orderUtil.close(order))
                 .retryWhen(this::shouldRetry)
                 .doOnNext(orderEvent -> logger.debug("Order " + orderToClose.getLabel() + " closed for "
-                        + orderToClose.getInstrument() + " position."))
-                .toCompletable();
+                        + orderToClose.getInstrument() + " position."));
     }
 
     public Observable<IOrder> mergeObservable(final String mergeLabel,

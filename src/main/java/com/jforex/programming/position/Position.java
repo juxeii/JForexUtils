@@ -19,6 +19,7 @@ import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Completable;
 import rx.Observable;
+import rx.observables.ConnectableObservable;
 
 public class Position {
 
@@ -80,11 +81,16 @@ public class Position {
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy.restoreSL(ordersToMerge),
                                                                     restoreSLTPPolicy.restoreTP(ordersToMerge));
 
-        return removeTPSLObs(ordersToMerge)
-                .concatWith(Observable.defer(() -> positionTask.mergeObservable(mergeLabel, ordersToMerge))
-                        .doOnNext(this::addOrder)
-                        .flatMap(mergeOrder -> restoreSLTPObs(mergeOrder, restoreSLTPData).toObservable())
-                        .toCompletable());
+        final Completable mergeSequence =
+                removeTPSLObs(ordersToMerge)
+                        .concatWith(Observable.defer(() -> positionTask.mergeObservable(mergeLabel, ordersToMerge))
+                                .doOnNext(this::addOrder)
+                                .flatMap(mergeOrder -> restoreSLTPObs(mergeOrder, restoreSLTPData).toObservable())
+                                .toCompletable());
+        final ConnectableObservable<?> mergeObs = mergeSequence.toObservable().replay();
+        mergeObs.connect();
+
+        return mergeObs.toCompletable();
     }
 
     private Completable removeTPSLObs(final Set<IOrder> filledOrders) {
@@ -114,14 +120,19 @@ public class Position {
 
     public Completable close() {
         logger.debug("Starting to close " + instrument + " position");
-        return Observable.just(orderRepository.filterIdle(isFilled.or(isOpened)))
-                .filter(ordersToClose -> !ordersToClose.isEmpty())
-                .doOnNext(ordersToClose -> orderRepository.markAllActive())
-                .flatMap(Observable::from)
-                .flatMap(orderToClose -> positionTask.closeCompletable(orderToClose).toObservable())
-                .toCompletable()
-                .doOnError(e -> logger.error("Closing position " + instrument + " failed!"))
-                .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."));
+
+        final ConnectableObservable<OrderEvent> closeObservable =
+                Observable.just(orderRepository.filterIdle(isFilled.or(isOpened)))
+                        .filter(ordersToClose -> !ordersToClose.isEmpty())
+                        .doOnNext(ordersToClose -> orderRepository.markAllActive())
+                        .flatMap(Observable::from)
+                        .flatMap(orderToClose -> positionTask.closeObservable(orderToClose))
+                        .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."))
+                        .doOnError(e -> logger.error("Closing position " + instrument + " failed!"))
+                        .replay();
+        closeObservable.connect();
+
+        return closeObservable.toCompletable();
     }
 
     public void addOrder(final IOrder order) {

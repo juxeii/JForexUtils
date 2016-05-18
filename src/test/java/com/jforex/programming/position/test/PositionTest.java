@@ -115,14 +115,12 @@ public class PositionTest extends InstrumentUtilForTest {
 
         private final String mergeLabel = "MergeLabel";
         protected final OrderParams orderParamsSell = OrderParamsForTest.paramsSellEURUSD();
-        private final Runnable buySubmitCall =
-                () -> position.addOrder(buyOrder);
 
         @Before
         public void setUp() {
             buyOrder.setState(IOrder.State.FILLED);
 
-            buySubmitCall.run();
+            position.addOrder(buyOrder);
         }
 
         @Test
@@ -231,6 +229,15 @@ public class PositionTest extends InstrumentUtilForTest {
                                 .thenReturn(Completable.complete());
                         when(positionTaskMock.setTPCompletable(sellOrder, noTPPrice))
                                 .thenReturn(Completable.complete());
+                    }
+
+                    @Test
+                    public void testRemoveTPIsCalledPositionTaskWhenNotSubscribed() {
+                        position.merge(mergeLabel, restoreSLTPPolicyMock);
+
+                        verify(positionTaskMock).setTPCompletable(buyOrder, noTPPrice);
+                        verify(positionTaskMock).setTPCompletable(sellOrder, noTPPrice);
+
                     }
 
                     @Test
@@ -446,12 +453,24 @@ public class PositionTest extends InstrumentUtilForTest {
                 protected final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
                 protected Runnable closeCall = () -> position.close().subscribe(closeSubscriber);
 
+                @Test
+                public void testCloseIsCalledOnPositionTaskWhenNotSubscribed() {
+                    when(positionTaskMock.closeObservable(buyOrder)).thenReturn(Observable.empty());
+                    when(positionTaskMock.closeObservable(sellOrder)).thenReturn(Observable.empty());
+
+                    position.close();
+
+                    verify(positionTaskMock).closeObservable(buyOrder);
+                    verify(positionTaskMock).closeObservable(sellOrder);
+
+                }
+
                 public class CloseInProcess {
 
                     @Before
                     public void setUp() {
-                        when(positionTaskMock.closeCompletable(buyOrder)).thenReturn(Completable.complete());
-                        when(positionTaskMock.closeCompletable(sellOrder)).thenReturn(Completable.never());
+                        when(positionTaskMock.closeObservable(buyOrder)).thenReturn(Observable.empty());
+                        when(positionTaskMock.closeObservable(sellOrder)).thenReturn(Observable.never());
 
                         closeCall.run();
 
@@ -460,8 +479,8 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testCloseIsCalledPositionTask() {
-                        verify(positionTaskMock).closeCompletable(buyOrder);
-                        verify(positionTaskMock).closeCompletable(sellOrder);
+                        verify(positionTaskMock).closeObservable(buyOrder);
+                        verify(positionTaskMock).closeObservable(sellOrder);
                     }
 
                     @Test
@@ -479,8 +498,8 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Before
                     public void setUp() {
-                        when(positionTaskMock.closeCompletable(buyOrder)).thenReturn(Completable.complete());
-                        when(positionTaskMock.closeCompletable(sellOrder)).thenReturn(Completable.complete());
+                        when(positionTaskMock.closeObservable(buyOrder)).thenReturn(Observable.empty());
+                        when(positionTaskMock.closeObservable(sellOrder)).thenReturn(Observable.empty());
 
                         closeCall.run();
 
@@ -505,17 +524,17 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Before
                     public void setUp() {
-                        when(positionTaskMock.closeCompletable(buyOrder))
-                                .thenReturn(Completable.complete());
-                        when(positionTaskMock.closeCompletable(sellOrder))
-                                .thenReturn(Completable.error(jfException));
+                        when(positionTaskMock.closeObservable(buyOrder))
+                                .thenReturn(Observable.empty());
+                        when(positionTaskMock.closeObservable(sellOrder))
+                                .thenReturn(Observable.error(jfException));
 
                         closeCall.run();
                     }
 
                     @Test
                     public void testCloseIsCalledOnOneOrder() {
-                        verify(positionTaskMock, atLeast(1)).closeCompletable(any());
+                        verify(positionTaskMock, atLeast(1)).closeObservable(any());
                     }
 
                     @Test

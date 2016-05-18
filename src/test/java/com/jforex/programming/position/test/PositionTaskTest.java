@@ -185,9 +185,9 @@ public class PositionTaskTest extends InstrumentUtilForTest {
 
     public class CloseCompletableSetup {
 
-        protected TestSubscriber<?> closeSubscriber = new TestSubscriber<>();
-        protected Runnable closeCompletableCall =
-                () -> positionTask.closeCompletable(buyOrder).subscribe(closeSubscriber);
+        protected TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
+        protected Supplier<Subscription> closeObservableCall =
+                () -> positionTask.closeObservable(buyOrder).subscribe(closeSubscriber);
 
         public class WhenOrderIsAlreadyClosed {
 
@@ -195,7 +195,7 @@ public class PositionTaskTest extends InstrumentUtilForTest {
             public void setUp() {
                 buyOrder.setState(IOrder.State.CLOSED);
 
-                closeCompletableCall.run();
+                closeObservableCall.get();
             }
 
             @Test
@@ -225,7 +225,7 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                 public void setUp() {
                     when(orderUtilMock.close(buyOrder)).thenReturn(Observable.empty());
 
-                    closeCompletableCall.run();
+                    closeObservableCall.get();
                 }
 
                 @Test
@@ -245,7 +245,7 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                 public void setUp() {
                     setUpOrderUtilAllRetriesWithSuccess(closeSupplierCall, OrderEventType.CLOSE_REJECTED);
 
-                    closeCompletableCall.run();
+                    closeObservableCall.get();
 
                     rxTestUtil.advanceTimeBy(retryDelay * 3, TimeUnit.MILLISECONDS);
                 }
@@ -267,7 +267,7 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                 public void setUp() {
                     setUpOrderUtilWithMoreRejectsThanRetries(closeSupplierCall, OrderEventType.CLOSE_REJECTED);
 
-                    closeCompletableCall.run();
+                    closeObservableCall.get();
 
                     rxTestUtil.advanceTimeBy(retryDelay * noOfRetries, TimeUnit.MILLISECONDS);
                 }
@@ -289,7 +289,7 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                 public void setUp() {
                     setUpJFException(closeSupplierCall);
 
-                    closeCompletableCall.run();
+                    closeObservableCall.get();
                 }
 
                 @Test

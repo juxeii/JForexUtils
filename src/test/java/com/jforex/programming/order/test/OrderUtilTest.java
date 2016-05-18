@@ -295,6 +295,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         final Completable closeCompletable = orderUtil.closePosition(instrumentEURUSD);
 
+        verify(positionMock).close();
         assertThat(closeCompletable, equalTo(expectedCompletable));
     }
 
