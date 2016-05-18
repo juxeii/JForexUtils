@@ -94,7 +94,7 @@ public class PositionTaskTest extends InstrumentUtilForTest {
     public class SubmitObservableSetup {
 
         protected final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
-        protected TestSubscriber<IOrder> submitSubscriber = new TestSubscriber<>();
+        protected TestSubscriber<OrderEvent> submitSubscriber = new TestSubscriber<>();
         protected Supplier<Subscription> submitSubscriptionSupplier =
                 () -> positionTask.submitObservable(orderParamsBuy).subscribe(submitSubscriber);
         protected final Supplier<Observable<OrderEvent>> submitSupplierCall =

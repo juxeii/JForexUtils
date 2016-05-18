@@ -149,11 +149,14 @@ public class PositionTest extends InstrumentUtilForTest {
 
             public class SecondSubmitCallIsOK {
 
+                private final OrderEvent sellOrderEvent = new OrderEvent(sellOrder, OrderEventType.SUBMIT_OK);
+
                 @Before
                 public void setUp() {
                     sellOrder.setState(IOrder.State.FILLED);
 
-                    when(positionTaskMock.submitObservable(orderParamsSell)).thenReturn(Observable.just(sellOrder));
+                    when(positionTaskMock.submitObservable(orderParamsSell))
+                            .thenReturn(Observable.just(sellOrderEvent));
 
                     position.submit(orderParamsSell).subscribe(sellsubmitSubscriber);
                 }
@@ -192,13 +195,14 @@ public class PositionTest extends InstrumentUtilForTest {
 
         public class BuySubmitOK {
 
+            private final OrderEvent buyOrderEvent = new OrderEvent(buyOrder, OrderEventType.SUBMIT_OK);
             private final String mergeLabel = "MergeLabel";
 
             @Before
             public void setUp() {
                 buyOrder.setState(IOrder.State.FILLED);
 
-                when(positionTaskMock.submitObservable(orderParamsBuy)).thenReturn(Observable.just(buyOrder));
+                when(positionTaskMock.submitObservable(orderParamsBuy)).thenReturn(Observable.just(buyOrderEvent));
 
                 buySubmitCall.run();
             }
@@ -255,13 +259,15 @@ public class PositionTest extends InstrumentUtilForTest {
 
             public class SellSubmitOK {
 
+                private final OrderEvent sellOrderEvent = new OrderEvent(sellOrder, OrderEventType.SUBMIT_OK);
                 protected final TestSubscriber<OrderEvent> sellSubmitSubscriber = new TestSubscriber<>();
 
                 @Before
                 public void setUp() {
                     sellOrder.setState(IOrder.State.FILLED);
 
-                    when(positionTaskMock.submitObservable(orderParamsSell)).thenReturn(Observable.just(sellOrder));
+                    when(positionTaskMock.submitObservable(orderParamsSell))
+                            .thenReturn(Observable.just(sellOrderEvent));
 
                     position.submit(orderParamsSell).subscribe(sellSubmitSubscriber);
                 }

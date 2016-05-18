@@ -21,6 +21,7 @@ import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -28,6 +29,8 @@ import com.jforex.programming.test.common.OrderParamsForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
+import rx.subjects.PublishSubject;
+import rx.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PositionSwitcherTest extends InstrumentUtilForTest {
@@ -40,7 +43,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     private OrderParamsSupplier orderParamsSupplierMock;
     @Captor
     private ArgumentCaptor<OrderParams> orderParamsCaptor;
-    private final JFObservable<Long> submitCompleter = new JFObservable<>();
+    private final Subject<OrderEvent, OrderEvent> submitObs = PublishSubject.create();
     private final JFObservable<Long> mergeCompleter = new JFObservable<>();
     private final JFObservable<Long> closeCompleter = new JFObservable<>();
     private final OrderParams orderParamsBUY = OrderParamsForTest.paramsBuyEURUSD();
@@ -62,7 +65,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         when(orderParamsSupplierMock.forCommand(OrderCommand.BUY)).thenReturn(orderParamsBUY);
         when(orderParamsSupplierMock.forCommand(OrderCommand.SELL)).thenReturn(orderParamsSELL);
 
-        when(positionMock.submit(any())).thenReturn(Completable.fromObservable(submitCompleter.get().take(1)));
+        when(positionMock.submit(any())).thenReturn(submitObs.take(1));
         when(positionMock.merge(any())).thenReturn(Completable.fromObservable(mergeCompleter.get().take(1)));
         when(positionMock.close()).thenReturn(Completable.fromObservable(closeCompleter.get().take(1)));
     }
@@ -171,7 +174,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
             public void setUp() {
                 setPositionOrderDirection(OrderDirection.LONG);
 
-                submitCompleter.onNext(1L);
+                submitObs.onCompleted();
             }
 
             @Test
@@ -314,7 +317,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
             public void setUp() {
                 setPositionOrderDirection(OrderDirection.SHORT);
 
-                submitCompleter.onNext(1L);
+                submitObs.onCompleted();
             }
 
             @Test

@@ -73,15 +73,14 @@ public class Position {
         return orderRepository.filterIdle(isFilled);
     }
 
-    public Completable submit(final OrderParams orderParams) {
+    public Observable<OrderEvent> submit(final OrderParams orderParams) {
         logger.debug("Start submit task with label " + orderParams.label() + " for " + instrument + " position.");
         return positionTask.submitObservable(orderParams)
-                .doOnNext(this::addOrder)
+                .doOnNext(orderEvent -> addOrder(orderEvent.order()))
                 .doOnError(e -> logger.error("Submit " + orderParams.label() + " for position "
                         + instrument + " failed!"))
                 .doOnCompleted(() -> logger.debug("Submit " + orderParams.label() + " for position "
-                        + instrument + " was successful."))
-                .toCompletable();
+                        + instrument + " was successful."));
     }
 
     public Completable merge(final String mergeLabel) {

@@ -16,6 +16,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Completable;
@@ -33,9 +34,8 @@ public class PositionTask {
         this.orderUtil = orderUtil;
     }
 
-    public Observable<IOrder> submitObservable(final OrderParams orderParams) {
-        return Observable.defer(() -> orderUtil.submitOrder(orderParams))
-                .flatMap(orderEvent -> Observable.just(orderEvent.order()));
+    public Observable<OrderEvent> submitObservable(final OrderParams orderParams) {
+        return Observable.defer(() -> orderUtil.submitOrder(orderParams));
     }
 
     public Completable closeCompletable(final IOrder orderToClose) {
