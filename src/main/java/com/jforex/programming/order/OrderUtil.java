@@ -113,11 +113,10 @@ public class OrderUtil {
                 removeTPSLObs(ordersToMerge)
                         .concatWith(Observable.defer(() -> {
                             logger.debug("Start merge with label " + mergeOrderLabel);
-                            return Observable.defer(() -> mergeOrders(mergeOrderLabel, ordersToMerge))
+                            return mergeOrders(mergeOrderLabel, ordersToMerge)
                                     .retryWhen(this::shouldRetry)
                                     .flatMap(orderEvent -> Observable.just(orderEvent.order()));
                         })
-                                .doOnNext(position::addOrder)
                                 .flatMap(mergeOrder -> restoreSLTPObs(mergeOrder, restoreSLTPData).toObservable())
                                 .toCompletable());
         final ConnectableObservable<?> mergeObs = mergeSequence.toObservable().replay();
@@ -132,7 +131,6 @@ public class OrderUtil {
 
         final ConnectableObservable<OrderEvent> closeObservable =
                 Observable.just(position.ordersToClose())
-                        .doOnNext(orderToClose -> logger.debug("CLOSE ON NEXT "))
                         .filter(ordersToClose -> !ordersToClose.isEmpty())
                         .doOnNext(ordersToClose -> position.markAllOrdersActive())
                         .flatMap(Observable::from)
@@ -140,7 +138,6 @@ public class OrderUtil {
                         .doOnNext(orderToClose -> logger.debug("Starting to close order " + orderToClose.getLabel()
                                 + " for " + orderToClose.getInstrument() + " position."))
                         .flatMap(this::close)
-                        .doOnNext(o -> logger.debug("NEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE"))
                         .retryWhen(this::shouldRetry)
                         .doOnNext(orderEvent -> logger.debug("Order " + orderEvent.order().getLabel() + " closed for "
                                 + orderEvent.order().getInstrument() + " position."))
@@ -153,7 +150,6 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        logger.info("CLOSE CAAAAAAAAAAAAAAAAAAAAAAAAA");
         return runChangeCall(() -> orderToClose.close(),
                              orderToClose,
                              OrderEventTypeData.closeData);
@@ -231,11 +227,8 @@ public class OrderUtil {
                 ? Observable.error(orderExecutorResult.exceptionOpt().get())
                 : Observable.create(subscriber -> {
                     orderEventGateway.observable()
-                            .doOnNext(o -> logger.debug("GATE received 000000000000 " + o.order().getLabel()))
                             .filter(orderEvent -> orderEvent.order() == orderExecutorResult.orderOpt().get())
-                            .doOnNext(o -> logger.debug("GATE received"))
                             .filter(orderEvent -> orderEventTypeData.all().contains(orderEvent.type()))
-                            .doOnNext(o -> logger.debug("GATE received2"))
                             .subscribe(orderEvent -> evaluateOrderEvent(orderEvent, orderEventTypeData, subscriber));
                 });
     }
@@ -243,7 +236,6 @@ public class OrderUtil {
     private final void evaluateOrderEvent(final OrderEvent orderEvent,
                                           final OrderEventTypeData orderEventTypeData,
                                           final Subscriber<? super OrderEvent> subscriber) {
-        logger.info("EVAL for " + orderEvent.order().getLabel());
         final OrderEventType orderEventType = orderEvent.type();
         if (!subscriber.isUnsubscribed())
             if (orderEventTypeData.isRejectType(orderEventType))

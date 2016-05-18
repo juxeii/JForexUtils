@@ -44,7 +44,7 @@ public class Position {
                 .filter(orderEvent -> orderEvent.order().getInstrument() == instrument)
                 .filter(orderEvent -> contains(orderEvent.order()))
                 .doOnNext(orderEvent -> logger.info("Received event " + orderEvent.type() + " for order "
-                        + orderEvent.order().getLabel() + "in repository for " + instrument))
+                        + orderEvent.order().getLabel() + " in repository for " + instrument))
                 .filter(orderEvent -> endOfOrderEventTypes.contains(orderEvent.type()))
                 .doOnNext(orderEvent -> removeOrder(orderEvent.order()))
                 .subscribe();
