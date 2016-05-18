@@ -28,11 +28,14 @@ import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
+import rx.Completable;
+import rx.Observable;
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
@@ -47,6 +50,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderEventGateway orderEventGatewayMock;
     @Mock
     private PositionFactory positionFactoryMock;
+    @Mock
+    private Position positionMock;
     @Captor
     private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
     private Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
@@ -84,6 +89,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private void setUpMocks() {
         when(orderEventGatewayMock.observable()).thenReturn(orderEventSubject);
         when(orderCallExecutorMock.run(any(OrderSupplierCall.class))).thenReturn(orderExecutorResult);
+        when(positionFactoryMock.forInstrument(instrumentEURUSD)).thenReturn(positionMock);
     }
 
     private void prepareJFException() {
@@ -138,6 +144,16 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         captureAndRunOrderCall();
 
         engineForTest.verifySubmit(orderParams, 1);
+    }
+
+    @Test
+    public void testSubmitPositionCallsOnPosition() {
+        final Observable<OrderEvent> expectedSubmitObs = Observable.empty();
+        when(positionMock.submit(orderParams)).thenReturn(expectedSubmitObs);
+
+        final Observable<OrderEvent> submitObs = orderUtil.submitPositionOrder(orderParams);
+
+        assertThat(submitObs, equalTo(expectedSubmitObs));
     }
 
     @Test
@@ -210,6 +226,16 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
+    public void testMergePositionCallsOnPosition() {
+        final Completable expectedCompletable = Completable.complete();
+        when(positionMock.merge(mergeLabel)).thenReturn(expectedCompletable);
+
+        final Completable mergeCompletable = orderUtil.mergePositionOrders(mergeLabel, instrumentEURUSD);
+
+        assertThat(mergeCompletable, equalTo(expectedCompletable));
+    }
+
+    @Test
     public void testMergeRegistersOnEventGateway() {
         orderUtil.mergeOrders(mergeLabel, toMergeOrders);
 
@@ -266,6 +292,16 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         captureAndRunOrderCall();
 
         verify(orderUnderTest).close();
+    }
+
+    @Test
+    public void testClosePositionCallsOnPosition() {
+        final Completable expectedCompletable = Completable.complete();
+        when(positionMock.close()).thenReturn(expectedCompletable);
+
+        final Completable closeCompletable = orderUtil.closePosition(instrumentEURUSD);
+
+        assertThat(closeCompletable, equalTo(expectedCompletable));
     }
 
     @Test
