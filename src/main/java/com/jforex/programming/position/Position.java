@@ -51,42 +51,42 @@ public class Position {
                 .subscribe();
     }
 
-    public final synchronized void addOrder(final IOrder order) {
+    public synchronized void addOrder(final IOrder order) {
         orderRepository.put(order, OrderProcessState.IDLE);
         logger.debug("Added order " + order.getLabel() + " to position " + instrument + " Orderstate: "
                 + order.getState() + " repo size " + orderRepository.size());
     }
 
-    public final synchronized void removeOrder(final IOrder order) {
+    public synchronized void removeOrder(final IOrder order) {
         orderRepository.remove(order);
         logger.debug("Removed order " + order.getLabel() + " from position " + instrument + " Orderstate: "
                 + order.getState() + " repo size " + orderRepository.size());
     }
 
-    public final boolean contains(final IOrder order) {
+    public boolean contains(final IOrder order) {
         return orderRepository.containsKey(order);
     }
 
-    public final int size() {
+    public int size() {
         return orderRepository.size();
     }
 
-    public final synchronized void markAllActive() {
+    public synchronized void markAllActive() {
         orderRepository.replaceAll((k, v) -> OrderProcessState.ACTIVE);
     }
 
-    public final OrderDirection direction() {
+    public OrderDirection direction() {
         return OrderStaticUtil.combinedDirection(filter(isFilled));
     }
 
-    public final double signedExposure() {
+    public double signedExposure() {
         return filter(isFilled)
                 .stream()
                 .mapToDouble(OrderStaticUtil::signedAmount)
                 .sum();
     }
 
-    public final Set<IOrder> filter(final Predicate<IOrder> orderPredicate) {
+    public Set<IOrder> filter(final Predicate<IOrder> orderPredicate) {
         return orderRepository
                 .keySet()
                 .stream()
@@ -94,7 +94,7 @@ public class Position {
                 .collect(toSet());
     }
 
-    public final Set<IOrder> filterIdle(final Predicate<IOrder> orderPredicate) {
+    public Set<IOrder> filterIdle(final Predicate<IOrder> orderPredicate) {
         return orderRepository
                 .entrySet()
                 .stream()
