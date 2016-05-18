@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -17,6 +18,7 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 
+import rx.Completable;
 import rx.Observable;
 import rx.Subscriber;
 
@@ -60,6 +62,17 @@ public class OrderUtil {
                                               final Collection<IOrder> toMergeOrders) {
         final OrderSupplierCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
         return runOrderSupplierCall(mergeCall, OrderEventTypeData.mergeData);
+    }
+
+    public Completable mergePositionOrders(final String mergeOrderLabel,
+                                           final Instrument instrument) {
+        final Position position = positionFactory.forInstrument(instrument);
+        return position.merge(mergeOrderLabel);
+    }
+
+    public Completable closePosition(final Instrument instrument) {
+        final Position position = positionFactory.forInstrument(instrument);
+        return position.close();
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
