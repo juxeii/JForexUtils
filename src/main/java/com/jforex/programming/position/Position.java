@@ -14,7 +14,6 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderDirection;
-import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
@@ -25,7 +24,6 @@ public class Position {
 
     private final Instrument instrument;
     private final PositionTask positionTask;
-    private final RestoreSLTPPolicy restoreSLTPPolicy;
     private final PositionOrders orderRepository = new PositionOrders();
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
@@ -33,11 +31,9 @@ public class Position {
 
     public Position(final Instrument instrument,
                     final PositionTask positionTask,
-                    final Observable<OrderEvent> orderEventObservable,
-                    final RestoreSLTPPolicy restoreSLTPPolicy) {
+                    final Observable<OrderEvent> orderEventObservable) {
         this.instrument = instrument;
         this.positionTask = positionTask;
-        this.restoreSLTPPolicy = restoreSLTPPolicy;
 
         orderEventObservable
                 .filter(orderEvent -> orderEvent.order().getInstrument() == instrument)
@@ -73,17 +69,8 @@ public class Position {
         return orderRepository.filterIdle(isFilled);
     }
 
-    public Observable<OrderEvent> submit(final OrderParams orderParams) {
-        logger.debug("Start submit task with label " + orderParams.label() + " for " + instrument + " position.");
-        return positionTask.submitObservable(orderParams)
-                .doOnNext(orderEvent -> addOrder(orderEvent.order()))
-                .doOnError(e -> logger.error("Submit " + orderParams.label() + " for position "
-                        + instrument + " failed!"))
-                .doOnCompleted(() -> logger.debug("Submit " + orderParams.label() + " for position "
-                        + instrument + " was successful."));
-    }
-
-    public Completable merge(final String mergeLabel) {
+    public Completable merge(final String mergeLabel,
+                             final RestoreSLTPPolicy restoreSLTPPolicy) {
         final Set<IOrder> ordersToMerge = filledOrders();
         if (ordersToMerge.size() < 2)
             return Completable.complete();
@@ -137,7 +124,7 @@ public class Position {
                 .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."));
     }
 
-    private void addOrder(final IOrder order) {
+    public void addOrder(final IOrder order) {
         orderRepository.add(order);
         logger.debug("Added order " + order.getLabel() + " to position " + instrument + " Orderstate: "
                 + order.getState() + " repo size " + orderRepository.size());

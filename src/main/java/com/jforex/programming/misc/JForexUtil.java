@@ -20,11 +20,8 @@ import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
-import com.jforex.programming.position.NoRestorePolicy;
-import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionTask;
-import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
@@ -55,7 +52,6 @@ public class JForexUtil implements MessageConsumer {
     private final CalculationUtil calculationUtil;
     private final RiskPercentMM riskPercentMM;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
-    private final RestoreSLTPPolicy defaultRestorePolicy = new NoRestorePolicy();
 
     private final JFObservable<IMessage> messagePublisher = new JFObservable<IMessage>();
     private Observable<IMessage> messageObservable;
@@ -127,15 +123,6 @@ public class JForexUtil implements MessageConsumer {
 
     public IAccount account() {
         return account;
-    }
-
-    public Position position(final Instrument instrument) {
-        return position(instrument, defaultRestorePolicy);
-    }
-
-    public Position position(final Instrument instrument,
-                             final RestoreSLTPPolicy restoreSLTPPolicy) {
-        return positionFactory.forInstrument(instrument, restoreSLTPPolicy);
     }
 
     public TickQuoteProvider tickQuoteProvider() {

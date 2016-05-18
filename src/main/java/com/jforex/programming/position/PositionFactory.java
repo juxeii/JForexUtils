@@ -21,22 +21,14 @@ public class PositionFactory {
         this.orderEventObservable = orderEventObservable;
     }
 
-    public Position createNew(final Instrument instrument,
-                              final RestoreSLTPPolicy restoreSLTPPolicy) {
+    public Position createNew(final Instrument instrument) {
         return new Position(instrument,
                             positionTask,
-                            orderEventObservable,
-                            restoreSLTPPolicy);
-    }
-
-    public Position forInstrument(final Instrument instrument,
-                                  final RestoreSLTPPolicy restoreSLTPPolicy) {
-        return positionByInstrument.computeIfAbsent(instrument,
-                                                    inst -> createNew(inst, restoreSLTPPolicy));
+                            orderEventObservable);
     }
 
     public Position forInstrument(final Instrument instrument) {
-        return forInstrument(instrument, new NoRestorePolicy());
+        return positionByInstrument.computeIfAbsent(instrument, inst -> createNew(inst));
     }
 
     public Collection<Position> all() {

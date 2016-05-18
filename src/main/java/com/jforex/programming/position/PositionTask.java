@@ -13,10 +13,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Completable;
@@ -32,10 +30,6 @@ public class PositionTask {
 
     public PositionTask(final OrderUtil orderUtil) {
         this.orderUtil = orderUtil;
-    }
-
-    public Observable<OrderEvent> submitObservable(final OrderParams orderParams) {
-        return Observable.defer(() -> orderUtil.submitOrder(orderParams));
     }
 
     public Completable closeCompletable(final IOrder orderToClose) {

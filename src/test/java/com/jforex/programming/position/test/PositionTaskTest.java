@@ -19,14 +19,12 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.CalculationUtil;
-import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.PositionTask;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -89,77 +87,6 @@ public class PositionTaskTest extends InstrumentUtilForTest {
     private void assertSubscriberCompletes(final TestSubscriber<?> subscriber) {
         subscriber.assertNoErrors();
         subscriber.assertCompleted();
-    }
-
-    public class SubmitObservableSetup {
-
-        protected final OrderParams orderParamsBuy = OrderParamsForTest.paramsBuyEURUSD();
-        protected TestSubscriber<OrderEvent> submitSubscriber = new TestSubscriber<>();
-        protected Supplier<Subscription> submitSubscriptionSupplier =
-                () -> positionTask.submitObservable(orderParamsBuy).subscribe(submitSubscriber);
-        protected final Supplier<Observable<OrderEvent>> submitSupplierCall =
-                () -> orderUtilMock.submitOrder(orderParamsBuy);
-
-        public class OnSubmitOK {
-
-            @Before
-            public void setUp() {
-                when(orderUtilMock.submitOrder(orderParamsBuy)).thenReturn(Observable.empty());
-
-                submitSubscriptionSupplier.get();
-            }
-
-            @Test
-            public void testSubmitOnOrderUtilIsDone() {
-                verify(orderUtilMock).submitOrder(orderParamsBuy);
-            }
-
-            @Test
-            public void testSubscriberCompletes() {
-                assertSubscriberCompletes(submitSubscriber);
-            }
-        }
-
-        public class OnSubmitReject {
-
-            @Before
-            public void setUp() {
-                when(orderUtilMock.submitOrder(orderParamsBuy))
-                        .thenReturn(Observable.error(createRejectException(OrderEventType.SUBMIT_REJECTED)));
-
-                submitSubscriptionSupplier.get();
-            }
-
-            @Test
-            public void testNoRetryDoneForRejections() {
-                verify(orderUtilMock).submitOrder(orderParamsBuy);
-            }
-
-            @Test
-            public void testSubscriberCompletedWithRejectException() {
-                submitSubscriber.assertError(OrderCallRejectException.class);
-            }
-        }
-
-        public class OnJFException {
-
-            @Before
-            public void setUp() {
-                setUpJFException(submitSupplierCall);
-
-                submitSubscriptionSupplier.get();
-            }
-
-            @Test
-            public void testNoRetryDoneForJFExceptions() {
-                verify(orderUtilMock).submitOrder(orderParamsBuy);
-            }
-
-            @Test
-            public void testSubscriberCompletedWithJFException() {
-                submitSubscriber.assertError(JFException.class);
-            }
-        }
     }
 
     public class MergeObservableSetup {

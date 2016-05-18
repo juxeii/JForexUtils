@@ -2,6 +2,9 @@ package com.jforex.programming.order;
 
 import java.util.Collection;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -17,6 +20,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.RestoreSLTPPolicy;
 
 import rx.Completable;
 import rx.Observable;
@@ -29,6 +33,8 @@ public class OrderUtil {
     private final OrderEventGateway orderEventGateway;
     private final PositionFactory positionFactory;
 
+    private static final Logger logger = LogManager.getLogger(OrderUtil.class);
+
     public OrderUtil(final IEngine engine,
                      final OrderCallExecutor orderCallExecutor,
                      final OrderEventGateway orderEventGateway,
@@ -39,7 +45,13 @@ public class OrderUtil {
         this.positionFactory = positionFactory;
     }
 
+    public Position position(final Instrument instrument) {
+        return positionFactory.forInstrument(instrument);
+    }
+
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
+        final Instrument instrument = orderParams.instrument();
+        logger.debug("Start submit task with label " + orderParams.label() + " for " + instrument + " position.");
         final OrderSupplierCall submitCall = () -> engine.submitOrder(orderParams.label(),
                                                                       orderParams.instrument(),
                                                                       orderParams.orderCommand(),
@@ -50,24 +62,29 @@ public class OrderUtil {
                                                                       orderParams.takeProfitPrice(),
                                                                       orderParams.goodTillTime(),
                                                                       orderParams.comment());
-        return runOrderSupplierCall(submitCall, OrderEventTypeData.submitData);
-    }
 
-    public Observable<OrderEvent> submitPositionOrder(final OrderParams orderParams) {
         final Position position = positionFactory.forInstrument(orderParams.instrument());
-        return position.submit(orderParams);
+        return runOrderSupplierCall(submitCall, OrderEventTypeData.submitData)
+                .doOnNext(orderEvent -> position.addOrder(orderEvent.order()))
+                .doOnError(e -> logger.error("Submit " + orderParams.label() + " for position "
+                        + instrument + " failed!"))
+                .doOnCompleted(() -> logger.debug("Submit " + orderParams.label() + " for position "
+                        + instrument + " was successful."));
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
         final OrderSupplierCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
-        return runOrderSupplierCall(mergeCall, OrderEventTypeData.mergeData);
+        final Position position = positionFactory.forInstrument(toMergeOrders.iterator().next().getInstrument());
+        return runOrderSupplierCall(mergeCall, OrderEventTypeData.mergeData)
+                .doOnNext(orderEvent -> position.addOrder(orderEvent.order()));
     }
 
     public Completable mergePositionOrders(final String mergeOrderLabel,
-                                           final Instrument instrument) {
+                                           final Instrument instrument,
+                                           final RestoreSLTPPolicy restoreSLTPPolicy) {
         final Position position = positionFactory.forInstrument(instrument);
-        return position.merge(mergeOrderLabel);
+        return position.merge(mergeOrderLabel, restoreSLTPPolicy);
     }
 
     public Completable closePosition(final Instrument instrument) {
