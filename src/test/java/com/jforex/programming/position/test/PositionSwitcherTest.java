@@ -16,7 +16,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
@@ -28,6 +27,8 @@ import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
+
+import com.dukascopy.api.IEngine.OrderCommand;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
@@ -72,11 +73,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         when(orderParamsSupplierMock.forCommand(OrderCommand.SELL)).thenReturn(orderParamsSELL);
     }
 
-    private void verifyNoPositionCommands() {
-        verify(positionMock, never()).merge(any(), eq(noRestoreSLTPPolicy));
-        verify(positionMock, never()).close();
-    }
-
     private void verifySendedOrderParamsAreCorrect(final String mergeLabel,
                                                    final double expectedAmount,
                                                    final OrderCommand expectedCommand) {
@@ -99,6 +95,10 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     public class FlatSetup {
 
+        public FlatSetup() {
+
+        }
+
         @Test
         public void testSendedOrderParamsAreCorrect() {
             final OrderParams paramsWithWrongCommand = orderParamsBUY.clone()
@@ -113,11 +113,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void testFlatSignalIsIgnored() {
-            verifyNoPositionCommands();
-        }
-
-        @Test
         public void testOrderCommandIsCorrectedEvenIfParamProviderReturnedWrongCommand() {
             positionSwitcher.sendBuySignal();
 
@@ -127,6 +122,10 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     }
 
     public class BuySetup {
+
+        public BuySetup() {
+
+        }
 
         @Test
         public void testSendedOrderParamsAreCorrect() {

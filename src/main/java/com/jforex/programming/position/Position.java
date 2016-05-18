@@ -3,42 +3,47 @@ package com.jforex.programming.position;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
+import static java.util.stream.Collectors.toSet;
 
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.MapMaker;
+import com.jforex.programming.order.OrderDirection;
+import com.jforex.programming.order.OrderStaticUtil;
+import com.jforex.programming.order.event.OrderEvent;
+
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.OrderDirection;
-import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.settings.PlatformSettings;
 
-import rx.Completable;
 import rx.Observable;
-import rx.observables.ConnectableObservable;
 
 public class Position {
 
     private final Instrument instrument;
-    private final PositionTask positionTask;
-    private final PositionOrders orderRepository = new PositionOrders();
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private enum OrderProcessState {
+        IDLE, ACTIVE
+    }
+
+    private final ConcurrentMap<IOrder, OrderProcessState> orderRepository =
+            new MapMaker().weakKeys().makeMap();
+
     private static final Logger logger = LogManager.getLogger(Position.class);
 
     public Position(final Instrument instrument,
-                    final PositionTask positionTask,
                     final Observable<OrderEvent> orderEventObservable) {
         this.instrument = instrument;
-        this.positionTask = positionTask;
 
         orderEventObservable
                 .filter(orderEvent -> orderEvent.order().getInstrument() == instrument)
-                .filter(orderEvent -> orderRepository.contains(orderEvent.order()))
+                .filter(orderEvent -> contains(orderEvent.order()))
                 .doOnNext(orderEvent -> logger.info("Received event " + orderEvent.type() + " for order "
                         + orderEvent.order().getLabel() + "in repository for " + instrument))
                 .filter(orderEvent -> endOfOrderEventTypes.contains(orderEvent.type()))
@@ -46,104 +51,75 @@ public class Position {
                 .subscribe();
     }
 
-    public Instrument instrument() {
-        return instrument;
-    }
-
-    public OrderDirection direction() {
-        return orderRepository.direction();
-    }
-
-    public double signedExposure() {
-        return orderRepository.signedExposure();
-    }
-
-    public Set<IOrder> filter(final Predicate<IOrder> orderPredicate) {
-        return orderRepository.filter(orderPredicate);
-    }
-
-    public Set<IOrder> orders() {
-        return orderRepository.orders();
-    }
-
-    private Set<IOrder> filledOrders() {
-        return orderRepository.filterIdle(isFilled);
-    }
-
-    public Completable merge(final String mergeLabel,
-                             final RestoreSLTPPolicy restoreSLTPPolicy) {
-        final Set<IOrder> ordersToMerge = filledOrders();
-        if (ordersToMerge.size() < 2)
-            return Completable.complete();
-
-        logger.debug("Starting merge task for " + instrument + " position with label " + mergeLabel);
-        orderRepository.markAllActive();
-        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy.restoreSL(ordersToMerge),
-                                                                    restoreSLTPPolicy.restoreTP(ordersToMerge));
-
-        final Completable mergeSequence =
-                removeTPSLObs(ordersToMerge)
-                        .concatWith(Observable.defer(() -> positionTask.mergeObservable(mergeLabel, ordersToMerge))
-                                .doOnNext(this::addOrder)
-                                .flatMap(mergeOrder -> restoreSLTPObs(mergeOrder, restoreSLTPData).toObservable())
-                                .toCompletable());
-        final ConnectableObservable<?> mergeObs = mergeSequence.toObservable().replay();
-        mergeObs.connect();
-
-        return mergeObs.toCompletable();
-    }
-
-    private Completable removeTPSLObs(final Set<IOrder> filledOrders) {
-        final Completable removeTPObs = Observable.from(filledOrders)
-                .doOnNext(order -> logger.debug("Remove TP from " + order.getLabel()))
-                .flatMap(order -> positionTask.setTPCompletable(order, platformSettings.noTPPrice()).toObservable())
-                .toCompletable();
-        final Completable removeSLObs = Observable.from(filledOrders)
-                .doOnNext(order -> logger.debug("Remove SL from " + order.getLabel()))
-                .flatMap(order -> positionTask.setSLCompletable(order, platformSettings.noSLPrice()).toObservable())
-                .toCompletable();
-        return removeTPObs.concatWith(removeSLObs);
-    }
-
-    private Completable restoreSLTPObs(final IOrder mergedOrder,
-                                       final RestoreSLTPData restoreSLTPData) {
-        final Completable restoreSLObs = Observable.just(mergedOrder)
-                .doOnNext(order -> logger.debug("Restore SL from " + order.getLabel()))
-                .flatMap(order -> positionTask.setSLCompletable(order, restoreSLTPData.sl()).toObservable())
-                .toCompletable();
-        final Completable restoreTPObs = Observable.just(mergedOrder)
-                .doOnNext(order -> logger.debug("Restore TP from " + order.getLabel()))
-                .flatMap(order -> positionTask.setTPCompletable(order, restoreSLTPData.tp()).toObservable())
-                .toCompletable();
-        return restoreSLObs.concatWith(restoreTPObs);
-    }
-
-    public Completable close() {
-        logger.debug("Starting to close " + instrument + " position");
-
-        final ConnectableObservable<OrderEvent> closeObservable =
-                Observable.just(orderRepository.filterIdle(isFilled.or(isOpened)))
-                        .filter(ordersToClose -> !ordersToClose.isEmpty())
-                        .doOnNext(ordersToClose -> orderRepository.markAllActive())
-                        .flatMap(Observable::from)
-                        .flatMap(orderToClose -> positionTask.closeObservable(orderToClose))
-                        .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."))
-                        .doOnError(e -> logger.error("Closing position " + instrument + " failed!"))
-                        .replay();
-        closeObservable.connect();
-
-        return closeObservable.toCompletable();
-    }
-
-    public void addOrder(final IOrder order) {
-        orderRepository.add(order);
+    public final synchronized void addOrder(final IOrder order) {
+        orderRepository.put(order, OrderProcessState.IDLE);
         logger.debug("Added order " + order.getLabel() + " to position " + instrument + " Orderstate: "
                 + order.getState() + " repo size " + orderRepository.size());
     }
 
-    private void removeOrder(final IOrder order) {
+    public final synchronized void removeOrder(final IOrder order) {
         orderRepository.remove(order);
         logger.debug("Removed order " + order.getLabel() + " from position " + instrument + " Orderstate: "
                 + order.getState() + " repo size " + orderRepository.size());
+    }
+
+    public final boolean contains(final IOrder order) {
+        return orderRepository.containsKey(order);
+    }
+
+    public final int size() {
+        return orderRepository.size();
+    }
+
+    public final synchronized void markAllActive() {
+        orderRepository.replaceAll((k, v) -> OrderProcessState.ACTIVE);
+    }
+
+    public final OrderDirection direction() {
+        return OrderStaticUtil.combinedDirection(filter(isFilled));
+    }
+
+    public final double signedExposure() {
+        return filter(isFilled)
+                .stream()
+                .mapToDouble(OrderStaticUtil::signedAmount)
+                .sum();
+    }
+
+    public final Set<IOrder> filter(final Predicate<IOrder> orderPredicate) {
+        return orderRepository
+                .keySet()
+                .stream()
+                .filter(orderPredicate)
+                .collect(toSet());
+    }
+
+    public final Set<IOrder> filterIdle(final Predicate<IOrder> orderPredicate) {
+        return orderRepository
+                .entrySet()
+                .stream()
+                .filter(entry -> entry.getValue() == OrderProcessState.IDLE)
+                .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()))
+                .keySet();
+    }
+
+    public Set<IOrder> orders() {
+        return ImmutableSet.copyOf(orderRepository.keySet());
+    }
+
+    public Instrument instrument() {
+        return instrument;
+    }
+
+    public Set<IOrder> filledOrders() {
+        return filterIdle(isFilled);
+    }
+
+    public void markAllOrdersActive() {
+        markAllActive();
+    }
+
+    public Set<IOrder> ordersToClose() {
+        return filterIdle(isFilled.or(isOpened));
     }
 }

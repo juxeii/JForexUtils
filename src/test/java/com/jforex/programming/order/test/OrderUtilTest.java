@@ -2,8 +2,8 @@ package com.jforex.programming.order.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,12 +12,11 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
@@ -37,11 +36,15 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
-import rx.Completable;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
+
+import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
+@RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {
 
     private OrderUtil orderUtil;
@@ -52,10 +55,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderEventGateway orderEventGatewayMock;
     @Mock
     private PositionFactory positionFactoryMock;
-    @Mock
-    private Position positionMock;
+    private Position position;
     @Captor
     private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
+    @Captor
+    private ArgumentCaptor<Set<IOrder>> toMergeOrdersCaptor;
     private final RestoreSLTPPolicy noRestoreSLTPPolicy = new NoRestorePolicy();
     private Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
@@ -82,6 +86,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                                                           Optional.empty());
         orderExecutorResultWithJFException = new OrderCallExecutorResult(Optional.empty(),
                                                                          Optional.of(jfException));
+        position = new Position(instrumentEURUSD, orderEventSubject);
         setUpMocks();
         orderUtil = new OrderUtil(engineMock,
                                   orderCallExecutorMock,
@@ -92,7 +97,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private void setUpMocks() {
         when(orderEventGatewayMock.observable()).thenReturn(orderEventSubject);
         when(orderCallExecutorMock.run(any(OrderSupplierCall.class))).thenReturn(orderExecutorResult);
-        when(positionFactoryMock.forInstrument(instrumentEURUSD)).thenReturn(positionMock);
+        when(positionFactoryMock.forInstrument(instrumentEURUSD)).thenReturn(position);
     }
 
     private void prepareJFException() {
@@ -219,17 +224,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testMergePositionCallsOnPosition() {
-        final Completable expectedCompletable = Completable.complete();
-        when(positionMock.merge(eq(mergeLabel), any())).thenReturn(expectedCompletable);
-
-        final Completable mergeCompletable =
-                orderUtil.mergePositionOrders(mergeLabel, instrumentEURUSD, noRestoreSLTPPolicy);
-
-        assertThat(mergeCompletable, equalTo(expectedCompletable));
-    }
-
-    @Test
     public void testMergeRegistersOnEventGateway() {
         orderUtil.mergeOrders(mergeLabel, toMergeOrders);
 
@@ -286,17 +280,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         captureAndRunOrderCall();
 
         verify(orderUnderTest).close();
-    }
-
-    @Test
-    public void testClosePositionCallsOnPosition() {
-        final Completable expectedCompletable = Completable.complete();
-        when(positionMock.close()).thenReturn(expectedCompletable);
-
-        final Completable closeCompletable = orderUtil.closePosition(instrumentEURUSD);
-
-        verify(positionMock).close();
-        assertThat(closeCompletable, equalTo(expectedCompletable));
     }
 
     @Test
@@ -638,5 +621,285 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         sendOrderEvent(OrderEventType.CHANGE_TP_REJECTED);
 
         assertRejectException();
+    }
+
+    /******************/
+    /* Position Tests */
+    /******************/
+
+//    private void setCallResult(final IOrder order) {
+//        final OrderCallExecutorResult orderExecutorResult =
+//                new OrderCallExecutorResult(Optional.of(order), Optional.empty());
+//        when(orderCallExecutorMock.run(any(OrderSupplierCall.class)))
+//                .thenReturn(orderExecutorResult);
+//    }
+
+    private void sendOrderEvent(final IOrder order,
+                                final OrderEventType orderEventType) {
+        final OrderEvent orderEvent = new OrderEvent(order, orderEventType);
+        orderEventSubject.onNext(orderEvent);
+    }
+
+    private boolean isRepositoryEmpty() {
+        return position.filter(order -> true).isEmpty();
+    }
+
+    private boolean positionHasOrder(final IOrder orderToFind) {
+        return position.filter(order -> order.getLabel().equals(orderToFind.getLabel())).size() == 1;
+    }
+
+    private void assertSubscriberCompleted(final TestSubscriber<?> subscriber) {
+        subscriber.assertNoErrors();
+        subscriber.assertCompleted();
+    }
+
+    private void assertSubscriberNotYetCompleted(final TestSubscriber<?> subscriber) {
+        subscriber.assertNoErrors();
+        subscriber.assertNotCompleted();
+    }
+
+    @Test
+    public void testCloseOnEmptyPositionCompletes() {
+        final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
+
+        orderUtil.closePosition(instrumentEURUSD).subscribe(closeSubscriber);
+
+        assertSubscriberCompleted(closeSubscriber);
+    }
+
+    public class BuySubmitOK {
+
+        private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
+        protected final OrderParams orderParamsSell = OrderParamsForTest.paramsSellEURUSD();
+
+        @Before
+        public void setUp() {
+            buyOrder.setState(IOrder.State.FILLED);
+
+            position.addOrder(buyOrder);
+        }
+
+        @Test
+        public void testPositionHasBuyOrder() {
+            assertTrue(positionHasOrder(buyOrder));
+        }
+
+        @Test
+        public void testMergeCallIsIgnored() {
+            final TestSubscriber<OrderEvent> mergeSubscriber = new TestSubscriber<>();
+
+            orderUtil.mergePositionOrders(mergeLabel, instrumentEURUSD, noRestoreSLTPPolicy)
+                    .subscribe(mergeSubscriber);
+
+            assertSubscriberCompleted(mergeSubscriber);
+        }
+
+        public class SellSubmitOK {
+
+            private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
+
+            @Before
+            public void setUp() {
+                sellOrder.setState(IOrder.State.FILLED);
+
+                position.addOrder(sellOrder);
+            }
+
+            @Test
+            public void testPositionHasBuyAndSellOrder() {
+                assertTrue(positionHasOrder(buyOrder));
+                assertTrue(positionHasOrder(sellOrder));
+            }
+
+            public class MergeSequenceSetup {
+
+//                private final double noSLPrice = platformSettings.noSLPrice();
+//                private final double noTPPrice = platformSettings.noTPPrice();
+                protected final TestSubscriber<OrderEvent> mergeSubscriber = new TestSubscriber<>();
+
+                protected Runnable mergeCall =
+                        () -> orderUtil.mergePositionOrders(mergeLabel, instrumentEURUSD, noRestoreSLTPPolicy)
+                                .subscribe(mergeSubscriber);
+
+                public class RemoveTPFail {
+
+                    @Before
+                    public void setUp() {
+                        prepareJFException();
+
+                        mergeCall.run();
+                    }
+
+                    @Test
+                    public void testMergeSubscriberCompletedWithError() {
+                        mergeSubscriber.assertError(JFException.class);
+                    }
+                }
+
+                public class RemoveTPOK {
+
+                    @Before
+                    public void setUp() {
+//                        when(positionTaskMock.setTPCompletable(buyOrder, noTPPrice))
+//                                .thenReturn(Completable.complete());
+//                        when(positionTaskMock.setTPCompletable(sellOrder, noTPPrice))
+//                                .thenReturn(Completable.complete());
+                    }
+
+                    @Test
+                    public void testRemoveTPIsCalledPositionTaskWhenNotSubscribed() {
+                        orderUtil.mergePositionOrders(mergeLabel, instrumentEURUSD, noRestoreSLTPPolicy);
+
+//                        verify(positionTaskMock).setTPCompletable(buyOrder, noTPPrice);
+//                        verify(positionTaskMock).setTPCompletable(sellOrder, noTPPrice);
+
+                    }
+
+                    public class RemoveSLInProgress {
+
+                        @Before
+                        public void setUp() {
+//                            when(positionTaskMock.setSLCompletable(buyOrder, noTPPrice))
+//                                    .thenReturn(Completable.never());
+//                            when(positionTaskMock.setSLCompletable(sellOrder, noTPPrice))
+//                                    .thenReturn(Completable.never());
+
+                            mergeCall.run();
+                        }
+
+                        @Test
+                        public void testMergeSubscriberNotYetCompleted() {
+                            assertSubscriberNotYetCompleted(mergeSubscriber);
+                        }
+                    }
+
+                    public class RemoveSLOK {
+
+                        @Before
+                        public void setUp() {
+//                            when(positionTaskMock.setSLCompletable(buyOrder, noSLPrice))
+//                                    .thenReturn(Completable.complete());
+//                            when(positionTaskMock.setSLCompletable(sellOrder, noSLPrice))
+//                                    .thenReturn(Completable.complete());
+                        }
+
+                        public class MergeCallFail {
+
+                            @Before
+                            public void setUp() {
+                                prepareJFException();
+
+                                mergeCall.run();
+                            }
+
+                            @Test
+                            public void testPositionHasStillBuyAndSellOrder() {
+                                assertTrue(positionHasOrder(buyOrder));
+                                assertTrue(positionHasOrder(sellOrder));
+                            }
+
+                            @Test
+                            public void testMergeSubscriberCompletedWithError() {
+                                mergeSubscriber.assertError(JFException.class);
+                            }
+                        }
+
+                    }
+
+                    public class RemoveSLFail {
+
+                        @Before
+                        public void setUp() {
+                            prepareJFException();
+
+                            mergeCall.run();
+                        }
+
+                        @Test
+                        public void testMergeSubscriberCompletedWithError() {
+                            mergeSubscriber.assertError(JFException.class);
+                        }
+                    }
+                }
+            }
+
+            public class CloseSetup {
+
+                protected final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
+                protected Runnable closeCall =
+                        () -> orderUtil.closePosition(instrumentEURUSD).subscribe(closeSubscriber);
+
+                public class CloseInProcess {
+
+                    @Before
+                    public void setUp() {
+                        closeCall.run();
+
+                        buyOrder.setState(IOrder.State.CLOSED);
+                    }
+
+                    @Test
+                    public void testCloseSubscriberNotYetCompleted() {
+                        assertSubscriberNotYetCompleted(closeSubscriber);
+                    }
+
+                    @Test
+                    public void testPositionHasOnlySellOrder() {
+                        assertTrue(positionHasOrder(sellOrder));
+                    }
+                }
+
+                public class CloseOK {
+
+                    @Before
+                    public void setUp() {
+                        final OrderCallExecutorResult buyResult =
+                                new OrderCallExecutorResult(Optional.of(buyOrder), Optional.empty());
+                        final OrderCallExecutorResult sellResult =
+                                new OrderCallExecutorResult(Optional.of(sellOrder), Optional.empty());
+                        when(orderCallExecutorMock.run(any(OrderSupplierCall.class)))
+                                .thenReturn(buyResult)
+                                .thenReturn(sellResult);
+
+                        closeCall.run();
+
+                        buyOrder.setState(IOrder.State.CLOSED);
+                        sellOrder.setState(IOrder.State.CLOSED);
+                        sendOrderEvent(buyOrder, OrderEventType.CLOSE_OK);
+                        sendOrderEvent(sellOrder, OrderEventType.CLOSE_OK);
+                    }
+
+                    @Test
+                    public void testPositionHasNoOrder() {
+                        assertTrue(isRepositoryEmpty());
+                    }
+
+                    @Test
+                    public void testSubmitSubscriberCompleted() {
+                        assertSubscriberCompleted(closeSubscriber);
+                    }
+                }
+
+                public class CloseFail {
+
+                    @Before
+                    public void setUp() {
+                        prepareJFException();
+
+                        closeCall.run();
+                    }
+
+                    @Test
+                    public void testPositionHasStillBuyOrder() {
+                        assertTrue(positionHasOrder(buyOrder));
+                    }
+
+                    @Test
+                    public void testCloseSubscriberCompletedWithError() {
+                        closeSubscriber.assertError(JFException.class);
+                    }
+                }
+            }
+        }
     }
 }
