@@ -5,6 +5,15 @@ import java.util.concurrent.Executors;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderMessageData;
@@ -21,16 +30,6 @@ import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.UserSettings;
-
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.Period;
 
 import rx.Observable;
 import rx.Subscription;
@@ -49,7 +48,7 @@ public class JForexUtil implements MessageConsumer {
 
     private OrderUtil orderUtil;
     private PositionTask positionTask;
-    private PositionFactory positionRepository;
+    private PositionFactory positionFactory;
     private OrderEventGateway orderEventGateway;
     private OrderCallExecutor orderCallExecutor;
 
@@ -110,9 +109,12 @@ public class JForexUtil implements MessageConsumer {
 
     private void initOrderRelated() {
         orderCallExecutor = new OrderCallExecutor(concurrentUtil);
-        orderUtil = new OrderUtil(context.getEngine(), orderCallExecutor, orderEventGateway);
         positionTask = new PositionTask(orderUtil);
-        positionRepository = new PositionFactory(positionTask, orderEventGateway.observable());
+        positionFactory = new PositionFactory(positionTask, orderEventGateway.observable());
+        orderUtil = new OrderUtil(context.getEngine(),
+                                  orderCallExecutor,
+                                  orderEventGateway,
+                                  positionFactory);
     }
 
     public IContext context() {
@@ -133,7 +135,7 @@ public class JForexUtil implements MessageConsumer {
 
     public Position position(final Instrument instrument,
                              final RestoreSLTPPolicy restoreSLTPPolicy) {
-        return positionRepository.forInstrument(instrument, restoreSLTPPolicy);
+        return positionFactory.forInstrument(instrument, restoreSLTPPolicy);
     }
 
     public TickQuoteProvider tickQuoteProvider() {
@@ -161,7 +163,7 @@ public class JForexUtil implements MessageConsumer {
     }
 
     public void closeAllPositions() {
-        positionRepository.all().forEach(position -> position.close().subscribe());
+        positionFactory.all().forEach(position -> position.close().subscribe());
     }
 
     public RiskPercentMM riskPercentMM() {

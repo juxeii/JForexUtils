@@ -2,6 +2,8 @@ package com.jforex.programming.order;
 
 import java.util.Collection;
 
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -12,9 +14,8 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IOrder;
+import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionFactory;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -24,13 +25,16 @@ public class OrderUtil {
     private final IEngine engine;
     private final OrderCallExecutor orderCallExecutor;
     private final OrderEventGateway orderEventGateway;
+    private final PositionFactory positionFactory;
 
     public OrderUtil(final IEngine engine,
                      final OrderCallExecutor orderCallExecutor,
-                     final OrderEventGateway orderEventGateway) {
+                     final OrderEventGateway orderEventGateway,
+                     final PositionFactory positionFactory) {
         this.engine = engine;
         this.orderCallExecutor = orderCallExecutor;
         this.orderEventGateway = orderEventGateway;
+        this.positionFactory = positionFactory;
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
@@ -45,6 +49,11 @@ public class OrderUtil {
                                                                       orderParams.goodTillTime(),
                                                                       orderParams.comment());
         return runOrderSupplierCall(submitCall, OrderEventTypeData.submitData);
+    }
+
+    public Observable<OrderEvent> submitPositionOrder(final OrderParams orderParams) {
+        final Position position = positionFactory.forInstrument(orderParams.instrument());
+        return position.submit(orderParams);
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,

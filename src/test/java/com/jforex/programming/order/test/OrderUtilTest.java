@@ -28,6 +28,7 @@ import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
@@ -40,9 +41,14 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     private OrderUtil orderUtil;
 
-    @Mock private OrderCallExecutor orderCallExecutorMock;
-    @Mock private OrderEventGateway orderEventGatewayMock;
-    @Captor private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
+    @Mock
+    private OrderCallExecutor orderCallExecutorMock;
+    @Mock
+    private OrderEventGateway orderEventGatewayMock;
+    @Mock
+    private PositionFactory positionFactoryMock;
+    @Captor
+    private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
     private Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
     private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
@@ -71,7 +77,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         setUpMocks();
         orderUtil = new OrderUtil(engineMock,
                                   orderCallExecutorMock,
-                                  orderEventGatewayMock);
+                                  orderEventGatewayMock,
+                                  positionFactoryMock);
     }
 
     private void setUpMocks() {

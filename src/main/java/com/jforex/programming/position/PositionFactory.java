@@ -9,7 +9,7 @@ import com.jforex.programming.order.event.OrderEvent;
 
 import rx.Observable;
 
-public final class PositionFactory {
+public class PositionFactory {
 
     private final PositionTask positionTask;
     private final Observable<OrderEvent> orderEventObservable;
@@ -21,21 +21,25 @@ public final class PositionFactory {
         this.orderEventObservable = orderEventObservable;
     }
 
-    public final Position createNew(final Instrument instrument,
-                                    final RestoreSLTPPolicy restoreSLTPPolicy) {
+    public Position createNew(final Instrument instrument,
+                              final RestoreSLTPPolicy restoreSLTPPolicy) {
         return new Position(instrument,
                             positionTask,
                             orderEventObservable,
                             restoreSLTPPolicy);
     }
 
-    public final Position forInstrument(final Instrument instrument,
-                                        final RestoreSLTPPolicy restoreSLTPPolicy) {
+    public Position forInstrument(final Instrument instrument,
+                                  final RestoreSLTPPolicy restoreSLTPPolicy) {
         return positionByInstrument.computeIfAbsent(instrument,
                                                     inst -> createNew(inst, restoreSLTPPolicy));
     }
 
-    public final Collection<Position> all() {
+    public Position forInstrument(final Instrument instrument) {
+        return forInstrument(instrument, new NoRestorePolicy());
+    }
+
+    public Collection<Position> all() {
         return positionByInstrument.values();
     }
 }
