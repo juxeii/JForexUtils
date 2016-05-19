@@ -1,5 +1,7 @@
 package com.jforex.programming.order;
 
+import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
+
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -63,6 +65,7 @@ public class OrderUtilHandler {
                     orderEventGateway.observable()
                             .filter(orderEvent -> orderEvent.order() == orderExecutorResult.orderOpt().get())
                             .filter(orderEvent -> orderEventTypeData.all().contains(orderEvent.type()))
+                            .takeUntil(orderEvent -> endOfOrderEventTypes.contains(orderEvent.type()))
                             .subscribe(orderEvent -> evaluateOrderEvent(orderEvent, orderEventTypeData, subscriber));
                 });
     }
