@@ -11,6 +11,7 @@ import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
@@ -44,12 +45,13 @@ public class JForexUtil implements MessageConsumer {
     private TickQuoteProvider tickQuoteProvider;
     private BarQuoteProvider barQuoteProvider;
 
-    private OrderCreateUtil orderCreateUtil;
-    private OrderChangeUtil orderChangeUtil;
-    private OrderUtil orderUtil;
     private PositionFactory positionFactory;
     private OrderEventGateway orderEventGateway;
     private OrderCallExecutor orderCallExecutor;
+    private OrderUtilHandler orderUtilHandler;
+    private OrderCreateUtil orderCreateUtil;
+    private OrderChangeUtil orderChangeUtil;
+    private OrderUtil orderUtil;
 
     private final CalculationUtil calculationUtil;
     private final RiskPercentMM riskPercentMM;
@@ -101,11 +103,9 @@ public class JForexUtil implements MessageConsumer {
     private void initOrderRelated() {
         orderCallExecutor = new OrderCallExecutor(concurrentUtil);
         positionFactory = new PositionFactory(orderEventGateway.observable());
-        orderCreateUtil = new OrderCreateUtil(context.getEngine(),
-                                              orderCallExecutor,
-                                              orderEventGateway);
-        orderChangeUtil = new OrderChangeUtil(orderCallExecutor,
-                                              orderEventGateway);
+        orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
+        orderCreateUtil = new OrderCreateUtil(context.getEngine(), orderUtilHandler);
+        orderChangeUtil = new OrderChangeUtil(orderUtilHandler);
         orderUtil = new OrderUtil(orderCreateUtil,
                                   orderChangeUtil,
                                   positionFactory);

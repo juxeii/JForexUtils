@@ -14,21 +14,21 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.call.OrderCallExecutor;
+import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -42,9 +42,7 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
     private OrderCreateUtil orderCreateUtil;
 
     @Mock
-    private OrderCallExecutor orderCallExecutorMock;
-    @Mock
-    private OrderEventGateway orderEventGatewayMock;
+    private OrderUtilHandler orderUtilHandlerMock;
     @Captor
     private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
     private Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
@@ -63,9 +61,7 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
                                                                          Optional.of(jfException));
         setUpMocks();
 
-        orderCreateUtil = new OrderCreateUtil(engineMock,
-                                              orderCallExecutorMock,
-                                              orderEventGatewayMock);
+        orderCreateUtil = new OrderCreateUtil(engineMock, orderUtilHandlerMock);
     }
 
     private void setUpMocks() {

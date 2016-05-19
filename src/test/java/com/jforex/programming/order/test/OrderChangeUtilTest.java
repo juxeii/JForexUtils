@@ -1,8 +1,6 @@
 package com.jforex.programming.order.test;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -14,19 +12,19 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderChangeUtil;
-import com.jforex.programming.order.call.OrderCallExecutor;
+import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -40,9 +38,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
     private OrderChangeUtil orderChangeUtil;
 
     @Mock
-    private OrderCallExecutor orderCallExecutorMock;
-    @Mock
-    private OrderEventGateway orderEventGatewayMock;
+    private OrderUtilHandler orderUtilHandlerMock;
     @Captor
     private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
     private Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
@@ -68,17 +64,16 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         setUpMocks();
         orderUnderTest.setState(IOrder.State.FILLED);
 
-        orderChangeUtil = new OrderChangeUtil(orderCallExecutorMock, orderEventGatewayMock);
+        orderChangeUtil = new OrderChangeUtil(orderUtilHandlerMock);
     }
 
     private void setUpMocks() {
-        when(orderEventGatewayMock.observable()).thenReturn(orderEventSubject);
-        when(orderCallExecutorMock.run(any(OrderSupplierCall.class))).thenReturn(orderExecutorResult);
+        // when(orderEventGatewayMock.observable()).thenReturn(orderEventSubject);
     }
 
     private void prepareJFException() {
-        when(orderCallExecutorMock.run(any(OrderSupplierCall.class)))
-                .thenReturn(orderExecutorResultWithJFException);
+//        when(orderUtilHandlerMock.run(any(OrderSupplierCall.class)))
+//                .thenReturn(orderExecutorResultWithJFException);
     }
 
     private void assertJFException(final TestSubscriber<?> subscriber) {
@@ -94,11 +89,6 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
     private void assertSubscriberCompleted(final TestSubscriber<?> subscriber) {
         subscriber.assertNoErrors();
         subscriber.assertCompleted();
-    }
-
-    private void captureAndRunOrderCall() throws JFException {
-        verify(orderCallExecutorMock).run(orderCallCaptor.capture());
-        orderCallCaptor.getValue().get();
     }
 
     private void assertOtherOrderIsIgnored(final TestSubscriber<OrderEvent> subscriber) {

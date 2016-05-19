@@ -55,7 +55,7 @@ public class OrderUtil {
         final Instrument instrument = orderParams.instrument();
         logger.debug("Start submit task with label " + orderParams.label() + " for " + instrument + " position.");
 
-        final ConnectableObservable<OrderEvent> submitObs = orderCreateUtil.submitOrder(orderParams);
+        final Observable<OrderEvent> submitObs = orderCreateUtil.submitOrder(orderParams);
         final Position position = positionFactory.forInstrument(orderParams.instrument());
         submitObs.doOnCompleted(() -> logger.debug("Submit " + orderParams.label() + " for position "
                 + instrument + " was successful."))
@@ -71,7 +71,7 @@ public class OrderUtil {
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
         final Position position = positionFactory.forInstrument(toMergeOrders.iterator().next().getInstrument());
-        final ConnectableObservable<OrderEvent> mergeObs = orderCreateUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
+        final Observable<OrderEvent> mergeObs = orderCreateUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
         mergeObs.subscribe(orderEvent -> position.addOrder(orderEvent.order()),
                            e -> logger.error("Merge for " + mergeOrderLabel + " failed!"),
                            () -> logger.debug("Merge for " + mergeOrderLabel + " was successful."));
@@ -135,7 +135,7 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        final ConnectableObservable<OrderEvent> closeObs = orderChangeUtil.close(orderToClose);
+        final Observable<OrderEvent> closeObs = orderChangeUtil.close(orderToClose);
         closeObs.doOnCompleted(() -> logger.debug("Closing " + orderToClose.getLabel() + " was successful."))
                 .subscribe(orderEvent -> {},
                            e -> logger.error("Closing " + orderToClose.getLabel() + " failed!"));
