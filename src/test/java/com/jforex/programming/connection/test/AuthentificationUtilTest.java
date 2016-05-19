@@ -63,7 +63,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
                                                        pin);
 
         authentificationUtil = new AuthentificationUtil(clientMock, connectionStateObs);
-        authentificationUtil.setLoginTimeOutScheduler(scheduler);
         authentificationUtil.loginStateObs().subscribe(loginStateSubscriber);
     }
 
@@ -249,6 +248,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
             @Test
             public void testLoginCompletionError() {
+                rxTestUtil.advanceTimeBy(20, TimeUnit.SECONDS);
                 loginCompletionSubscriber.assertError(TimeoutException.class);
             }
 

@@ -14,15 +14,12 @@ import com.dukascopy.api.system.IClient;
 
 import rx.Completable;
 import rx.Observable;
-import rx.Scheduler;
-import rx.schedulers.Schedulers;
 
 public class AuthentificationUtil {
 
     private final IClient client;
     private final JFObservable<LoginState> loginStatePublisher = new JFObservable<>();
     private final Observable<ConnectionState> connectionStateObs;
-    private Scheduler scheduler = Schedulers.computation();
     private final StateMachineConfig<LoginState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
     private final StateMachine<LoginState, FSMTrigger> fsm = new StateMachine<>(LoginState.LOGGED_OUT, fsmConfig);
 
@@ -41,10 +38,6 @@ public class AuthentificationUtil {
 
         initConnectionStateObs(connectionStateObs);
         configureFSM();
-    }
-
-    public void setLoginTimeOutScheduler(final Scheduler scheduler) {
-        this.scheduler = scheduler;
     }
 
     private final void initConnectionStateObs(final Observable<ConnectionState> connectionStateObs) {
@@ -93,7 +86,7 @@ public class AuthentificationUtil {
                                 else
                                     subscriber.onError(new ConnectException());
                             });
-                }).timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS, scheduler);
+                }).timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS);
     }
 
     private final Optional<Exception> connectClient(final String jnlpAddress,
