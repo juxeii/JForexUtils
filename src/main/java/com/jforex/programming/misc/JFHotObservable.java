@@ -6,15 +6,22 @@ import com.google.common.collect.Sets;
 
 import rx.Observable;
 import rx.Subscriber;
+import rx.observables.ConnectableObservable;
 import rx.subscriptions.Subscriptions;
 
-public final class JFObservable<T> {
+public final class JFHotObservable<T> {
 
-    private final Observable<T> observable = Observable.create(subscriber -> subscribe(subscriber));
+    private final ConnectableObservable<T> hotObservable;
     private final Set<Subscriber<? super T>> subscribers = Sets.newConcurrentHashSet();
 
+    public JFHotObservable() {
+        final Observable<T> coldObservable = Observable.create(subscriber -> subscribe(subscriber));
+        hotObservable = coldObservable.publish();
+        hotObservable.connect();
+    }
+
     public final Observable<T> get() {
-        return observable;
+        return hotObservable;
     }
 
     public final void onNext(final T observableInstance) {

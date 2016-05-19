@@ -13,8 +13,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
@@ -23,6 +21,9 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.settings.PlatformSettings;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -73,7 +74,7 @@ public class OrderUtil {
         final ConnectableObservable<OrderEvent> mergeObs = orderCreateUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
         mergeObs.subscribe(orderEvent -> position.addOrder(orderEvent.order()),
                            e -> logger.error("Merge for " + mergeOrderLabel + " failed!"),
-                           () -> logger.debug("Submit " + mergeOrderLabel + " was successful."));
+                           () -> logger.debug("Merge for " + mergeOrderLabel + " was successful."));
 
         return mergeObs;
     }

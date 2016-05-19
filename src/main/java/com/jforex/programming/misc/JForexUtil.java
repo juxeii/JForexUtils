@@ -5,15 +5,6 @@ import java.util.concurrent.Executors;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderChangeUtil;
@@ -29,7 +20,16 @@ import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.UserSettings;
 
-import rx.Observable;
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.Period;
+
 import rx.Subscription;
 
 public class JForexUtil implements MessageConsumer {
@@ -55,14 +55,9 @@ public class JForexUtil implements MessageConsumer {
     private final RiskPercentMM riskPercentMM;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    private final JFObservable<IMessage> messagePublisher = new JFObservable<IMessage>();
-    private Observable<IMessage> messageObservable;
-
-    private final JFObservable<TickQuote> tickQuotePublisher = new JFObservable<TickQuote>();
-    private Observable<TickQuote> tickObservable;
-
-    private final JFObservable<BarQuote> barQuotePublisher = new JFObservable<BarQuote>();
-    private Observable<BarQuote> barObservable;
+    private final JFHotObservable<IMessage> messagePublisher = new JFHotObservable<>();
+    private final JFHotObservable<TickQuote> tickQuotePublisher = new JFHotObservable<>();
+    private final JFHotObservable<BarQuote> barQuotePublisher = new JFHotObservable<>();
 
     private Subscription eventGatewaySubscription;
 
@@ -90,19 +85,17 @@ public class JForexUtil implements MessageConsumer {
     private void initInfrastructure() {
         orderEventGateway = new OrderEventGateway();
 
-        messageObservable = messagePublisher.get();
-        eventGatewaySubscription = messageObservable.filter(message -> message.getOrder() != null)
+        eventGatewaySubscription = messagePublisher.get()
+                .filter(message -> message.getOrder() != null)
                 .map(OrderMessageData::new)
                 .subscribe(orderEventGateway::onOrderMessageData);
     }
 
     private void initQuoteProvider() {
-        tickObservable = tickQuotePublisher.get();
-        tickQuoteProvider = new TickQuoteProvider(tickObservable, context.getSubscribedInstruments(), history);
-
-        barObservable = barQuotePublisher.get();
-        barQuoteProvider = new BarQuoteProvider(barObservable, history);
-
+        tickQuoteProvider = new TickQuoteProvider(tickQuotePublisher.get(),
+                                                  context.getSubscribedInstruments(),
+                                                  history);
+        barQuoteProvider = new BarQuoteProvider(barQuotePublisher.get(), history);
     }
 
     private void initOrderRelated() {
@@ -155,7 +148,9 @@ public class JForexUtil implements MessageConsumer {
     }
 
     public void closeAllPositions() {
-        positionFactory.all().forEach(position -> orderUtil.closePosition(position.instrument()));
+        positionFactory
+                .all()
+                .forEach(position -> orderUtil.closePosition(position.instrument()));
     }
 
     public RiskPercentMM riskPercentMM() {
