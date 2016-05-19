@@ -6,14 +6,16 @@ import java.util.function.Predicate;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.OfferSide;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.settings.PlatformSettings;
+
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 
 public final class OrderStaticUtil {
 
@@ -47,6 +49,13 @@ public final class OrderStaticUtil {
     public final static Predicate<IOrder> isFilled = statePredicate.apply(IOrder.State.FILLED);
     public final static Predicate<IOrder> isClosed = statePredicate.apply(IOrder.State.CLOSED);
     public final static Predicate<IOrder> isConditional = order -> order.getOrderCommand().isConditional();
+
+    public final static Function<Instrument, Predicate<IOrder>> instrumentPredicate =
+            instrument -> order -> order.getInstrument() == instrument;
+
+    public final static Predicate<IOrder> ofInstrument(final Instrument instrument) {
+        return instrumentPredicate.apply(instrument);
+    }
 
     public final static Function<Double, Predicate<IOrder>> orderSLPredicate =
             sl -> order -> order.getStopLossPrice() == sl;

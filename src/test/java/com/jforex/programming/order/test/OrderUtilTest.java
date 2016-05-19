@@ -4,11 +4,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
+import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +19,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderCreateUtil;
@@ -28,9 +30,13 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.RestoreSLTPPolicy;
+import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -50,6 +56,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderChangeUtil orderChangeUtilMock;
     @Mock
     private PositionFactory positionFactoryMock;
+    @Mock
+    private RestoreSLTPPolicy restoreSLTPPolicyMock;
     @Captor
     private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
     @Captor
@@ -58,20 +66,18 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
     private final IOrderForTest mergeOrder = IOrderForTest.buyOrderEURUSD();
-    // private final RestoreSLTPPolicy noRestoreSLTPPolicy = new
-    // NoRestorePolicy();
     private Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private ConnectableObservable<OrderEvent> orderEventObs;
     private final IOrderForTest orderToChange = IOrderForTest.buyOrderEURUSD();
     private final String mergeOrderLabel = "MergeLabel";
-//    private final Set<IOrder> toMergeOrders =
-//            Sets.newHashSet(IOrderForTest.buyOrderEURUSD(), IOrderForTest.sellOrderEURUSD());
     private final String newLabel = "NewLabel";
     private final long newGTT = 123456L;
     private final double newRequestedAmount = 0.12;
     private final double newOpenPrice = 1.12122;
     private final double newSL = 1.10987;
     private final double newTP = 1.11001;
+
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
     @Before
     public void setUp() {
@@ -193,7 +199,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             observable.connect();
         }
 
+        @SuppressWarnings("unchecked")
         private void prepareObservableForReject(final OrderEvent orderEvent) {
+            @SuppressWarnings("rawtypes")
             final ConnectableObservable observable =
                     Observable.error(new OrderCallRejectException("", orderEvent)).replay();
             when(orderCreateUtilMock.submitOrder(orderParamsBUY)).thenReturn(observable);
@@ -326,7 +334,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                         setCloseMockObservable(Observable.error(new OrderCallRejectException("", orderEvent)).replay());
                     }
 
-                    private void setCloseMockObservable(final ConnectableObservable observable) {
+                    @SuppressWarnings("unchecked")
+                    private void
+                            setCloseMockObservable(@SuppressWarnings("rawtypes") final ConnectableObservable observable) {
                         when(orderChangeUtilMock.close(buyOrder)).thenReturn(observable);
                         observable.connect();
                     }
@@ -405,7 +415,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             setMergeMockObservable(Observable.error(new OrderCallRejectException("", orderEvent)).replay());
         }
 
-        private void setMergeMockObservable(final ConnectableObservable observable) {
+        @SuppressWarnings("unchecked")
+        private void setMergeMockObservable(@SuppressWarnings("rawtypes") final ConnectableObservable observable) {
             when(orderCreateUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders)).thenReturn(observable);
             observable.connect();
         }
@@ -468,18 +479,201 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
     }
 
-//    public class PositionWithBuyAndSellOrder {
-//
-//        private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
-//        private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
-//
-//        @Before
-//        public void setUp() {
-//            buyOrder.setState(IOrder.State.FILLED);
-//            sellOrder.setState(IOrder.State.FILLED);
-//
-//            position.addOrder(buyOrder);
-//            position.addOrder(sellOrder);
-//        }
-//    }
+    public class PositionWithBuyAndSellOrder {
+
+        private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
+        private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
+
+        @Before
+        public void setUp() {
+            buyOrder.setState(IOrder.State.FILLED);
+            sellOrder.setState(IOrder.State.FILLED);
+
+            position.addOrder(buyOrder);
+            position.addOrder(sellOrder);
+        }
+
+        public class RemoveTPOK {
+
+            private final TestSubscriber<OrderEvent> mergeSubscriber = new TestSubscriber<>();
+            private final Runnable mergePositionCall = () -> orderUtil
+                    .mergePositionOrders(mergeOrderLabel,
+                                         instrumentEURUSD,
+                                         restoreSLTPPolicyMock)
+                    .subscribe(mergeSubscriber);
+            private final double noTPPrice = platformSettings.noTPPrice();
+
+            @Before
+            public void setUp() {
+                final OrderEvent removeTPForBuy = new OrderEvent(buyOrder, OrderEventType.TP_CHANGE_OK);
+                final OrderEvent removeTPForSell = new OrderEvent(sellOrder, OrderEventType.TP_CHANGE_OK);
+
+                final ConnectableObservable<OrderEvent> orderEventObsForBuy =
+                        Observable.just(removeTPForBuy).replay();
+                final ConnectableObservable<OrderEvent> orderEventObsForSell =
+                        Observable.just(removeTPForSell).replay();
+
+                orderEventObsForBuy.connect();
+                orderEventObsForSell.connect();
+
+                when(orderChangeUtilMock.setTakeProfitPrice(buyOrder, noTPPrice)).thenReturn(orderEventObsForBuy);
+                when(orderChangeUtilMock.setTakeProfitPrice(sellOrder, noTPPrice)).thenReturn(orderEventObsForSell);
+            }
+
+            @Test
+            public void testRemoveTPsHaveBeenCalled() {
+                mergePositionCall.run();
+
+                verify(orderChangeUtilMock).setTakeProfitPrice(buyOrder, noTPPrice);
+                verify(orderChangeUtilMock).setTakeProfitPrice(sellOrder, noTPPrice);
+            }
+
+            public class RemoveSLOK {
+
+                private final double noSLPrice = platformSettings.noSLPrice();
+
+                @Before
+                public void setUp() {
+                    final OrderEvent removeSLForBuy = new OrderEvent(buyOrder, OrderEventType.SL_CHANGE_OK);
+                    final OrderEvent removeSLForSell = new OrderEvent(sellOrder, OrderEventType.SL_CHANGE_OK);
+
+                    final ConnectableObservable<OrderEvent> orderEventObsForBuy =
+                            Observable.just(removeSLForBuy).replay();
+                    final ConnectableObservable<OrderEvent> orderEventObsForSell =
+                            Observable.just(removeSLForSell).replay();
+
+                    orderEventObsForBuy.connect();
+                    orderEventObsForSell.connect();
+
+                    when(orderChangeUtilMock.setStopLossPrice(buyOrder, noSLPrice))
+                            .thenReturn(orderEventObsForBuy);
+                    when(orderChangeUtilMock.setStopLossPrice(sellOrder, noSLPrice))
+                            .thenReturn(orderEventObsForSell);
+                }
+
+                @Test
+                public void testRemoveSLsHaveBeenCalled() {
+                    mergePositionCall.run();
+
+                    verify(orderChangeUtilMock).setStopLossPrice(buyOrder, noSLPrice);
+                    verify(orderChangeUtilMock).setStopLossPrice(sellOrder, noSLPrice);
+                }
+
+                public class MergeOK {
+
+                    @Before
+                    public void setUp() {
+                        final OrderEvent mergeEvent = new OrderEvent(mergeOrder, OrderEventType.MERGE_OK);
+
+                        final ConnectableObservable<OrderEvent> mergeObs = Observable.just(mergeEvent).replay();
+                        mergeObs.connect();
+
+                        when(orderCreateUtilMock.mergeOrders(eq(mergeOrderLabel), toMergeOrdersCaptor.capture()))
+                                .thenReturn(mergeObs);
+                    }
+
+                    @Test
+                    public void testMergeHasBeenCalled() {
+                        mergePositionCall.run();
+
+                        verify(orderCreateUtilMock).mergeOrders(eq(mergeOrderLabel), toMergeOrdersCaptor.capture());
+                    }
+
+                    public class RestoreSLOK {
+
+                        private final double restoreSL = 1.10321;
+                        private final double restoreTP = 1.10321;
+
+                        @Before
+                        public void setUp() {
+                            when(restoreSLTPPolicyMock.restoreSL(any())).thenReturn(restoreSL);
+                            when(restoreSLTPPolicyMock.restoreTP(any())).thenReturn(restoreTP);
+
+                            final OrderEvent restoreSLEvent = new OrderEvent(mergeOrder, OrderEventType.SL_CHANGE_OK);
+
+                            final ConnectableObservable<OrderEvent> restoreSLObs =
+                                    Observable.just(restoreSLEvent).replay();
+
+                            restoreSLObs.connect();
+
+                            when(orderChangeUtilMock.setStopLossPrice(mergeOrder, restoreSL))
+                                    .thenReturn(restoreSLObs);
+                        }
+
+                        @Test
+                        public void testSetSLOnMergeOrderHasBeenCalled() {
+                            mergePositionCall.run();
+
+                            verify(orderChangeUtilMock).setStopLossPrice(mergeOrder, restoreSL);
+                        }
+
+                        public class RestoreTPOK {
+
+                            @Before
+                            public void setUp() {
+                                final OrderEvent restoreTPEvent =
+                                        new OrderEvent(mergeOrder, OrderEventType.TP_CHANGE_OK);
+
+                                final ConnectableObservable<OrderEvent> restoreTPObs =
+                                        Observable.just(restoreTPEvent).replay();
+
+                                restoreTPObs.connect();
+
+                                when(orderChangeUtilMock.setTakeProfitPrice(mergeOrder, restoreTP))
+                                        .thenReturn(restoreTPObs);
+                            }
+
+                            @Test
+                            public void testSetTPOnMergeOrderHasBeenCalled() {
+                                mergePositionCall.run();
+
+                                verify(orderChangeUtilMock).setTakeProfitPrice(mergeOrder, restoreTP);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public class ClosePositionOK {
+
+            private final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
+            private final Runnable closePositionCall =
+                    () -> orderUtil.closePosition(instrumentEURUSD).subscribe(closeSubscriber);
+
+            @Before
+            public void setUp() {
+                final OrderEvent closeBuyEvent = new OrderEvent(buyOrder, OrderEventType.CLOSE_OK);
+                final OrderEvent closeSellEvent = new OrderEvent(sellOrder, OrderEventType.CLOSE_OK);
+
+                final ConnectableObservable<OrderEvent> orderEventObsForBuy =
+                        Observable.just(closeBuyEvent).replay();
+                final ConnectableObservable<OrderEvent> orderEventObsForSell =
+                        Observable.just(closeSellEvent).replay();
+
+                orderEventObsForBuy.connect();
+                orderEventObsForSell.connect();
+
+                when(orderChangeUtilMock.close(buyOrder)).thenReturn(orderEventObsForBuy);
+                when(orderChangeUtilMock.close(sellOrder)).thenReturn(orderEventObsForSell);
+
+                closePositionCall.run();
+
+                sendOrderEvent(buyOrder, OrderEventType.CLOSE_OK);
+                sendOrderEvent(sellOrder, OrderEventType.CLOSE_OK);
+            }
+
+            @Test
+            public void testCloseOnOrdersHaveBeenCalled() {
+                verify(orderChangeUtilMock).close(buyOrder);
+                verify(orderChangeUtilMock).close(sellOrder);
+            }
+
+            @Test
+            public void testPositionIsEmpty() {
+                assertFalse(position.contains(buyOrder));
+                assertFalse(position.contains(sellOrder));
+            }
+        }
+    }
 }

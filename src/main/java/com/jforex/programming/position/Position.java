@@ -2,6 +2,7 @@ package com.jforex.programming.position;
 
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
+import static com.jforex.programming.order.OrderStaticUtil.ofInstrument;
 import static com.jforex.programming.order.event.OrderEventTypeSets.closeEventTypes;
 import static java.util.stream.Collectors.toSet;
 
@@ -13,13 +14,14 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -54,9 +56,14 @@ public class Position {
     }
 
     public synchronized void addOrder(final IOrder order) {
-        orderRepository.put(order, OrderProcessState.IDLE);
-        logger.debug("Added order " + order.getLabel() + " to position " + instrument + " Orderstate: "
-                + order.getState() + " repo size " + orderRepository.size());
+        if (!ofInstrument(instrument).test(order))
+            logger.error("Tried to add instrument " + order.getInstrument() + " from order " +
+                    order.getLabel() + " to position " + instrument + ". Will be ignored!");
+        else {
+            orderRepository.put(order, OrderProcessState.IDLE);
+            logger.debug("Added order " + order.getLabel() + " to position " + instrument + " Orderstate: "
+                    + order.getState() + " repo size " + orderRepository.size());
+        }
     }
 
     private synchronized void removeOrder(final IOrder order) {

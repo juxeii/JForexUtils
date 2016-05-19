@@ -5,6 +5,7 @@ import static com.jforex.programming.order.OrderStaticUtil.combinedDirection;
 import static com.jforex.programming.order.OrderStaticUtil.combinedSignedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.direction;
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
+import static com.jforex.programming.order.OrderStaticUtil.instrumentPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
@@ -13,6 +14,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isNoTPSet;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.ofInstrument;
 import static com.jforex.programming.order.OrderStaticUtil.offerSideForOrderCommand;
 import static com.jforex.programming.order.OrderStaticUtil.orderSLPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.orderTPPredicate;
@@ -34,14 +36,15 @@ import java.util.function.Predicate;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.OfferSide;
 import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.OfferSide;
 
 public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
@@ -205,6 +208,17 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
         buyOrderEURUSD.setTakeProfitPrice(tp);
         assertFalse(tpPredicate.test(buyOrderEURUSD));
+    }
+
+    @Test
+    public void testInstrumentPredicateIsCorrect() throws JFException {
+        final Predicate<IOrder> predicate = instrumentPredicate.apply(instrumentEURUSD);
+
+        assertTrue(predicate.test(buyOrderEURUSD));
+        assertFalse(predicate.test(IOrderForTest.orderAUDUSD()));
+
+        assertTrue(ofInstrument(instrumentEURUSD).test(buyOrderEURUSD));
+        assertFalse(ofInstrument(instrumentAUDUSD).test(buyOrderEURUSD));
     }
 
     @Test

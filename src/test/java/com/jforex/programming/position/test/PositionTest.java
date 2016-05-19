@@ -12,8 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
@@ -22,6 +20,9 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -36,9 +37,6 @@ public class PositionTest extends InstrumentUtilForTest {
     private RestoreSLTPPolicy restoreSLTPPolicyMock;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
 
-//    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-//
-//
     @Before
     public void setUp() throws JFException {
         initCommonTestFramework();
@@ -50,6 +48,15 @@ public class PositionTest extends InstrumentUtilForTest {
                                 final OrderEventType orderEventType) {
         final OrderEvent orderEvent = new OrderEvent(order, orderEventType);
         orderEventSubject.onNext(orderEvent);
+    }
+
+    @Test
+    public void testAddingWrongOrderInstrumentIsIgnored() {
+        final IOrder wrongOrder = IOrderForTest.orderAUDUSD();
+
+        position.addOrder(IOrderForTest.orderAUDUSD());
+
+        assertFalse(position.contains(wrongOrder));
     }
 
     public class AddingBuyOrder {
@@ -313,6 +320,16 @@ public class PositionTest extends InstrumentUtilForTest {
                     @Test
                     public void testCloseOnTP() {
                         assertBuyOrderRemoval(OrderEventType.CLOSED_BY_TP);
+                    }
+
+                    @Test
+                    public void testClosedByMergeOK() {
+                        assertBuyOrderRemoval(OrderEventType.CLOSED_BY_MERGE);
+                    }
+
+                    @Test
+                    public void testClosedOnMergeOK() {
+                        assertBuyOrderRemoval(OrderEventType.MERGE_CLOSE_OK);
                     }
                 }
             }
