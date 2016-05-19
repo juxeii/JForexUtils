@@ -130,7 +130,7 @@ public class OrderUtil {
         final Position position = positionFactory.forInstrument(instrument);
 
         final ConnectableObservable<OrderEvent> closeObservable =
-                Observable.just(position.ordersToClose())
+                Observable.just(position.filledOrOpenedOrders())
                         .filter(ordersToClose -> !ordersToClose.isEmpty())
                         .doOnNext(ordersToClose -> position.markAllOrdersActive())
                         .flatMap(Observable::from)

@@ -2,7 +2,7 @@ package com.jforex.programming.position;
 
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
-import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
+import static com.jforex.programming.order.event.OrderEventTypeSets.closeEventTypes;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.Set;
@@ -13,14 +13,13 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -45,7 +44,7 @@ public class Position {
                 .filter(orderEvent -> contains(orderEvent.order()))
                 .doOnNext(orderEvent -> logger.info("Received event " + orderEvent.type() + " for order "
                         + orderEvent.order().getLabel() + " in repository for " + instrument))
-                .filter(orderEvent -> endOfOrderEventTypes.contains(orderEvent.type()))
+                .filter(orderEvent -> closeEventTypes.contains(orderEvent.type()))
                 .doOnNext(orderEvent -> removeOrder(orderEvent.order()))
                 .subscribe();
     }
@@ -60,7 +59,7 @@ public class Position {
                 + order.getState() + " repo size " + orderRepository.size());
     }
 
-    public synchronized void removeOrder(final IOrder order) {
+    private synchronized void removeOrder(final IOrder order) {
         orderRepository.remove(order);
         logger.debug("Removed order " + order.getLabel() + " from position " + instrument + " Orderstate: "
                 + order.getState() + " repo size " + orderRepository.size());
@@ -105,6 +104,7 @@ public class Position {
         return orderRepository
                 .entrySet()
                 .stream()
+                .filter(entry -> orderPredicate.test(entry.getKey()))
                 .filter(entry -> entry.getValue() == OrderProcessState.IDLE)
                 .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()))
                 .keySet();
@@ -114,7 +114,7 @@ public class Position {
         return notProcessingOrders(isFilled);
     }
 
-    public Set<IOrder> ordersToClose() {
+    public Set<IOrder> filledOrOpenedOrders() {
         return notProcessingOrders(isFilled.or(isOpened));
     }
 
