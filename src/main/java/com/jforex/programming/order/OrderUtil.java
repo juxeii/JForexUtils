@@ -13,6 +13,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -28,10 +31,6 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.settings.PlatformSettings;
-
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -78,12 +77,17 @@ public class OrderUtil {
                                                                       orderParams.comment());
 
         final Position position = positionFactory.forInstrument(orderParams.instrument());
-        return runOrderSupplierCall(submitCall, OrderEventTypeData.submitData)
-                .doOnNext(orderEvent -> position.addOrder(orderEvent.order()))
-                .doOnError(e -> logger.error("Submit " + orderParams.label() + " for position "
-                        + instrument + " failed!"))
-                .doOnCompleted(() -> logger.debug("Submit " + orderParams.label() + " for position "
-                        + instrument + " was successful."));
+        final ConnectableObservable<OrderEvent> submitObs =
+                runOrderSupplierCall(submitCall, OrderEventTypeData.submitData);
+        submitObs.doOnCompleted(() -> logger.debug("Submit " + orderParams.label() + " for position "
+                + instrument + " was successful."))
+                .subscribe(orderEvent -> {
+                    if (OrderEventTypeData.submitData.isDoneType(orderEvent.type()))
+                        position.addOrder(orderEvent.order());
+                },
+                           e -> logger.error("Submit " + orderParams.label() + " for position "
+                                   + instrument + " failed!"));
+        return submitObs;
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
@@ -150,9 +154,13 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        return runChangeCall(() -> orderToClose.close(),
-                             orderToClose,
-                             OrderEventTypeData.closeData);
+        final ConnectableObservable<OrderEvent> closeObs = runChangeCall(() -> orderToClose.close(),
+                                                                         orderToClose,
+                                                                         OrderEventTypeData.closeData);
+        closeObs.doOnCompleted(() -> logger.debug("Closing " + orderToClose.getLabel() + " was successful."))
+                .subscribe(orderEvent -> {},
+                           e -> logger.error("Closing " + orderToClose.getLabel() + " failed!"));
+        return closeObs;
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
@@ -197,16 +205,18 @@ public class OrderUtil {
                              OrderEventTypeData.changeTPData);
     }
 
-    private Observable<OrderEvent> runOrderSupplierCall(final OrderSupplierCall orderSupplierCall,
-                                                        final OrderEventTypeData orderEventTypeData) {
+    private ConnectableObservable<OrderEvent> runOrderSupplierCall(final OrderSupplierCall orderSupplierCall,
+                                                                   final OrderEventTypeData orderEventTypeData) {
         final OrderCallExecutorResult orderExecutorResult =
                 createResult(orderSupplierCall, orderEventTypeData.callRequest());
-        return createObs(orderExecutorResult, orderEventTypeData);
+        final ConnectableObservable<OrderEvent> obs = createObs(orderExecutorResult, orderEventTypeData).replay();
+        obs.connect();
+        return obs;
     }
 
-    private Observable<OrderEvent> runChangeCall(final OrderChangeCall orderChangeCall,
-                                                 final IOrder orderToChange,
-                                                 final OrderEventTypeData orderEventTypeData) {
+    private ConnectableObservable<OrderEvent> runChangeCall(final OrderChangeCall orderChangeCall,
+                                                            final IOrder orderToChange,
+                                                            final OrderEventTypeData orderEventTypeData) {
         final OrderSupplierCall orderSupplierCall = () -> {
             orderChangeCall.change();
             return orderToChange;

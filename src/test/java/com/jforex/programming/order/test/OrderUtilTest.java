@@ -4,11 +4,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +19,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
@@ -36,10 +40,8 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
-
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import rx.Observable;
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
@@ -55,11 +57,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderEventGateway orderEventGatewayMock;
     @Mock
     private PositionFactory positionFactoryMock;
-    private Position position;
     @Captor
     private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
     @Captor
     private ArgumentCaptor<Set<IOrder>> toMergeOrdersCaptor;
+    private Position position;
     private final RestoreSLTPPolicy noRestoreSLTPPolicy = new NoRestorePolicy();
     private Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
@@ -115,8 +117,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         subscriber.assertError(OrderCallRejectException.class);
     }
 
-    private void captureAndRunOrderCall() throws JFException {
-        verify(orderCallExecutorMock).run(orderCallCaptor.capture());
+    private void captureAndRunOrderCall(final int times) throws JFException {
+        verify(orderCallExecutorMock, times(times)).run(orderCallCaptor.capture());
         orderCallCaptor.getValue().get();
     }
 
@@ -146,79 +148,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testSubmitCallsOnIEngine() throws JFException {
-        orderUtil.submitOrder(orderParams);
-
-        captureAndRunOrderCall();
-
-        engineForTest.verifySubmit(orderParams, 1);
-    }
-
-    @Test
-    public void testSubmitRegistersOnEventGateway() {
-        orderUtil.submitOrder(orderParams);
-
-        verify(orderEventGatewayMock).registerOrderRequest(orderUnderTest, OrderCallRequest.SUBMIT);
-    }
-
-    @Test
-    public void testSubmitObservableIgnoresOtherOrders() {
-        orderUtil.submitOrder(orderParams).subscribe(subscriber);
-
-        assertOtherOrderIsIgnored();
-    }
-
-    @Test
-    public void testSubmitObservableGetsNotifiedOnJFException() {
-        prepareJFException();
-
-        orderUtil.submitOrder(orderParams).subscribe(subscriber);
-
-        assertJFException();
-    }
-
-    @Test
-    public void testSubmitObservableCompletesOnFullFill() {
-        orderUtil.submitOrder(orderParams).subscribe(subscriber);
-
-        sendOrderEvent(OrderEventType.FULL_FILL_OK);
-
-        assertCompletedOrderEvent(OrderEventType.FULL_FILL_OK);
-    }
-
-    @Test
-    public void testSubmitObservableHasRejectExceptionOnSubmitReject() {
-        orderUtil.submitOrder(orderParams).subscribe(subscriber);
-
-        sendOrderEvent(OrderEventType.SUBMIT_REJECTED);
-
-        assertRejectException();
-    }
-
-    @Test
-    public void testSubmitObservableHasRejectExceptionOnFillReject() {
-        orderUtil.submitOrder(orderParams).subscribe(subscriber);
-
-        sendOrderEvent(OrderEventType.FILL_REJECTED);
-
-        assertRejectException();
-    }
-
-    @Test
-    public void testSubmitObservableIsNotCompleteOnSubmitOK() {
-        orderUtil.submitOrder(orderParams).subscribe(subscriber);
-
-        sendOrderEvent(OrderEventType.SUBMIT_OK);
-
-        subscriber.assertValueCount(1);
-        subscriber.assertNotCompleted();
-    }
-
-    @Test
     public void testMergeCallsOnIEngine() throws JFException {
         orderUtil.mergeOrders(mergeLabel, toMergeOrders);
 
-        captureAndRunOrderCall();
+        captureAndRunOrderCall(1);
 
         engineForTest.verifyMerge(mergeLabel, toMergeOrders, 1);
     }
@@ -273,211 +206,574 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         assertRejectException();
     }
 
-    @Test
-    public void testCloseCallsOnOrder() throws JFException {
-        orderUtil.close(orderUnderTest);
+    public class BuySubmitSetup {
 
-        captureAndRunOrderCall();
+        private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
+        private final OrderParams orderParamsBUY = OrderParamsForTest.paramsBuyEURUSD();
+        private final TestSubscriber<OrderEvent> buySubmitSubscriber = new TestSubscriber<>();
+        private Observable<OrderEvent> buyObs;
+        private final Supplier<Observable<OrderEvent>> buySubmitCall =
+                () -> buyObs = orderUtil.submitOrder(orderParamsBUY);
 
-        verify(orderUnderTest).close();
-    }
+        public class JFExceptionOnSubmit {
 
-    @Test
-    public void testCloseRegistersOnEventGateway() {
-        orderUtil.close(orderUnderTest);
+            @Before
+            public void setUp() {
+                prepareJFException();
 
-        verify(orderEventGatewayMock).registerOrderRequest(orderUnderTest, OrderCallRequest.CLOSE);
-    }
+                buySubmitCall.get();
+            }
 
-    @Test
-    public void testCloseObservableIgnoresOtherOrders() {
-        orderUtil.close(orderUnderTest).subscribe(subscriber);
+            @Test
+            public void testSubmitCallsOnIEngine() throws JFException {
+                captureAndRunOrderCall(1);
 
-        assertOtherOrderIsIgnored();
-    }
+                engineForTest.verifySubmit(orderParams, 1);
+            }
 
-    @Test
-    public void testCloseObservableGetsNotifiedOnJFException() {
-        prepareJFException();
+            @Test
+            public void testNoOrderIsAddedToPosition() {
+                assertTrue(position.orders().isEmpty());
+            }
 
-        orderUtil.close(orderUnderTest).subscribe(subscriber);
+            @Test
+            public void testBuySubscriberCompletedWithError() {
+                buyObs.subscribe(buySubmitSubscriber);
 
-        assertJFException();
-    }
+                buySubmitSubscriber.assertError(JFException.class);
+            }
+        }
 
-    @Test
-    public void testCloseObservableCompletesOnCloseOK() {
-        orderUtil.close(orderUnderTest).subscribe(subscriber);
+        public class SubmitCall {
 
-        sendOrderEvent(OrderEventType.CLOSE_OK);
+            @Before
+            public void setUp() {
+                final OrderCallExecutorResult orderExecutorResult =
+                        new OrderCallExecutorResult(Optional.of(buyOrder), Optional.empty());
+                when(orderCallExecutorMock.run(any(OrderSupplierCall.class)))
+                        .thenReturn(orderExecutorResult);
 
-        assertCompletedOrderEvent(OrderEventType.CLOSE_OK);
-    }
+                buySubmitCall.get();
 
-    @Test
-    public void testCloseObservableHasRejectExceptionOnCloseReject() {
-        orderUtil.close(orderUnderTest).subscribe(subscriber);
+                buyOrder.setState(IOrder.State.CREATED);
+            }
 
-        sendOrderEvent(OrderEventType.CLOSE_REJECTED);
+            @Test
+            public void testSubmitCallsOnIEngine() throws JFException {
+                captureAndRunOrderCall(1);
 
-        assertRejectException();
-    }
+                engineForTest.verifySubmit(orderParams, 1);
+            }
 
-    @Test
-    public void testSetLabelCallsOnOrder() throws JFException {
-        orderUtil.setLabel(orderUnderTest, newLabel);
+            @Test
+            public void testBuyOrderIsRegisteredOnEventGateway() {
+                verify(orderEventGatewayMock).registerOrderRequest(buyOrder, OrderCallRequest.SUBMIT);
+            }
 
-        captureAndRunOrderCall();
+            @Test
+            public void testSubmitObservableIgnoresOtherOrders() {
+                assertOtherOrderIsIgnored();
+            }
 
-        verify(orderUnderTest).setLabel(newLabel);
-    }
+            public class WhenSubmitRejected {
 
-    @Test
-    public void testSetLabelRegistersOnEventGateway() {
-        orderUtil.setLabel(orderUnderTest, newLabel);
+                @Before
+                public void setUp() {
+                    buyOrder.setState(IOrder.State.CANCELED);
 
-        verify(orderEventGatewayMock).registerOrderRequest(orderUnderTest, OrderCallRequest.CHANGE_LABEL);
-    }
+                    sendOrderEvent(buyOrder, OrderEventType.SUBMIT_REJECTED);
+                }
 
-    @Test
-    public void testSetLabelObservableIgnoresOtherOrders() {
-        orderUtil.setLabel(orderUnderTest, newLabel).subscribe(subscriber);
+                @Test
+                public void testNoOrderIsAddedToPosition() {
+                    assertTrue(position.orders().isEmpty());
+                }
 
-        assertOtherOrderIsIgnored();
-    }
+                @Test
+                public void testBuySubscriberCompletedWithRejection() {
+                    buyObs.subscribe(buySubmitSubscriber);
 
-    @Test
-    public void testSetLabelObservableGetsNotifiedOnJFException() {
-        prepareJFException();
+                    buySubmitSubscriber.assertError(OrderCallRejectException.class);
+                }
 
-        orderUtil.setLabel(orderUnderTest, newLabel).subscribe(subscriber);
+                @Test
+                public void testNoRetryIsDone() throws JFException {
+                    captureAndRunOrderCall(1);
 
-        assertJFException();
-    }
+                    engineForTest.verifySubmit(orderParams, 1);
+                }
+            }
 
-    @Test
-    public void testSetLabelObservableCompletesOnChangeLabelOK() {
-        orderUtil.setLabel(orderUnderTest, newLabel).subscribe(subscriber);
+            public class WhenFillRejected {
 
-        sendOrderEvent(OrderEventType.LABEL_CHANGE_OK);
+                @Before
+                public void setUp() {
+                    buyOrder.setState(IOrder.State.CANCELED);
 
-        assertCompletedOrderEvent(OrderEventType.LABEL_CHANGE_OK);
-    }
+                    sendOrderEvent(buyOrder, OrderEventType.FILL_REJECTED);
+                }
 
-    @Test
-    public void testSetLabelObservableHasRejectExceptionOnSetLabelReject() {
-        orderUtil.setLabel(orderUnderTest, newLabel).subscribe(subscriber);
+                @Test
+                public void testNoOrderIsAddedToPosition() {
+                    assertTrue(position.orders().isEmpty());
+                }
 
-        sendOrderEvent(OrderEventType.CHANGE_LABEL_REJECTED);
+                @Test
+                public void testBuySubscriberCompletedWithRejection() {
+                    buyObs.subscribe(buySubmitSubscriber);
 
-        assertRejectException();
-    }
+                    buySubmitSubscriber.assertError(OrderCallRejectException.class);
+                }
 
-    @Test
-    public void testSetGTTCallsOnOrder() throws JFException {
-        orderUtil.setGoodTillTime(orderUnderTest, newGTT);
+                @Test
+                public void testNoRetryIsDone() throws JFException {
+                    captureAndRunOrderCall(1);
 
-        captureAndRunOrderCall();
+                    engineForTest.verifySubmit(orderParams, 1);
+                }
+            }
 
-        verify(orderUnderTest).setGoodTillTime(newGTT);
-    }
+            public class WhenSubmitOK {
 
-    @Test
-    public void testSetGTTRegistersOnEventGateway() {
-        orderUtil.setGoodTillTime(orderUnderTest, newGTT);
+                @Before
+                public void setUp() {
+                    sendOrderEvent(buyOrder, OrderEventType.SUBMIT_OK);
+                }
 
-        verify(orderEventGatewayMock).registerOrderRequest(orderUnderTest, OrderCallRequest.CHANGE_GTT);
-    }
+                @Test
+                public void testNoOrderIsAddedToPosition() {
+                    assertTrue(position.orders().isEmpty());
+                }
 
-    @Test
-    public void testSetGTTObservableIgnoresOtherOrders() {
-        orderUtil.setGoodTillTime(orderUnderTest, newGTT).subscribe(subscriber);
+                @Test
+                public void testSubscriberDoesNotYetComplete() {
+                    buyObs.subscribe(buySubmitSubscriber);
 
-        assertOtherOrderIsIgnored();
-    }
+                    assertSubscriberNotYetCompleted(buySubmitSubscriber);
+                }
+            }
 
-    @Test
-    public void testSetGTTObservableGetsNotifiedOnJFException() {
-        prepareJFException();
+            public class WhenFilled {
 
-        orderUtil.setGoodTillTime(orderUnderTest, newGTT).subscribe(subscriber);
+                @Before
+                public void setUp() {
+                    buyOrder.setState(IOrder.State.FILLED);
 
-        assertJFException();
-    }
+                    sendOrderEvent(buyOrder, OrderEventType.FULL_FILL_OK);
+                }
 
-    @Test
-    public void testSetGTTObservableCompletesOnSetGTTOK() {
-        orderUtil.setGoodTillTime(orderUnderTest, newGTT).subscribe(subscriber);
+                @Test
+                public void testBuyOrderIsAddedToPosition() {
+                    assertTrue(position.contains(buyOrder));
+                }
 
-        sendOrderEvent(OrderEventType.GTT_CHANGE_OK);
+                @Test
+                public void testBuySubscriberCompleted() {
+                    buyObs.subscribe(buySubmitSubscriber);
 
-        assertCompletedOrderEvent(OrderEventType.GTT_CHANGE_OK);
-    }
+                    assertSubscriberCompleted(buySubmitSubscriber);
+                }
 
-    @Test
-    public void testSetGTTObservableHasRejectExceptionOnSetGTTReject() {
-        orderUtil.setGoodTillTime(orderUnderTest, newGTT).subscribe(subscriber);
+                public class BuyCloseSetup {
 
-        sendOrderEvent(OrderEventType.CHANGE_GTT_REJECTED);
+                    private final TestSubscriber<OrderEvent> closeBuySubscriber = new TestSubscriber<>();
+                    private Observable<OrderEvent> closeObs;
+                    private final Supplier<Observable<OrderEvent>> buyCloseCall =
+                            () -> closeObs = orderUtil.close(buyOrder);
 
-        assertRejectException();
-    }
+                    public class JFExceptionOnClose {
 
-    @Test
-    public void testSetOpenPriceCallsOnOrder() throws JFException {
-        orderUtil.setOpenPrice(orderUnderTest, newOpenPrice);
+                        @Before
+                        public void setUp() {
+                            prepareJFException();
 
-        captureAndRunOrderCall();
+                            buyCloseCall.get();
+                        }
 
-        verify(orderUnderTest).setOpenPrice(newOpenPrice);
-    }
+                        @Test
+                        public void testCloseCallsOnOrder() throws JFException {
+                            captureAndRunOrderCall(2);
 
-    @Test
-    public void testSetOpenPriceRegistersOnEventGateway() {
-        orderUtil.setOpenPrice(orderUnderTest, newOpenPrice);
+                            verify(buyOrder).close();
+                        }
 
-        verify(orderEventGatewayMock).registerOrderRequest(orderUnderTest, OrderCallRequest.CHANGE_OPENPRICE);
-    }
+                        @Test
+                        public void testBuySubscriberCompletedWithError() {
+                            closeObs.subscribe(closeBuySubscriber);
 
-    @Test
-    public void testSetOpenPriceObservableIgnoresOtherOrders() {
-        orderUtil.setOpenPrice(orderUnderTest, newOpenPrice).subscribe(subscriber);
+                            closeBuySubscriber.assertError(JFException.class);
+                        }
+                    }
 
-        assertOtherOrderIsIgnored();
-    }
+                    public class BuyCloseCall {
 
-    @Test
-    public void testSetOpenPriceObservableGetsNotifiedOnJFException() {
-        prepareJFException();
+                        @Before
+                        public void setUp() {
+                            buyCloseCall.get();
+                        }
 
-        orderUtil.setOpenPrice(orderUnderTest, newOpenPrice).subscribe(subscriber);
+                        @Test
+                        public void testCloseCallsOnOrder() throws JFException {
+                            captureAndRunOrderCall(2);
 
-        assertJFException();
-    }
+                            verify(buyOrder).close();
+                        }
 
-    @Test
-    public void testSetOpenPriceObservableCompletesOnSetOpenPriceOK() {
-        orderUtil.setOpenPrice(orderUnderTest, newOpenPrice).subscribe(subscriber);
+                        @Test
+                        public void testCloseRegistersOnEventGateway() {
+                            verify(orderEventGatewayMock).registerOrderRequest(buyOrder, OrderCallRequest.CLOSE);
+                        }
 
-        sendOrderEvent(OrderEventType.OPENPRICE_CHANGE_OK);
+                        @Test
+                        public void testCloseObservableIgnoresOtherOrders() {
+                            closeObs.subscribe(closeBuySubscriber);
 
-        assertCompletedOrderEvent(OrderEventType.OPENPRICE_CHANGE_OK);
-    }
+                            assertOtherOrderIsIgnored();
+                        }
 
-    @Test
-    public void testSetOpenPriceObservableHasRejectExceptionOnSetOpenPriceReject() {
-        orderUtil.setOpenPrice(orderUnderTest, newOpenPrice).subscribe(subscriber);
+                        public class WhenCloseRejected {
 
-        sendOrderEvent(OrderEventType.CHANGE_OPENPRICE_REJECTED);
+                            @Before
+                            public void setUp() {
+                                sendOrderEvent(buyOrder, OrderEventType.CLOSE_REJECTED);
+                            }
 
-        assertRejectException();
+                            @Test
+                            public void testCloseSubscriberCompletedWithRejection() {
+                                closeObs.subscribe(closeBuySubscriber);
+
+                                closeBuySubscriber.assertError(OrderCallRejectException.class);
+                            }
+
+                            @Test
+                            public void testNoRetryIsDone() throws JFException {
+                                captureAndRunOrderCall(2);
+
+                                verify(buyOrder).close();
+                            }
+                        }
+
+                        public class WhenClosed {
+
+                            @Before
+                            public void setUp() {
+                                buyOrder.setState(IOrder.State.CLOSED);
+
+                                sendOrderEvent(buyOrder, OrderEventType.CLOSE_OK);
+                            }
+
+                            @Test
+                            public void testCloseSubscriberCompleted() {
+                                closeObs.subscribe(closeBuySubscriber);
+
+                                assertSubscriberCompleted(closeBuySubscriber);
+                            }
+
+                            @Test
+                            public void testBuyOrderWasRemovedFromPosition() {
+                                assertTrue(position.orders().isEmpty());
+                            }
+                        }
+                    }
+                }
+
+                public class SetLabelSetup {
+
+                    private final TestSubscriber<OrderEvent> setLabelBuySubscriber = new TestSubscriber<>();
+                    private Observable<OrderEvent> setLabelObs;
+                    private final Supplier<Observable<OrderEvent>> buySetLabelCall =
+                            () -> setLabelObs = orderUtil.setLabel(buyOrder, newLabel);
+
+                    public class JFExceptionOnSetLabel {
+
+                        @Before
+                        public void setUp() {
+                            prepareJFException();
+
+                            buySetLabelCall.get();
+                        }
+
+                        @Test
+                        public void testSetLabelCallsOnOrder() throws JFException {
+                            captureAndRunOrderCall(2);
+
+                            verify(buyOrder).setLabel(newLabel);
+                        }
+
+                        @Test
+                        public void testSetLabelSubscriberCompletedWithError() {
+                            setLabelObs.subscribe(setLabelBuySubscriber);
+
+                            setLabelBuySubscriber.assertError(JFException.class);
+                        }
+                    }
+
+                    public class SetLabelCall {
+
+                        @Before
+                        public void setUp() {
+                            buySetLabelCall.get();
+                        }
+
+                        @Test
+                        public void testSetLabelCallsOnOrder() throws JFException {
+                            captureAndRunOrderCall(2);
+
+                            verify(buyOrder).setLabel(newLabel);
+                        }
+
+                        @Test
+                        public void testSetLabelRegistersOnEventGateway() {
+                            verify(orderEventGatewayMock).registerOrderRequest(buyOrder, OrderCallRequest.CHANGE_LABEL);
+                        }
+
+                        @Test
+                        public void testSetLabelObservableIgnoresOtherOrders() {
+                            setLabelObs.subscribe(setLabelBuySubscriber);
+
+                            assertOtherOrderIsIgnored();
+                        }
+
+                        public class WhenSetLabelRejected {
+
+                            @Before
+                            public void setUp() {
+                                sendOrderEvent(buyOrder, OrderEventType.CHANGE_LABEL_REJECTED);
+                            }
+
+                            @Test
+                            public void testSetLabelSubscriberCompletedWithRejection() {
+                                setLabelObs.subscribe(setLabelBuySubscriber);
+
+                                setLabelBuySubscriber.assertError(OrderCallRejectException.class);
+                            }
+
+                            @Test
+                            public void testNoRetryIsDone() throws JFException {
+                                captureAndRunOrderCall(2);
+
+                                verify(buyOrder).setLabel(newLabel);
+                            }
+                        }
+
+                        public class WhenSetLabelOK {
+
+                            @Before
+                            public void setUp() {
+                                sendOrderEvent(buyOrder, OrderEventType.LABEL_CHANGE_OK);
+                            }
+
+                            @Test
+                            public void testCloseSubscriberCompleted() {
+                                setLabelObs.subscribe(setLabelBuySubscriber);
+
+                                assertSubscriberCompleted(setLabelBuySubscriber);
+                            }
+                        }
+                    }
+                }
+
+                public class SetGTTSetup {
+
+                    private final TestSubscriber<OrderEvent> setGTTBuySubscriber = new TestSubscriber<>();
+                    private Observable<OrderEvent> setGTTObs;
+                    private final Supplier<Observable<OrderEvent>> setGTTCall =
+                            () -> setGTTObs = orderUtil.setGoodTillTime(buyOrder, newGTT);
+
+                    public class JFExceptionOnSetGTT {
+
+                        @Before
+                        public void setUp() {
+                            prepareJFException();
+
+                            setGTTCall.get();
+                        }
+
+                        @Test
+                        public void testSetGTTCallsOnOrder() throws JFException {
+                            captureAndRunOrderCall(2);
+
+                            verify(buyOrder).setGoodTillTime(newGTT);
+                        }
+
+                        @Test
+                        public void testSetGTTSubscriberCompletedWithError() {
+                            setGTTObs.subscribe(setGTTBuySubscriber);
+
+                            setGTTBuySubscriber.assertError(JFException.class);
+                        }
+                    }
+
+                    public class SetGTTCall {
+
+                        @Before
+                        public void setUp() {
+                            setGTTCall.get();
+                        }
+
+                        @Test
+                        public void testSetGTTCallsOnOrder() throws JFException {
+                            captureAndRunOrderCall(2);
+
+                            verify(buyOrder).setGoodTillTime(newGTT);
+                        }
+
+                        @Test
+                        public void testSetGTTRegistersOnEventGateway() {
+                            verify(orderEventGatewayMock).registerOrderRequest(buyOrder, OrderCallRequest.CHANGE_GTT);
+                        }
+
+                        @Test
+                        public void testSetGTTObservableIgnoresOtherOrders() {
+                            setGTTObs.subscribe(setGTTBuySubscriber);
+
+                            assertOtherOrderIsIgnored();
+                        }
+
+                        public class WhenSetGTTRejected {
+
+                            @Before
+                            public void setUp() {
+                                sendOrderEvent(buyOrder, OrderEventType.CHANGE_GTT_REJECTED);
+                            }
+
+                            @Test
+                            public void testSetGTTSubscriberCompletedWithRejection() {
+                                setGTTObs.subscribe(setGTTBuySubscriber);
+
+                                setGTTBuySubscriber.assertError(OrderCallRejectException.class);
+                            }
+
+                            @Test
+                            public void testNoRetryIsDone() throws JFException {
+                                captureAndRunOrderCall(2);
+
+                                verify(buyOrder).setGoodTillTime(newGTT);
+                            }
+                        }
+
+                        public class WhenSetGTTOK {
+
+                            @Before
+                            public void setUp() {
+                                sendOrderEvent(buyOrder, OrderEventType.GTT_CHANGE_OK);
+                            }
+
+                            @Test
+                            public void testCloseSubscriberCompleted() {
+                                setGTTObs.subscribe(setGTTBuySubscriber);
+
+                                assertSubscriberCompleted(setGTTBuySubscriber);
+                            }
+                        }
+                    }
+                }
+
+                public class SetOpenPriceSetup {
+
+                    private final TestSubscriber<OrderEvent> setOpenPriceBuySubscriber = new TestSubscriber<>();
+                    private Observable<OrderEvent> setOpenPriceObs;
+                    private final Supplier<Observable<OrderEvent>> setOpenPriceCall =
+                            () -> setOpenPriceObs = orderUtil.setOpenPrice(buyOrder, newOpenPrice);
+
+                    public class JFExceptionOnSetOpenPrice {
+
+                        @Before
+                        public void setUp() {
+                            prepareJFException();
+
+                            setOpenPriceCall.get();
+                        }
+
+                        @Test
+                        public void testSetOpenPriceCallsOnOrder() throws JFException {
+                            captureAndRunOrderCall(2);
+
+                            verify(buyOrder).setOpenPrice(newOpenPrice);
+                        }
+
+                        @Test
+                        public void testSetOpenPriceSubscriberCompletedWithError() {
+                            setOpenPriceObs.subscribe(setOpenPriceBuySubscriber);
+
+                            setOpenPriceBuySubscriber.assertError(JFException.class);
+                        }
+                    }
+
+                    public class SetOpenPriceCall {
+
+                        @Before
+                        public void setUp() {
+                            setOpenPriceCall.get();
+                        }
+
+                        @Test
+                        public void testSetOpenPriceCallsOnOrder() throws JFException {
+                            captureAndRunOrderCall(2);
+
+                            verify(buyOrder).setOpenPrice(newOpenPrice);
+                        }
+
+                        @Test
+                        public void testSetOpenPriceRegistersOnEventGateway() {
+                            verify(orderEventGatewayMock).registerOrderRequest(buyOrder,
+                                                                               OrderCallRequest.CHANGE_OPENPRICE);
+                        }
+
+                        @Test
+                        public void testSetOpenPriceObservableIgnoresOtherOrders() {
+                            setOpenPriceObs.subscribe(setOpenPriceBuySubscriber);
+
+                            assertOtherOrderIsIgnored();
+                        }
+
+                        public class WhenSetOpenPriceRejected {
+
+                            @Before
+                            public void setUp() {
+                                sendOrderEvent(buyOrder, OrderEventType.CHANGE_OPENPRICE_REJECTED);
+                            }
+
+                            @Test
+                            public void testSetOpenPriceSubscriberCompletedWithRejection() {
+                                setOpenPriceObs.subscribe(setOpenPriceBuySubscriber);
+
+                                setOpenPriceBuySubscriber.assertError(OrderCallRejectException.class);
+                            }
+
+                            @Test
+                            public void testNoRetryIsDone() throws JFException {
+                                captureAndRunOrderCall(2);
+
+                                verify(buyOrder).setOpenPrice(newOpenPrice);
+                            }
+                        }
+
+                        public class WhenSetOpenPriceOK {
+
+                            @Before
+                            public void setUp() {
+                                sendOrderEvent(buyOrder, OrderEventType.OPENPRICE_CHANGE_OK);
+                            }
+
+                            @Test
+                            public void testCloseSubscriberCompleted() {
+                                setOpenPriceObs.subscribe(setOpenPriceBuySubscriber);
+
+                                assertSubscriberCompleted(setOpenPriceBuySubscriber);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Test
     public void testSetRequestedAmountCallsOnOrder() throws JFException {
         orderUtil.setRequestedAmount(orderUnderTest, newAmount);
 
-        captureAndRunOrderCall();
+        captureAndRunOrderCall(1);
 
         verify(orderUnderTest).setRequestedAmount(newAmount);
     }
@@ -527,7 +823,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void testSetStopLossPriceCallsOnOrder() throws JFException {
         orderUtil.setStopLossPrice(orderUnderTest, newSL);
 
-        captureAndRunOrderCall();
+        captureAndRunOrderCall(1);
 
         verify(orderUnderTest).setStopLossPrice(newSL);
     }
@@ -577,7 +873,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void testSetTakeProfitPriceCallsOnOrder() throws JFException {
         orderUtil.setTakeProfitPrice(orderUnderTest, newTP);
 
-        captureAndRunOrderCall();
+        captureAndRunOrderCall(1);
 
         verify(orderUnderTest).setTakeProfitPrice(newTP);
     }
@@ -627,12 +923,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     /* Position Tests */
     /******************/
 
-//    private void setCallResult(final IOrder order) {
-//        final OrderCallExecutorResult orderExecutorResult =
-//                new OrderCallExecutorResult(Optional.of(order), Optional.empty());
-//        when(orderCallExecutorMock.run(any(OrderSupplierCall.class)))
-//                .thenReturn(orderExecutorResult);
-//    }
+    private void setCallResult(final IOrder order) {
+        final OrderCallExecutorResult orderExecutorResult =
+                new OrderCallExecutorResult(Optional.of(order), Optional.empty());
+        when(orderCallExecutorMock.run(any(OrderSupplierCall.class)))
+                .thenReturn(orderExecutorResult);
+    }
 
     private void sendOrderEvent(final IOrder order,
                                 final OrderEventType orderEventType) {
