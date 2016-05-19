@@ -488,7 +488,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
 
                     @Before
                     public void setUp() {
-                        sendOrderEvent(OrderEventType.AMOUNT_CHANGE_OK);
+                        sendOrderEvent(OrderEventType.REQUESTED_AMOUNT_CHANGE_OK);
                     }
 
                     @Test

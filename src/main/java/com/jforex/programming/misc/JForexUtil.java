@@ -5,8 +5,19 @@ import java.util.concurrent.Executors;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
+import com.jforex.programming.order.OrderChangeUtil;
+import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallExecutor;
@@ -17,16 +28,6 @@ import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.UserSettings;
-
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.Period;
 
 import rx.Observable;
 import rx.Subscription;
@@ -43,6 +44,8 @@ public class JForexUtil implements MessageConsumer {
     private TickQuoteProvider tickQuoteProvider;
     private BarQuoteProvider barQuoteProvider;
 
+    private OrderCreateUtil orderCreateUtil;
+    private OrderChangeUtil orderChangeUtil;
     private OrderUtil orderUtil;
     private PositionFactory positionFactory;
     private OrderEventGateway orderEventGateway;
@@ -105,9 +108,13 @@ public class JForexUtil implements MessageConsumer {
     private void initOrderRelated() {
         orderCallExecutor = new OrderCallExecutor(concurrentUtil);
         positionFactory = new PositionFactory(orderEventGateway.observable());
-        orderUtil = new OrderUtil(context.getEngine(),
-                                  orderCallExecutor,
-                                  orderEventGateway,
+        orderCreateUtil = new OrderCreateUtil(context.getEngine(),
+                                              orderCallExecutor,
+                                              orderEventGateway);
+        orderChangeUtil = new OrderChangeUtil(orderCallExecutor,
+                                              orderEventGateway);
+        orderUtil = new OrderUtil(orderCreateUtil,
+                                  orderChangeUtil,
                                   positionFactory);
     }
 

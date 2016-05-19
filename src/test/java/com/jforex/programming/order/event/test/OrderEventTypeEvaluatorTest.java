@@ -175,7 +175,7 @@ public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
 
     @Test
     public void testAmountChangeOKIsMappedCorrect() {
-        assertCorrectEventTypeMapping(OrderEventType.AMOUNT_CHANGE_OK,
+        assertCorrectEventTypeMapping(OrderEventType.REQUESTED_AMOUNT_CHANGE_OK,
                                       IMessage.Type.ORDER_CHANGED_OK,
                                       IMessage.Reason.ORDER_CHANGED_AMOUNT);
     }

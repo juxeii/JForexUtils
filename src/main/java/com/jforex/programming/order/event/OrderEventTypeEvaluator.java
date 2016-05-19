@@ -71,7 +71,7 @@ public final class OrderEventTypeEvaluator {
                     .put(IMessage.Reason.ORDER_CHANGED_SL, OrderEventType.SL_CHANGE_OK)
                     .put(IMessage.Reason.ORDER_CHANGED_TP, OrderEventType.TP_CHANGE_OK)
                     .put(IMessage.Reason.ORDER_CHANGED_AMOUNT,
-                         OrderEventType.AMOUNT_CHANGE_OK)
+                         OrderEventType.REQUESTED_AMOUNT_CHANGE_OK)
                     .put(IMessage.Reason.ORDER_CHANGED_PRICE, OrderEventType.OPENPRICE_CHANGE_OK)
                     .put(IMessage.Reason.ORDER_CHANGED_GTT, OrderEventType.GTT_CHANGE_OK)
                     .put(IMessage.Reason.ORDER_CHANGED_LABEL, OrderEventType.LABEL_CHANGE_OK)

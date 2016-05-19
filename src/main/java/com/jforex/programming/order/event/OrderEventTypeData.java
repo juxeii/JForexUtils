@@ -1,6 +1,6 @@
 package com.jforex.programming.order.event;
 
-import static com.jforex.programming.order.event.OrderEventType.AMOUNT_CHANGE_OK;
+import static com.jforex.programming.order.event.OrderEventType.REQUESTED_AMOUNT_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_AMOUNT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_GTT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_LABEL_REJECTED;
@@ -104,7 +104,7 @@ public final class OrderEventTypeData {
                                    OrderCallRequest.CHANGE_OPENPRICE);
 
     public final static OrderEventTypeData changeAmountData =
-            new OrderEventTypeData(EnumSet.of(AMOUNT_CHANGE_OK),
+            new OrderEventTypeData(EnumSet.of(REQUESTED_AMOUNT_CHANGE_OK),
                                    EnumSet.of(CHANGE_AMOUNT_REJECTED),
                                    OrderCallRequest.CHANGE_REQUESTED_AMOUNT);
 

@@ -1,14 +1,13 @@
 package com.jforex.programming.order;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.Collection;
 
+import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.call.OrderChangeCall;
 import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
@@ -19,69 +18,38 @@ import rx.Observable;
 import rx.Subscriber;
 import rx.observables.ConnectableObservable;
 
-public class OrderChangeUtil {
+public class OrderCreateUtil {
 
+    private final IEngine engine;
     private final OrderCallExecutor orderCallExecutor;
     private final OrderEventGateway orderEventGateway;
 
-    private static final Logger logger = LogManager.getLogger(OrderChangeUtil.class);
-
-    public OrderChangeUtil(final OrderCallExecutor orderCallExecutor,
+    public OrderCreateUtil(final IEngine engine,
+                           final OrderCallExecutor orderCallExecutor,
                            final OrderEventGateway orderEventGateway) {
+        this.engine = engine;
         this.orderCallExecutor = orderCallExecutor;
         this.orderEventGateway = orderEventGateway;
     }
 
-    public ConnectableObservable<OrderEvent> close(final IOrder orderToClose) {
-        final ConnectableObservable<OrderEvent> closeObs = runChangeCall(() -> orderToClose.close(),
-                                                                         orderToClose,
-                                                                         OrderEventTypeData.closeData);
-        closeObs.doOnCompleted(() -> logger.debug("Closing " + orderToClose.getLabel() + " was successful."))
-                .subscribe(orderEvent -> {},
-                           e -> logger.error("Closing " + orderToClose.getLabel() + " failed!"));
-        return closeObs;
+    public ConnectableObservable<OrderEvent> submitOrder(final OrderParams orderParams) {
+        final OrderSupplierCall submitCall = () -> engine.submitOrder(orderParams.label(),
+                                                                      orderParams.instrument(),
+                                                                      orderParams.orderCommand(),
+                                                                      orderParams.amount(),
+                                                                      orderParams.price(),
+                                                                      orderParams.slippage(),
+                                                                      orderParams.stopLossPrice(),
+                                                                      orderParams.takeProfitPrice(),
+                                                                      orderParams.goodTillTime(),
+                                                                      orderParams.comment());
+        return runOrderSupplierCall(submitCall, OrderEventTypeData.submitData);
     }
 
-    public ConnectableObservable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
-                                                      final String newLabel) {
-        return runChangeCall(() -> orderToChangeLabel.setLabel(newLabel),
-                             orderToChangeLabel,
-                             OrderEventTypeData.changeLabelData);
-    }
-
-    public ConnectableObservable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
-                                                             final long newGTT) {
-        return runChangeCall(() -> orderToChangeGTT.setGoodTillTime(newGTT),
-                             orderToChangeGTT,
-                             OrderEventTypeData.changeGTTData);
-    }
-
-    public ConnectableObservable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
-                                                          final double newOpenPrice) {
-        return runChangeCall(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
-                             orderToChangeOpenPrice,
-                             OrderEventTypeData.changeOpenPriceData);
-    }
-
-    public ConnectableObservable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
-                                                                final double newAmount) {
-        return runChangeCall(() -> orderToChangeAmount.setRequestedAmount(newAmount),
-                             orderToChangeAmount,
-                             OrderEventTypeData.changeAmountData);
-    }
-
-    public ConnectableObservable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
-                                                              final double newSL) {
-        return runChangeCall(() -> orderToChangeSL.setStopLossPrice(newSL),
-                             orderToChangeSL,
-                             OrderEventTypeData.changeSLData);
-    }
-
-    public ConnectableObservable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
-                                                                final double newTP) {
-        return runChangeCall(() -> orderToChangeTP.setTakeProfitPrice(newTP),
-                             orderToChangeTP,
-                             OrderEventTypeData.changeTPData);
+    public ConnectableObservable<OrderEvent> mergeOrders(final String mergeOrderLabel,
+                                                         final Collection<IOrder> toMergeOrders) {
+        final OrderSupplierCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
+        return runOrderSupplierCall(mergeCall, OrderEventTypeData.mergeData);
     }
 
     private ConnectableObservable<OrderEvent> runOrderSupplierCall(final OrderSupplierCall orderSupplierCall,
@@ -91,16 +59,6 @@ public class OrderChangeUtil {
         final ConnectableObservable<OrderEvent> obs = createObs(orderExecutorResult, orderEventTypeData).replay();
         obs.connect();
         return obs;
-    }
-
-    private ConnectableObservable<OrderEvent> runChangeCall(final OrderChangeCall orderChangeCall,
-                                                            final IOrder orderToChange,
-                                                            final OrderEventTypeData orderEventTypeData) {
-        final OrderSupplierCall orderSupplierCall = () -> {
-            orderChangeCall.change();
-            return orderToChange;
-        };
-        return runOrderSupplierCall(orderSupplierCall, orderEventTypeData);
     }
 
     private OrderCallExecutorResult createResult(final OrderSupplierCall orderSupplierCall,
