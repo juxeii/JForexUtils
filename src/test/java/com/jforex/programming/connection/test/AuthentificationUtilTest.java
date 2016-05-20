@@ -3,7 +3,6 @@ package com.jforex.programming.connection.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -16,16 +15,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.system.IClient;
+import com.dukascopy.api.system.JFAuthenticationException;
+import com.dukascopy.api.system.JFVersionException;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectException;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.test.common.CommonUtilForTest;
-
-import com.dukascopy.api.system.IClient;
-import com.dukascopy.api.system.JFAuthenticationException;
-import com.dukascopy.api.system.JFVersionException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
@@ -129,13 +127,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void testReconnectAfterCreationDoesNotCallReconnectOnClient() {
-        authentificationUtil.reconnect();
-
-        verify(clientMock, never()).reconnect();
-    }
-
-    @Test
     public void testCorrectExceptionForInvalidCredentials() {
         assertLoginException(JFAuthenticationException.class);
     }
@@ -184,13 +175,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         }
 
         @Test
-        public void testNoReconnectionPossibleYet() {
-            authentificationUtil.reconnect();
-
-            verify(clientMock, never()).reconnect();
-        }
-
-        @Test
         public void testNoLogoutPossibleYet() {
             authentificationUtil.logout();
 
@@ -219,13 +203,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
             public void testLoginCompletionError() {
                 loginCompletionSubscriber.assertError(ConnectException.class);
             }
-
-            @Test
-            public void testReconnectionIsStillNotPossible() {
-                authentificationUtil.reconnect();
-
-                verify(clientMock, never()).reconnect();
-            }
         }
 
         public class AfterLoginTimeOut {
@@ -251,13 +228,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
                 rxTestUtil.advanceTimeBy(20, TimeUnit.SECONDS);
                 loginCompletionSubscriber.assertError(TimeoutException.class);
             }
-
-            @Test
-            public void testReconnectionIsStillNotPossible() {
-                authentificationUtil.reconnect();
-
-                verify(clientMock, never()).reconnect();
-            }
         }
 
         public class AfterConnectedMessage {
@@ -282,13 +252,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
                 loginCompletionSubscriber.assertCompleted();
             }
 
-            @Test
-            public void testReconnectionIsNowPossible() {
-                authentificationUtil.reconnect();
-
-                verify(clientMock).reconnect();
-            }
-
             public class AfterLogout {
 
                 @Before
@@ -310,13 +273,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
                 public void testNotificationForLogoutHappens() {
                     assertLoginStateNotification(LoginState.LOGGED_OUT, 1);
                 }
-
-                @Test
-                public void testReconnectionIsNotPossible() {
-                    authentificationUtil.reconnect();
-
-                    verify(clientMock, never()).reconnect();
-                }
             }
 
             public class AfterDisconnectedMessage {
@@ -335,13 +291,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
                 public void testNoFurtherNotificationHappens() {
                     loginStateSubscriber.assertNoErrors();
                     loginStateSubscriber.assertValueCount(1);
-                }
-
-                @Test
-                public void testReconnectionIsNowPossible() {
-                    authentificationUtil.reconnect();
-
-                    verify(clientMock).reconnect();
                 }
             }
         }

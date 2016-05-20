@@ -6,6 +6,7 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.settings.PlatformSettings;
@@ -13,14 +14,12 @@ import com.jforex.programming.settings.PlatformSettings;
 import rx.Completable;
 import rx.Completable.CompletableSubscriber;
 import rx.Observable;
-import rx.Scheduler;
-import rx.schedulers.Schedulers;
 
 public final class ConnectionKeeper {
 
+    private final IClient client;
     private Completable lightReconnectCompletable;
     private Completable reloginCompletable;
-    private Scheduler scheduler = Schedulers.computation();
     private final AuthentificationUtil authentificationUtil;
     private final LoginCredentials loginCredentials;
     private final StateMachineConfig<FSMState, ConnectionState> fsmConfig = new StateMachineConfig<>();
@@ -34,9 +33,11 @@ public final class ConnectionKeeper {
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private final static Logger logger = LogManager.getLogger(ConnectionKeeper.class);
 
-    public ConnectionKeeper(final Observable<ConnectionState> connectionStateObs,
+    public ConnectionKeeper(final IClient client,
+                            final Observable<ConnectionState> connectionStateObs,
                             final AuthentificationUtil authentificationUtil,
                             final LoginCredentials loginCredentials) {
+        this.client = client;
         this.authentificationUtil = authentificationUtil;
         this.loginCredentials = loginCredentials;
 
@@ -49,14 +50,18 @@ public final class ConnectionKeeper {
 
         lightReconnectCompletable = Completable.create(subscriber -> {
             logger.debug("Try to do a light reconnection...");
-            authentificationUtil.reconnect();
+            client.reconnect();
             initNextConnectionStateObs(connectionStateObs, subscriber);
         });
 
         reloginCompletable = Completable.create(subscriber -> {
-            logger.debug("Try to relogin...");
-            authentificationUtil.login(loginCredentials);
-            initNextConnectionStateObs(connectionStateObs, subscriber);
+            if (client.isConnected())
+                subscriber.onCompleted();
+            else {
+                logger.debug("Try to relogin...");
+                authentificationUtil.login(loginCredentials);
+                initNextConnectionStateObs(connectionStateObs, subscriber);
+            }
         });
     }
 
@@ -86,10 +91,6 @@ public final class ConnectionKeeper {
                 .ignore(ConnectionState.DISCONNECTED);
     }
 
-    public void setReloginTimeOutScheduler(final Scheduler scheduler) {
-        this.scheduler = scheduler;
-    }
-
     private final void onConnectionStateUpdate(final ConnectionState connectionState) {
         if (connectionState == ConnectionState.CONNECTED)
             logger.debug("Connect message received.");
@@ -109,7 +110,7 @@ public final class ConnectionKeeper {
 
     private final void startReloginStrategy() {
         reloginCompletable
-                .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS, scheduler)
+                .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS)
                 .retry()
                 .subscribe(exc -> logger.debug("Relogin failed!"),
                            () -> logger.debug("Relogin successful!"));

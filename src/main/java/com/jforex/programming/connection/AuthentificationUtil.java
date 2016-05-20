@@ -5,12 +5,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.settings.PlatformSettings;
-
-import com.dukascopy.api.system.IClient;
 
 import rx.Completable;
 import rx.Observable;
@@ -113,10 +112,5 @@ public class AuthentificationUtil {
 
     private boolean isLoggedIn() {
         return loginState() == LoginState.LOGGED_IN;
-    }
-
-    public void reconnect() {
-        if (isLoggedIn())
-            client.reconnect();
     }
 }

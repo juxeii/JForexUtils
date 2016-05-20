@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.system.IClient;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionKeeper;
 import com.jforex.programming.connection.ConnectionState;
@@ -23,19 +24,17 @@ import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.schedulers.TestScheduler;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
 public class ConnectionKeeperTest extends CommonUtilForTest {
 
-    private ConnectionKeeper connectionKeeper;
-
+    @Mock
+    private IClient clientMock;
     @Mock
     private AuthentificationUtil authentificationUtilMock;
     private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
-    private final TestScheduler scheduler = new TestScheduler();
     private final static String jnlpAddress = "http://jnlp.test.address";
     private final static String userName = "username";
     private final static String password = "password";
@@ -51,10 +50,10 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
                                                 userName,
                                                 password);
         noOfLightReconnects = platformSettings.noOfLightReconnects();
-        connectionKeeper = new ConnectionKeeper(connectionStateObs,
-                                                authentificationUtilMock,
-                                                loginCredentials);
-        connectionKeeper.setReloginTimeOutScheduler(scheduler);
+        new ConnectionKeeper(clientMock,
+                             connectionStateObs,
+                             authentificationUtilMock,
+                             loginCredentials);
     }
 
     public class IsInLoginState {
@@ -80,7 +79,7 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
 
             @Test
             public void testLightReconnectIsTriggered() {
-                verify(authentificationUtilMock).reconnect();
+                verify(clientMock).reconnect();
             }
 
             public class AfterConnectedMessage {
@@ -92,7 +91,7 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
 
                 @Test
                 public void testNoMoreLightReconnectsOrLogins() {
-                    verify(authentificationUtilMock).reconnect();
+                    verify(clientMock).reconnect();
                     verify(authentificationUtilMock, never()).login(loginCredentials);
                 }
 
@@ -106,7 +105,7 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
 
                     @Test
                     public void testLightReconnectIsTriggeredTwice() {
-                        verify(authentificationUtilMock, times(noOfLightReconnects + 1)).reconnect();
+                        verify(clientMock, times(noOfLightReconnects + 1)).reconnect();
                     }
                 }
             }
@@ -121,7 +120,7 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
 
                 @Test
                 public void testLightReconnectIsTriggeredTwice() {
-                    verify(authentificationUtilMock, times(noOfLightReconnects)).reconnect();
+                    verify(clientMock, times(noOfLightReconnects)).reconnect();
                 }
 
                 public class AfterAllLightReconnects {
@@ -135,7 +134,7 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
 
                         @Before
                         public void setUp() {
-                            scheduler.advanceTimeBy(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS);
+                            rxTestUtil.advanceTimeBy(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS);
                         }
 
                         @Test
@@ -152,7 +151,7 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
 
                             @Test
                             public void testNoMoreLightReconnectsOrLogins() {
-                                verify(authentificationUtilMock, times(noOfLightReconnects)).reconnect();
+                                verify(clientMock, times(noOfLightReconnects)).reconnect();
                                 verify(authentificationUtilMock, times(2)).login(loginCredentials);
                             }
                         }
