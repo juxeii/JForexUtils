@@ -1,12 +1,8 @@
 package com.jforex.programming.order;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
-
-import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 
@@ -14,21 +10,14 @@ public class OrderChangeUtil {
 
     private final OrderUtilHandler orderUtilHandler;
 
-    private static final Logger logger = LogManager.getLogger(OrderChangeUtil.class);
-
     public OrderChangeUtil(final OrderUtilHandler orderUtilHandler) {
         this.orderUtilHandler = orderUtilHandler;
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        final Observable<OrderEvent> closeObs =
-                orderUtilHandler.runOrderChangeCall(() -> orderToClose.close(),
-                                                    orderToClose,
-                                                    OrderEventTypeData.closeData);
-        closeObs.doOnCompleted(() -> logger.debug("Closing " + orderToClose.getLabel() + " was successful."))
-                .subscribe(orderEvent -> {},
-                           e -> logger.error("Closing " + orderToClose.getLabel() + " failed!"));
-        return closeObs;
+        return orderUtilHandler.runOrderChangeCall(() -> orderToClose.close(),
+                                                   orderToClose,
+                                                   OrderEventTypeData.closeData);
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,

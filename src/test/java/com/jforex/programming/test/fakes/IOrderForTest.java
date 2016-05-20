@@ -65,7 +65,7 @@ public class IOrderForTest implements IOrder {
     }
 
     @Override
-    public void close() throws JFException {
+    public void close() {
         amount = 0;
         orderState = IOrder.State.CLOSED;
     }
