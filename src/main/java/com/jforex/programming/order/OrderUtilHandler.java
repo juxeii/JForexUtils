@@ -2,6 +2,7 @@ package com.jforex.programming.order;
 
 import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -12,8 +13,6 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-
-import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 import rx.Subscriber;
