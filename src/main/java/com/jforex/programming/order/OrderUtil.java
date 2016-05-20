@@ -13,6 +13,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
@@ -21,9 +23,6 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.settings.PlatformSettings;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -79,14 +78,14 @@ public class OrderUtil {
         return mergeObs;
     }
 
-    public Completable mergePositionOrders(final String mergeOrderLabel,
-                                           final Instrument instrument,
-                                           final RestoreSLTPPolicy restoreSLTPPolicy) {
+    public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
+                                                      final Instrument instrument,
+                                                      final RestoreSLTPPolicy restoreSLTPPolicy) {
         final Position position = positionFactory.forInstrument(instrument);
         final Set<IOrder> ordersToMerge = position.filledOrders();
         if (ordersToMerge.size() < 2) {
             logger.warn("Cannot merge " + instrument + " position with only " + ordersToMerge.size() + " orders!");
-            return Completable.complete();
+            return Observable.empty();
         }
 
         logger.debug("Starting merge task for " + instrument + " position with label " + mergeOrderLabel);
@@ -104,10 +103,11 @@ public class OrderUtil {
                         })
                                 .flatMap(mergeOrder -> restoreSLTPObs(mergeOrder, restoreSLTPData).toObservable())
                                 .toCompletable());
-        final ConnectableObservable<?> mergeObs = mergeSequence.toObservable().replay();
+        final Observable<OrderEvent> mergeSequenceObs = mergeSequence.toObservable();
+        final ConnectableObservable<OrderEvent> mergeObs = mergeSequenceObs.replay();
         mergeObs.connect();
 
-        return mergeObs.toCompletable();
+        return mergeObs;
     }
 
     public Completable closePosition(final Instrument instrument) {
