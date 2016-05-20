@@ -1,8 +1,6 @@
-package com.jforex.programming.order.test;
+package com.jforex.programming.position.test;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -11,120 +9,32 @@ import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
-import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.OrderChangeUtil;
-import com.jforex.programming.order.OrderCreateUtil;
-import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderPositionUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
-import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.position.Position;
-import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.RestoreSLTPPolicy;
-import com.jforex.programming.settings.PlatformSettings;
-import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
-import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
 import rx.observables.ConnectableObservable;
 import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
 
-@RunWith(HierarchicalContextRunner.class)
-public class OrderPositionUtilTest extends InstrumentUtilForTest {
+public class PositionCreateTaskTest {
 
-    private OrderPositionUtil orderPositionUtil;
+    public class ClosePositionSetup {
 
-    @Mock
-    private OrderCreateUtil orderCreateUtilMock;
-    @Mock
-    private OrderChangeUtil orderChangeUtilMock;
-    @Mock
-    private PositionFactory positionFactoryMock;
-    @Mock
-    private RestoreSLTPPolicy restoreSLTPPolicyMock;
-    @Captor
-    private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
-    @Captor
-    private ArgumentCaptor<Set<IOrder>> toMergeOrdersCaptor;
-    private Position position;
-    private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
-    private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
-    private final IOrderForTest mergeOrder = IOrderForTest.buyOrderEURUSD();
-    private Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
-    private final String mergeOrderLabel = "MergeLabel";
+        private final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
+        private final Runnable closePositionCall =
+                () -> positionChangeTask.closePosition(instrumentEURUSD).subscribe(closeSubscriber);
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-
-    @Before
-    public void setUp() {
-        initCommonTestFramework();
-
-        orderEventSubject = PublishSubject.create();
-        position = new Position(instrumentEURUSD, orderEventSubject);
-        setUpMocks();
-        orderPositionUtil = new OrderPositionUtil(orderCreateUtilMock,
-                                                  orderChangeUtilMock,
-                                                  positionFactoryMock);
-    }
-
-    private void setUpMocks() {
-        when(positionFactoryMock.forInstrument(instrumentEURUSD)).thenReturn(position);
-    }
-
-    private void assertRejectException(final TestSubscriber<?> subscriber) {
-        subscriber.assertValueCount(0);
-        subscriber.assertError(OrderCallRejectException.class);
-    }
-
-    private void assertOrderEventNotify(final TestSubscriber<OrderEvent> subscriber,
-                                        final OrderEvent orderEvent) {
-        subscriber.assertValueCount(1);
-        final OrderEvent receivedOrderEvent = subscriber.getOnNextEvents().get(0);
-
-        assertThat(orderEvent.order(), equalTo(receivedOrderEvent.order()));
-        assertThat(orderEvent.type(), equalTo(receivedOrderEvent.type()));
-    }
-
-    private void sendOrderEvent(final IOrder order,
-                                final OrderEventType orderEventType) {
-        orderEventSubject.onNext(new OrderEvent(order, orderEventType));
-    }
-
-    public class BuySubmitSetup {
-
-        private final OrderParams orderParamsBUY = OrderParamsForTest.paramsBuyEURUSD();
-        private final TestSubscriber<OrderEvent> buySubmitSubscriber = new TestSubscriber<>();
-        private final Runnable buySubmitCall =
-                () -> orderPositionUtil.submitOrder(orderParamsBUY).subscribe(buySubmitSubscriber);
-
-        private void prepareSubmitObservable(final OrderEvent orderEvent) {
-            final ConnectableObservable<OrderEvent> observable = Observable.just(orderEvent).replay();
-            when(orderCreateUtilMock.submitOrder(orderParamsBUY)).thenReturn(observable);
-            observable.connect();
-        }
-
-        @SuppressWarnings("unchecked")
-        private void prepareObservableForReject(final OrderEvent orderEvent) {
-            @SuppressWarnings("rawtypes")
-            final ConnectableObservable observable =
-                    Observable.error(new OrderCallRejectException("", orderEvent)).replay();
-            when(orderCreateUtilMock.submitOrder(orderParamsBUY)).thenReturn(observable);
-            observable.connect();
+        @Before
+        public void setUp() {
+            position.addOrder(buyOrder);
+            position.addOrder(sellOrder);
         }
 
         public class SubmitCall {
@@ -247,7 +157,7 @@ public class OrderPositionUtilTest extends InstrumentUtilForTest {
         private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrder, sellOrder);
         private final TestSubscriber<OrderEvent> mergeSubscriber = new TestSubscriber<>();
         private final Runnable mergeCall =
-                () -> orderPositionUtil.mergeOrders(mergeOrderLabel, toMergeOrders).subscribe(mergeSubscriber);
+                () -> positionChangeTask.mergeOrders(mergeOrderLabel, toMergeOrders).subscribe(mergeSubscriber);
 
         private void prepareMergeObservable(final OrderEvent orderEvent) {
             setMergeMockObservable(Observable.just(orderEvent).replay());
@@ -338,7 +248,7 @@ public class OrderPositionUtilTest extends InstrumentUtilForTest {
         public class RemoveTPOK {
 
             private final TestSubscriber<OrderEvent> mergeSubscriber = new TestSubscriber<>();
-            private final Runnable mergePositionCall = () -> orderPositionUtil
+            private final Runnable mergePositionCall = () -> positionChangeTask
                     .mergePositionOrders(mergeOrderLabel,
                                          instrumentEURUSD,
                                          restoreSLTPPolicyMock)
@@ -481,7 +391,7 @@ public class OrderPositionUtilTest extends InstrumentUtilForTest {
 
             private final TestSubscriber<OrderEvent> closeSubscriber = new TestSubscriber<>();
             private final Runnable closePositionCall =
-                    () -> orderPositionUtil.closePosition(instrumentEURUSD).subscribe(closeSubscriber);
+                    () -> positionChangeTask.closePosition(instrumentEURUSD).subscribe(closeSubscriber);
 
             @Before
             public void setUp() {

@@ -19,12 +19,14 @@ import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderMessageData;
-import com.jforex.programming.order.OrderPositionUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
+import com.jforex.programming.position.PositionChangeTask;
+import com.jforex.programming.position.PositionCreateTask;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.PositionRetryLogic;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
@@ -51,7 +53,9 @@ public class JForexUtil implements MessageConsumer {
     private OrderUtilHandler orderUtilHandler;
     private OrderCreateUtil orderCreateUtil;
     private OrderChangeUtil orderChangeUtil;
-    private OrderPositionUtil orderPositionUtil;
+    private final PositionRetryLogic positionRetryLogic = new PositionRetryLogic();
+    private PositionChangeTask positionChangeTask;
+    private PositionCreateTask positionCreateTask;
     private OrderUtil orderUtil;
 
     private final CalculationUtil calculationUtil;
@@ -107,10 +111,17 @@ public class JForexUtil implements MessageConsumer {
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
         orderCreateUtil = new OrderCreateUtil(context.getEngine(), orderUtilHandler);
         orderChangeUtil = new OrderChangeUtil(orderUtilHandler);
-        orderPositionUtil = new OrderPositionUtil(orderCreateUtil,
-                                                  orderChangeUtil,
-                                                  positionFactory);
-        orderUtil = new OrderUtil(orderPositionUtil, orderChangeUtil);
+        positionChangeTask = new PositionChangeTask(positionFactory,
+                                                    orderChangeUtil,
+                                                    positionRetryLogic);
+        positionCreateTask = new PositionCreateTask(positionFactory,
+                                                    positionChangeTask,
+                                                    orderCreateUtil,
+                                                    positionRetryLogic);
+        orderUtil = new OrderUtil(positionCreateTask,
+                                  positionChangeTask,
+                                  orderChangeUtil,
+                                  positionFactory);
     }
 
     public IContext context() {

@@ -26,10 +26,14 @@ import com.jforex.programming.test.fakes.IMessageForTest;
 
 public class CommonUtilForTest {
 
-    @Mock protected IContext contextMock;
-    @Mock protected IEngine engineMock;
-    @Mock protected IHistory historyMock;
-    @Mock protected ConcurrentUtil concurrentUtilMock;
+    @Mock
+    protected IContext contextMock;
+    @Mock
+    protected IEngine engineMock;
+    @Mock
+    protected IHistory historyMock;
+    @Mock
+    protected ConcurrentUtil concurrentUtilMock;
     protected IEngineForTest engineForTest;
     protected JFException jfException = new JFException("JFException for test");
     protected Optional<Exception> jfExceptionOpt = Optional.of(jfException);

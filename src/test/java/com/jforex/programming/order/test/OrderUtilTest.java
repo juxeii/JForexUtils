@@ -1,5 +1,7 @@
 package com.jforex.programming.order.test;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,10 +17,13 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderPositionUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderSupplierCall;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionChangeTask;
+import com.jforex.programming.position.PositionCreateTask;
+import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
@@ -32,11 +37,17 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderUtil orderUtil;
 
     @Mock
-    private OrderPositionUtil orderPositionUtilMock;
+    private PositionCreateTask positionCreateTaskMock;
+    @Mock
+    private PositionChangeTask positionChangeTaskMock;
     @Mock
     private OrderChangeUtil orderChangeUtilMock;
     @Mock
+    private PositionFactory positionFactoryMock;
+    @Mock
     private RestoreSLTPPolicy restoreSLTPPolicyMock;
+    @Mock
+    private Position positionMock;
     @Captor
     private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
     @Captor
@@ -50,58 +61,71 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void setUp() {
         initCommonTestFramework();
 
-        orderUtil = new OrderUtil(orderPositionUtilMock, orderChangeUtilMock);
+        orderUtil = new OrderUtil(positionCreateTaskMock,
+                                  positionChangeTaskMock,
+                                  orderChangeUtilMock,
+                                  positionFactoryMock);
+    }
+
+    @Test
+    public void testPositionQueryReturnsCorrectPosition() {
+        when(positionFactoryMock.forInstrument(instrumentEURUSD))
+                .thenReturn(positionMock);
+
+        final Position position = orderUtil.position(instrumentEURUSD);
+
+        assertThat(position, equalTo(positionMock));
     }
 
     @Test
     public void testSubmitCallsOnPositionUtil() {
         final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
-        when(orderPositionUtilMock.submitOrder(orderParams))
+        when(positionCreateTaskMock.submitOrder(orderParams))
                 .thenReturn(Observable.empty());
 
         orderUtil.submitOrder(orderParams)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderPositionUtilMock)
+        verify(positionCreateTaskMock)
                 .submitOrder(orderParams);
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
     public void testMergeCallsOnPositionUtil() {
-        when(orderPositionUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders))
+        when(positionCreateTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
                 .thenReturn(Observable.empty());
 
         orderUtil.mergeOrders(mergeOrderLabel, toMergeOrders)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderPositionUtilMock)
+        verify(positionCreateTaskMock)
                 .mergeOrders(mergeOrderLabel, toMergeOrders);
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
     public void testMergePositionCallsOnPositionUtil() {
-        when(orderPositionUtilMock.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock))
+        when(positionCreateTaskMock.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock))
                 .thenReturn(Observable.empty());
 
         orderUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderPositionUtilMock)
+        verify(positionCreateTaskMock)
                 .mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock);
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
     public void testClosePositionCallsOnPositionUtil() {
-        when(orderPositionUtilMock.closePosition(instrumentEURUSD))
+        when(positionChangeTaskMock.closePosition(instrumentEURUSD))
                 .thenReturn(Observable.empty().toCompletable());
 
         orderUtil.closePosition(instrumentEURUSD)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderPositionUtilMock)
+        verify(positionChangeTaskMock)
                 .closePosition(instrumentEURUSD);
         orderEventSubscriber.assertCompleted();
     }

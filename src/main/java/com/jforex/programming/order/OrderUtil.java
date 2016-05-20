@@ -6,6 +6,9 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionChangeTask;
+import com.jforex.programming.position.PositionCreateTask;
+import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 
 import rx.Completable;
@@ -13,36 +16,42 @@ import rx.Observable;
 
 public class OrderUtil {
 
-    private final OrderPositionUtil orderPositionUtil;
+    private final PositionCreateTask positionCreateTask;
+    private final PositionChangeTask positionChangeTask;
     private final OrderChangeUtil orderChangeUtil;
+    private final PositionFactory positionFactory;
 
-    public OrderUtil(final OrderPositionUtil orderPositionUtil,
-                     final OrderChangeUtil orderChangeUtil) {
-        this.orderPositionUtil = orderPositionUtil;
+    public OrderUtil(final PositionCreateTask positionCreateTask,
+                     final PositionChangeTask positionChangeTask,
+                     final OrderChangeUtil orderChangeUtil,
+                     final PositionFactory positionFactory) {
+        this.positionCreateTask = positionCreateTask;
+        this.positionChangeTask = positionChangeTask;
         this.orderChangeUtil = orderChangeUtil;
+        this.positionFactory = positionFactory;
     }
 
     public Position position(final Instrument instrument) {
-        return orderPositionUtil.position(instrument);
+        return positionFactory.forInstrument(instrument);
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
-        return orderPositionUtil.submitOrder(orderParams);
+        return positionCreateTask.submitOrder(orderParams);
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
-        return orderPositionUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
+        return positionCreateTask.mergeOrders(mergeOrderLabel, toMergeOrders);
     }
 
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
                                                       final Instrument instrument,
                                                       final RestoreSLTPPolicy restoreSLTPPolicy) {
-        return orderPositionUtil.mergePositionOrders(mergeOrderLabel, instrument, restoreSLTPPolicy);
+        return positionCreateTask.mergePositionOrders(mergeOrderLabel, instrument, restoreSLTPPolicy);
     }
 
     public Completable closePosition(final Instrument instrument) {
-        return orderPositionUtil.closePosition(instrument);
+        return positionChangeTask.closePosition(instrument);
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
