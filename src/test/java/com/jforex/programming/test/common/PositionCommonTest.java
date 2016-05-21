@@ -6,23 +6,23 @@ import static org.mockito.Mockito.when;
 
 import java.util.function.Supplier;
 
-import org.aeonbits.owner.ConfigFactory;
-
-import com.dukascopy.api.JFException;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.settings.PlatformSettings;
+
+import com.dukascopy.api.JFException;
 
 import rx.Observable;
 import rx.observers.TestSubscriber;
 
 public class PositionCommonTest extends InstrumentUtilForTest {
 
-    public final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     public static int retryExceedCount = platformSettings.maxRetriesOnOrderFail() + 1;
+    public final static double noSL = platformSettings.noSLPrice();
+    public final static double noTP = platformSettings.noTPPrice();
 
     public Observable<OrderEvent>[] retryRejectErrorObservableArray(final OrderEvent orderEvent,
                                                                     final int times) {
+        @SuppressWarnings("unchecked")
         final Observable<OrderEvent>[] retryRejectErrorObservableArray = new Observable[times];
         for (int i = 0; i < times; ++i)
             retryRejectErrorObservableArray[i] = rejectObservable(orderEvent);
@@ -35,6 +35,10 @@ public class PositionCommonTest extends InstrumentUtilForTest {
 
     public OrderCallRejectException createRejectException(final OrderEvent orderEvent) {
         return new OrderCallRejectException("", orderEvent);
+    }
+
+    public Observable<OrderEvent> exceptionObservable() {
+        return Observable.error(jfException);
     }
 
     public Observable<OrderEvent> rejectObservable(final OrderEvent orderEvent) {

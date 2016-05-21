@@ -5,33 +5,37 @@ import java.util.concurrent.Executors;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.jforex.programming.instrument.InstrumentUtil;
+import com.jforex.programming.mm.RiskPercentMM;
+import com.jforex.programming.order.OrderChangeUtil;
+import com.jforex.programming.order.OrderCreateUtil;
+import com.jforex.programming.order.OrderMessageData;
+import com.jforex.programming.order.OrderPositionUtil;
+import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.OrderUtilHandler;
+import com.jforex.programming.order.call.OrderCallExecutor;
+import com.jforex.programming.order.event.OrderEventGateway;
+import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.task.PositionBatchTask;
+import com.jforex.programming.position.task.PositionMultiTask;
+import com.jforex.programming.position.task.PositionRetryTask;
+import com.jforex.programming.position.task.PositionSingleTask;
+import com.jforex.programming.quote.BarQuote;
+import com.jforex.programming.quote.BarQuoteProvider;
+import com.jforex.programming.quote.TickQuote;
+import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.settings.UserSettings;
+
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IContext;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.Period;
-import com.jforex.programming.instrument.InstrumentUtil;
-import com.jforex.programming.mm.RiskPercentMM;
-import com.jforex.programming.order.OrderChangeUtil;
-import com.jforex.programming.order.OrderCreateUtil;
-import com.jforex.programming.order.OrderMessageData;
-import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.call.OrderCallExecutor;
-import com.jforex.programming.order.event.OrderEventGateway;
-import com.jforex.programming.position.PositionChangeTask;
-import com.jforex.programming.position.PositionCreateTask;
-import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.PositionRetryLogic;
-import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteProvider;
-import com.jforex.programming.quote.TickQuote;
-import com.jforex.programming.quote.TickQuoteProvider;
-import com.jforex.programming.settings.UserSettings;
 
 import rx.Subscription;
 
@@ -53,10 +57,14 @@ public class JForexUtil implements MessageConsumer {
     private OrderUtilHandler orderUtilHandler;
     private OrderCreateUtil orderCreateUtil;
     private OrderChangeUtil orderChangeUtil;
-    private final PositionRetryLogic positionRetryLogic = new PositionRetryLogic();
-    private PositionChangeTask positionChangeTask;
-    private PositionCreateTask positionCreateTask;
     private OrderUtil orderUtil;
+
+    private PositionSingleTask positionSingleTask;
+    private final PositionRetryTask<IOrder> orderRetryTask = new PositionRetryTask<>();
+    private final PositionRetryTask<String> mergeRetryTask = new PositionRetryTask<>();
+    private PositionMultiTask positionMultiTask;
+    private PositionBatchTask positionBatchTask;
+    private OrderPositionUtil orderPositionUtil;
 
     private final CalculationUtil calculationUtil;
     private final RiskPercentMM riskPercentMM;
@@ -111,17 +119,20 @@ public class JForexUtil implements MessageConsumer {
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
         orderCreateUtil = new OrderCreateUtil(context.getEngine(), orderUtilHandler);
         orderChangeUtil = new OrderChangeUtil(orderUtilHandler);
-        positionChangeTask = new PositionChangeTask(positionFactory,
+        orderUtil = new OrderUtil(orderChangeUtil, orderPositionUtil);
+
+        positionSingleTask = new PositionSingleTask(orderCreateUtil,
                                                     orderChangeUtil,
-                                                    positionRetryLogic);
-        positionCreateTask = new PositionCreateTask(positionFactory,
-                                                    positionChangeTask,
-                                                    orderCreateUtil,
-                                                    positionRetryLogic);
-        orderUtil = new OrderUtil(positionCreateTask,
-                                  positionChangeTask,
-                                  orderChangeUtil,
-                                  positionFactory);
+                                                    orderRetryTask,
+                                                    mergeRetryTask);
+        positionMultiTask = new PositionMultiTask(positionSingleTask);
+        positionBatchTask = new PositionBatchTask(positionSingleTask, positionMultiTask);
+        orderPositionUtil = new OrderPositionUtil(orderCreateUtil,
+                                                  positionSingleTask,
+                                                  positionMultiTask,
+                                                  positionBatchTask,
+                                                  orderChangeUtil,
+                                                  positionFactory);
     }
 
     public IContext context() {
