@@ -11,6 +11,7 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
+import rx.Completable;
 import rx.Observable;
 import rx.observables.ConnectableObservable;
 
@@ -27,6 +28,13 @@ public class PositionTaskUtil {
 
         connectableObservable.connect();
         return connectableObservable;
+    }
+
+    public static Completable connectCompletable(final Completable completable) {
+        final Observable<OrderEvent> connectedObservable =
+                connectObservable(completable.toObservable());
+
+        return connectedObservable.toCompletable();
     }
 
     public static Observable<Long> shouldRetry(final Observable<? extends Throwable> errors) {

@@ -15,13 +15,13 @@ import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.position.task.PositionBatchTask;
 import com.jforex.programming.position.task.PositionMultiTask;
 import com.jforex.programming.position.task.PositionSingleTask;
+import com.jforex.programming.position.task.PositionTaskUtil;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
-import rx.observables.ConnectableObservable;
 
 public class OrderPositionUtil {
 
@@ -59,7 +59,7 @@ public class OrderPositionUtil {
         submitObs.subscribe(submitEvent -> onSubmitEvent(position, submitEvent),
                             e -> logger.error("Submit " + orderParams.label() + " for position "
                                     + instrument + " failed! Exception: " + e.getMessage()));
-        return submitObs;
+        return PositionTaskUtil.connectObservable(submitObs);
     }
 
     private void onSubmitEvent(final Position position,
@@ -76,7 +76,7 @@ public class OrderPositionUtil {
         mergeObs.subscribe(orderEvent -> position.addOrder(orderEvent.order()),
                            e -> logger.error("Merge with label " + mergeOrderLabel
                                    + " failed! Exception: " + e.getMessage()));
-        return mergeObs;
+        return PositionTaskUtil.connectObservable(mergeObs);
     }
 
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
@@ -102,11 +102,8 @@ public class OrderPositionUtil {
                 positionBatchTask
                         .removeTPSLObservable(toMergeOrders)
                         .concatWith(mergeAndRestoreObs.toCompletable());
-        final Observable<OrderEvent> mergeSequenceObs = mergeSequence.toObservable();
-        final ConnectableObservable<OrderEvent> mergeObs = mergeSequenceObs.replay();
-        mergeObs.connect();
 
-        return mergeObs;
+        return PositionTaskUtil.connectObservable(mergeSequence.toObservable());
     }
 
     public Completable closePosition(final Instrument instrument) {
@@ -116,6 +113,6 @@ public class OrderPositionUtil {
         if (ordersToClose.isEmpty())
             return Completable.complete();
         position.markAllActive();
-        return positionBatchTask.closeCompletable(ordersToClose);
+        return PositionTaskUtil.connectCompletable(positionBatchTask.closeCompletable(ordersToClose));
     }
 }

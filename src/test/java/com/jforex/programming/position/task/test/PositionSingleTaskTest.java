@@ -206,15 +206,6 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                     taskSubscriber.assertCompleted();
                 }
             }
-
-            @Test
-            public void testSetTPIsCalledAlsoWhenNotSubscribed() {
-                setSLChangeMockResult(doneEventObservable(changedSLEvent));
-
-                positionSingleTask.setSLObservable(orderUnderTest, newSL);
-
-                verify(orderChangeUtilMock).setStopLossPrice(orderUnderTest, newSL);
-            }
         }
     }
 
@@ -362,15 +353,6 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                     taskSubscriber.assertCompleted();
                 }
             }
-
-            @Test
-            public void testSetTPIsCalledAlsoWhenNotSubscribed() {
-                setTPChangeMockResult(doneEventObservable(changedTPEvent));
-
-                positionSingleTask.setTPObservable(orderUnderTest, newTP);
-
-                verify(orderChangeUtilMock).setTakeProfitPrice(orderUnderTest, newTP);
-            }
         }
     }
 
@@ -495,15 +477,6 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 public void testSubscriberCompleted() {
                     taskSubscriber.assertCompleted();
                 }
-            }
-
-            @Test
-            public void testMergeIsCalledAlsoWhenNotSubscribed() {
-                mergeChangeMockResult(doneEventObservable(mergeEvent));
-
-                positionSingleTask.mergeObservable(mergeOrderLabel, toMergeOrders);
-
-                verify(orderCreateUtilMock).mergeOrders(mergeOrderLabel, toMergeOrders);
             }
         }
     }
@@ -650,15 +623,6 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 public void testSubscriberCompleted() {
                     taskSubscriber.assertCompleted();
                 }
-            }
-
-            @Test
-            public void testCloseIsCalledAlsoWhenNotSubscribed() {
-                setCloseMockResult(doneEventObservable(closeOKEvent));
-
-                positionSingleTask.closeObservable(orderUnderTest);
-
-                verify(orderChangeUtilMock).close(orderUnderTest);
             }
         }
     }
