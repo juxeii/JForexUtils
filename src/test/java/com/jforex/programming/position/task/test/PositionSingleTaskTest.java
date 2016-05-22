@@ -372,14 +372,14 @@ public class PositionSingleTaskTest extends PositionCommonTest {
             private final OrderEvent rejectEvent =
                     new OrderEvent(orderUnderTest, OrderEventType.MERGE_REJECTED);
 
-            private void mergeChangeMockResult(final Observable<OrderEvent> observable) {
+            private void mergeCreateMockResult(final Observable<OrderEvent> observable) {
                 when(orderCreateUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders))
                         .thenReturn(observable);
             }
 
             @Test
             public void testSubscriberNotYetCompletedWhenChangeUtilIsBusy() {
-                mergeChangeMockResult(busyObservable());
+                mergeCreateMockResult(busyObservable());
 
                 mergeObservableCall.run();
 
@@ -390,7 +390,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    mergeChangeMockResult(exceptionObservable());
+                    mergeCreateMockResult(exceptionObservable());
 
                     mergeObservableCall.run();
                 }
@@ -458,7 +458,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    mergeChangeMockResult(doneEventObservable(mergeEvent));
+                    mergeCreateMockResult(doneEventObservable(mergeEvent));
 
                     mergeObservableCall.run();
                 }

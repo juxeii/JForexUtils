@@ -63,18 +63,15 @@ public class OrderPositionUtil {
 
     private void onSubmitEvent(final Position position,
                                final OrderEvent submitEvent) {
-        logger.error("HAAAAAAAAALOOOOOOO " + submitEvent.type());
-        if (OrderEventTypeData.submitData.isDoneType(submitEvent.type())) {
-            logger.error("eeeeeeeeeeeeeeeeee");
+        if (OrderEventTypeData.submitData.isDoneType(submitEvent.type()))
             position.addOrder(submitEvent.order());
-        }
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
         final Instrument instrument = toMergeOrders.iterator().next().getInstrument();
         final Position position = positionFactory.forInstrument(instrument);
-        final Observable<OrderEvent> mergeObs = positionSingleTask.mergeObservable(mergeOrderLabel, toMergeOrders);
+        final Observable<OrderEvent> mergeObs = orderCreateUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
         mergeObs.subscribe(orderEvent -> position.addOrder(orderEvent.order()),
                            e -> logger.error("Merge with label " + mergeOrderLabel
                                    + " failed! Exception: " + e.getMessage()));
