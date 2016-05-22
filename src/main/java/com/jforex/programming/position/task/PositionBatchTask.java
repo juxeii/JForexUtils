@@ -5,14 +5,11 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.order.event.OrderEvent;
-
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
-import rx.observables.ConnectableObservable;
 
 public class PositionBatchTask {
 
@@ -30,14 +27,12 @@ public class PositionBatchTask {
     public Completable closeCompletable(final Set<IOrder> ordersToClose) {
         final Instrument instrument = ordersToClose.iterator().next().getInstrument();
         logger.debug("Starting close task for position " + instrument);
-        final ConnectableObservable<OrderEvent> closeObs = Observable.from(ordersToClose)
+        return Observable.from(ordersToClose)
                 .flatMap(positionSingleTask::closeObservable)
                 .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."))
                 .doOnError(e -> logger.error("Closing position " + instrument
                         + " failed! Exception: " + e.getMessage()))
-                .replay();
-        closeObs.connect();
-        return closeObs.toCompletable();
+                .toCompletable();
     }
 
     public Completable removeTPSLObservable(final Set<IOrder> filledOrders) {

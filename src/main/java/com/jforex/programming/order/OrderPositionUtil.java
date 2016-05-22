@@ -37,7 +37,6 @@ public class OrderPositionUtil {
                              final PositionSingleTask positionSingleTask,
                              final PositionMultiTask positionMultiTask,
                              final PositionBatchTask positionBatchTask,
-                             final OrderChangeUtil orderChangeUtil,
                              final PositionFactory positionFactory) {
         this.orderCreateUtil = orderCreateUtil;
         this.positionSingleTask = positionSingleTask;
@@ -64,8 +63,11 @@ public class OrderPositionUtil {
 
     private void onSubmitEvent(final Position position,
                                final OrderEvent submitEvent) {
-        if (OrderEventTypeData.submitData.isDoneType(submitEvent.type()))
+        logger.error("HAAAAAAAAALOOOOOOO " + submitEvent.type());
+        if (OrderEventTypeData.submitData.isDoneType(submitEvent.type())) {
+            logger.error("eeeeeeeeeeeeeeeeee");
             position.addOrder(submitEvent.order());
+        }
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,

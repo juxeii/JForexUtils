@@ -123,7 +123,6 @@ public class JForexUtil implements MessageConsumer {
                                                   positionSingleTask,
                                                   positionMultiTask,
                                                   positionBatchTask,
-                                                  orderChangeUtil,
                                                   positionFactory);
         orderUtil = new OrderUtil(orderChangeUtil, orderPositionUtil);
     }
