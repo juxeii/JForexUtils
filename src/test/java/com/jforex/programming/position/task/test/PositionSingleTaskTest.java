@@ -1,15 +1,13 @@
 package com.jforex.programming.position.task.test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.junit.Before;
@@ -24,7 +22,6 @@ import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.position.task.PositionRetryTask;
 import com.jforex.programming.position.task.PositionSingleTask;
 import com.jforex.programming.test.common.PositionCommonTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
@@ -44,49 +41,10 @@ public class PositionSingleTaskTest extends PositionCommonTest {
     private OrderCreateUtil orderCreateUtilMock;
     @Mock
     private OrderChangeUtil orderChangeUtilMock;
-    @Mock
-    private PositionRetryTask<IOrder> orderRetryTaskMock;
-    @Mock
-    private PositionRetryTask<String> mergeRetryTaskMock;
     @Captor
     private ArgumentCaptor<Supplier<Observable<OrderEvent>>> orderCallCaptor;
-    @Captor
-    private ArgumentCaptor<Predicate<IOrder>> predicateCaptor;
-    @Captor
-    private ArgumentCaptor<Predicate<String>> mergePredicateCaptor;
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
-    private final Observable<OrderEvent> testObservable = Observable.empty();
     private final TestSubscriber<OrderEvent> taskSubscriber = new TestSubscriber<>();
-    private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
-    private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
-    private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrder, sellOrder);
-    private final String mergeOrderLabel = "MergeLabel";
-
-    private void setOrderRetryTaskResultObservable(final Observable<OrderEvent> observable) {
-        when(orderRetryTaskMock.create(orderCallCaptor.capture(),
-                                       predicateCaptor.capture(),
-                                       eq(orderUnderTest)))
-                                               .thenReturn(observable);
-    }
-
-    private void setMergeRetryTaskResultObservable(final Observable<OrderEvent> observable) {
-        when(mergeRetryTaskMock.create(orderCallCaptor.capture(),
-                                       mergePredicateCaptor.capture(),
-                                       eq(mergeOrderLabel)))
-                                               .thenReturn(observable);
-    }
-
-    private void verifyRetryTaskCall() {
-        verify(orderRetryTaskMock).create(orderCallCaptor.capture(),
-                                          predicateCaptor.capture(),
-                                          eq(orderUnderTest));
-    }
-
-    private void verifyMergeRetryTaskCall() {
-        verify(mergeRetryTaskMock).create(orderCallCaptor.capture(),
-                                          mergePredicateCaptor.capture(),
-                                          eq(mergeOrderLabel));
-    }
 
     private void assertOrderEventNotification(final OrderEvent expectedEvent) {
         taskSubscriber.assertValueCount(1);
@@ -101,187 +59,185 @@ public class PositionSingleTaskTest extends PositionCommonTest {
     public void setUp() {
         initCommonTestFramework();
 
-        positionSingleTask = new PositionSingleTask(orderCreateUtilMock,
-                                                    orderChangeUtilMock,
-                                                    orderRetryTaskMock,
-                                                    mergeRetryTaskMock);
+        positionSingleTask = new PositionSingleTask(orderCreateUtilMock, orderChangeUtilMock);
     }
 
     public class SetSLSetup {
 
-        private final static double newSL = 1.10123;
-
-        private final Runnable setSLObservableCall =
-                () -> positionSingleTask.setSLObservable(orderUnderTest, newSL).subscribe(taskSubscriber);
-
         @Before
         public void setUp() {
-            when(orderChangeUtilMock.setStopLossPrice(orderUnderTest, newSL)).thenReturn(testObservable);
-
             orderUnderTest.setState(IOrder.State.FILLED);
         }
 
-        @Test
-        public void testSubscriberNotYetCompleted() {
-            setOrderRetryTaskResultObservable(Observable.never());
+        public class SLIsAlreadySet {
 
-            setSLObservableCall.run();
-
-            taskSubscriber.assertNotCompleted();
-        }
-
-        public class PredicateIsFalse {
+            private final double orderSL = orderUnderTest.getStopLossPrice();
 
             @Before
             public void setUp() {
-                setOrderRetryTaskResultObservable(Observable.never());
-
-                positionSingleTask.setSLObservable(orderUnderTest, orderUnderTest.getStopLossPrice())
+                positionSingleTask.setSLObservable(orderUnderTest, orderSL)
                         .subscribe(taskSubscriber);
             }
 
             @Test
-            public void testPredicateIsFalseWhenSLAlreadySet() {
-                verifyRetryTaskCall();
-
-                assertFalse(predicateCaptor.getValue().test(orderUnderTest));
-            }
-        }
-
-        public class RetryTaskCallWithJFException {
-
-            @Before
-            public void setUp() {
-                setOrderRetryTaskResultObservable(exceptionObservable());
-
-                setSLObservableCall.run();
-            }
-
-            @Test
-            public void testSetSLOnOrderHasBeenCalledWithoutRetry() {
-                verifyRetryTaskCall();
-            }
-
-            @Test
-            public void testSubscriberGetsJFExceptionNotification() {
-                assertJFException(taskSubscriber);
-            }
-        }
-
-        public class RetryTaskCallOK {
-
-            final OrderEvent changedSLEvent = new OrderEvent(orderUnderTest, OrderEventType.SL_CHANGE_OK);
-
-            @Before
-            public void setUp() {
-                setOrderRetryTaskResultObservable(Observable.just(changedSLEvent));
-
-                setSLObservableCall.run();
-            }
-
-            @Test
-            public void testSetSLOnChangeUtilHasBeenCalledCorrect() {
-                verifyRetryTaskCall();
-
-                assertThat(orderCallCaptor.getValue().get(), equalTo(testObservable));
-                assertTrue(predicateCaptor.getValue().test(orderUnderTest));
-            }
-
-            @Test
-            public void testSubscriberHasBeenNotifiedWithOrderEvent() {
-                assertOrderEventNotification(changedSLEvent);
+            public void testNoCallToChangeUtil() {
+                verify(orderChangeUtilMock, never()).setStopLossPrice(orderUnderTest, orderSL);
             }
 
             @Test
             public void testSubscriberCompleted() {
                 taskSubscriber.assertCompleted();
+            }
+        }
+
+        public class SLIsNew {
+
+            private final OrderEvent changedSLEvent =
+                    new OrderEvent(orderUnderTest, OrderEventType.SL_CHANGE_OK);
+            private final OrderEvent rejectEvent =
+                    new OrderEvent(orderUnderTest, OrderEventType.CHANGE_SL_REJECTED);
+            private final static double newSL = 1.10123;
+            private final Runnable setSLObservableCall =
+                    () -> positionSingleTask.setSLObservable(orderUnderTest, newSL).subscribe(taskSubscriber);
+
+            private void setSLChangeMockResult(final Observable<OrderEvent> observable) {
+                when(orderChangeUtilMock.setStopLossPrice(orderUnderTest, newSL))
+                        .thenReturn(observable);
+            }
+
+            @Test
+            public void testSubscriberNotYetCompletedWhenChangeUtilIsBusy() {
+                setSLChangeMockResult(busyObservable());
+
+                setSLObservableCall.run();
+
+                taskSubscriber.assertNotCompleted();
+            }
+
+            public class SetSLWithJFException {
+
+                @Before
+                public void setUp() {
+                    setSLChangeMockResult(exceptionObservable());
+
+                    setSLObservableCall.run();
+                }
+
+                @Test
+                public void testSetSLOnChangeUtilHasBeenCalledWithoutRetry() {
+                    verify(orderChangeUtilMock).setStopLossPrice(orderUnderTest, newSL);
+                }
+
+                @Test
+                public void testSubscriberGetsJFExceptionNotification() {
+                    assertJFException(taskSubscriber);
+                }
+            }
+
+            public class SetSLCallWhichExceedsRetries {
+
+                @Before
+                public void setUp() {
+                    setRetryExceededMock(() -> orderChangeUtilMock.setStopLossPrice(orderUnderTest, newSL),
+                                         rejectEvent);
+
+                    setSLObservableCall.run();
+
+                    rxTestUtil.advanceTimeForAllOrderRetries();
+                }
+
+                @Test
+                public void testSetSLCalledWithAllRetries() {
+                    verify(orderChangeUtilMock, times(retryExceedCount))
+                            .setStopLossPrice(orderUnderTest, newSL);
+                }
+
+                @Test
+                public void testSubscriberGetsRejectExceptionNotification() {
+                    assertRejectException(taskSubscriber);
+                }
+            }
+
+            public class SetSLCallWithFullRetriesThenSuccess {
+
+                @Before
+                public void setUp() {
+                    setFullRetryMock(() -> orderChangeUtilMock.setStopLossPrice(orderUnderTest, newSL),
+                                     rejectEvent);
+
+                    setSLObservableCall.run();
+
+                    rxTestUtil.advanceTimeForAllOrderRetries();
+                }
+
+                @Test
+                public void testSetSLCalledWithAllRetries() {
+                    verify(orderChangeUtilMock, times(retryExceedCount))
+                            .setStopLossPrice(orderUnderTest, newSL);
+                }
+
+                @Test
+                public void testSubscriberCompleted() {
+                    taskSubscriber.assertCompleted();
+                }
+            }
+
+            public class SetSLOKCall {
+
+                @Before
+                public void setUp() {
+                    setSLChangeMockResult(doneEventObservable(changedSLEvent));
+
+                    setSLObservableCall.run();
+                }
+
+                @Test
+                public void testSetSLOnChangeUtilHasBeenCalledCorrect() {
+                    verify(orderChangeUtilMock).setStopLossPrice(orderUnderTest, newSL);
+                }
+
+                @Test
+                public void testSubscriberHasBeenNotifiedWithOrderEvent() {
+                    assertOrderEventNotification(changedSLEvent);
+                }
+
+                @Test
+                public void testSubscriberCompleted() {
+                    taskSubscriber.assertCompleted();
+                }
+            }
+
+            @Test
+            public void testSetTPIsCalledAlsoWhenNotSubscribed() {
+                setSLChangeMockResult(doneEventObservable(changedSLEvent));
+
+                positionSingleTask.setSLObservable(orderUnderTest, newSL);
+
+                verify(orderChangeUtilMock).setStopLossPrice(orderUnderTest, newSL);
             }
         }
     }
 
     public class SetTPSetup {
 
-        private final static double newTP = 1.12123;
-
-        private final Runnable setTPObservableCall =
-                () -> positionSingleTask.setTPObservable(orderUnderTest, newTP).subscribe(taskSubscriber);
-
         @Before
         public void setUp() {
-            when(orderChangeUtilMock.setTakeProfitPrice(orderUnderTest, newTP)).thenReturn(testObservable);
-
             orderUnderTest.setState(IOrder.State.FILLED);
         }
 
-        @Test
-        public void testSubscriberNotYetCompleted() {
-            setOrderRetryTaskResultObservable(Observable.never());
+        public class TPIsAlreadySet {
 
-            setTPObservableCall.run();
-
-            taskSubscriber.assertNotCompleted();
-        }
-
-        public class PredicateIsFalse {
+            private final double orderTP = orderUnderTest.getTakeProfitPrice();
 
             @Before
             public void setUp() {
-                setOrderRetryTaskResultObservable(Observable.never());
-
-                positionSingleTask.setTPObservable(orderUnderTest, orderUnderTest.getTakeProfitPrice())
+                positionSingleTask.setTPObservable(orderUnderTest, orderTP)
                         .subscribe(taskSubscriber);
             }
 
             @Test
-            public void testPredicateIsFalseWhenTPAlreadySet() {
-                verifyRetryTaskCall();
-
-                assertFalse(predicateCaptor.getValue().test(orderUnderTest));
-            }
-        }
-
-        public class RetryTaskCallWithJFException {
-
-            @Before
-            public void setUp() {
-                setOrderRetryTaskResultObservable(exceptionObservable());
-
-                setTPObservableCall.run();
-            }
-
-            @Test
-            public void testSetTPOnOrderHasBeenCalledWithoutRetry() {
-                verifyRetryTaskCall();
-            }
-
-            @Test
-            public void testSubscriberGetsJFExceptionNotification() {
-                assertJFException(taskSubscriber);
-            }
-        }
-
-        public class RetryTaskCallOK {
-
-            final OrderEvent changedTPEvent = new OrderEvent(orderUnderTest, OrderEventType.TP_CHANGE_OK);
-
-            @Before
-            public void setUp() {
-                setOrderRetryTaskResultObservable(Observable.just(changedTPEvent));
-
-                setTPObservableCall.run();
-            }
-
-            @Test
-            public void testSetTPOnChangeUtilHasBeenCalledCorrect() {
-                verifyRetryTaskCall();
-
-                assertThat(orderCallCaptor.getValue().get(), equalTo(testObservable));
-                assertTrue(predicateCaptor.getValue().test(orderUnderTest));
-            }
-
-            @Test
-            public void testSubscriberHasBeenNotifiedWithOrderEvent() {
-                assertOrderEventNotification(changedTPEvent);
+            public void testNoCallToChangeUtil() {
+                verify(orderChangeUtilMock, never()).setTakeProfitPrice(orderUnderTest, orderTP);
             }
 
             @Test
@@ -289,167 +245,420 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 taskSubscriber.assertCompleted();
             }
         }
-    }
 
-    public class CloseSetup {
+        public class TPIsNew {
 
-        private final Runnable closeObservableCall =
-                () -> positionSingleTask.closeObservable(orderUnderTest).subscribe(taskSubscriber);
+            private final OrderEvent changedTPEvent =
+                    new OrderEvent(orderUnderTest, OrderEventType.TP_CHANGE_OK);
+            private final OrderEvent rejectEvent =
+                    new OrderEvent(orderUnderTest, OrderEventType.CHANGE_TP_REJECTED);
+            private final static double newTP = 1.12123;
+            private final Runnable setTPObservableCall =
+                    () -> positionSingleTask.setTPObservable(orderUnderTest, newTP).subscribe(taskSubscriber);
 
-        @Before
-        public void setUp() {
-            when(orderChangeUtilMock.close(orderUnderTest)).thenReturn(testObservable);
-
-            orderUnderTest.setState(IOrder.State.FILLED);
-        }
-
-        @Test
-        public void testSubscriberNotYetCompleted() {
-            setOrderRetryTaskResultObservable(Observable.never());
-
-            closeObservableCall.run();
-
-            taskSubscriber.assertNotCompleted();
-        }
-
-        public class PredicateIsFalse {
-
-            @Before
-            public void setUp() {
-                setOrderRetryTaskResultObservable(Observable.never());
-
-                orderUnderTest.setState(IOrder.State.CLOSED);
-
-                closeObservableCall.run();
+            private void setTPChangeMockResult(final Observable<OrderEvent> observable) {
+                when(orderChangeUtilMock.setTakeProfitPrice(orderUnderTest, newTP))
+                        .thenReturn(observable);
             }
 
             @Test
-            public void testPredicateIsFalseWhenAlreadyClosed() {
-                verifyRetryTaskCall();
+            public void testSubscriberNotYetCompletedWhenChangeUtilIsBusy() {
+                setTPChangeMockResult(busyObservable());
 
-                assertFalse(predicateCaptor.getValue().test(orderUnderTest));
+                setTPObservableCall.run();
+
+                taskSubscriber.assertNotCompleted();
             }
-        }
 
-        public class RetryTaskCallWithJFException {
+            public class SetTPWithJFException {
 
-            @Before
-            public void setUp() {
-                setOrderRetryTaskResultObservable(exceptionObservable());
+                @Before
+                public void setUp() {
+                    setTPChangeMockResult(exceptionObservable());
 
-                closeObservableCall.run();
+                    setTPObservableCall.run();
+                }
+
+                @Test
+                public void testSetTPOnChangeUtilHasBeenCalledWithoutRetry() {
+                    verify(orderChangeUtilMock).setTakeProfitPrice(orderUnderTest, newTP);
+                }
+
+                @Test
+                public void testSubscriberGetsJFExceptionNotification() {
+                    assertJFException(taskSubscriber);
+                }
+            }
+
+            public class SetTPCallWhichExceedsRetries {
+
+                @Before
+                public void setUp() {
+                    setRetryExceededMock(() -> orderChangeUtilMock.setTakeProfitPrice(orderUnderTest, newTP),
+                                         rejectEvent);
+
+                    setTPObservableCall.run();
+
+                    rxTestUtil.advanceTimeForAllOrderRetries();
+                }
+
+                @Test
+                public void testSetSLCalledWithAllRetries() {
+                    verify(orderChangeUtilMock, times(retryExceedCount))
+                            .setTakeProfitPrice(orderUnderTest, newTP);
+                }
+
+                @Test
+                public void testSubscriberGetsRejectExceptionNotification() {
+                    assertRejectException(taskSubscriber);
+                }
+            }
+
+            public class SetTPCallWithFullRetriesThenSuccess {
+
+                @Before
+                public void setUp() {
+                    setFullRetryMock(() -> orderChangeUtilMock.setTakeProfitPrice(orderUnderTest, newTP),
+                                     rejectEvent);
+
+                    setTPObservableCall.run();
+
+                    rxTestUtil.advanceTimeForAllOrderRetries();
+                }
+
+                @Test
+                public void testSetTPCalledWithAllRetries() {
+                    verify(orderChangeUtilMock, times(retryExceedCount))
+                            .setTakeProfitPrice(orderUnderTest, newTP);
+                }
+
+                @Test
+                public void testSubscriberCompleted() {
+                    taskSubscriber.assertCompleted();
+                }
+            }
+
+            public class SetTPOKCall {
+
+                @Before
+                public void setUp() {
+                    setTPChangeMockResult(doneEventObservable(changedTPEvent));
+
+                    setTPObservableCall.run();
+                }
+
+                @Test
+                public void testSetTPOnChangeUtilHasBeenCalledCorrect() {
+                    verify(orderChangeUtilMock).setTakeProfitPrice(orderUnderTest, newTP);
+                }
+
+                @Test
+                public void testSubscriberHasBeenNotifiedWithOrderEvent() {
+                    assertOrderEventNotification(changedTPEvent);
+                }
+
+                @Test
+                public void testSubscriberCompleted() {
+                    taskSubscriber.assertCompleted();
+                }
             }
 
             @Test
-            public void testCloseOnOrderHasBeenCalledWithoutRetry() {
-                verifyRetryTaskCall();
-            }
+            public void testSetTPIsCalledAlsoWhenNotSubscribed() {
+                setTPChangeMockResult(doneEventObservable(changedTPEvent));
 
-            @Test
-            public void testSubscriberGetsJFExceptionNotification() {
-                assertJFException(taskSubscriber);
-            }
-        }
+                positionSingleTask.setTPObservable(orderUnderTest, newTP);
 
-        public class RetryTaskCallOK {
-
-            final OrderEvent closeEvent = new OrderEvent(orderUnderTest, OrderEventType.CLOSE_OK);
-
-            @Before
-            public void setUp() {
-                setOrderRetryTaskResultObservable(Observable.just(closeEvent));
-
-                closeObservableCall.run();
-            }
-
-            @Test
-            public void testCloseOnChangeUtilHasBeenCalledCorrect() {
-                verifyRetryTaskCall();
-
-                assertThat(orderCallCaptor.getValue().get(), equalTo(testObservable));
-                assertTrue(predicateCaptor.getValue().test(orderUnderTest));
-            }
-
-            @Test
-            public void testSubscriberHasBeenNotifiedWithOrderEvent() {
-                assertOrderEventNotification(closeEvent);
-            }
-
-            @Test
-            public void testSubscriberCompleted() {
-                taskSubscriber.assertCompleted();
+                verify(orderChangeUtilMock).setTakeProfitPrice(orderUnderTest, newTP);
             }
         }
     }
 
     public class MergeSetup {
 
+        private final String mergeOrderLabel = "MergeLabel";
+        private final Set<IOrder> toMergeOrders = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
+                                                                  IOrderForTest.sellOrderEURUSD());
         private final Runnable mergeObservableCall =
                 () -> positionSingleTask.mergeObservable(mergeOrderLabel, toMergeOrders)
                         .subscribe(taskSubscriber);
 
-        @Before
-        public void setUp() {
-            when(orderCreateUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders))
-                    .thenReturn(testObservable);
+        public class TPIsNew {
+
+            private final OrderEvent mergeEvent =
+                    new OrderEvent(orderUnderTest, OrderEventType.MERGE_OK);
+            private final OrderEvent rejectEvent =
+                    new OrderEvent(orderUnderTest, OrderEventType.MERGE_REJECTED);
+
+            private void mergeChangeMockResult(final Observable<OrderEvent> observable) {
+                when(orderCreateUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders))
+                        .thenReturn(observable);
+            }
+
+            @Test
+            public void testSubscriberNotYetCompletedWhenChangeUtilIsBusy() {
+                mergeChangeMockResult(busyObservable());
+
+                mergeObservableCall.run();
+
+                taskSubscriber.assertNotCompleted();
+            }
+
+            public class MergeWithJFException {
+
+                @Before
+                public void setUp() {
+                    mergeChangeMockResult(exceptionObservable());
+
+                    mergeObservableCall.run();
+                }
+
+                @Test
+                public void testMergeOnChangeUtilHasBeenCalledWithoutRetry() {
+                    verify(orderCreateUtilMock).mergeOrders(mergeOrderLabel, toMergeOrders);
+                }
+
+                @Test
+                public void testSubscriberGetsJFExceptionNotification() {
+                    assertJFException(taskSubscriber);
+                }
+            }
+
+            public class MergeCallWhichExceedsRetries {
+
+                @Before
+                public void setUp() {
+                    setRetryExceededMock(() -> orderCreateUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders),
+                                         rejectEvent);
+
+                    mergeObservableCall.run();
+
+                    rxTestUtil.advanceTimeForAllOrderRetries();
+                }
+
+                @Test
+                public void testMergeCalledWithAllRetries() {
+                    verify(orderCreateUtilMock, times(retryExceedCount))
+                            .mergeOrders(mergeOrderLabel, toMergeOrders);
+                }
+
+                @Test
+                public void testSubscriberGetsRejectExceptionNotification() {
+                    assertRejectException(taskSubscriber);
+                }
+            }
+
+            public class MergeCallWithFullRetriesThenSuccess {
+
+                @Before
+                public void setUp() {
+                    setFullRetryMock(() -> orderCreateUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders),
+                                     rejectEvent);
+
+                    mergeObservableCall.run();
+
+                    rxTestUtil.advanceTimeForAllOrderRetries();
+                }
+
+                @Test
+                public void testMergeCalledWithAllRetries() {
+                    verify(orderCreateUtilMock, times(retryExceedCount))
+                            .mergeOrders(mergeOrderLabel, toMergeOrders);
+                }
+
+                @Test
+                public void testSubscriberCompleted() {
+                    taskSubscriber.assertCompleted();
+                }
+            }
+
+            public class MergeOKCall {
+
+                @Before
+                public void setUp() {
+                    mergeChangeMockResult(doneEventObservable(mergeEvent));
+
+                    mergeObservableCall.run();
+                }
+
+                @Test
+                public void testMergeOnChangeUtilHasBeenCalledCorrect() {
+                    verify(orderCreateUtilMock).mergeOrders(mergeOrderLabel, toMergeOrders);
+                }
+
+                @Test
+                public void testSubscriberHasBeenNotifiedWithOrderEvent() {
+                    assertOrderEventNotification(mergeEvent);
+                }
+
+                @Test
+                public void testSubscriberCompleted() {
+                    taskSubscriber.assertCompleted();
+                }
+            }
+
+            @Test
+            public void testMergeIsCalledAlsoWhenNotSubscribed() {
+                mergeChangeMockResult(doneEventObservable(mergeEvent));
+
+                positionSingleTask.mergeObservable(mergeOrderLabel, toMergeOrders);
+
+                verify(orderCreateUtilMock).mergeOrders(mergeOrderLabel, toMergeOrders);
+            }
         }
+    }
 
-        @Test
-        public void testSubscriberNotYetCompleted() {
-            setMergeRetryTaskResultObservable(Observable.never());
+    public class CloseSetup {
 
-            mergeObservableCall.run();
-
-            taskSubscriber.assertNotCompleted();
-        }
-
-        public class RetryTaskCallWithJFException {
+        public class OrderIsAlreadyClosed {
 
             @Before
             public void setUp() {
-                setMergeRetryTaskResultObservable(exceptionObservable());
+                orderUnderTest.setState(IOrder.State.CLOSED);
 
-                mergeObservableCall.run();
+                positionSingleTask.closeObservable(orderUnderTest)
+                        .subscribe(taskSubscriber);
             }
 
             @Test
-            public void testMergeHasBeenCalledWithoutRetry() {
-                verifyMergeRetryTaskCall();
-            }
-
-            @Test
-            public void testSubscriberGetsJFExceptionNotification() {
-                assertJFException(taskSubscriber);
-            }
-        }
-
-        public class RetryTaskCallOK {
-
-            final OrderEvent mergeEvent = new OrderEvent(orderUnderTest, OrderEventType.MERGE_OK);
-
-            @Before
-            public void setUp() {
-                setMergeRetryTaskResultObservable(Observable.just(mergeEvent));
-
-                mergeObservableCall.run();
-            }
-
-            @Test
-            public void testMergeHasBeenCalledCorrect() {
-                verifyMergeRetryTaskCall();
-
-                assertThat(orderCallCaptor.getValue().get(), equalTo(testObservable));
-                assertTrue(mergePredicateCaptor.getValue().test(mergeOrderLabel));
-            }
-
-            @Test
-            public void testSubscriberHasBeenNotifiedWithOrderEvent() {
-                assertOrderEventNotification(mergeEvent);
+            public void testNoCallToChangeUtil() {
+                verify(orderChangeUtilMock, never()).close(orderUnderTest);
             }
 
             @Test
             public void testSubscriberCompleted() {
                 taskSubscriber.assertCompleted();
+            }
+        }
+
+        public class OrderIsFilled {
+
+            private final OrderEvent closeOKEvent =
+                    new OrderEvent(orderUnderTest, OrderEventType.CLOSE_OK);
+            private final OrderEvent rejectEvent =
+                    new OrderEvent(orderUnderTest, OrderEventType.CLOSE_REJECTED);
+            private final Runnable closeCall =
+                    () -> positionSingleTask.closeObservable(orderUnderTest).subscribe(taskSubscriber);
+
+            private void setCloseMockResult(final Observable<OrderEvent> observable) {
+                when(orderChangeUtilMock.close(orderUnderTest))
+                        .thenReturn(observable);
+            }
+
+            @Before
+            public void setUp() {
+                orderUnderTest.setState(IOrder.State.FILLED);
+            }
+
+            @Test
+            public void testSubscriberNotYetCompletedWhenChangeUtilIsBusy() {
+                setCloseMockResult(busyObservable());
+
+                closeCall.run();
+
+                taskSubscriber.assertNotCompleted();
+            }
+
+            public class CloseWithJFException {
+
+                @Before
+                public void setUp() {
+                    setCloseMockResult(exceptionObservable());
+
+                    closeCall.run();
+                }
+
+                @Test
+                public void testCloseOnChangeUtilHasBeenCalledWithoutRetry() {
+                    verify(orderChangeUtilMock).close(orderUnderTest);
+                }
+
+                @Test
+                public void testSubscriberGetsJFExceptionNotification() {
+                    assertJFException(taskSubscriber);
+                }
+            }
+
+            public class CloseCallWhichExceedsRetries {
+
+                @Before
+                public void setUp() {
+                    setRetryExceededMock(() -> orderChangeUtilMock.close(orderUnderTest),
+                                         rejectEvent);
+
+                    closeCall.run();
+
+                    rxTestUtil.advanceTimeForAllOrderRetries();
+                }
+
+                @Test
+                public void testCloseCalledWithAllRetries() {
+                    verify(orderChangeUtilMock, times(retryExceedCount))
+                            .close(orderUnderTest);
+                }
+
+                @Test
+                public void testSubscriberGetsRejectExceptionNotification() {
+                    assertRejectException(taskSubscriber);
+                }
+            }
+
+            public class CloseCallWithFullRetriesThenSuccess {
+
+                @Before
+                public void setUp() {
+                    setFullRetryMock(() -> orderChangeUtilMock.close(orderUnderTest),
+                                     rejectEvent);
+
+                    closeCall.run();
+
+                    rxTestUtil.advanceTimeForAllOrderRetries();
+                }
+
+                @Test
+                public void testCloseCalledWithAllRetries() {
+                    verify(orderChangeUtilMock, times(retryExceedCount))
+                            .close(orderUnderTest);
+                }
+
+                @Test
+                public void testSubscriberCompleted() {
+                    taskSubscriber.assertCompleted();
+                }
+            }
+
+            public class CloseOKCall {
+
+                @Before
+                public void setUp() {
+                    setCloseMockResult(doneEventObservable(closeOKEvent));
+
+                    closeCall.run();
+                }
+
+                @Test
+                public void testCloseOnChangeUtilHasBeenCalledCorrect() {
+                    verify(orderChangeUtilMock).close(orderUnderTest);
+                }
+
+                @Test
+                public void testSubscriberHasBeenNotifiedWithOrderEvent() {
+                    assertOrderEventNotification(closeOKEvent);
+                }
+
+                @Test
+                public void testSubscriberCompleted() {
+                    taskSubscriber.assertCompleted();
+                }
+            }
+
+            @Test
+            public void testCloseIsCalledAlsoWhenNotSubscribed() {
+                setCloseMockResult(doneEventObservable(closeOKEvent));
+
+                positionSingleTask.closeObservable(orderUnderTest);
+
+                verify(orderChangeUtilMock).close(orderUnderTest);
             }
         }
     }

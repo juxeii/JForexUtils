@@ -112,6 +112,9 @@ public class OrderPositionUtil {
     public Completable closePosition(final Instrument instrument) {
         final Position position = positionFactory.forInstrument(instrument);
         final Set<IOrder> ordersToClose = position.filledOrOpenedOrders();
+
+        if (ordersToClose.isEmpty())
+            return Completable.complete();
         position.markAllActive();
         return positionBatchTask.closeCompletable(ordersToClose);
     }

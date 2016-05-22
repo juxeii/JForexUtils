@@ -1,8 +1,6 @@
 package com.jforex.programming.position.task;
 
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.tuple.Pair;
@@ -14,30 +12,31 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Observable;
+import rx.observables.ConnectableObservable;
 
-public class PositionRetryTask<T> {
+public class PositionTaskUtil {
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private final static int exceededRetryCount = platformSettings.maxRetriesOnOrderFail() + 1;
-    private static final Logger logger = LogManager.getLogger(PositionRetryTask.class);
+    private static final Logger logger = LogManager.getLogger(PositionTaskUtil.class);
 
-    public Observable<OrderEvent> create(final Supplier<Observable<OrderEvent>> observableCall,
-                                         final Predicate<T> predicate,
-                                         final T value) {
-        return Observable.just(value)
-                .filter(v -> predicate.test(v))
-                .flatMap(v -> observableCall.get())
-                .retryWhen(this::shouldRetry);
+    public static Observable<OrderEvent> connectObservable(final Observable<OrderEvent> observable) {
+        final ConnectableObservable<OrderEvent> connectableObservable =
+                observable.flatMap(orderEvent -> Observable.just(orderEvent))
+                        .replay();
+
+        connectableObservable.connect();
+        return connectableObservable;
     }
 
-    public Observable<?> shouldRetry(final Observable<? extends Throwable> errors) {
+    public static Observable<Long> shouldRetry(final Observable<? extends Throwable> errors) {
         return errors
-                .flatMap(this::filterErrorType)
+                .flatMap(PositionTaskUtil::filterErrorType)
                 .zipWith(Observable.range(1, exceededRetryCount), Pair::of)
-                .flatMap(this::evaluateRetryPair);
+                .flatMap(PositionTaskUtil::evaluateRetryPair);
     }
 
-    private Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair) {
+    private static Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair) {
         return retryPair.getRight() == exceededRetryCount
                 ? Observable.error(retryPair.getLeft())
                 : Observable
@@ -45,7 +44,7 @@ public class PositionRetryTask<T> {
                         .take(1);
     }
 
-    private Observable<? extends Throwable> filterErrorType(final Throwable error) {
+    private static Observable<? extends Throwable> filterErrorType(final Throwable error) {
         if (error instanceof OrderCallRejectException) {
             logRetry((OrderCallRejectException) error);
             return Observable.just(error);
@@ -54,7 +53,7 @@ public class PositionRetryTask<T> {
         return Observable.error(error);
     }
 
-    private void logRetry(final OrderCallRejectException rejectException) {
+    private static void logRetry(final OrderCallRejectException rejectException) {
         logger.warn("Received reject type " + rejectException.orderEvent().type() +
                 " for order " + rejectException.orderEvent().order().getLabel() + "!"
                 + " Will retry task in " + platformSettings.delayOnOrderFailRetry() + " milliseconds...");

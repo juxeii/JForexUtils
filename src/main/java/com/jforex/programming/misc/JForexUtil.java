@@ -18,7 +18,6 @@ import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.task.PositionBatchTask;
 import com.jforex.programming.position.task.PositionMultiTask;
-import com.jforex.programming.position.task.PositionRetryTask;
 import com.jforex.programming.position.task.PositionSingleTask;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -32,7 +31,6 @@ import com.dukascopy.api.IContext;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.Period;
@@ -60,8 +58,6 @@ public class JForexUtil implements MessageConsumer {
     private OrderUtil orderUtil;
 
     private PositionSingleTask positionSingleTask;
-    private final PositionRetryTask<IOrder> orderRetryTask = new PositionRetryTask<>();
-    private final PositionRetryTask<String> mergeRetryTask = new PositionRetryTask<>();
     private PositionMultiTask positionMultiTask;
     private PositionBatchTask positionBatchTask;
     private OrderPositionUtil orderPositionUtil;
@@ -119,12 +115,8 @@ public class JForexUtil implements MessageConsumer {
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
         orderCreateUtil = new OrderCreateUtil(context.getEngine(), orderUtilHandler);
         orderChangeUtil = new OrderChangeUtil(orderUtilHandler);
-        orderUtil = new OrderUtil(orderChangeUtil, orderPositionUtil);
-
         positionSingleTask = new PositionSingleTask(orderCreateUtil,
-                                                    orderChangeUtil,
-                                                    orderRetryTask,
-                                                    mergeRetryTask);
+                                                    orderChangeUtil);
         positionMultiTask = new PositionMultiTask(positionSingleTask);
         positionBatchTask = new PositionBatchTask(positionSingleTask, positionMultiTask);
         orderPositionUtil = new OrderPositionUtil(orderCreateUtil,
@@ -133,6 +125,7 @@ public class JForexUtil implements MessageConsumer {
                                                   positionBatchTask,
                                                   orderChangeUtil,
                                                   positionFactory);
+        orderUtil = new OrderUtil(orderChangeUtil, orderPositionUtil);
     }
 
     public IContext context() {

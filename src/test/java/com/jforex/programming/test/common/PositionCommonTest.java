@@ -41,6 +41,18 @@ public class PositionCommonTest extends InstrumentUtilForTest {
         return Observable.error(jfException);
     }
 
+    public Observable<OrderEvent> doneObservable() {
+        return Observable.empty();
+    }
+
+    public Observable<OrderEvent> doneEventObservable(final OrderEvent orderEvent) {
+        return Observable.just(orderEvent);
+    }
+
+    public Observable<OrderEvent> busyObservable() {
+        return Observable.never();
+    }
+
     public Observable<OrderEvent> rejectObservable(final OrderEvent orderEvent) {
         return Observable.error(createRejectException(orderEvent));
     }
