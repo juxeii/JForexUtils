@@ -3,12 +3,12 @@ package com.jforex.programming.order.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +25,8 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.RestoreSLTPData;
+import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.position.task.PositionBatchTask;
 import com.jforex.programming.position.task.PositionMultiTask;
 import com.jforex.programming.position.task.PositionSingleTask;
@@ -55,8 +57,10 @@ public class OrderPositionUtilTest extends PositionCommonTest {
     private PositionFactory positionFactoryMock;
     @Mock
     private Position positionMock;
+    @Mock
+    private RestoreSLTPPolicy restoreSLTPPolicyMock;
     @Captor
-    private ArgumentCaptor<Supplier<Observable<OrderEvent>>> orderCallCaptor;
+    private ArgumentCaptor<RestoreSLTPData> restoreSLTPCaptor;
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
     private final TestSubscriber<OrderEvent> taskSubscriber = new TestSubscriber<>();
 
@@ -298,6 +302,292 @@ public class OrderPositionUtilTest extends PositionCommonTest {
         }
     }
 
+    public class MergePositionSetup {
+
+        private final String mergeOrderLabel = "MergeLabel";
+        private final Set<IOrder> toMergeOrders = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
+                                                                  IOrderForTest.sellOrderEURUSD());
+        private final double restoreSL = 1.10234;
+        private final double restoreTP = 1.11234;
+        private final OrderEvent mergeEvent =
+                new OrderEvent(orderUnderTest, OrderEventType.MERGE_OK);
+        private final OrderEvent rejectEvent =
+                new OrderEvent(orderUnderTest, OrderEventType.MERGE_REJECTED);
+        private final Runnable mergePositionCall =
+                () -> orderPositionUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock)
+                        .subscribe(taskSubscriber);
+
+        private void setRemoveTPSLMockResult(final Observable<OrderEvent> observable) {
+            when(positionBatchTaskMock.removeTPSLObservable(toMergeOrders))
+                    .thenReturn(observable.toCompletable());
+        }
+
+        private void setMergeMockResult(final Observable<OrderEvent> observable) {
+            when(positionSingleTaskMock.mergeObservable(mergeOrderLabel, toMergeOrders))
+                    .thenReturn(observable);
+        }
+
+        private void setRestoreMockResult(final Observable<OrderEvent> observable) {
+            when(positionMultiTaskMock.restoreSLTPObservable(eq(orderUnderTest), restoreSLTPCaptor.capture()))
+                    .thenReturn(observable);
+        }
+
+        @Before
+        public void setUp() {
+            final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSL, restoreTP);
+            when(restoreSLTPPolicyMock.restoreSL(toMergeOrders))
+                    .thenReturn(restoreSLTPData.sl());
+            when(restoreSLTPPolicyMock.restoreTP(toMergeOrders))
+                    .thenReturn(restoreSLTPData.tp());
+
+            when(positionMock.filledOrders())
+                    .thenReturn(toMergeOrders);
+        }
+
+        @Test
+        public void testMergePositionIsCalledAlsoWhenNotSubscribed() {
+            setRemoveTPSLMockResult(doneEventObservable(mergeEvent));
+
+            orderPositionUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock);
+
+            verify(positionBatchTaskMock).removeTPSLObservable(toMergeOrders);
+            taskSubscriber.assertNotCompleted();
+        }
+
+        @Test
+        public void testSubscriberNotYetCompletedWhenBatchUtilIsBusy() {
+            setRemoveTPSLMockResult(busyObservable());
+
+            mergePositionCall.run();
+
+            taskSubscriber.assertNotCompleted();
+        }
+
+        @Test
+        public void testWhenLessThanTwoMergeOrdersNoRemoveTPSLCall() {
+            when(positionMock.filledOrders())
+                    .thenReturn(Sets.newHashSet());
+
+            mergePositionCall.run();
+
+            verify(positionBatchTaskMock, never()).removeTPSLObservable(any());
+            taskSubscriber.assertCompleted();
+        }
+
+        @Test
+        public void testAllPositionOrdersAreMarkedActiveWhenEnoughOrdersToMerge() {
+            setRemoveTPSLMockResult(busyObservable());
+
+            mergePositionCall.run();
+
+            verify(positionMock).markAllOrdersActive();
+        }
+
+        public class RemoveTPSLWithJFException {
+
+            @Before
+            public void setUp() {
+                setRemoveTPSLMockResult(exceptionObservable());
+
+                mergePositionCall.run();
+            }
+
+            @Test
+            public void testRemoveTPSLOnBatchUtilHasBeenCalledWithoutRetry() {
+                verify(positionBatchTaskMock).removeTPSLObservable(toMergeOrders);
+            }
+
+            @Test
+            public void testSubscriberGetsJFExceptionNotification() {
+                assertJFException(taskSubscriber);
+            }
+        }
+
+        public class RemoveTPSLWithRejection {
+
+            @Before
+            public void setUp() {
+                setRemoveTPSLMockResult(rejectObservable(rejectEvent));
+
+                mergePositionCall.run();
+            }
+
+            @Test
+            public void testRemoveTPSLOnBatchUtilHasBeenCalledWithoutRetry() {
+                verify(positionBatchTaskMock).removeTPSLObservable(toMergeOrders);
+            }
+
+            @Test
+            public void testSubscriberGetsRejectExceptionNotification() {
+                assertRejectException(taskSubscriber);
+            }
+        }
+
+        public class RemoveTPSLOKCall {
+
+            @Before
+            public void setUp() {
+                setRemoveTPSLMockResult(doneObservable());
+            }
+
+            @Test
+            public void testSubscriberIsNotCompletedYet() {
+                setMergeMockResult(busyObservable());
+
+                mergePositionCall.run();
+
+                taskSubscriber.assertNotCompleted();
+            }
+
+            @Test
+            public void testRemoveTPSLHasBeenCalledCorrect() {
+                setMergeMockResult(busyObservable());
+
+                mergePositionCall.run();
+
+                verify(positionBatchTaskMock).removeTPSLObservable(toMergeOrders);
+            }
+
+            public class MergeWithJFException {
+
+                @Before
+                public void setUp() {
+                    setMergeMockResult(exceptionObservable());
+
+                    mergePositionCall.run();
+                }
+
+                @Test
+                public void testMergeOnSingleUtilHasBeenCalledWithoutRetry() {
+                    verify(positionSingleTaskMock).mergeObservable(mergeOrderLabel, toMergeOrders);
+                }
+
+                @Test
+                public void testSubscriberGetsJFExceptionNotification() {
+                    assertJFException(taskSubscriber);
+                }
+            }
+
+            public class MergeWithRejection {
+
+                @Before
+                public void setUp() {
+                    setMergeMockResult(rejectObservable(rejectEvent));
+
+                    mergePositionCall.run();
+                }
+
+                @Test
+                public void testMergeOnSingleUtilHasBeenCalledWithoutRetry() {
+                    verify(positionSingleTaskMock).mergeObservable(mergeOrderLabel, toMergeOrders);
+                }
+
+                @Test
+                public void testSubscriberGetsRejectExceptionNotification() {
+                    assertRejectException(taskSubscriber);
+                }
+            }
+
+            public class MergeOKCall {
+
+                @Before
+                public void setUp() {
+                    setMergeMockResult(doneEventObservable(mergeEvent));
+                }
+
+                @Test
+                public void testSubscriberIsNotCompletedYet() {
+                    setRestoreMockResult(busyObservable());
+
+                    mergePositionCall.run();
+
+                    taskSubscriber.assertNotCompleted();
+                }
+
+                @Test
+                public void testMergeHasBeenCalledCorrect() {
+                    setMergeMockResult(busyObservable());
+
+                    mergePositionCall.run();
+
+                    verify(positionSingleTaskMock).mergeObservable(mergeOrderLabel, toMergeOrders);
+                }
+
+                @Test
+                public void testOrderHasBeenAddedToPosition() {
+                    mergePositionCall.run();
+
+                    verify(positionMock).addOrder(orderUnderTest);
+                }
+
+                public class RestoreSLTPWithJFException {
+
+                    @Before
+                    public void setUp() {
+                        setRestoreMockResult(exceptionObservable());
+
+                        mergePositionCall.run();
+                    }
+
+                    @Test
+                    public void testRestoreSLTPOnMultiUtilHasBeenCalledWithoutRetry() {
+                        verify(positionMultiTaskMock).restoreSLTPObservable(eq(orderUnderTest),
+                                                                            restoreSLTPCaptor.capture());
+                    }
+
+                    @Test
+                    public void testSubscriberGetsJFExceptionNotification() {
+                        assertJFException(taskSubscriber);
+                    }
+                }
+
+                public class RestoreSLTPWithRejection {
+
+                    @Before
+                    public void setUp() {
+                        setRestoreMockResult(rejectObservable(rejectEvent));
+
+                        mergePositionCall.run();
+                    }
+
+                    @Test
+                    public void testRestoreSLTPOnMultiUtilHasBeenCalledWithoutRetry() {
+                        verify(positionMultiTaskMock).restoreSLTPObservable(eq(orderUnderTest),
+                                                                            restoreSLTPCaptor.capture());
+                    }
+
+                    @Test
+                    public void testSubscriberGetsRejectExceptionNotification() {
+                        assertRejectException(taskSubscriber);
+                    }
+                }
+
+                public class RestoreSLTPOKCall {
+
+                    private final OrderEvent restoreTPEvent =
+                            new OrderEvent(orderUnderTest, OrderEventType.TP_CHANGE_OK);
+
+                    @Before
+                    public void setUp() {
+                        setRestoreMockResult(doneEventObservable(restoreTPEvent));
+
+                        mergePositionCall.run();
+                    }
+
+                    @Test
+                    public void testSubscriberCompleted() {
+                        taskSubscriber.assertCompleted();
+                    }
+
+                    @Test
+                    public void testSubscriberHasBeenNotifiedWithOrderEvent() {
+                        assertOrderEventNotification(restoreTPEvent);
+                    }
+                }
+            }
+        }
+    }
+
     public class ClosePositionSetup {
 
         private final Set<IOrder> ordersToClose = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
@@ -369,7 +659,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
                 closePositionCall.run();
 
-                verify(positionMock).markAllActive();
+                verify(positionMock).markAllOrdersActive();
             }
 
             public class CloseWithJFException {

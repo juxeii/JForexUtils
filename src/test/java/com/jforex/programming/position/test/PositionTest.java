@@ -218,7 +218,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Before
                     public void setUp() {
-                        position.markAllActive();
+                        position.markAllOrdersActive();
                     }
 
                     @Test

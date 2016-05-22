@@ -95,14 +95,19 @@ public class OrderPositionUtil {
 
         final Observable<OrderEvent> mergeAndRestoreObs =
                 Observable.defer(() -> positionSingleTask.mergeObservable(mergeOrderLabel, toMergeOrders))
-                        .flatMap(oe -> positionMultiTask.restoreSLTPObservable(oe.order(), restoreSLTPData));
+                        .doOnNext(orderEvent -> position.addOrder(orderEvent.order()))
+                        .flatMap(orderEvent -> positionMultiTask.restoreSLTPObservable(orderEvent.order(),
+                                                                                       restoreSLTPData))
+                        .doOnCompleted(() -> logger.debug("Merge task for " + instrument + " position with label "
+                                + mergeOrderLabel + " was successful."));
 
-        final Completable mergeSequence =
-                positionBatchTask
-                        .removeTPSLObservable(toMergeOrders)
-                        .concatWith(mergeAndRestoreObs.toCompletable());
+        final Observable<OrderEvent> mergeSequence = positionBatchTask
+                .removeTPSLObservable(toMergeOrders)
+                .toObservable()
+                .concatWith(mergeAndRestoreObs)
+                .cast(OrderEvent.class);
 
-        return PositionTaskUtil.connectObservable(mergeSequence.toObservable());
+        return PositionTaskUtil.connectObservable(mergeSequence);
     }
 
     public Completable closePosition(final Instrument instrument) {
@@ -111,7 +116,7 @@ public class OrderPositionUtil {
 
         if (ordersToClose.isEmpty())
             return Completable.complete();
-        position.markAllActive();
+        position.markAllOrdersActive();
         return PositionTaskUtil.connectCompletable(positionBatchTask.closeCompletable(ordersToClose));
     }
 }

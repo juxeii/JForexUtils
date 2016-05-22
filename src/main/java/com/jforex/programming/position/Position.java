@@ -80,7 +80,7 @@ public class Position {
         return orderRepository.size();
     }
 
-    public synchronized void markAllActive() {
+    public synchronized void markAllOrdersActive() {
         orderRepository.replaceAll((k, v) -> OrderProcessState.ACTIVE);
     }
 
@@ -123,9 +123,5 @@ public class Position {
 
     public Set<IOrder> filledOrOpenedOrders() {
         return notProcessingOrders(isFilled.or(isOpened));
-    }
-
-    public void markAllOrdersActive() {
-        markAllActive();
     }
 }

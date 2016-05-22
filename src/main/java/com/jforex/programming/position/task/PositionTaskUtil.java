@@ -21,8 +21,8 @@ public class PositionTaskUtil {
     private final static int exceededRetryCount = platformSettings.maxRetriesOnOrderFail() + 1;
     private static final Logger logger = LogManager.getLogger(PositionTaskUtil.class);
 
-    public static Observable<OrderEvent> connectObservable(final Observable<OrderEvent> observable) {
-        final ConnectableObservable<OrderEvent> connectableObservable =
+    public static <T> Observable<T> connectObservable(final Observable<T> observable) {
+        final ConnectableObservable<T> connectableObservable =
                 observable.flatMap(orderEvent -> Observable.just(orderEvent))
                         .replay();
 
