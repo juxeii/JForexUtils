@@ -48,6 +48,7 @@ public final class OrderStaticUtil {
     public final static Predicate<IOrder> isOpened = statePredicate.apply(IOrder.State.OPENED);
     public final static Predicate<IOrder> isFilled = statePredicate.apply(IOrder.State.FILLED);
     public final static Predicate<IOrder> isClosed = statePredicate.apply(IOrder.State.CLOSED);
+    public final static Predicate<IOrder> isCanceled = statePredicate.apply(IOrder.State.CANCELED);
     public final static Predicate<IOrder> isConditional = order -> order.getOrderCommand().isConditional();
 
     public final static Function<Instrument, Predicate<IOrder>> instrumentPredicate =

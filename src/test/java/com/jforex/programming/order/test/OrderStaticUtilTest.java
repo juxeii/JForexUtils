@@ -6,6 +6,7 @@ import static com.jforex.programming.order.OrderStaticUtil.combinedSignedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.direction;
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
 import static com.jforex.programming.order.OrderStaticUtil.instrumentPredicate;
+import static com.jforex.programming.order.OrderStaticUtil.isCanceled;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
@@ -126,6 +127,12 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
         buyOrderEURUSD.setState(IOrder.State.CANCELED);
         assertFalse(isClosed.test(buyOrderEURUSD));
+    }
+
+    @Test
+    public void testCanceledPredicateIsCorrect() {
+        buyOrderEURUSD.setState(IOrder.State.CANCELED);
+        assertTrue(isCanceled.test(buyOrderEURUSD));
     }
 
     @Test

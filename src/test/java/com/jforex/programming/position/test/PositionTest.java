@@ -272,6 +272,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testCloseOnTPRemovesOrderAlsoWhenMarkedActive() {
+                        sellOrder.setState(IOrder.State.CLOSED);
                         sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_TP);
 
                         assertFalse(position.contains(sellOrder));
@@ -279,6 +280,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testCloseOnSLRemovesOrderAlsoWhenMarkedActive() {
+                        sellOrder.setState(IOrder.State.CLOSED);
                         sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_SL);
 
                         assertFalse(position.contains(sellOrder));
@@ -305,7 +307,12 @@ public class PositionTest extends InstrumentUtilForTest {
                     assertTrue(filledOrOpenedOrders.contains(sellOrder));
                 }
 
-                public class RemovingEvents {
+                public class RemovingEventsWhenOrderIsClosed {
+
+                    @Before
+                    public void setUp() {
+                        buyOrder.setState(IOrder.State.CLOSED);
+                    }
 
                     @Test
                     public void testCloseOK() {
@@ -330,6 +337,19 @@ public class PositionTest extends InstrumentUtilForTest {
                     @Test
                     public void testClosedOnMergeOK() {
                         assertBuyOrderRemoval(OrderEventType.MERGE_CLOSE_OK);
+                    }
+                }
+
+                public class RemovingEventsWhenOrderIsCanceled {
+
+                    @Before
+                    public void setUp() {
+                        buyOrder.setState(IOrder.State.CANCELED);
+                    }
+
+                    @Test
+                    public void testCloseOK() {
+                        assertBuyOrderRemoval(OrderEventType.FILL_REJECTED);
                     }
                 }
             }

@@ -1,9 +1,10 @@
 package com.jforex.programming.position;
 
+import static com.jforex.programming.order.OrderStaticUtil.isCanceled;
+import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.OrderStaticUtil.ofInstrument;
-import static com.jforex.programming.order.event.OrderEventTypeSets.closeEventTypes;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.Set;
@@ -46,13 +47,18 @@ public class Position {
                 .filter(orderEvent -> contains(orderEvent.order()))
                 .doOnNext(orderEvent -> logger.info("Received event " + orderEvent.type() + " for order "
                         + orderEvent.order().getLabel() + " in repository for " + instrument))
-                .filter(orderEvent -> closeEventTypes.contains(orderEvent.type()))
+                .filter(this::isOrderToRemove)
                 .doOnNext(orderEvent -> removeOrder(orderEvent.order()))
                 .subscribe();
     }
 
     public Instrument instrument() {
         return instrument;
+    }
+
+    private boolean isOrderToRemove(final OrderEvent orderEvent) {
+        final IOrder order = orderEvent.order();
+        return isClosed.or(isCanceled).test(order);
     }
 
     public synchronized void addOrder(final IOrder order) {

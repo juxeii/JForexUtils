@@ -1,6 +1,5 @@
 package com.jforex.programming.order.event;
 
-import static com.jforex.programming.order.event.OrderEventType.REQUESTED_AMOUNT_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_AMOUNT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_GTT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_LABEL_REJECTED;
@@ -10,7 +9,6 @@ import static com.jforex.programming.order.event.OrderEventType.CHANGE_TP_REJECT
 import static com.jforex.programming.order.event.OrderEventType.CLOSE_OK;
 import static com.jforex.programming.order.event.OrderEventType.CLOSE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.FILL_REJECTED;
-import static com.jforex.programming.order.event.OrderEventType.FULL_FILL_OK;
 import static com.jforex.programming.order.event.OrderEventType.GTT_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.LABEL_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_CLOSE_OK;
@@ -18,8 +16,8 @@ import static com.jforex.programming.order.event.OrderEventType.MERGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.OPENPRICE_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.PARTIAL_FILL_OK;
+import static com.jforex.programming.order.event.OrderEventType.REQUESTED_AMOUNT_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.SL_CHANGE_OK;
-import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITIONAL_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.TP_CHANGE_OK;
@@ -34,7 +32,6 @@ import com.jforex.programming.order.call.OrderCallRequest;
 public final class OrderEventTypeData {
 
     private final ImmutableSet<OrderEventType> doneEventTypes;
-    private final ImmutableSet<OrderEventType> intermediateTypes;
     private final ImmutableSet<OrderEventType> rejectEventTypes;
     private final ImmutableSet<OrderEventType> allTypes;
     private final OrderCallRequest callRequest;
@@ -45,20 +42,14 @@ public final class OrderEventTypeData {
         this.doneEventTypes = Sets.immutableEnumSet(doneEventTypes);
         this.rejectEventTypes = Sets.immutableEnumSet(rejectEventTypes);
         this.callRequest = callRequest;
-        intermediateTypes = Sets.immutableEnumSet(SUBMIT_OK);
 
         final EnumSet<OrderEventType> tmpAllTypes = doneEventTypes;
-        tmpAllTypes.addAll(intermediateTypes);
         tmpAllTypes.addAll(rejectEventTypes);
         allTypes = Sets.immutableEnumSet(tmpAllTypes);
     }
 
     public final boolean isDoneType(final OrderEventType orderEventType) {
         return doneEventTypes.contains(orderEventType);
-    }
-
-    public final boolean isIntermediateType(final OrderEventType orderEventType) {
-        return intermediateTypes.contains(orderEventType);
     }
 
     public final boolean isRejectType(final OrderEventType orderEventType) {
@@ -74,7 +65,7 @@ public final class OrderEventTypeData {
     }
 
     public final static OrderEventTypeData submitData =
-            new OrderEventTypeData(EnumSet.of(FULL_FILL_OK, PARTIAL_FILL_OK, SUBMIT_CONDITIONAL_OK),
+            new OrderEventTypeData(EnumSet.of(SUBMIT_OK, PARTIAL_FILL_OK),
                                    EnumSet.of(FILL_REJECTED, SUBMIT_REJECTED),
                                    OrderCallRequest.SUBMIT);
 

@@ -1,29 +1,24 @@
 package com.jforex.programming.order.event;
 
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
-import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallRequest;
 
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
+
 public final class OrderEventTypeEvaluator {
 
     private OrderEventTypeEvaluator() {
     }
-
-    private final static Function<IOrder, OrderEventType> submitEvaluator =
-            order -> isConditional.test(order)
-                    ? OrderEventType.SUBMIT_CONDITIONAL_OK
-                    : OrderEventType.SUBMIT_OK;
 
     private final static Function<IOrder, OrderEventType> closeEvaluator =
             order -> isFilled.test(order)
@@ -42,10 +37,12 @@ public final class OrderEventTypeEvaluator {
 
     private final static Map<IMessage.Type, Function<IOrder, OrderEventType>> orderEventByType =
             Maps.immutableEnumMap(ImmutableMap.<IMessage.Type, Function<IOrder, OrderEventType>> builder()
-                    .put(IMessage.Type.NOTIFICATION, order -> OrderEventType.NOTIFICATION)
+                    .put(IMessage.Type.NOTIFICATION,
+                         order -> OrderEventType.NOTIFICATION)
                     .put(IMessage.Type.ORDER_SUBMIT_REJECTED,
                          order -> OrderEventType.SUBMIT_REJECTED)
-                    .put(IMessage.Type.ORDER_SUBMIT_OK, submitEvaluator)
+                    .put(IMessage.Type.ORDER_SUBMIT_OK,
+                         order -> OrderEventType.SUBMIT_OK)
                     .put(IMessage.Type.ORDER_FILL_REJECTED,
                          order -> OrderEventType.FILL_REJECTED)
                     .put(IMessage.Type.ORDER_FILL_OK, fillEvaluator)

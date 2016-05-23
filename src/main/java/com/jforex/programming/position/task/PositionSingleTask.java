@@ -63,7 +63,7 @@ public class PositionSingleTask {
                         " for order " + orderToChangeTP.getLabel() + " and position "
                         + orderToChangeTP.getInstrument() + ".Excpetion: " + e.getMessage()))
                 .doOnCompleted(() -> logger.debug("Changed TP from " + currentTP + " to " + newTP +
-                        " for order " + orderToChangeTP.getLabel() + " and position " + newTP
+                        " for order " + orderToChangeTP.getLabel() + " and position "
                         + orderToChangeTP.getInstrument()));
     }
 

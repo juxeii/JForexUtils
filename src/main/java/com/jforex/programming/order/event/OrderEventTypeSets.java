@@ -1,6 +1,5 @@
 package com.jforex.programming.order.event;
 
-import static com.jforex.programming.order.event.OrderEventType.REQUESTED_AMOUNT_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_AMOUNT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_GTT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_LABEL_REJECTED;
@@ -22,8 +21,8 @@ import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.OPENPRICE_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.PARTIAL_CLOSE_OK;
 import static com.jforex.programming.order.event.OrderEventType.PARTIAL_FILL_OK;
+import static com.jforex.programming.order.event.OrderEventType.REQUESTED_AMOUNT_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.SL_CHANGE_OK;
-import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITIONAL_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.TP_CHANGE_OK;
@@ -47,12 +46,6 @@ public final class OrderEventTypeSets {
                                   PARTIAL_FILL_OK,
                                   PARTIAL_CLOSE_OK);
 
-    public final static ImmutableSet<OrderEventType> creationEventTypes =
-            Sets.immutableEnumSet(SUBMIT_CONDITIONAL_OK,
-                                  FULL_FILL_OK,
-                                  MERGE_OK,
-                                  PARTIAL_FILL_OK);
-
     public final static ImmutableSet<OrderEventType> closeEventTypes =
             Sets.immutableEnumSet(CLOSE_OK,
                                   CLOSED_BY_MERGE,
@@ -71,8 +64,7 @@ public final class OrderEventTypeSets {
 
     public final static Set<OrderEventType> finishEventTypes =
             Sets.immutableEnumSet(Sets.union(endOfOrderEventTypes,
-                                             EnumSet.of(SUBMIT_CONDITIONAL_OK,
-                                                        FULL_FILL_OK,
+                                             EnumSet.of(FULL_FILL_OK,
                                                         REQUESTED_AMOUNT_CHANGE_OK,
                                                         GTT_CHANGE_OK,
                                                         LABEL_CHANGE_OK,
