@@ -5,11 +5,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.settings.PlatformSettings;
+
+import com.dukascopy.api.system.IClient;
 
 import rx.Completable;
 import rx.Observable;
@@ -74,7 +75,7 @@ public class AuthentificationUtil {
         final Optional<Exception> exceptionOpt = connectClient(loginCredentials.jnlpAddress(),
                                                                loginCredentials.username(),
                                                                loginCredentials.password(),
-                                                               loginCredentials.pinOpt());
+                                                               loginCredentials.maybePin());
         return exceptionOpt.isPresent()
                 ? Completable.error(exceptionOpt.get())
                 : Completable.create(subscriber -> {
@@ -104,10 +105,9 @@ public class AuthentificationUtil {
     }
 
     public final void logout() {
-        if (isLoggedIn()) {
+        if (isLoggedIn())
             client.disconnect();
-            fsm.fire(FSMTrigger.LOGOUT);
-        }
+        fsm.fire(FSMTrigger.LOGOUT);
     }
 
     private boolean isLoggedIn() {

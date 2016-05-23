@@ -75,7 +75,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     private void verifyConnectCall(final LoginCredentials loginCredentials,
                                    final int times) {
         try {
-            if (!loginCredentials.pinOpt().isPresent())
+            if (!loginCredentials.maybePin().isPresent())
                 verify(clientMock, times(times)).connect(jnlpAddress, userName, password);
             else
                 verify(clientMock, times(times)).connect(jnlpAddress, userName, password, pin);

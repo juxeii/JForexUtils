@@ -6,10 +6,11 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.settings.PlatformSettings;
+
+import com.dukascopy.api.system.IClient;
 
 import rx.Completable;
 import rx.Completable.CompletableSubscriber;
@@ -88,23 +89,19 @@ public final class ConnectionKeeper {
     }
 
     private final void onConnectionStateUpdate(final ConnectionState connectionState) {
-        if (connectionState == ConnectionState.CONNECTED)
-            logger.debug("Connect message received.");
-        else
-            logger.debug("Disconnect message received!");
+        logger.debug(connectionState + " message received!");
         fsm.fire(connectionState);
     }
 
     private final void startReconnectStrategy() {
         lightReconnectCompletable
                 .retry(platformSettings.noOfLightReconnects() - 1)
-                .subscribe(exc -> {
-                    logger.debug("Light reconnect failed, try to relogin!");
-                    startReloginStrategy();
-                }, () -> logger.debug("Light reconnect successful!"));
+                .subscribe(exc -> startReloginStrategy(),
+                           () -> logger.debug("Light reconnect successful!"));
     }
 
     private final void startReloginStrategy() {
+        logger.debug("Light reconnect failed, try to relogin!");
         reloginCompletable
                 .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS)
                 .retry()

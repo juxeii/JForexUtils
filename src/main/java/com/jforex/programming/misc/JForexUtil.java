@@ -1,8 +1,5 @@
 package com.jforex.programming.misc;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.aeonbits.owner.ConfigFactory;
 
 import com.jforex.programming.instrument.InstrumentUtil;
@@ -64,7 +61,6 @@ public class JForexUtil implements MessageConsumer {
 
     private final CalculationUtil calculationUtil;
     private final RiskPercentMM riskPercentMM;
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     private final JFHotObservable<IMessage> messagePublisher = new JFHotObservable<>();
     private final JFHotObservable<TickQuote> tickQuotePublisher = new JFHotObservable<>();
@@ -90,7 +86,7 @@ public class JForexUtil implements MessageConsumer {
         engine = context.getEngine();
         account = context.getAccount();
         history = context.getHistory();
-        concurrentUtil = new ConcurrentUtil(context, executorService);
+        concurrentUtil = new ConcurrentUtil(context);
     }
 
     private void initInfrastructure() {
@@ -175,7 +171,6 @@ public class JForexUtil implements MessageConsumer {
 
     public void onStop() {
         eventGatewaySubscription.unsubscribe();
-        concurrentUtil.onStop();
     }
 
     @Override

@@ -7,7 +7,7 @@ public final class LoginCredentials {
     private final String jnlpAddress;
     private final String username;
     private final String password;
-    private final Optional<String> pinOpt;
+    private final Optional<String> maybePin;
 
     public LoginCredentials(final String jnlpAddress,
                             final String username,
@@ -16,7 +16,7 @@ public final class LoginCredentials {
         this.jnlpAddress = jnlpAddress;
         this.username = username;
         this.password = password;
-        pinOpt = pin.isEmpty()
+        maybePin = pin.isEmpty()
                 ? Optional.empty()
                 : Optional.of(pin);
     }
@@ -39,7 +39,7 @@ public final class LoginCredentials {
         return password;
     }
 
-    public final Optional<String> pinOpt() {
-        return pinOpt;
+    public final Optional<String> maybePin() {
+        return maybePin;
     }
 }

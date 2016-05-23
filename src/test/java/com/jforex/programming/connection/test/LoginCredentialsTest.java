@@ -24,7 +24,7 @@ public class LoginCredentialsTest {
                                                 password,
                                                 pin);
 
-        assertThat(loginCredentials.pinOpt().get(), equalTo(pin));
+        assertThat(loginCredentials.maybePin().get(), equalTo(pin));
     }
 
     @Test
@@ -33,6 +33,6 @@ public class LoginCredentialsTest {
                                                 userName,
                                                 password);
 
-        assertFalse(loginCredentials.pinOpt().isPresent());
+        assertFalse(loginCredentials.maybePin().isPresent());
     }
 }
