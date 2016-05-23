@@ -17,6 +17,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderParams;
@@ -33,8 +34,6 @@ import com.jforex.programming.position.task.PositionSingleTask;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.common.PositionCommonTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -368,7 +367,9 @@ public class OrderPositionUtilTest extends PositionCommonTest {
             when(positionMock.filledOrders())
                     .thenReturn(Sets.newHashSet());
 
+            System.out.println("HAAAAAAAALOOOOOOOOO");
             mergePositionCall.run();
+            System.out.println("EEEEEEEEEEEEEENNNNDE");
 
             verify(positionBatchTaskMock, never()).removeTPSLObservable(any());
             taskSubscriber.assertCompleted();

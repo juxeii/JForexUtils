@@ -6,6 +6,8 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.Position;
@@ -16,9 +18,6 @@ import com.jforex.programming.position.task.PositionBatchTask;
 import com.jforex.programming.position.task.PositionMultiTask;
 import com.jforex.programming.position.task.PositionSingleTask;
 import com.jforex.programming.position.task.PositionTaskUtil;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -82,32 +81,31 @@ public class OrderPositionUtil {
                                                       final Instrument instrument,
                                                       final RestoreSLTPPolicy restoreSLTPPolicy) {
         final Position position = positionFactory.forInstrument(instrument);
-        final Set<IOrder> toMergeOrders = position.filledOrders();
-        if (toMergeOrders.size() < 2) {
-            logger.warn("Cannot merge " + instrument + " position with only " + toMergeOrders.size() + " orders!");
+        final Set<IOrder> filledOrders = position.filledOrders();
+        if (filledOrders.size() < 2)
             return Observable.empty();
-        }
 
-        logger.debug("Starting merge task for " + instrument + " position with label " + mergeOrderLabel);
-        position.markAllOrdersActive();
-        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy.restoreSL(toMergeOrders),
-                                                                    restoreSLTPPolicy.restoreTP(toMergeOrders));
-
+        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy.restoreSL(filledOrders),
+                                                                    restoreSLTPPolicy.restoreTP(filledOrders));
         final Observable<OrderEvent> mergeAndRestoreObs =
-                Observable.defer(() -> positionSingleTask.mergeObservable(mergeOrderLabel, toMergeOrders))
+                Observable.defer(() -> positionSingleTask.mergeObservable(mergeOrderLabel, filledOrders))
                         .doOnNext(orderEvent -> position.addOrder(orderEvent.order()))
                         .flatMap(orderEvent -> positionMultiTask.restoreSLTPObservable(orderEvent.order(),
                                                                                        restoreSLTPData))
                         .doOnCompleted(() -> logger.debug("Merge task for " + instrument + " position with label "
                                 + mergeOrderLabel + " was successful."));
 
-        final Observable<OrderEvent> mergeSequence = positionBatchTask
-                .removeTPSLObservable(toMergeOrders)
-                .toObservable()
-                .concatWith(mergeAndRestoreObs)
-                .cast(OrderEvent.class);
+        final Observable<OrderEvent> mergeSequenceObs =
+                Observable.just(filledOrders)
+                        .doOnNext(toMergeOrders -> logger.debug("Starting merge task for " + instrument
+                                + " position with label " + mergeOrderLabel))
+                        .doOnNext(toMergeOrders -> position.markAllOrdersActive())
+                        .flatMap(toMergeOrders -> positionBatchTask.removeTPSLObservable(toMergeOrders)
+                                .toObservable())
+                        .concatWith(mergeAndRestoreObs)
+                        .cast(OrderEvent.class);
 
-        return PositionTaskUtil.connectObservable(mergeSequence);
+        return PositionTaskUtil.connectObservable(mergeSequenceObs);
     }
 
     public Completable closePosition(final Instrument instrument) {
