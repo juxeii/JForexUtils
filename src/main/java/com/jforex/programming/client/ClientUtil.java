@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
+
 import com.dukascopy.api.system.IClient;
 
 import javafx.embed.swing.SwingFXUtils;
@@ -19,14 +20,18 @@ public final class ClientUtil {
 
     private final IClient client;
 
-    private JFSystemListener jfSystemListener;
+    private final JFSystemListener jfSystemListener;
     private AuthentificationUtil authentificationUtil;
 
     private final static Logger logger = LogManager.getLogger(ClientUtil.class);
 
     public ClientUtil(final IClient client,
+                      final JFSystemListener jfSystemListener,
+                      final AuthentificationUtil authentificationUtil,
                       final String cacheDirectory) {
         this.client = client;
+        this.jfSystemListener = jfSystemListener;
+        this.authentificationUtil = authentificationUtil;
 
         initSystemListener();
         initAuthentification();
@@ -34,7 +39,6 @@ public final class ClientUtil {
     }
 
     private final void initSystemListener() {
-        jfSystemListener = new JFSystemListener();
         client.setSystemListener(jfSystemListener);
     }
 

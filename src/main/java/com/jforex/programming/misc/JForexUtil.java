@@ -34,7 +34,7 @@ import com.dukascopy.api.Period;
 
 import rx.Subscription;
 
-public class JForexUtil implements MessageConsumer {
+public class JForexUtil implements IMessageConsumer {
 
     private final IContext context;
     private IEngine engine;

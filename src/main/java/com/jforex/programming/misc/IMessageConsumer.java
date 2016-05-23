@@ -3,7 +3,7 @@ package com.jforex.programming.misc;
 import com.dukascopy.api.IMessage;
 
 @FunctionalInterface
-public interface MessageConsumer {
+public interface IMessageConsumer {
 
     public void onMessage(IMessage message);
 }

@@ -45,45 +45,60 @@ public final class OrderEventTypeEvaluator {
                          order -> OrderEventType.SUBMIT_OK)
                     .put(IMessage.Type.ORDER_FILL_REJECTED,
                          order -> OrderEventType.FILL_REJECTED)
-                    .put(IMessage.Type.ORDER_FILL_OK, fillEvaluator)
+                    .put(IMessage.Type.ORDER_FILL_OK,
+                         fillEvaluator)
                     .put(IMessage.Type.ORDER_CHANGED_OK,
                          order -> OrderEventType.PARTIAL_FILL_OK)
                     .put(IMessage.Type.ORDER_CHANGED_REJECTED,
                          order -> OrderEventType.CHANGE_REJECTED)
-                    .put(IMessage.Type.ORDER_CLOSE_OK, closeEvaluator)
+                    .put(IMessage.Type.ORDER_CLOSE_OK,
+                         closeEvaluator)
                     .put(IMessage.Type.ORDER_CLOSE_REJECTED,
                          order -> OrderEventType.CLOSE_REJECTED)
-                    .put(IMessage.Type.ORDERS_MERGE_OK, mergeEvaluator)
+                    .put(IMessage.Type.ORDERS_MERGE_OK,
+                         mergeEvaluator)
                     .put(IMessage.Type.ORDERS_MERGE_REJECTED,
                          order -> OrderEventType.MERGE_REJECTED)
                     .build());
 
     private final static Map<IMessage.Reason, OrderEventType> orderEventByReason =
             Maps.immutableEnumMap(ImmutableMap.<IMessage.Reason, OrderEventType> builder()
-                    .put(IMessage.Reason.ORDER_FULLY_FILLED, OrderEventType.FULL_FILL_OK)
+                    .put(IMessage.Reason.ORDER_FULLY_FILLED,
+                         OrderEventType.FULL_FILL_OK)
                     .put(IMessage.Reason.ORDER_CLOSED_BY_MERGE,
                          OrderEventType.CLOSED_BY_MERGE)
-                    .put(IMessage.Reason.ORDER_CLOSED_BY_SL, OrderEventType.CLOSED_BY_SL)
-                    .put(IMessage.Reason.ORDER_CLOSED_BY_TP, OrderEventType.CLOSED_BY_TP)
-                    .put(IMessage.Reason.ORDER_CHANGED_SL, OrderEventType.SL_CHANGE_OK)
-                    .put(IMessage.Reason.ORDER_CHANGED_TP, OrderEventType.TP_CHANGE_OK)
+                    .put(IMessage.Reason.ORDER_CLOSED_BY_SL,
+                         OrderEventType.CLOSED_BY_SL)
+                    .put(IMessage.Reason.ORDER_CLOSED_BY_TP,
+                         OrderEventType.CLOSED_BY_TP)
+                    .put(IMessage.Reason.ORDER_CHANGED_SL,
+                         OrderEventType.SL_CHANGE_OK)
+                    .put(IMessage.Reason.ORDER_CHANGED_TP,
+                         OrderEventType.TP_CHANGE_OK)
                     .put(IMessage.Reason.ORDER_CHANGED_AMOUNT,
                          OrderEventType.REQUESTED_AMOUNT_CHANGE_OK)
-                    .put(IMessage.Reason.ORDER_CHANGED_PRICE, OrderEventType.OPENPRICE_CHANGE_OK)
-                    .put(IMessage.Reason.ORDER_CHANGED_GTT, OrderEventType.GTT_CHANGE_OK)
-                    .put(IMessage.Reason.ORDER_CHANGED_LABEL, OrderEventType.LABEL_CHANGE_OK)
+                    .put(IMessage.Reason.ORDER_CHANGED_PRICE,
+                         OrderEventType.OPENPRICE_CHANGE_OK)
+                    .put(IMessage.Reason.ORDER_CHANGED_GTT,
+                         OrderEventType.GTT_CHANGE_OK)
+                    .put(IMessage.Reason.ORDER_CHANGED_LABEL,
+                         OrderEventType.LABEL_CHANGE_OK)
                     .build());
 
     private final static Map<OrderCallRequest, OrderEventType> changeRejectEventByRequest =
             Maps.immutableEnumMap(ImmutableMap.<OrderCallRequest, OrderEventType> builder()
                     .put(OrderCallRequest.CHANGE_REQUESTED_AMOUNT,
                          OrderEventType.CHANGE_AMOUNT_REJECTED)
-                    .put(OrderCallRequest.CHANGE_LABEL, OrderEventType.CHANGE_LABEL_REJECTED)
-                    .put(OrderCallRequest.CHANGE_GTT, OrderEventType.CHANGE_GTT_REJECTED)
+                    .put(OrderCallRequest.CHANGE_LABEL,
+                         OrderEventType.CHANGE_LABEL_REJECTED)
+                    .put(OrderCallRequest.CHANGE_GTT,
+                         OrderEventType.CHANGE_GTT_REJECTED)
                     .put(OrderCallRequest.CHANGE_OPENPRICE,
                          OrderEventType.CHANGE_OPENPRICE_REJECTED)
-                    .put(OrderCallRequest.CHANGE_SL, OrderEventType.CHANGE_SL_REJECTED)
-                    .put(OrderCallRequest.CHANGE_TP, OrderEventType.CHANGE_TP_REJECTED)
+                    .put(OrderCallRequest.CHANGE_SL,
+                         OrderEventType.CHANGE_SL_REJECTED)
+                    .put(OrderCallRequest.CHANGE_TP,
+                         OrderEventType.CHANGE_TP_REJECTED)
                     .build());
 
     public final static OrderEventType get(final OrderMessageData orderEventData,

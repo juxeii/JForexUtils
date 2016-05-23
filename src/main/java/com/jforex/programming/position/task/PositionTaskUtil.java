@@ -18,22 +18,18 @@ import rx.observables.ConnectableObservable;
 public class PositionTaskUtil {
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private final static long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
     private final static int exceededRetryCount = platformSettings.maxRetriesOnOrderFail() + 1;
     private static final Logger logger = LogManager.getLogger(PositionTaskUtil.class);
 
     public static <T> Observable<T> connectObservable(final Observable<T> observable) {
-        final ConnectableObservable<T> connectableObservable =
-                observable.flatMap(orderEvent -> Observable.just(orderEvent))
-                        .replay();
-
+        final ConnectableObservable<T> connectableObservable = observable.replay();
         connectableObservable.connect();
         return connectableObservable;
     }
 
     public static Completable connectCompletable(final Completable completable) {
-        final Observable<OrderEvent> connectedObservable =
-                connectObservable(completable.toObservable());
-
+        final Observable<OrderEvent> connectedObservable = connectObservable(completable.toObservable());
         return connectedObservable.toCompletable();
     }
 
@@ -48,7 +44,7 @@ public class PositionTaskUtil {
         return retryPair.getRight() == exceededRetryCount
                 ? Observable.error(retryPair.getLeft())
                 : Observable
-                        .interval(platformSettings.delayOnOrderFailRetry(), TimeUnit.MILLISECONDS)
+                        .interval(delayOnOrderFailRetry, TimeUnit.MILLISECONDS)
                         .take(1);
     }
 
@@ -64,6 +60,6 @@ public class PositionTaskUtil {
     private static void logRetry(final OrderCallRejectException rejectException) {
         logger.warn("Received reject type " + rejectException.orderEvent().type() +
                 " for order " + rejectException.orderEvent().order().getLabel() + "!"
-                + " Will retry task in " + platformSettings.delayOnOrderFailRetry() + " milliseconds...");
+                + " Will retry task in " + delayOnOrderFailRetry + " milliseconds...");
     }
 }
