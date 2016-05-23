@@ -55,13 +55,9 @@ public final class ConnectionKeeper {
         });
 
         reloginCompletable = Completable.create(subscriber -> {
-            if (client.isConnected())
-                subscriber.onCompleted();
-            else {
-                logger.debug("Try to relogin...");
-                authentificationUtil.login(loginCredentials);
-                initNextConnectionStateObs(connectionStateObs, subscriber);
-            }
+            logger.debug("Try to relogin...");
+            authentificationUtil.login(loginCredentials);
+            initNextConnectionStateObs(connectionStateObs, subscriber);
         });
     }
 
@@ -69,7 +65,7 @@ public final class ConnectionKeeper {
                                             final CompletableSubscriber subscriber) {
         connectionStateObs.take(1)
                 .subscribe(connectionState -> {
-                    if (connectionState == ConnectionState.CONNECTED)
+                    if (connectionState == ConnectionState.CONNECTED || client.isConnected())
                         subscriber.onCompleted();
                     else
                         subscriber.onError(new ConnectException());
