@@ -20,9 +20,7 @@ public final class ConnectionKeeper {
 
     private final IClient client;
     private Completable lightReconnectCompletable;
-    private Completable reloginCompletable;
     private final AuthentificationUtil authentificationUtil;
-    private final LoginCredentials loginCredentials;
     private final StateMachineConfig<FSMState, ConnectionState> fsmConfig = new StateMachineConfig<>();
     private final StateMachine<FSMState, ConnectionState> fsm = new StateMachine<>(FSMState.IDLE, fsmConfig);
 
@@ -40,7 +38,6 @@ public final class ConnectionKeeper {
                             final LoginCredentials loginCredentials) {
         this.client = client;
         this.authentificationUtil = authentificationUtil;
-        this.loginCredentials = loginCredentials;
 
         intObservables(connectionStateObs);
         configureFSM();
@@ -52,12 +49,6 @@ public final class ConnectionKeeper {
         lightReconnectCompletable = Completable.create(subscriber -> {
             logger.debug("Try to do a light reconnection...");
             client.reconnect();
-            initNextConnectionStateObs(connectionStateObs, subscriber);
-        });
-
-        reloginCompletable = Completable.create(subscriber -> {
-            logger.debug("Try to relogin...");
-            authentificationUtil.login(loginCredentials);
             initNextConnectionStateObs(connectionStateObs, subscriber);
         });
     }
@@ -94,17 +85,9 @@ public final class ConnectionKeeper {
 
     private final void startReconnectStrategy() {
         lightReconnectCompletable
-                .retry(platformSettings.noOfLightReconnects() - 1)
-                .subscribe(exc -> startReloginStrategy(),
-                           () -> logger.debug("Light reconnect successful!"));
-    }
-
-    private final void startReloginStrategy() {
-        logger.debug("Light reconnect failed, try to relogin!");
-        reloginCompletable
                 .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS)
                 .retry()
-                .subscribe(exc -> logger.debug("Relogin failed!"),
-                           () -> logger.debug("Relogin successful!"));
+                .subscribe(exc -> logger.debug("Light reconnection error: " + exc.getMessage()),
+                           () -> logger.debug("Light reconnect successful!"));
     }
 }
