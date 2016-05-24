@@ -34,8 +34,7 @@ public final class ConnectionKeeper {
 
     public ConnectionKeeper(final IClient client,
                             final Observable<ConnectionState> connectionStateObs,
-                            final AuthentificationUtil authentificationUtil,
-                            final LoginCredentials loginCredentials) {
+                            final AuthentificationUtil authentificationUtil) {
         this.client = client;
         this.authentificationUtil = authentificationUtil;
 
