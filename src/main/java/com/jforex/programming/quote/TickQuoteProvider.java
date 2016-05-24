@@ -36,10 +36,7 @@ public class TickQuoteProvider {
     }
 
     private void initLatestTicksFromHistory() {
-        subscribedInstruments.forEach(inst -> {
-            final ITick latestTick = tickFromHistory(inst);
-            latestTickQuote.put(inst, latestTick);
-        });
+        subscribedInstruments.forEach(instrument -> latestTickQuote.put(instrument, tickFromHistory(instrument)));
     }
 
     private ITick tickFromHistory(final Instrument instrument) {
@@ -77,7 +74,9 @@ public class TickQuoteProvider {
 
     public double forOfferSide(final Instrument instrument,
                                final OfferSide offerSide) {
-        return offerSide == OfferSide.BID ? bid(instrument) : ask(instrument);
+        return offerSide == OfferSide.BID
+                ? bid(instrument)
+                : ask(instrument);
     }
 
     public Observable<TickQuote> observable() {
@@ -87,7 +86,7 @@ public class TickQuoteProvider {
     public void subscribe(final Set<Instrument> instruments,
                           final TickQuoteConsumer tickQuoteConsumer) {
         tickQuoteObservable.filter(tickQuote -> instruments.contains(tickQuote.instrument()))
-                           .subscribe(tickQuoteConsumer::onTickQuote);
+                .subscribe(tickQuoteConsumer::onTickQuote);
     }
 
     private void onTickQuote(final TickQuote tickQuote) {

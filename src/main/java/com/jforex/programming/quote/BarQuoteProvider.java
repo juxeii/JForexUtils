@@ -42,7 +42,9 @@ public class BarQuoteProvider {
     public IBar forOfferSide(final Instrument instrument,
                              final Period period,
                              final OfferSide offerSide) {
-        return offerSide == OfferSide.ASK ? askBar(instrument, period) : bidBar(instrument, period);
+        return offerSide == OfferSide.ASK
+                ? askBar(instrument, period)
+                : bidBar(instrument, period);
     }
 
     private IBar bar(final Instrument instrument,
@@ -72,7 +74,9 @@ public class BarQuoteProvider {
                                      final Period period,
                                      final OfferSide offerSide) {
         final BarQuote barQuote = latestBarQuote.get(barQuoteKey(instrument, period));
-        return offerSide == OfferSide.ASK ? barQuote.askBar() : barQuote.bidBar();
+        return offerSide == OfferSide.ASK
+                ? barQuote.askBar()
+                : barQuote.bidBar();
     }
 
     private void onBarQuote(final BarQuote barQuote) {
@@ -85,7 +89,7 @@ public class BarQuoteProvider {
                           final BarQuoteConsumer barQuoteConsumer) {
         barQuoteObservable.filter(barQuote -> instruments.contains(barQuote.instrument())
                 && period.equals(barQuote.period()))
-                          .subscribe(barQuoteConsumer::onBarQuote);
+                .subscribe(barQuoteConsumer::onBarQuote);
     }
 
     public Observable<BarQuote> observable() {
