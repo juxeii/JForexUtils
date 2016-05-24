@@ -1,6 +1,7 @@
 package com.jforex.programming.order.event;
 
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 
 import java.util.Map;
@@ -19,6 +20,11 @@ public final class OrderEventTypeEvaluator {
 
     private OrderEventTypeEvaluator() {
     }
+
+    private final static Function<IOrder, OrderEventType> submitEvaluator =
+            order -> isConditional.test(order)
+                    ? OrderEventType.SUBMIT_CONDITIONAL_OK
+                    : OrderEventType.SUBMIT_OK;
 
     private final static Function<IOrder, OrderEventType> closeEvaluator =
             order -> isFilled.test(order)
@@ -42,7 +48,7 @@ public final class OrderEventTypeEvaluator {
                     .put(IMessage.Type.ORDER_SUBMIT_REJECTED,
                          order -> OrderEventType.SUBMIT_REJECTED)
                     .put(IMessage.Type.ORDER_SUBMIT_OK,
-                         order -> OrderEventType.SUBMIT_OK)
+                         submitEvaluator)
                     .put(IMessage.Type.ORDER_FILL_REJECTED,
                          order -> OrderEventType.FILL_REJECTED)
                     .put(IMessage.Type.ORDER_FILL_OK,

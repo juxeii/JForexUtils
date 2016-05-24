@@ -93,7 +93,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
     public class SubmitSetup {
 
         private final OrderEvent submitEvent =
-                new OrderEvent(orderUnderTest, OrderEventType.SUBMIT_OK);
+                new OrderEvent(orderUnderTest, OrderEventType.FULL_FILL_OK);
         private final OrderEvent rejectEvent =
                 new OrderEvent(orderUnderTest, OrderEventType.SUBMIT_REJECTED);
         private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();

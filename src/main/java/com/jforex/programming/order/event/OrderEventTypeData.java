@@ -9,6 +9,7 @@ import static com.jforex.programming.order.event.OrderEventType.CHANGE_TP_REJECT
 import static com.jforex.programming.order.event.OrderEventType.CLOSE_OK;
 import static com.jforex.programming.order.event.OrderEventType.CLOSE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.FILL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.FULL_FILL_OK;
 import static com.jforex.programming.order.event.OrderEventType.GTT_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.LABEL_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_CLOSE_OK;
@@ -18,7 +19,7 @@ import static com.jforex.programming.order.event.OrderEventType.OPENPRICE_CHANGE
 import static com.jforex.programming.order.event.OrderEventType.PARTIAL_FILL_OK;
 import static com.jforex.programming.order.event.OrderEventType.REQUESTED_AMOUNT_CHANGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.SL_CHANGE_OK;
-import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITIONAL_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.TP_CHANGE_OK;
 
@@ -65,7 +66,7 @@ public final class OrderEventTypeData {
     }
 
     public final static OrderEventTypeData submitData =
-            new OrderEventTypeData(EnumSet.of(SUBMIT_OK, PARTIAL_FILL_OK),
+            new OrderEventTypeData(EnumSet.of(FULL_FILL_OK, SUBMIT_CONDITIONAL_OK, PARTIAL_FILL_OK),
                                    EnumSet.of(FILL_REJECTED, SUBMIT_REJECTED),
                                    OrderCallRequest.SUBMIT);
 
