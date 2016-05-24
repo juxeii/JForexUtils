@@ -43,22 +43,15 @@ public class Position {
         this.instrument = instrument;
 
         orderEventObservable
-                .filter(orderEvent -> orderEvent.order().getInstrument() == instrument)
-                .filter(orderEvent -> contains(orderEvent.order()))
-                .doOnNext(orderEvent -> logger.info("Received event " + orderEvent.type() + " for order "
-                        + orderEvent.order().getLabel() + " in repository for " + instrument))
-                .filter(this::isOrderToRemove)
-                .doOnNext(orderEvent -> removeOrder(orderEvent.order()))
+                .flatMap(orderEvent -> Observable.just(orderEvent.order()))
+                .filter(this::contains)
+                .filter(isClosed.or(isCanceled)::test)
+                .doOnNext(this::removeOrder)
                 .subscribe();
     }
 
     public Instrument instrument() {
         return instrument;
-    }
-
-    private boolean isOrderToRemove(final OrderEvent orderEvent) {
-        final IOrder order = orderEvent.order();
-        return isClosed.or(isCanceled).test(order);
     }
 
     public synchronized void addOrder(final IOrder order) {
