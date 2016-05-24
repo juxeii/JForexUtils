@@ -19,7 +19,7 @@ import rx.Observable;
 public final class ConnectionKeeper {
 
     private final IClient client;
-    private Completable lightReconnectCompletable;
+    private Completable reconnectCompletable;
     private final AuthentificationUtil authentificationUtil;
     private final StateMachineConfig<FSMState, ConnectionState> fsmConfig = new StateMachineConfig<>();
     private final StateMachine<FSMState, ConnectionState> fsm = new StateMachine<>(FSMState.IDLE, fsmConfig);
@@ -45,7 +45,7 @@ public final class ConnectionKeeper {
     private final void intObservables(final Observable<ConnectionState> connectionStateObs) {
         connectionStateObs.subscribe(this::onConnectionStateUpdate);
 
-        lightReconnectCompletable = Completable.create(subscriber -> {
+        reconnectCompletable = Completable.create(subscriber -> {
             logger.debug("Try to do a light reconnection...");
             client.reconnect();
             initNextConnectionStateObs(connectionStateObs, subscriber);
@@ -65,9 +65,9 @@ public final class ConnectionKeeper {
     private final void configureFSM() {
         fsmConfig.configure(FSMState.IDLE)
                 .permitDynamic(ConnectionState.DISCONNECTED, () -> {
-                    if (authentificationUtil.loginState() == LoginState.LOGGED_IN && !client.isConnected())
-                        return FSMState.RECONNECTING;
-                    return FSMState.IDLE;
+                    return authentificationUtil.loginState() == LoginState.LOGGED_IN
+                            ? FSMState.RECONNECTING
+                            : FSMState.IDLE;
                 })
                 .ignore(ConnectionState.CONNECTED);
 
@@ -83,7 +83,7 @@ public final class ConnectionKeeper {
     }
 
     private final void startReconnectStrategy() {
-        lightReconnectCompletable
+        reconnectCompletable
                 .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS)
                 .retry()
                 .subscribe(exc -> logger.debug("Light reconnection error: " + exc.getMessage()),
