@@ -54,7 +54,7 @@ public class PositionSingleTask {
         final double currentTP = orderToChangeTP.getTakeProfitPrice();
         return Observable.just(orderToChangeTP)
                 .filter(order -> !isTPSetTo(newTP).test(order))
-                .doOnSubscribe(() -> logger.debug("Start to change TP from " + currentTP + " to "
+                .doOnNext(order -> logger.debug("Start to change TP from " + currentTP + " to "
                         + newTP + " for order " + orderToChangeTP.getLabel() + " and position "
                         + orderToChangeTP.getInstrument()))
                 .flatMap(order -> orderChangeUtil.setTakeProfitPrice(order, newTP))
