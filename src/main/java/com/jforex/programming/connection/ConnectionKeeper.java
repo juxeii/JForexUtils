@@ -64,21 +64,20 @@ public final class ConnectionKeeper {
 
     private void initNextConnectionStateObs(final Observable<ConnectionState> connectionStateObs,
                                             final CompletableSubscriber subscriber) {
-        connectionStateObs.take(1)
-                .subscribe(connectionState -> {
-                    if (connectionState == ConnectionState.CONNECTED || client.isConnected())
-                        subscriber.onCompleted();
-                    else
-                        subscriber.onError(new ConnectException());
-                });
+        connectionStateObs.subscribe(connectionState -> {
+            if (connectionState == ConnectionState.CONNECTED || client.isConnected())
+                subscriber.onCompleted();
+            else
+                subscriber.onError(new ConnectException());
+        });
     }
 
     private final void configureFSM() {
         fsmConfig.configure(FSMState.IDLE)
                 .permitDynamic(ConnectionState.DISCONNECTED, () -> {
-                    return authentificationUtil.loginState() == LoginState.LOGGED_IN
-                            ? FSMState.RECONNECTING
-                            : FSMState.IDLE;
+                    if (authentificationUtil.loginState() == LoginState.LOGGED_IN && !client.isConnected())
+                        return FSMState.RECONNECTING;
+                    return FSMState.IDLE;
                 })
                 .ignore(ConnectionState.CONNECTED);
 
