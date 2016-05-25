@@ -1,4 +1,4 @@
-package com.jforex.programming.position.task;
+package com.jforex.programming.position;
 
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;

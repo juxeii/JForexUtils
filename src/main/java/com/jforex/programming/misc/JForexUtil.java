@@ -22,9 +22,8 @@ import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.task.PositionRemoveTPSLTask;
-import com.jforex.programming.position.task.PositionMultiTask;
-import com.jforex.programming.position.task.PositionSingleTask;
+import com.jforex.programming.position.PositionMultiTask;
+import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
@@ -55,7 +54,6 @@ public class JForexUtil implements IMessageConsumer {
 
     private PositionSingleTask positionSingleTask;
     private PositionMultiTask positionMultiTask;
-    private PositionRemoveTPSLTask positionBatchTask;
     private OrderPositionUtil orderPositionUtil;
 
     private final CalculationUtil calculationUtil;
@@ -113,11 +111,9 @@ public class JForexUtil implements IMessageConsumer {
         positionSingleTask = new PositionSingleTask(orderCreateUtil,
                                                     orderChangeUtil);
         positionMultiTask = new PositionMultiTask(positionSingleTask);
-        positionBatchTask = new PositionRemoveTPSLTask(positionMultiTask);
         orderPositionUtil = new OrderPositionUtil(orderCreateUtil,
                                                   positionSingleTask,
                                                   positionMultiTask,
-                                                  positionBatchTask,
                                                   positionFactory);
         orderUtil = new OrderUtil(orderChangeUtil, orderPositionUtil);
     }

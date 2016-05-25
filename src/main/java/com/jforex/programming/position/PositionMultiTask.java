@@ -1,16 +1,17 @@
-package com.jforex.programming.position.task;
+package com.jforex.programming.position;
+
+import java.util.Set;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.position.RestoreSLTPData;
-import com.jforex.programming.settings.PlatformSettings;
-
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.settings.PlatformSettings;
 
+import rx.Completable;
 import rx.Observable;
 
 public class PositionMultiTask {
@@ -24,7 +25,24 @@ public class PositionMultiTask {
         this.positionSingleTask = positionSetSLTPTask;
     }
 
-    public Observable<OrderEvent> removeTPSLObservable(final IOrder orderToRemoveSLTP) {
+    public Observable<OrderEvent> restoreSLTPObservable(final IOrder mergeOrder,
+                                                        final RestoreSLTPData restoreSLTPData) {
+        return restoreSLObservable(mergeOrder, restoreSLTPData)
+                .concatWith(restoreTPObservable(mergeOrder, restoreSLTPData));
+    }
+
+    public Completable removeTPSLObservable(final Set<IOrder> filledOrders) {
+        final Instrument instrument = filledOrders.iterator().next().getInstrument();
+        logger.debug("Starting remove TPSL task for position " + instrument);
+        return Observable.from(filledOrders)
+                .flatMap(order -> removeTPSLObservable(order))
+                .doOnCompleted(() -> logger.debug("Removing TPSL from " + instrument + " was successful."))
+                .doOnError(e -> logger.error("Removing TPSL from " + instrument
+                        + " failed! Exception: " + e.getMessage()))
+                .toCompletable();
+    }
+
+    private Observable<OrderEvent> removeTPSLObservable(final IOrder orderToRemoveSLTP) {
         return removeTPObservable(orderToRemoveSLTP)
                 .concatWith(removeSLObservable(orderToRemoveSLTP));
     }
@@ -51,12 +69,6 @@ public class PositionMultiTask {
                         + " for " + instrument + ". Exception: " + e.getMessage()))
                 .doOnCompleted(() -> logger.debug("Removed SL from " + orderToRemoveSL.getLabel()
                         + " for " + instrument + " successfully."));
-    }
-
-    public Observable<OrderEvent> restoreSLTPObservable(final IOrder mergeOrder,
-                                                        final RestoreSLTPData restoreSLTPData) {
-        return restoreSLObservable(mergeOrder, restoreSLTPData)
-                .concatWith(restoreTPObservable(mergeOrder, restoreSLTPData));
     }
 
     private Observable<OrderEvent> restoreSLObservable(final IOrder mergeOrder,

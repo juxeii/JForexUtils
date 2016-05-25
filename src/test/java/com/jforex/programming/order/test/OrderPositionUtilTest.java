@@ -26,11 +26,10 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.PositionMultiTask;
+import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
-import com.jforex.programming.position.task.PositionMultiTask;
-import com.jforex.programming.position.task.PositionRemoveTPSLTask;
-import com.jforex.programming.position.task.PositionSingleTask;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.common.PositionCommonTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
@@ -50,8 +49,6 @@ public class OrderPositionUtilTest extends PositionCommonTest {
     private PositionSingleTask positionSingleTaskMock;
     @Mock
     private PositionMultiTask positionMultiTaskMock;
-    @Mock
-    private PositionRemoveTPSLTask removeTPSLTask;
     @Mock
     private PositionFactory positionFactoryMock;
     @Mock
@@ -80,7 +77,6 @@ public class OrderPositionUtilTest extends PositionCommonTest {
         orderPositionUtil = new OrderPositionUtil(orderCreateUtilMock,
                                                   positionSingleTaskMock,
                                                   positionMultiTaskMock,
-                                                  removeTPSLTask,
                                                   positionFactoryMock);
     }
 
@@ -317,7 +313,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
                         .subscribe(taskSubscriber);
 
         private void setRemoveTPSLMockResult(final Observable<OrderEvent> observable) {
-            when(removeTPSLTask.removeTPSLObservable(toMergeOrders))
+            when(positionMultiTaskMock.removeTPSLObservable(toMergeOrders))
                     .thenReturn(observable.toCompletable());
         }
 
@@ -349,7 +345,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
             orderPositionUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock);
 
-            verify(removeTPSLTask).removeTPSLObservable(toMergeOrders);
+            verify(positionMultiTaskMock).removeTPSLObservable(toMergeOrders);
             taskSubscriber.assertNotCompleted();
         }
 
@@ -367,11 +363,9 @@ public class OrderPositionUtilTest extends PositionCommonTest {
             when(positionMock.filledOrders())
                     .thenReturn(Sets.newHashSet());
 
-            System.out.println("HAAAAAAAALOOOOOOOOO");
             mergePositionCall.run();
-            System.out.println("EEEEEEEEEEEEEENNNNDE");
 
-            verify(removeTPSLTask, never()).removeTPSLObservable(any());
+            verify(positionMultiTaskMock, never()).removeTPSLObservable(any());
             taskSubscriber.assertCompleted();
         }
 
@@ -395,7 +389,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
             @Test
             public void testRemoveTPSLOnBatchUtilHasBeenCalledWithoutRetry() {
-                verify(removeTPSLTask).removeTPSLObservable(toMergeOrders);
+                verify(positionMultiTaskMock).removeTPSLObservable(toMergeOrders);
             }
 
             @Test
@@ -415,7 +409,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
             @Test
             public void testRemoveTPSLOnBatchUtilHasBeenCalledWithoutRetry() {
-                verify(removeTPSLTask).removeTPSLObservable(toMergeOrders);
+                verify(positionMultiTaskMock).removeTPSLObservable(toMergeOrders);
             }
 
             @Test
@@ -446,7 +440,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
                 mergePositionCall.run();
 
-                verify(removeTPSLTask).removeTPSLObservable(toMergeOrders);
+                verify(positionMultiTaskMock).removeTPSLObservable(toMergeOrders);
             }
 
             public class MergeWithJFException {

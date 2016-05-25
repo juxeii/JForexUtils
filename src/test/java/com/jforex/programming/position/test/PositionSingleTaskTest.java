@@ -1,4 +1,4 @@
-package com.jforex.programming.position.task.test;
+package com.jforex.programming.position.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -23,7 +23,7 @@ import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.position.task.PositionSingleTask;
+import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.test.common.PositionCommonTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 

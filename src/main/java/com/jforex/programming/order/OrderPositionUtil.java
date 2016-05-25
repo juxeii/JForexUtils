@@ -13,11 +13,10 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.PositionMultiTask;
+import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
-import com.jforex.programming.position.task.PositionMultiTask;
-import com.jforex.programming.position.task.PositionRemoveTPSLTask;
-import com.jforex.programming.position.task.PositionSingleTask;
 
 import rx.Completable;
 import rx.Observable;
@@ -27,7 +26,6 @@ public class OrderPositionUtil {
     private final OrderCreateUtil orderCreateUtil;
     private final PositionSingleTask positionSingleTask;
     private final PositionMultiTask positionMultiTask;
-    private final PositionRemoveTPSLTask positionBatchTask;
     private final PositionFactory positionFactory;
 
     private static final Logger logger = LogManager.getLogger(OrderPositionUtil.class);
@@ -35,12 +33,10 @@ public class OrderPositionUtil {
     public OrderPositionUtil(final OrderCreateUtil orderCreateUtil,
                              final PositionSingleTask positionSingleTask,
                              final PositionMultiTask positionMultiTask,
-                             final PositionRemoveTPSLTask positionBatchTask,
                              final PositionFactory positionFactory) {
         this.orderCreateUtil = orderCreateUtil;
         this.positionSingleTask = positionSingleTask;
         this.positionMultiTask = positionMultiTask;
-        this.positionBatchTask = positionBatchTask;
         this.positionFactory = positionFactory;
     }
 
@@ -100,7 +96,7 @@ public class OrderPositionUtil {
                         .doOnNext(toMergeOrders -> logger.debug("Starting merge task for " + instrument
                                 + " position with label " + mergeOrderLabel))
                         .doOnNext(toMergeOrders -> position.markAllOrdersActive())
-                        .flatMap(toMergeOrders -> positionBatchTask.removeTPSLObservable(toMergeOrders)
+                        .flatMap(toMergeOrders -> positionMultiTask.removeTPSLObservable(toMergeOrders)
                                 .toObservable())
                         .concatWith(mergeAndRestoreObs)
                         .cast(OrderEvent.class);
