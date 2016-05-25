@@ -72,12 +72,12 @@ public class AuthentificationUtil {
     }
 
     public Completable login(final LoginCredentials loginCredentials) {
-        final Optional<Exception> exceptionOpt = connectClient(loginCredentials.jnlpAddress(),
-                                                               loginCredentials.username(),
-                                                               loginCredentials.password(),
-                                                               loginCredentials.maybePin());
-        return exceptionOpt.isPresent()
-                ? Completable.error(exceptionOpt.get())
+        final Optional<Exception> maybeException = connectClient(loginCredentials.jnlpAddress(),
+                                                                 loginCredentials.username(),
+                                                                 loginCredentials.password(),
+                                                                 loginCredentials.maybePin());
+        return maybeException.isPresent()
+                ? Completable.error(maybeException.get())
                 : Completable.create(subscriber -> {
                     connectionStateObs.take(1)
                             .subscribe(connectionState -> {
@@ -92,10 +92,10 @@ public class AuthentificationUtil {
     private final Optional<Exception> connectClient(final String jnlpAddress,
                                                     final String username,
                                                     final String password,
-                                                    final Optional<String> pinOpt) {
+                                                    final Optional<String> maybePin) {
         try {
-            if (pinOpt.isPresent())
-                client.connect(jnlpAddress, username, password, pinOpt.get());
+            if (maybePin.isPresent())
+                client.connect(jnlpAddress, username, password, maybePin.get());
             else
                 client.connect(jnlpAddress, username, password);
         } catch (final Exception e) {

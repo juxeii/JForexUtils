@@ -72,7 +72,7 @@ public final class RxUtil {
                                                             final long delay,
                                                             final TimeUnit timeUnit,
                                                             final int maxRetries) {
-        return retryPair.getRight() == maxRetries + 1
+        return retryPair.getRight() > maxRetries
                 ? Observable.error(retryPair.getLeft())
                 : retryWait(delay, timeUnit);
     }

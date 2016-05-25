@@ -6,8 +6,6 @@ import java.util.Map;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.Instrument;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.google.common.collect.ImmutableMap;
@@ -17,6 +15,9 @@ import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.UserSettings;
+
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -132,7 +133,8 @@ public final class PositionSwitcher {
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {
         final double absPositionExposure = Math.abs(position.signedExposure());
         final OrderParams orderParams = orderParamsSupplier.forCommand(newOrderCommand);
-        return orderParams.clone()
+        return orderParams
+                .clone()
                 .withOrderCommand(newOrderCommand)
                 .withAmount(orderParams.amount() + absPositionExposure)
                 .build();

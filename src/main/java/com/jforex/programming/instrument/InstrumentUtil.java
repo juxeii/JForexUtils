@@ -2,15 +2,16 @@ package com.jforex.programming.instrument;
 
 import java.util.Currency;
 
+import com.jforex.programming.currency.CurrencyUtil;
+import com.jforex.programming.misc.CalculationUtil;
+import com.jforex.programming.quote.BarQuoteProvider;
+import com.jforex.programming.quote.TickQuoteProvider;
+
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.Period;
-import com.jforex.programming.currency.CurrencyUtil;
-import com.jforex.programming.misc.CalculationUtil;
-import com.jforex.programming.quote.BarQuoteProvider;
-import com.jforex.programming.quote.TickQuoteProvider;
 
 public final class InstrumentUtil {
 
@@ -90,8 +91,9 @@ public final class InstrumentUtil {
     }
 
     public final static String toStringNoSeparator(final Instrument instrument) {
-        return instrument.getPrimaryJFCurrency().toString()
-                         .concat(instrument.getSecondaryJFCurrency().toString());
+        return instrument.getPrimaryJFCurrency()
+                .toString()
+                .concat(instrument.getSecondaryJFCurrency().toString());
     }
 
     public final static Currency baseJavaCurrency(final Instrument instrument) {
@@ -104,6 +106,8 @@ public final class InstrumentUtil {
 
     public final static String nameFromCurrencies(final ICurrency baseCurrency,
                                                   final ICurrency quoteCurrency) {
-        return baseCurrency.toString().concat(pairsSeparator).concat(quoteCurrency.toString());
+        return baseCurrency.toString()
+                .concat(pairsSeparator)
+                .concat(quoteCurrency.toString());
     }
 }

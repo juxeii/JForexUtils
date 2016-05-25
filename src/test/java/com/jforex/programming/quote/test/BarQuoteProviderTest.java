@@ -122,6 +122,11 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
     public class HistoryReturnsNullBeforeFirstBarQuoteIsReceived {
 
+        private void verifyHistoryRetry() throws JFException {
+            verify(historyMock, times(2))
+                    .getBar(eq(instrumentEURUSD), eq(testPeriod), any(), eq(1));
+        }
+
         @Before
         public void setUp() throws JFException {
             when(historyMock.getBar(eq(instrumentEURUSD), eq(testPeriod), any(), eq(1)))
@@ -133,32 +138,28 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
         public void testAskBarRetries() throws JFException {
             barQuoteProvider.askBar(instrumentEURUSD, testPeriod);
 
-            verify(historyMock, times(2)).getBar(eq(instrumentEURUSD), eq(testPeriod),
-                                                 any(), eq(1));
+            verifyHistoryRetry();
         }
 
         @Test
         public void testBidBarRetries() throws JFException {
             barQuoteProvider.bidBar(instrumentEURUSD, testPeriod);
 
-            verify(historyMock, times(2)).getBar(eq(instrumentEURUSD), eq(testPeriod),
-                                                 any(), eq(1));
+            verifyHistoryRetry();
         }
 
         @Test
         public void testForOfferSideAskRetries() throws JFException {
             barQuoteProvider.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.ASK);
 
-            verify(historyMock, times(2)).getBar(eq(instrumentEURUSD), eq(testPeriod),
-                                                 any(), eq(1));
+            verifyHistoryRetry();
         }
 
         @Test
         public void testForOfferSideBidRetries() throws JFException {
             barQuoteProvider.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID);
 
-            verify(historyMock, times(2)).getBar(eq(instrumentEURUSD), eq(testPeriod),
-                                                 any(), eq(1));
+            verifyHistoryRetry();
         }
 
         @Test(expected = QuoteProviderException.class)

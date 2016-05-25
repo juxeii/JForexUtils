@@ -24,18 +24,20 @@ public final class OrderStaticUtil {
     private OrderStaticUtil() {
     }
 
-    // @formatter:off
     public final static ImmutableBiMap<OrderCommand, OrderCommand> orderCommands =
             new ImmutableBiMap.Builder<OrderCommand, OrderCommand>()
-                                .put(OrderCommand.BUY, OrderCommand.SELL)
-                                .put(OrderCommand.BUYLIMIT, OrderCommand.SELLLIMIT)
-                                .put(OrderCommand.BUYLIMIT_BYBID,
-                                     OrderCommand.SELLLIMIT_BYASK)
-                                .put(OrderCommand.BUYSTOP, OrderCommand.SELLSTOP)
-                                .put(OrderCommand.BUYSTOP_BYBID,
-                                     OrderCommand.SELLSTOP_BYASK)
-                                .build();
-    // @formatter:on
+                    .put(OrderCommand.BUY,
+                         OrderCommand.SELL)
+                    .put(OrderCommand.BUYLIMIT,
+                         OrderCommand.SELLLIMIT)
+                    .put(OrderCommand.BUYLIMIT_BYBID,
+                         OrderCommand.SELLLIMIT_BYASK)
+                    .put(OrderCommand.BUYSTOP,
+                         OrderCommand.SELLSTOP)
+                    .put(OrderCommand.BUYSTOP_BYBID,
+                         OrderCommand.SELLSTOP_BYASK)
+                    .build();
+
     public final static ImmutableSet<OrderCommand> buyOrderCommands =
             Sets.immutableEnumSet(orderCommands.keySet());
 
@@ -77,7 +79,9 @@ public final class OrderStaticUtil {
 
     public final static OrderDirection direction(final IOrder order) {
         if (order != null && isFilled.test(order))
-            return order.isLong() ? OrderDirection.LONG : OrderDirection.SHORT;
+            return order.isLong()
+                    ? OrderDirection.LONG
+                    : OrderDirection.SHORT;
         return OrderDirection.FLAT;
     }
 

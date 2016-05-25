@@ -6,8 +6,6 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.RxUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
@@ -17,6 +15,9 @@ import com.jforex.programming.position.PositionMultiTask;
 import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -68,8 +69,8 @@ public class OrderPositionUtil {
         final Position position = positionFactory.forInstrument(instrument);
         final Observable<OrderEvent> mergeObs = orderCreateUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
         mergeObs.subscribe(orderEvent -> position.addOrder(orderEvent.order()),
-                           e -> logger.error("Merge with label " + mergeOrderLabel
-                                   + " failed! Exception: " + e.getMessage()));
+                           e -> logger.error("Merge with label " + mergeOrderLabel + " failed! Exception: "
+                                   + e.getMessage()));
         return RxUtil.connectObservable(mergeObs);
     }
 

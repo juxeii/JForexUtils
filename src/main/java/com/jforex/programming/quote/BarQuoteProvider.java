@@ -45,9 +45,7 @@ public class BarQuoteProvider {
     public IBar forOfferSide(final Instrument instrument,
                              final Period period,
                              final OfferSide offerSide) {
-        return offerSide == OfferSide.ASK
-                ? askBar(instrument, period)
-                : bidBar(instrument, period);
+        return bar(instrument, period, offerSide);
     }
 
     private IBar bar(final Instrument instrument,
@@ -93,8 +91,9 @@ public class BarQuoteProvider {
     public void subscribe(final Set<Instrument> instruments,
                           final Period period,
                           final BarQuoteConsumer barQuoteConsumer) {
-        barQuoteObservable.filter(barQuote -> instruments.contains(barQuote.instrument())
-                && period.equals(barQuote.period()))
+        barQuoteObservable
+                .filter(barQuote -> instruments.contains(barQuote.instrument()))
+                .filter(barQuote -> period.equals(barQuote.period()))
                 .subscribe(barQuoteConsumer::onBarQuote);
     }
 
