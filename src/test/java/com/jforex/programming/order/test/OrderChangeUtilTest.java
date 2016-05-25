@@ -16,7 +16,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.call.OrderChangeCall;
+import com.jforex.programming.order.call.RunnableWithJFException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -36,7 +36,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
     @Mock
     private OrderUtilHandler orderUtilHandlerMock;
     @Captor
-    private ArgumentCaptor<OrderChangeCall> orderCallCaptor;
+    private ArgumentCaptor<RunnableWithJFException> orderCallCaptor;
     @Captor
     private ArgumentCaptor<OrderEventTypeData> typeDataCaptor;
     private final IOrderForTest orderUnterTest = IOrderForTest.buyOrderEURUSD();
@@ -55,7 +55,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         verify(orderUtilHandlerMock).runOrderChangeCall(orderCallCaptor.capture(),
                                                         eq(orderUnterTest),
                                                         typeDataCaptor.capture());
-        orderCallCaptor.getValue().change();
+        orderCallCaptor.getValue().run();
     }
 
     private void setUpHanderMock(final OrderEventTypeData orderEventTypeData) {

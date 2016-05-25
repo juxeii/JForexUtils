@@ -25,8 +25,8 @@ import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.call.OrderChangeCall;
-import com.jforex.programming.order.call.OrderSupplierCall;
+import com.jforex.programming.order.call.RunnableWithJFException;
+import com.jforex.programming.order.call.OrderSupplier;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
@@ -50,7 +50,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     @Mock
     private OrderEventGateway orderEventGatewayMock;
     @Captor
-    private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
+    private ArgumentCaptor<OrderSupplier> orderCallCaptor;
     private final IOrderForTest externalOrder = IOrderForTest.orderAUDUSD();
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private OrderCallExecutorResult orderExecutorResultWithJFException;
@@ -71,7 +71,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     }
 
     private void prepareJFException() {
-        when(orderCallExecutorMock.run(any(OrderSupplierCall.class)))
+        when(orderCallExecutorMock.run(any(OrderSupplier.class)))
                 .thenReturn(orderExecutorResultWithJFException);
     }
 
@@ -105,7 +105,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         private final IOrderForTest mergeOrder = IOrderForTest.buyOrderEURUSD();
         private final Set<IOrder> mergeOrders = Sets.newHashSet();
         private final String mergeOrderLabel = "MergeLabel";
-        private final OrderSupplierCall orderCall = () -> engineMock.mergeOrders(mergeOrderLabel, mergeOrders);
+        private final OrderSupplier orderCall = () -> engineMock.mergeOrders(mergeOrderLabel, mergeOrders);
         private final TestSubscriber<OrderEvent> callSubscriber = new TestSubscriber<>();
         private final Supplier<Observable<OrderEvent>> runCall =
                 () -> orderUtilHandler.runOrderSupplierCall(orderCall, OrderEventTypeData.mergeData);
@@ -115,7 +115,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(orderCallExecutorMock.run(any(OrderSupplierCall.class))).thenReturn(orderExecutorResult);
+            when(orderCallExecutorMock.run(any(OrderSupplier.class))).thenReturn(orderExecutorResult);
         }
 
         public class CallWithoutSubscription {
@@ -228,7 +228,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     public class OrderChangeCallSetup {
 
         private final IOrderForTest orderToChange = IOrderForTest.buyOrderEURUSD();
-        private final OrderChangeCall orderCall = () -> orderToChange.close();
+        private final RunnableWithJFException orderCall = () -> orderToChange.close();
         private final TestSubscriber<OrderEvent> callSubscriber = new TestSubscriber<>();
         private final Supplier<Observable<OrderEvent>> runCall =
                 () -> orderUtilHandler.runOrderChangeCall(orderCall, orderToChange, OrderEventTypeData.closeData);
@@ -238,7 +238,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(orderCallExecutorMock.run(any(OrderSupplierCall.class))).thenReturn(orderExecutorResult);
+            when(orderCallExecutorMock.run(any(OrderSupplier.class))).thenReturn(orderExecutorResult);
         }
 
         public class CallWithoutSubscription {

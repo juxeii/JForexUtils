@@ -8,8 +8,8 @@ import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.call.OrderChangeCall;
-import com.jforex.programming.order.call.OrderSupplierCall;
+import com.jforex.programming.order.call.OrderSupplier;
+import com.jforex.programming.order.call.RunnableWithJFException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
@@ -29,24 +29,24 @@ public class OrderUtilHandler {
         this.orderEventGateway = orderEventGateway;
     }
 
-    public Observable<OrderEvent> runOrderSupplierCall(final OrderSupplierCall orderSupplierCall,
+    public Observable<OrderEvent> runOrderSupplierCall(final OrderSupplier orderSupplierCall,
                                                        final OrderEventTypeData orderEventTypeData) {
         final OrderCallExecutorResult orderExecutorResult =
                 createResult(orderSupplierCall, orderEventTypeData.callRequest());
         return RxUtil.connectObservable(createObs(orderExecutorResult, orderEventTypeData));
     }
 
-    public Observable<OrderEvent> runOrderChangeCall(final OrderChangeCall orderChangeCall,
+    public Observable<OrderEvent> runOrderChangeCall(final RunnableWithJFException orderChangeCall,
                                                      final IOrder orderToChange,
                                                      final OrderEventTypeData orderEventTypeData) {
-        final OrderSupplierCall orderSupplierCall = () -> {
-            orderChangeCall.change();
+        final OrderSupplier orderSupplierCall = () -> {
+            orderChangeCall.run();
             return orderToChange;
         };
         return runOrderSupplierCall(orderSupplierCall, orderEventTypeData);
     }
 
-    private final OrderCallExecutorResult createResult(final OrderSupplierCall orderSupplierCall,
+    private final OrderCallExecutorResult createResult(final OrderSupplier orderSupplierCall,
                                                        final OrderCallRequest orderCallRequest) {
         final OrderCallExecutorResult orderExecutorResult = orderCallExecutor.run(orderSupplierCall);
         registerOrderCallRequest(orderExecutorResult, orderCallRequest);

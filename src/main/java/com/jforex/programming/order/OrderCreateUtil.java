@@ -2,7 +2,7 @@ package com.jforex.programming.order;
 
 import java.util.Collection;
 
-import com.jforex.programming.order.call.OrderSupplierCall;
+import com.jforex.programming.order.call.OrderSupplier;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
@@ -23,7 +23,7 @@ public class OrderCreateUtil {
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
-        final OrderSupplierCall submitCall = () -> engine.submitOrder(orderParams.label(),
+        final OrderSupplier submitCall = () -> engine.submitOrder(orderParams.label(),
                                                                       orderParams.instrument(),
                                                                       orderParams.orderCommand(),
                                                                       orderParams.amount(),
@@ -38,7 +38,7 @@ public class OrderCreateUtil {
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
-        final OrderSupplierCall mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
+        final OrderSupplier mergeCall = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
         return orderUtilHandler.runOrderSupplierCall(mergeCall, OrderEventTypeData.mergeData);
     }
 }

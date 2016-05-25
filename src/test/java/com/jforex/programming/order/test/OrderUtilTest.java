@@ -18,7 +18,7 @@ import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderPositionUtil;
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.call.OrderSupplierCall;
+import com.jforex.programming.order.call.OrderSupplier;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.RestoreSLTPPolicy;
@@ -44,7 +44,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private Position positionMock;
     @Captor
-    private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
+    private ArgumentCaptor<OrderSupplier> orderCallCaptor;
     @Captor
     private ArgumentCaptor<Set<IOrder>> toMergeOrdersCaptor;
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();

@@ -3,7 +3,7 @@ package com.jforex.programming.order.call;
 import com.dukascopy.api.JFException;
 
 @FunctionalInterface
-public interface OrderChangeCall {
+public interface RunnableWithJFException {
 
-    public void change() throws JFException;
+    public void run() throws JFException;
 }

@@ -21,7 +21,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.call.OrderSupplierCall;
+import com.jforex.programming.order.call.OrderSupplier;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -41,7 +41,7 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
     @Mock
     private OrderUtilHandler orderUtilHandlerMock;
     @Captor
-    private ArgumentCaptor<OrderSupplierCall> orderCallCaptor;
+    private ArgumentCaptor<OrderSupplier> orderCallCaptor;
     @Captor
     private ArgumentCaptor<OrderEventTypeData> typeDataCaptor;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
