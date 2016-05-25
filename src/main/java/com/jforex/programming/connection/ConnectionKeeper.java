@@ -49,7 +49,9 @@ public final class ConnectionKeeper {
             logger.debug("Try to do a light reconnection...");
             client.reconnect();
             initNextConnectionStateObs(connectionStateObs, subscriber);
-        });
+        }).retryWhen(errors -> RxUtil.retryWithDelay(errors,
+                                                     platformSettings.logintimeoutseconds(),
+                                                     TimeUnit.SECONDS));
     }
 
     private void initNextConnectionStateObs(final Observable<ConnectionState> connectionStateObs,
@@ -84,9 +86,6 @@ public final class ConnectionKeeper {
 
     private final void startReconnectStrategy() {
         reconnectCompletable
-                .retryWhen(errors -> RxUtil.retryWithDelay(errors,
-                                                           platformSettings.logintimeoutseconds(),
-                                                           TimeUnit.SECONDS))
                 .subscribe(exc -> logger.debug("Light reconnection error: " + exc.getMessage()),
                            () -> logger.debug("Light reconnect successful!"));
     }

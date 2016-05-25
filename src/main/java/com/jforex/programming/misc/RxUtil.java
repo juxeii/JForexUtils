@@ -65,18 +65,18 @@ public final class RxUtil {
         return Observable.range(1, maxRetries + 1);
     }
 
-    public static Observable<Long> retryWait(final long delay,
-                                             final TimeUnit timeUnit) {
-        return Observable.interval(delay, timeUnit).take(1);
-    }
-
     private final static Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair,
                                                             final long delay,
                                                             final TimeUnit timeUnit,
                                                             final int maxRetries) {
         return retryPair.getRight() == maxRetries + 1
                 ? Observable.error(retryPair.getLeft())
-                : Observable.interval(delay, timeUnit).take(1);
+                : retryWait(delay, timeUnit);
+    }
+
+    public static Observable<Long> retryWait(final long delay,
+                                             final TimeUnit timeUnit) {
+        return Observable.interval(delay, timeUnit).take(1);
     }
 
     private final static Observable<? extends Throwable> filterErrorType(final Throwable error) {

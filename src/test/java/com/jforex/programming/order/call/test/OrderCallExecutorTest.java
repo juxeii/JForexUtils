@@ -78,8 +78,8 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
     public void testVerifyExecutorResultContents() {
         orderExecutorResult = orderCallExecutor.run(orderCallMock);
 
-        assertThat(orderExecutorResult.orderOpt().get(), equalTo(order));
-        assertFalse(orderExecutorResult.exceptionOpt().isPresent());
+        assertThat(orderExecutorResult.maybeOrder().get(), equalTo(order));
+        assertFalse(orderExecutorResult.maybeException().isPresent());
     }
 
     @Test
@@ -89,8 +89,8 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
         orderExecutorResult = orderCallExecutor.run(orderCallMock);
 
-        assertFalse(orderExecutorResult.orderOpt().isPresent());
-        assertThat(orderExecutorResult.exceptionOpt().get(), equalTo(testException));
+        assertFalse(orderExecutorResult.maybeOrder().isPresent());
+        assertThat(orderExecutorResult.maybeException().get(), equalTo(testException));
     }
 
     @Test
@@ -100,7 +100,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
         orderExecutorResult = orderCallExecutor.run(orderCallMock);
 
-        assertFalse(orderExecutorResult.orderOpt().isPresent());
-        assertThat(orderExecutorResult.exceptionOpt().get(), equalTo(jfException));
+        assertFalse(orderExecutorResult.maybeOrder().isPresent());
+        assertThat(orderExecutorResult.maybeException().get(), equalTo(jfException));
     }
 }

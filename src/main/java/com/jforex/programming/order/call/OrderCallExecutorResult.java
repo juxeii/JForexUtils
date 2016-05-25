@@ -6,20 +6,20 @@ import com.dukascopy.api.IOrder;
 
 public final class OrderCallExecutorResult {
 
-    private final Optional<IOrder> orderOpt;
-    private final Optional<Exception> exceptionOpt;
+    private final Optional<IOrder> maybeOrder;
+    private final Optional<Exception> maybeException;
 
-    public OrderCallExecutorResult(final Optional<IOrder> orderOpt,
-                                   final Optional<Exception> exceptionOpt) {
-        this.orderOpt = orderOpt;
-        this.exceptionOpt = exceptionOpt;
+    public OrderCallExecutorResult(final Optional<IOrder> maybeOrder,
+                                   final Optional<Exception> maybeException) {
+        this.maybeOrder = maybeOrder;
+        this.maybeException = maybeException;
     }
 
-    public final Optional<IOrder> orderOpt() {
-        return orderOpt;
+    public final Optional<IOrder> maybeOrder() {
+        return maybeOrder;
     }
 
-    public final Optional<Exception> exceptionOpt() {
-        return exceptionOpt;
+    public final Optional<Exception> maybeException() {
+        return maybeException;
     }
 }

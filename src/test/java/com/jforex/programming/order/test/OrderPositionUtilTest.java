@@ -17,6 +17,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderParams;
@@ -27,14 +28,12 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
-import com.jforex.programming.position.task.PositionBatchTask;
 import com.jforex.programming.position.task.PositionMultiTask;
+import com.jforex.programming.position.task.PositionRemoveTPSLTask;
 import com.jforex.programming.position.task.PositionSingleTask;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.common.PositionCommonTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -52,7 +51,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
     @Mock
     private PositionMultiTask positionMultiTaskMock;
     @Mock
-    private PositionBatchTask positionBatchTaskMock;
+    private PositionRemoveTPSLTask removeTPSLTask;
     @Mock
     private PositionFactory positionFactoryMock;
     @Mock
@@ -81,7 +80,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
         orderPositionUtil = new OrderPositionUtil(orderCreateUtilMock,
                                                   positionSingleTaskMock,
                                                   positionMultiTaskMock,
-                                                  positionBatchTaskMock,
+                                                  removeTPSLTask,
                                                   positionFactoryMock);
     }
 
@@ -318,7 +317,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
                         .subscribe(taskSubscriber);
 
         private void setRemoveTPSLMockResult(final Observable<OrderEvent> observable) {
-            when(positionBatchTaskMock.removeTPSLObservable(toMergeOrders))
+            when(removeTPSLTask.removeTPSLObservable(toMergeOrders))
                     .thenReturn(observable.toCompletable());
         }
 
@@ -350,7 +349,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
             orderPositionUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock);
 
-            verify(positionBatchTaskMock).removeTPSLObservable(toMergeOrders);
+            verify(removeTPSLTask).removeTPSLObservable(toMergeOrders);
             taskSubscriber.assertNotCompleted();
         }
 
@@ -372,7 +371,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
             mergePositionCall.run();
             System.out.println("EEEEEEEEEEEEEENNNNDE");
 
-            verify(positionBatchTaskMock, never()).removeTPSLObservable(any());
+            verify(removeTPSLTask, never()).removeTPSLObservable(any());
             taskSubscriber.assertCompleted();
         }
 
@@ -396,7 +395,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
             @Test
             public void testRemoveTPSLOnBatchUtilHasBeenCalledWithoutRetry() {
-                verify(positionBatchTaskMock).removeTPSLObservable(toMergeOrders);
+                verify(removeTPSLTask).removeTPSLObservable(toMergeOrders);
             }
 
             @Test
@@ -416,7 +415,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
             @Test
             public void testRemoveTPSLOnBatchUtilHasBeenCalledWithoutRetry() {
-                verify(positionBatchTaskMock).removeTPSLObservable(toMergeOrders);
+                verify(removeTPSLTask).removeTPSLObservable(toMergeOrders);
             }
 
             @Test
@@ -447,7 +446,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
                 mergePositionCall.run();
 
-                verify(positionBatchTaskMock).removeTPSLObservable(toMergeOrders);
+                verify(removeTPSLTask).removeTPSLObservable(toMergeOrders);
             }
 
             public class MergeWithJFException {
@@ -590,12 +589,56 @@ public class OrderPositionUtilTest extends PositionCommonTest {
         }
     }
 
-    public class ClosePositionSetup {
+    public class CloseCompletableSetup {
 
-        private final Set<IOrder> ordersToClose = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
-                                                                  IOrderForTest.sellOrderEURUSD());
-        private final Runnable closePositionCall =
+        private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
+        private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
+        private final Set<IOrder> ordersToClose = Sets.newHashSet(buyOrder, sellOrder);
+
+        private final Runnable closeCompletableCall =
                 () -> orderPositionUtil.closePosition(instrumentEURUSD).subscribe(taskSubscriber);
+
+        private void setSingleMockResult(final IOrder orderToClose,
+                                         final Observable<OrderEvent> observable) {
+            when(positionSingleTaskMock.closeObservable(orderToClose))
+                    .thenReturn(observable);
+        }
+
+        @Before
+        public void setUp() {
+            buyOrder.setState(IOrder.State.FILLED);
+            sellOrder.setState(IOrder.State.FILLED);
+            when(positionMock.filledOrOpenedOrders())
+                    .thenReturn(ordersToClose);
+        }
+
+        @Test
+        public void testAllPositionOrdersAreMarkedActive() {
+            setSingleMockResult(buyOrder, doneObservable());
+
+            closeCompletableCall.run();
+
+            verify(positionMock).markAllOrdersActive();
+        }
+
+        @Test
+        public void testCloseOrdersIsCalledAlsoWhenNotSubscribed() {
+            setSingleMockResult(buyOrder, doneObservable());
+
+            orderPositionUtil.closePosition(instrumentEURUSD);
+
+            verify(positionSingleTaskMock).closeObservable(buyOrder);
+            taskSubscriber.assertNotCompleted();
+        }
+
+        @Test
+        public void testSubscriberNotYetCompleted() {
+            when(positionSingleTaskMock.closeObservable(buyOrder)).thenReturn(Observable.never());
+
+            closeCompletableCall.run();
+
+            taskSubscriber.assertNotCompleted();
+        }
 
         public class NoOrdersToClose {
 
@@ -604,12 +647,12 @@ public class OrderPositionUtilTest extends PositionCommonTest {
                 when(positionMock.filledOrOpenedOrders())
                         .thenReturn(Sets.newHashSet());
 
-                closePositionCall.run();
+                closeCompletableCall.run();
             }
 
             @Test
-            public void testNoCallToBatchUtil() {
-                verify(positionBatchTaskMock, never()).closeCompletable(any());
+            public void testNoCallToSingleUtil() {
+                verify(positionSingleTaskMock, never()).closeObservable(any());
             }
 
             @Test
@@ -618,110 +661,57 @@ public class OrderPositionUtilTest extends PositionCommonTest {
             }
         }
 
-        public class WithOrdersToClose {
-
-            private final OrderEvent closeOKEvent =
-                    new OrderEvent(orderUnderTest, OrderEventType.CLOSE_OK);
-            private final OrderEvent rejectEvent =
-                    new OrderEvent(orderUnderTest, OrderEventType.CLOSE_REJECTED);
-
-            private void setBatchMockResult(final Observable<OrderEvent> observable) {
-                when(positionBatchTaskMock.closeCompletable(ordersToClose))
-                        .thenReturn(observable.toCompletable());
-            }
+        public class CloseBuyOK {
 
             @Before
             public void setUp() {
-                when(positionMock.filledOrOpenedOrders())
-                        .thenReturn(ordersToClose);
+                when(positionSingleTaskMock.closeObservable(buyOrder))
+                        .thenReturn(doneObservable());
             }
 
-            @Test
-            public void testClosePositionIsCalledAlsoWhenNotSubscribed() {
-                setBatchMockResult(doneEventObservable(closeOKEvent));
-
-                orderPositionUtil.closePosition(instrumentEURUSD);
-
-                verify(positionBatchTaskMock).closeCompletable(ordersToClose);
-                taskSubscriber.assertNotCompleted();
-            }
-
-            @Test
-            public void testSubscriberNotYetCompletedWhenChangeUtilIsBusy() {
-                setBatchMockResult(busyObservable());
-
-                closePositionCall.run();
-
-                taskSubscriber.assertNotCompleted();
-            }
-
-            @Test
-            public void testAllPositionOrdersAreMarkedActive() {
-                setBatchMockResult(doneEventObservable(closeOKEvent));
-
-                closePositionCall.run();
-
-                verify(positionMock).markAllOrdersActive();
-            }
-
-            public class CloseWithJFException {
+            public class CloseSellOK {
 
                 @Before
                 public void setUp() {
-                    setBatchMockResult(exceptionObservable());
+                    when(positionSingleTaskMock.closeObservable(sellOrder))
+                            .thenReturn(doneObservable());
 
-                    closePositionCall.run();
+                    closeCompletableCall.run();
                 }
 
                 @Test
-                public void testClosePositionOnBatchUtilHasBeenCalledWithoutRetry() {
-                    verify(positionBatchTaskMock).closeCompletable(ordersToClose);
-                }
-
-                @Test
-                public void testSubscriberGetsJFExceptionNotification() {
-                    assertJFException(taskSubscriber);
-                }
-            }
-
-            public class ClosePositionWithRejection {
-
-                @Before
-                public void setUp() {
-                    setBatchMockResult(rejectObservable(rejectEvent));
-
-                    closePositionCall.run();
-                }
-
-                @Test
-                public void testClosePositionOnBatchUtilHasBeenCalledWithoutRetry() {
-                    verify(positionBatchTaskMock).closeCompletable(ordersToClose);
-                }
-
-                @Test
-                public void testSubscriberGetsRejectExceptionNotification() {
-                    assertRejectException(taskSubscriber);
-                }
-            }
-
-            public class ClosePositionOKCall {
-
-                @Before
-                public void setUp() {
-                    setBatchMockResult(doneEventObservable(closeOKEvent));
-
-                    closePositionCall.run();
-                }
-
-                @Test
-                public void testClosePositionOnBatchUtilHasBeenCalledCorrect() {
-                    verify(positionBatchTaskMock).closeCompletable(ordersToClose);
+                public void testCloseOnSingleTaskForAllOrdersHasBeenCalled() {
+                    verify(positionSingleTaskMock).closeObservable(buyOrder);
+                    verify(positionSingleTaskMock).closeObservable(sellOrder);
                 }
 
                 @Test
                 public void testSubscriberCompleted() {
                     taskSubscriber.assertCompleted();
                 }
+            }
+        }
+
+        public class SingleTaskCallWithJFException {
+
+            @Before
+            public void setUp() {
+                when(positionSingleTaskMock.closeObservable(buyOrder))
+                        .thenReturn(exceptionObservable());
+                when(positionSingleTaskMock.closeObservable(sellOrder))
+                        .thenReturn(exceptionObservable());
+
+                closeCompletableCall.run();
+            }
+
+            @Test
+            public void testCloseOnOrderHasBeenCalledWithoutRetry() {
+                verify(positionSingleTaskMock).closeObservable(any());
+            }
+
+            @Test
+            public void testSubscriberGetsJFExceptionNotification() {
+                assertJFException(taskSubscriber);
             }
         }
     }

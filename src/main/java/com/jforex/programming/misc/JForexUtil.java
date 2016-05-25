@@ -2,6 +2,15 @@ package com.jforex.programming.misc;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderChangeUtil;
@@ -13,7 +22,7 @@ import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.task.PositionBatchTask;
+import com.jforex.programming.position.task.PositionRemoveTPSLTask;
 import com.jforex.programming.position.task.PositionMultiTask;
 import com.jforex.programming.position.task.PositionSingleTask;
 import com.jforex.programming.quote.BarQuote;
@@ -21,16 +30,6 @@ import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.UserSettings;
-
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.Period;
 
 import rx.Subscription;
 
@@ -56,7 +55,7 @@ public class JForexUtil implements IMessageConsumer {
 
     private PositionSingleTask positionSingleTask;
     private PositionMultiTask positionMultiTask;
-    private PositionBatchTask positionBatchTask;
+    private PositionRemoveTPSLTask positionBatchTask;
     private OrderPositionUtil orderPositionUtil;
 
     private final CalculationUtil calculationUtil;
@@ -114,7 +113,7 @@ public class JForexUtil implements IMessageConsumer {
         positionSingleTask = new PositionSingleTask(orderCreateUtil,
                                                     orderChangeUtil);
         positionMultiTask = new PositionMultiTask(positionSingleTask);
-        positionBatchTask = new PositionBatchTask(positionSingleTask, positionMultiTask);
+        positionBatchTask = new PositionRemoveTPSLTask(positionMultiTask);
         orderPositionUtil = new OrderPositionUtil(orderCreateUtil,
                                                   positionSingleTask,
                                                   positionMultiTask,

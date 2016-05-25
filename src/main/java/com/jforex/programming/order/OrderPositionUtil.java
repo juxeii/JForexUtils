@@ -15,8 +15,8 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
-import com.jforex.programming.position.task.PositionBatchTask;
 import com.jforex.programming.position.task.PositionMultiTask;
+import com.jforex.programming.position.task.PositionRemoveTPSLTask;
 import com.jforex.programming.position.task.PositionSingleTask;
 
 import rx.Completable;
@@ -27,7 +27,7 @@ public class OrderPositionUtil {
     private final OrderCreateUtil orderCreateUtil;
     private final PositionSingleTask positionSingleTask;
     private final PositionMultiTask positionMultiTask;
-    private final PositionBatchTask positionBatchTask;
+    private final PositionRemoveTPSLTask positionBatchTask;
     private final PositionFactory positionFactory;
 
     private static final Logger logger = LogManager.getLogger(OrderPositionUtil.class);
@@ -35,7 +35,7 @@ public class OrderPositionUtil {
     public OrderPositionUtil(final OrderCreateUtil orderCreateUtil,
                              final PositionSingleTask positionSingleTask,
                              final PositionMultiTask positionMultiTask,
-                             final PositionBatchTask positionBatchTask,
+                             final PositionRemoveTPSLTask positionBatchTask,
                              final PositionFactory positionFactory) {
         this.orderCreateUtil = orderCreateUtil;
         this.positionSingleTask = positionSingleTask;
@@ -110,11 +110,16 @@ public class OrderPositionUtil {
 
     public Completable closePosition(final Instrument instrument) {
         final Position position = positionFactory.forInstrument(instrument);
-        final Set<IOrder> ordersToClose = position.filledOrOpenedOrders();
 
-        if (ordersToClose.isEmpty())
-            return Completable.complete();
-        position.markAllOrdersActive();
-        return RxUtil.connectCompletable(positionBatchTask.closeCompletable(ordersToClose));
+        final Observable<OrderEvent> closeObs =
+                Observable.from(position.filledOrOpenedOrders())
+                        .doOnSubscribe(() -> logger.debug("Starting close task for position " + instrument))
+                        .doOnSubscribe(() -> position.markAllOrdersActive())
+                        .flatMap(positionSingleTask::closeObservable)
+                        .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."))
+                        .doOnError(e -> logger.error("Closing position " + instrument
+                                + " failed! Exception: " + e.getMessage()));
+
+        return RxUtil.connectCompletable(closeObs.toCompletable());
     }
 }

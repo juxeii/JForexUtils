@@ -55,11 +55,11 @@ public class OrderUtilHandler {
 
     private Observable<OrderEvent> createObs(final OrderCallExecutorResult orderExecutorResult,
                                              final OrderEventTypeData orderEventTypeData) {
-        return orderExecutorResult.exceptionOpt().isPresent()
-                ? Observable.error(orderExecutorResult.exceptionOpt().get())
+        return orderExecutorResult.maybeException().isPresent()
+                ? Observable.error(orderExecutorResult.maybeException().get())
                 : Observable.create(subscriber -> {
                     orderEventGateway.observable()
-                            .filter(orderEvent -> orderEvent.order() == orderExecutorResult.orderOpt().get())
+                            .filter(orderEvent -> orderEvent.order() == orderExecutorResult.maybeOrder().get())
                             .filter(orderEvent -> orderEventTypeData.all().contains(orderEvent.type()))
                             .takeUntil(orderEvent -> endOfOrderEventTypes.contains(orderEvent.type()))
                             .subscribe(orderEvent -> evaluateOrderEvent(orderEvent, orderEventTypeData, subscriber));
@@ -82,8 +82,8 @@ public class OrderUtilHandler {
 
     private void registerOrderCallRequest(final OrderCallExecutorResult orderExecutorResult,
                                           final OrderCallRequest orderCallRequest) {
-        if (orderExecutorResult.orderOpt().isPresent())
-            orderEventGateway.registerOrderRequest(orderExecutorResult.orderOpt().get(),
+        if (orderExecutorResult.maybeOrder().isPresent())
+            orderEventGateway.registerOrderRequest(orderExecutorResult.maybeOrder().get(),
                                                    orderCallRequest);
     }
 }

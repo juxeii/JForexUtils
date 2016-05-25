@@ -11,28 +11,14 @@ import com.dukascopy.api.Instrument;
 import rx.Completable;
 import rx.Observable;
 
-public class PositionBatchTask {
+public class PositionRemoveTPSLTask {
 
-    private final PositionSingleTask positionSingleTask;
     private final PositionMultiTask positionMultiTask;
 
-    private static final Logger logger = LogManager.getLogger(PositionBatchTask.class);
+    private static final Logger logger = LogManager.getLogger(PositionRemoveTPSLTask.class);
 
-    public PositionBatchTask(final PositionSingleTask positionSingleTask,
-                             final PositionMultiTask positionMultiTask) {
-        this.positionSingleTask = positionSingleTask;
+    public PositionRemoveTPSLTask(final PositionMultiTask positionMultiTask) {
         this.positionMultiTask = positionMultiTask;
-    }
-
-    public Completable closeCompletable(final Set<IOrder> ordersToClose) {
-        final Instrument instrument = ordersToClose.iterator().next().getInstrument();
-        logger.debug("Starting close task for position " + instrument);
-        return Observable.from(ordersToClose)
-                .flatMap(positionSingleTask::closeObservable)
-                .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."))
-                .doOnError(e -> logger.error("Closing position " + instrument
-                        + " failed! Exception: " + e.getMessage()))
-                .toCompletable();
     }
 
     public Completable removeTPSLObservable(final Set<IOrder> filledOrders) {
