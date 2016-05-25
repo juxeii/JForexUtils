@@ -6,11 +6,11 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
+import com.jforex.programming.misc.RxUtil;
 import com.jforex.programming.settings.PlatformSettings;
-
-import com.dukascopy.api.system.IClient;
 
 import rx.Completable;
 import rx.Completable.CompletableSubscriber;
@@ -84,8 +84,9 @@ public final class ConnectionKeeper {
 
     private final void startReconnectStrategy() {
         reconnectCompletable
-                .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS)
-                .retry()
+                .retryWhen(errors -> RxUtil.retryWithDelay(errors,
+                                                           platformSettings.logintimeoutseconds(),
+                                                           TimeUnit.SECONDS))
                 .subscribe(exc -> logger.debug("Light reconnection error: " + exc.getMessage()),
                            () -> logger.debug("Light reconnect successful!"));
     }

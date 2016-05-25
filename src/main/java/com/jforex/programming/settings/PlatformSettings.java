@@ -70,10 +70,6 @@ public interface PlatformSettings extends Config {
     @DefaultValue("100")
     public long terminationTimeoutExecutorService();
 
-    @Key("env.lightreconnects")
-    @DefaultValue("3")
-    public int noOfLightReconnects();
-
     @Key("env.logintimeoutseconds")
     @DefaultValue("20")
     public int logintimeoutseconds();
