@@ -213,7 +213,7 @@ public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
     public void testGTTChangeRejectIsMappedCorrect() {
         assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_GTT_REJECTED,
                                                      IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     OrderCallRequest.CHANGE_GTT);
+                                                     OrderCallRequest.CHANGE_GOOD_TILL_TIME);
     }
 
     @Test
@@ -234,13 +234,13 @@ public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
     public void testSLChangeRejectIsMappedCorrect() {
         assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_SL_REJECTED,
                                                      IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     OrderCallRequest.CHANGE_SL);
+                                                     OrderCallRequest.CHANGE_STOP_LOSS_PRICE);
     }
 
     @Test
     public void testTPChangeRejectIsMappedCorrect() {
         assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_TP_REJECTED,
                                                      IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     OrderCallRequest.CHANGE_TP);
+                                                     OrderCallRequest.CHANGE_TAKE_PROFIT_PRICE);
     }
 }

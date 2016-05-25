@@ -46,15 +46,15 @@ public class OrderUtilHandler {
         return runOrderSupplierCall(orderSupplierCall, orderEventTypeData);
     }
 
-    private OrderCallExecutorResult createResult(final OrderSupplierCall orderSupplierCall,
-                                                 final OrderCallRequest orderCallRequest) {
+    private final OrderCallExecutorResult createResult(final OrderSupplierCall orderSupplierCall,
+                                                       final OrderCallRequest orderCallRequest) {
         final OrderCallExecutorResult orderExecutorResult = orderCallExecutor.run(orderSupplierCall);
         registerOrderCallRequest(orderExecutorResult, orderCallRequest);
         return orderExecutorResult;
     }
 
-    private Observable<OrderEvent> createObs(final OrderCallExecutorResult orderExecutorResult,
-                                             final OrderEventTypeData orderEventTypeData) {
+    private final Observable<OrderEvent> createObs(final OrderCallExecutorResult orderExecutorResult,
+                                                   final OrderEventTypeData orderEventTypeData) {
         return orderExecutorResult.maybeException().isPresent()
                 ? Observable.error(orderExecutorResult.maybeException().get())
                 : Observable.create(subscriber -> {
@@ -80,8 +80,8 @@ public class OrderUtilHandler {
             }
     }
 
-    private void registerOrderCallRequest(final OrderCallExecutorResult orderExecutorResult,
-                                          final OrderCallRequest orderCallRequest) {
+    private final void registerOrderCallRequest(final OrderCallExecutorResult orderExecutorResult,
+                                                final OrderCallRequest orderCallRequest) {
         if (orderExecutorResult.maybeOrder().isPresent())
             orderEventGateway.registerOrderRequest(orderExecutorResult.maybeOrder().get(),
                                                    orderCallRequest);

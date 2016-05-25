@@ -97,13 +97,13 @@ public final class OrderEventTypeEvaluator {
                          OrderEventType.CHANGE_AMOUNT_REJECTED)
                     .put(OrderCallRequest.CHANGE_LABEL,
                          OrderEventType.CHANGE_LABEL_REJECTED)
-                    .put(OrderCallRequest.CHANGE_GTT,
+                    .put(OrderCallRequest.CHANGE_GOOD_TILL_TIME,
                          OrderEventType.CHANGE_GTT_REJECTED)
                     .put(OrderCallRequest.CHANGE_OPENPRICE,
                          OrderEventType.CHANGE_OPENPRICE_REJECTED)
-                    .put(OrderCallRequest.CHANGE_SL,
+                    .put(OrderCallRequest.CHANGE_STOP_LOSS_PRICE,
                          OrderEventType.CHANGE_SL_REJECTED)
-                    .put(OrderCallRequest.CHANGE_TP,
+                    .put(OrderCallRequest.CHANGE_TAKE_PROFIT_PRICE,
                          OrderEventType.CHANGE_TP_REJECTED)
                     .build());
 

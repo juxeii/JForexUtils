@@ -62,7 +62,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            orderGateway.registerOrderRequest(orderUnderTest, OrderCallRequest.CHANGE_SL);
+            orderGateway.registerOrderRequest(orderUnderTest, OrderCallRequest.CHANGE_STOP_LOSS_PRICE);
             orderGateway.onOrderMessageData(orderMessageData);
         }
 

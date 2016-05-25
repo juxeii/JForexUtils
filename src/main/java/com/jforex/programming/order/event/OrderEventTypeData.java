@@ -88,7 +88,7 @@ public final class OrderEventTypeData {
     public final static OrderEventTypeData changeGTTData =
             new OrderEventTypeData(EnumSet.of(GTT_CHANGE_OK),
                                    EnumSet.of(CHANGE_GTT_REJECTED),
-                                   OrderCallRequest.CHANGE_GTT);
+                                   OrderCallRequest.CHANGE_GOOD_TILL_TIME);
 
     public final static OrderEventTypeData changeOpenPriceData =
             new OrderEventTypeData(EnumSet.of(OPENPRICE_CHANGE_OK),
@@ -103,10 +103,10 @@ public final class OrderEventTypeData {
     public final static OrderEventTypeData changeSLData =
             new OrderEventTypeData(EnumSet.of(SL_CHANGE_OK),
                                    EnumSet.of(CHANGE_SL_REJECTED),
-                                   OrderCallRequest.CHANGE_SL);
+                                   OrderCallRequest.CHANGE_STOP_LOSS_PRICE);
 
     public final static OrderEventTypeData changeTPData =
             new OrderEventTypeData(EnumSet.of(TP_CHANGE_OK),
                                    EnumSet.of(CHANGE_TP_REJECTED),
-                                   OrderCallRequest.CHANGE_TP);
+                                   OrderCallRequest.CHANGE_TAKE_PROFIT_PRICE);
 }

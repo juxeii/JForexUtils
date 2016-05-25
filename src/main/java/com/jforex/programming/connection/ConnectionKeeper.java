@@ -13,7 +13,6 @@ import com.jforex.programming.misc.RxUtil;
 import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Completable;
-import rx.Completable.CompletableSubscriber;
 import rx.Observable;
 
 public final class ConnectionKeeper {
@@ -47,21 +46,17 @@ public final class ConnectionKeeper {
 
         reconnectCompletable = Completable.create(subscriber -> {
             logger.debug("Try to do a light reconnection...");
+            connectionStateObs
+                    .subscribe(connectionState -> {
+                        if (connectionState == ConnectionState.CONNECTED || client.isConnected())
+                            subscriber.onCompleted();
+                        else
+                            subscriber.onError(new ConnectException());
+                    });
             client.reconnect();
-            initNextConnectionStateObs(connectionStateObs, subscriber);
         }).retryWhen(errors -> RxUtil.retryWithDelay(errors,
                                                      platformSettings.logintimeoutseconds(),
                                                      TimeUnit.SECONDS));
-    }
-
-    private void initNextConnectionStateObs(final Observable<ConnectionState> connectionStateObs,
-                                            final CompletableSubscriber subscriber) {
-        connectionStateObs.subscribe(connectionState -> {
-            if (connectionState == ConnectionState.CONNECTED || client.isConnected())
-                subscriber.onCompleted();
-            else
-                subscriber.onError(new ConnectException());
-        });
     }
 
     private final void configureFSM() {

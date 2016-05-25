@@ -15,14 +15,13 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -43,7 +42,7 @@ public class Position {
         this.instrument = instrument;
 
         orderEventObservable
-                .flatMap(orderEvent -> Observable.just(orderEvent.order()))
+                .map(OrderEvent::order)
                 .filter(this::contains)
                 .filter(isClosed.or(isCanceled)::test)
                 .doOnNext(this::removeOrder)
