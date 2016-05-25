@@ -15,6 +15,7 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.UserSettings;
 
 import rx.Observable;
@@ -116,11 +117,15 @@ public final class PositionSwitcher {
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         final String mergeLabel = defaultMergePrefix + adaptedOrderParams.label();
 
+        final Observable<OrderEvent> mergeObs =
+                Observable.defer(() -> orderUtil.mergePositionOrders(mergeLabel,
+                                                                     instrument,
+                                                                     noRestoreSLTPPolicy));
+
         orderUtil.submitOrder(adaptedOrderParams)
-                .concatWith(Observable.defer(() -> orderUtil
-                        .mergePositionOrders(mergeLabel, instrument, noRestoreSLTPPolicy)))
-                .subscribe(orderEvent -> {},
-                           error -> fsm.fire(FSMTrigger.MERGE_DONE),
+                .concatWith(mergeObs)
+                .toCompletable()
+                .subscribe(error -> fsm.fire(FSMTrigger.MERGE_DONE),
                            () -> fsm.fire(FSMTrigger.MERGE_DONE));
     }
 

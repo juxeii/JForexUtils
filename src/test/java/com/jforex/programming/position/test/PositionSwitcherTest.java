@@ -165,6 +165,7 @@ public class PositionSwitcherTest extends PositionCommonTest {
             public void testNoMergeCallHasBeenDone() {
                 positionSwitcher.sendBuySignal();
 
+                verify(orderUtilMock).submitOrder(any());
                 verify(orderUtilMock, never()).mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD), any());
             }
         }
