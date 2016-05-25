@@ -12,17 +12,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mockito.Mock;
 
+import com.jforex.programming.misc.ConcurrentUtil;
+import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.settings.UserSettings;
+import com.jforex.programming.test.fakes.IEngineForTest;
+import com.jforex.programming.test.fakes.IMessageForTest;
+
 import com.dukascopy.api.IContext;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
-import com.jforex.programming.misc.ConcurrentUtil;
-import com.jforex.programming.settings.PlatformSettings;
-import com.jforex.programming.settings.UserSettings;
-import com.jforex.programming.test.fakes.IEngineForTest;
-import com.jforex.programming.test.fakes.IMessageForTest;
 
 public class CommonUtilForTest {
 

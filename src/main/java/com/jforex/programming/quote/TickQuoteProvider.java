@@ -8,11 +8,12 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.jforex.programming.misc.RxUtil;
+
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.misc.RxUtil;
 
 import rx.Observable;
 
@@ -80,7 +81,8 @@ public class TickQuoteProvider {
 
     public void subscribe(final Set<Instrument> instruments,
                           final TickQuoteConsumer tickQuoteConsumer) {
-        tickQuoteObservable.filter(tickQuote -> instruments.contains(tickQuote.instrument()))
+        tickQuoteObservable
+                .filter(tickQuote -> instruments.contains(tickQuote.instrument()))
                 .subscribe(tickQuoteConsumer::onTickQuote);
     }
 
