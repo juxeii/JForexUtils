@@ -24,15 +24,15 @@ import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionSwitcher;
-import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
+import com.jforex.programming.test.common.PositionCommonTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
 import rx.Observable;
 
 @RunWith(HierarchicalContextRunner.class)
-public class PositionSwitcherTest extends InstrumentUtilForTest {
+public class PositionSwitcherTest extends PositionCommonTest {
 
     private PositionSwitcher positionSwitcher;
 
@@ -91,10 +91,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     public class FlatSetup {
 
-        public FlatSetup() {
-
-        }
-
         @Test
         public void testSendedOrderParamsAreCorrect() {
             final OrderParams paramsWithWrongCommand = orderParamsBUY.clone()
@@ -124,10 +120,6 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     public class BuySetup {
 
         private final String buyMergeLabel = userSettings.defaultMergePrefix() + buyLabel;
-
-        public BuySetup() {
-
-        }
 
         @Test
         public void testSendedOrderParamsAreCorrect() {
@@ -159,6 +151,21 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                 positionSwitcher.sendFlatSignal();
 
                 verify(orderUtilMock, never()).closePosition(instrumentEURUSD);
+            }
+        }
+
+        public class WhenSubmitHasError {
+
+            @Before
+            public void setUp() {
+                when(orderUtilMock.submitOrder(any())).thenReturn(exceptionObservable());
+            }
+
+            @Test
+            public void testNoMergeCallHasBeenDone() {
+                positionSwitcher.sendBuySignal();
+
+                verify(orderUtilMock, never()).mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD), any());
             }
         }
 

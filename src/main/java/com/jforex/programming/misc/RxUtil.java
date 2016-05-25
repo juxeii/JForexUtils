@@ -17,10 +17,13 @@ import rx.observables.ConnectableObservable;
 
 public final class RxUtil {
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    private final static long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
-    private final static int maxRetriesOnOrderFail = platformSettings.maxRetriesOnOrderFail();
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
+    private static final int maxRetriesOnOrderFail = platformSettings.maxRetriesOnOrderFail();
     private static final Logger logger = LogManager.getLogger(RxUtil.class);
+
+    private RxUtil() {
+    }
 
     public final static <T> Observable<T> connectObservable(final Observable<T> observable) {
         final ConnectableObservable<T> connectableObservable = observable.replay();
@@ -28,7 +31,7 @@ public final class RxUtil {
         return connectableObservable;
     }
 
-    public static Completable connectCompletable(final Completable completable) {
+    public final static Completable connectCompletable(final Completable completable) {
         final Observable<OrderEvent> connectedObservable = connectObservable(completable.toObservable());
         return connectedObservable.toCompletable();
     }
@@ -39,10 +42,10 @@ public final class RxUtil {
         return errors.flatMap(retryPair -> retryWait(delay, timeUnit));
     }
 
-    public static Observable<Long> retryWithDelay(final Observable<? extends Throwable> errors,
-                                                  final long delay,
-                                                  final TimeUnit timeUnit,
-                                                  final int maxRetries) {
+    public final static Observable<Long> retryWithDelay(final Observable<? extends Throwable> errors,
+                                                        final long delay,
+                                                        final TimeUnit timeUnit,
+                                                        final int maxRetries) {
         return errors
                 .zipWith(retryCounter(maxRetries), Pair::of)
                 .flatMap(retryPair -> evaluateRetryPair(retryPair,
