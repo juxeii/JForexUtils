@@ -3,6 +3,7 @@ package com.jforex.programming.quote;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,8 +11,8 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
-import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.misc.RxUtil;
 
 import rx.Observable;
 
@@ -36,28 +37,22 @@ public class TickQuoteProvider {
     }
 
     private void initLatestTicksFromHistory() {
-        subscribedInstruments.forEach(instrument -> latestTickQuote.put(instrument, tickFromHistory(instrument)));
+        subscribedInstruments.forEach(this::putTickFromHistory);
     }
 
-    private ITick tickFromHistory(final Instrument instrument) {
-        try {
-            ITick historyTick = null;
-            for (int i = 0; i < 10; ++i) {
-                historyTick = history.getLastTick(instrument);
-                if (historyTick == null) {
-                    logger.warn("Last tick for " + instrument +
-                            " from history returned null! Retry no " + (i + 1) + " starts...");
-                    Thread.sleep(500L);
-                } else
-                    break;
-            }
-            return historyTick;
-        } catch (final JFException e) {
-            throw new QuoteProviderException("Exception occured while retreiving quote for " + instrument
-                    + " Message: " + e.getMessage());
-        } catch (final InterruptedException e) {
-            throw new QuoteProviderException("InterruptedException occured while retry waiting! " + e.getMessage());
-        }
+    private void putTickFromHistory(final Instrument instrument) {
+        Observable.fromCallable(() -> history.getLastTick(instrument))
+                .flatMap(tick -> {
+                    if (tick == null) {
+                        logger.warn("Last tick for " + instrument + " from history returned null! Retrying...");
+                        return Observable.error(new QuoteProviderException("History tick is null!"));
+                    }
+                    return Observable.just(tick);
+                })
+                .retryWhen(errors -> RxUtil.retryWithDelay(errors, 500L, TimeUnit.MILLISECONDS, 10))
+                .first()
+                .doOnNext(tick -> latestTickQuote.put(instrument, tick))
+                .subscribe();
     }
 
     public ITick tick(final Instrument instrument) {

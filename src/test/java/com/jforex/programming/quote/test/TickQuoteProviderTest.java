@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +19,6 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
-import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteConsumer;
 import com.jforex.programming.quote.TickQuoteProvider;
@@ -34,8 +34,10 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
 
     private TickQuoteProvider tickQuoteProvider;
 
-    @Mock private TickQuoteConsumer tickQuoteConsumerEURUSDMock;
-    @Mock private TickQuoteConsumer tickQuoteConsumerAUDUSDMock;
+    @Mock
+    private TickQuoteConsumer tickQuoteConsumerEURUSDMock;
+    @Mock
+    private TickQuoteConsumer tickQuoteConsumerAUDUSDMock;
     private Set<Instrument> subscribedInstruments;
     private Subject<TickQuote, TickQuote> tickObservable;
     private final ITick tickEURUSDOfHistory = new ITickForTest(1.23413, 1.23488);
@@ -54,7 +56,9 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
         tickObservable = PublishSubject.create();
         subscribedInstruments = createSet(instrumentEURUSD, instrumentAUDUSD);
 
-        tickQuoteProvider = new TickQuoteProvider(tickObservable, subscribedInstruments, historyMock);
+        tickQuoteProvider = new TickQuoteProvider(tickObservable,
+                                                  subscribedInstruments,
+                                                  historyMock);
         tickQuoteProvider.subscribe(Sets.newHashSet(instrumentEURUSD), tickQuoteConsumerEURUSDMock::onTickQuote);
     }
 
@@ -94,9 +98,11 @@ public class TickQuoteProviderTest extends CurrencyUtilForTest {
             when(historyMock.getLastTick(instrumentEURUSD)).thenThrow(jfException);
         }
 
-        @Test(expected = QuoteProviderException.class)
+        @Test(expected = Exception.class)
         public void testTickThrows() {
             tickQuoteProvider = new TickQuoteProvider(tickObservable, subscribedInstruments, historyMock);
+
+            rxTestUtil.advanceTimeBy(5000L, TimeUnit.MILLISECONDS);
         }
     }
 
