@@ -20,20 +20,15 @@ public final class ConnectionKeeper {
         this.client = client;
         this.authentificationUtil = authentificationUtil;
 
-        intObservables(connectionStateObs);
+        connectionStateObs.subscribe(this::processNewConnectionState);
     }
 
-    private final void intObservables(final Observable<ConnectionState> connectionStateObs) {
-        connectionStateObs.subscribe(connectionState -> {
-            logger.debug(connectionState + " message received!");
-            if (connectionState == ConnectionState.CONNECTED || client.isConnected()) {
-                logger.debug("Connection established");
-            } else {
-                if (authentificationUtil.loginState() == LoginState.LOGGED_IN) {
-                    logger.debug("Try to do a light reconnection...");
-                    client.reconnect();
-                }
-            }
-        });
+    private final void processNewConnectionState(final ConnectionState connectionState) {
+        logger.debug(connectionState + " message received!");
+        if (connectionState == ConnectionState.DISCONNECTED
+                && authentificationUtil.loginState() == LoginState.LOGGED_IN) {
+            logger.debug("Connection lost! Try to reconnect...");
+            client.reconnect();
+        }
     }
 }

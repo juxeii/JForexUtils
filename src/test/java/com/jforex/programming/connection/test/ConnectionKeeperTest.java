@@ -48,21 +48,59 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
         }
 
         @Test
-        public void testConnectedMessageIsIgnored() {
+        public void testConnectedMessageDoesNoReconnect() {
             connectionStateObs.onNext(ConnectionState.CONNECTED);
 
-            verifyZeroInteractions(authentificationUtilMock);
+            verifyZeroInteractions(clientMock);
+        }
+
+        public class WhenDisconnected {
+
+            @Before
+            public void setUp() {
+                connectionStateObs.onNext(ConnectionState.DISCONNECTED);
+            }
+
+            @Test
+            public void testReconnectIsCalled() {
+                verify(clientMock).reconnect();
+            }
+
+            @Test
+            public void testReconnectIsCalledTwiceForNextDisconnect() {
+                connectionStateObs.onNext(ConnectionState.DISCONNECTED);
+
+                verify(clientMock, times(2)).reconnect();
+            }
+
+            @Test
+            public void testConnectDoesNoReconnectCall() {
+                connectionStateObs.onNext(ConnectionState.CONNECTED);
+
+                verify(clientMock).reconnect();
+            }
+        }
+    }
+
+    public class IsInLogoutState {
+
+        @Before
+        public void setUp() {
+            when(authentificationUtilMock.loginState()).thenReturn(LoginState.LOGGED_OUT);
         }
 
         @Test
-        public void testLightReconnectAreDone() {
+        public void testConnectMessageDoesNoReconnect() {
+            connectionStateObs.onNext(ConnectionState.CONNECTED);
+
+            verifyZeroInteractions(clientMock);
+        }
+
+        @Test
+        public void testDisconnectMessageDoesNoReconnect() {
             connectionStateObs.onNext(ConnectionState.DISCONNECTED);
 
-            connectionStateObs.onNext(ConnectionState.DISCONNECTED);
-
-            connectionStateObs.onNext(ConnectionState.DISCONNECTED);
-
-            verify(clientMock, times(3)).reconnect();
+            verifyZeroInteractions(clientMock);
         }
     }
 }
