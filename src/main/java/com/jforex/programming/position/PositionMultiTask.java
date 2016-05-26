@@ -35,8 +35,8 @@ public class PositionMultiTask {
                         + " failed! Exception: " + e.getMessage()));
     }
 
-    private Observable<OrderEvent> restoreSingleSLTPObservable(final IOrder mergeOrder,
-                                                               final RestoreSLTPData restoreSLTPData) {
+    private final Observable<OrderEvent> restoreSingleSLTPObservable(final IOrder mergeOrder,
+                                                                     final RestoreSLTPData restoreSLTPData) {
         final Observable<OrderEvent> restoreSLObs =
                 positionSingleTask.setSLObservable(mergeOrder, restoreSLTPData.sl());
         final Observable<OrderEvent> restoreTPObs =
@@ -49,13 +49,13 @@ public class PositionMultiTask {
         final Instrument instrument = filledOrders.iterator().next().getInstrument();
         logger.debug("Starting remove TPSL task for position " + instrument);
         return Observable.from(filledOrders)
-                .flatMap(order -> removeSingleTPSLObservable(order))
+                .flatMap(this::removeSingleTPSLObservable)
                 .doOnCompleted(() -> logger.debug("Removing TPSL from " + instrument + " was successful."))
                 .doOnError(e -> logger.error("Removing TPSL from " + instrument
                         + " failed! Exception: " + e.getMessage()));
     }
 
-    private Observable<OrderEvent> removeSingleTPSLObservable(final IOrder orderToRemoveSLTP) {
+    private final Observable<OrderEvent> removeSingleTPSLObservable(final IOrder orderToRemoveSLTP) {
         final Observable<OrderEvent> removeTPObs =
                 positionSingleTask.setTPObservable(orderToRemoveSLTP, platformSettings.noTPPrice());
         final Observable<OrderEvent> removeSLObs =

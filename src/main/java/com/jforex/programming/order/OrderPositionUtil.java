@@ -54,6 +54,7 @@ public class OrderPositionUtil {
         submitObs.subscribe(submitEvent -> onSubmitEvent(position, submitEvent),
                             e -> logger.error("Submit " + orderParams.label() + " for position "
                                     + instrument + " failed! Exception: " + e.getMessage()));
+
         return RxUtil.connectObservable(submitObs);
     }
 
@@ -71,6 +72,7 @@ public class OrderPositionUtil {
         mergeObs.subscribe(orderEvent -> position.addOrder(orderEvent.order()),
                            e -> logger.error("Merge with label " + mergeOrderLabel + " failed! Exception: "
                                    + e.getMessage()));
+
         return RxUtil.connectObservable(mergeObs);
     }
 
@@ -86,18 +88,18 @@ public class OrderPositionUtil {
                                                                     restoreSLTPPolicy.restoreTP(filledOrders));
         final Observable<OrderEvent> mergeAndRestoreObs =
                 Observable.defer(() -> positionSingleTask.mergeObservable(mergeOrderLabel, filledOrders))
-                        .doOnNext(orderEvent -> position.addOrder(orderEvent.order()))
-                        .flatMap(orderEvent -> positionMultiTask.restoreSLTPObservable(orderEvent.order(),
-                                                                                       restoreSLTPData))
+                        .map(OrderEvent::order)
+                        .doOnNext(position::addOrder)
+                        .flatMap(order -> positionMultiTask.restoreSLTPObservable(order, restoreSLTPData))
                         .doOnCompleted(() -> logger.debug("Merge task for " + instrument + " position with label "
                                 + mergeOrderLabel + " was successful."));
 
         final Observable<OrderEvent> mergeSequenceObs =
                 Observable.just(filledOrders)
+                        .doOnSubscribe(position::markAllOrdersActive)
                         .doOnNext(toMergeOrders -> logger.debug("Starting merge task for " + instrument
                                 + " position with label " + mergeOrderLabel))
-                        .doOnNext(toMergeOrders -> position.markAllOrdersActive())
-                        .flatMap(toMergeOrders -> positionMultiTask.removeTPSLObservable(toMergeOrders))
+                        .flatMap(positionMultiTask::removeTPSLObservable)
                         .concatWith(mergeAndRestoreObs)
                         .cast(OrderEvent.class);
 
@@ -110,7 +112,7 @@ public class OrderPositionUtil {
         final Observable<OrderEvent> closeObs =
                 Observable.from(position.filledOrOpenedOrders())
                         .doOnSubscribe(() -> logger.debug("Starting close task for position " + instrument))
-                        .doOnSubscribe(() -> position.markAllOrdersActive())
+                        .doOnSubscribe(position::markAllOrdersActive)
                         .flatMap(positionSingleTask::closeObservable)
                         .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."))
                         .doOnError(e -> logger.error("Closing position " + instrument
