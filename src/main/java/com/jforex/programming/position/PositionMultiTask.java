@@ -27,8 +27,22 @@ public class PositionMultiTask {
 
     public Observable<OrderEvent> restoreSLTPObservable(final IOrder mergeOrder,
                                                         final RestoreSLTPData restoreSLTPData) {
-        return restoreSLObservable(mergeOrder, restoreSLTPData)
-                .concatWith(restoreTPObservable(mergeOrder, restoreSLTPData));
+        final Instrument instrument = mergeOrder.getInstrument();
+        logger.debug("Starting restore SLTP task for position " + instrument);
+        return restoreSingleSLTPObservable(mergeOrder, restoreSLTPData)
+                .doOnCompleted(() -> logger.debug("Restoring SLTP for position " + instrument + " was successful."))
+                .doOnError(e -> logger.error("Restoring SLTP for position " + instrument
+                        + " failed! Exception: " + e.getMessage()));
+    }
+
+    private Observable<OrderEvent> restoreSingleSLTPObservable(final IOrder mergeOrder,
+                                                               final RestoreSLTPData restoreSLTPData) {
+        final Observable<OrderEvent> restoreSLObs =
+                positionSingleTask.setSLObservable(mergeOrder, restoreSLTPData.sl());
+        final Observable<OrderEvent> restoreTPObs =
+                Observable.defer(() -> positionSingleTask.setTPObservable(mergeOrder,
+                                                                          restoreSLTPData.tp()));
+        return restoreSLObs.concatWith(restoreTPObs);
     }
 
     public Observable<OrderEvent> removeTPSLObservable(final Set<IOrder> filledOrders) {
@@ -42,61 +56,11 @@ public class PositionMultiTask {
     }
 
     private Observable<OrderEvent> removeSingleTPSLObservable(final IOrder orderToRemoveSLTP) {
-        return removeTPObservable(orderToRemoveSLTP)
-                .concatWith(removeSLObservable(orderToRemoveSLTP));
-    }
-
-    private Observable<OrderEvent> removeTPObservable(final IOrder orderToRemoveTP) {
-        final Instrument instrument = orderToRemoveTP.getInstrument();
-        final String orderLabel = orderToRemoveTP.getLabel();
-        return Observable.just(orderToRemoveTP)
-                .doOnSubscribe(() -> logger.debug("Remove TP from " + orderLabel
-                        + " for " + instrument))
-                .flatMap(order -> positionSingleTask.setTPObservable(order, platformSettings.noTPPrice()))
-                .doOnError(e -> logger.debug("Failed to remove TP from " + orderLabel
-                        + " for " + instrument + ". Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.debug("Removed TP from " + orderLabel
-                        + " for " + instrument + " successfully."));
-    }
-
-    private Observable<OrderEvent> removeSLObservable(final IOrder orderToRemoveSL) {
-        final Instrument instrument = orderToRemoveSL.getInstrument();
-        final String orderLabel = orderToRemoveSL.getLabel();
-        return Observable.just(orderToRemoveSL)
-                .doOnSubscribe(() -> logger.debug("Remove SL from " + orderLabel
-                        + " for " + instrument))
-                .flatMap(order -> positionSingleTask.setSLObservable(order, platformSettings.noSLPrice()))
-                .doOnError(e -> logger.debug("Failed to remove SL from " + orderLabel
-                        + " for " + instrument + ". Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.debug("Removed SL from " + orderLabel
-                        + " for " + instrument + " successfully."));
-    }
-
-    private Observable<OrderEvent> restoreSLObservable(final IOrder mergeOrder,
-                                                       final RestoreSLTPData restoreSLTPData) {
-        final Instrument instrument = mergeOrder.getInstrument();
-        final String orderLabel = mergeOrder.getLabel();
-        return Observable.just(mergeOrder)
-                .doOnSubscribe(() -> logger.debug("Restore SL for order " + orderLabel
-                        + " for " + instrument))
-                .flatMap(order -> positionSingleTask.setSLObservable(order, restoreSLTPData.sl()))
-                .doOnError(e -> logger.debug("Failed to restore SL for order " + orderLabel
-                        + " for " + instrument + ". Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.debug("Restore SL for order " + orderLabel
-                        + " for " + instrument + " successfully."));
-    }
-
-    private Observable<OrderEvent> restoreTPObservable(final IOrder mergeOrder,
-                                                       final RestoreSLTPData restoreSLTPData) {
-        final Instrument instrument = mergeOrder.getInstrument();
-        final String orderLabel = mergeOrder.getLabel();
-        return Observable.just(mergeOrder)
-                .doOnSubscribe(() -> logger.debug("Restore TP for order " + orderLabel
-                        + " for " + instrument))
-                .flatMap(order -> positionSingleTask.setTPObservable(order, restoreSLTPData.tp()))
-                .doOnError(e -> logger.debug("Failed to restore TP for order " + orderLabel
-                        + " for " + instrument + ". Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.debug("Restore TP for order " + orderLabel
-                        + " for " + instrument + " successfully."));
+        final Observable<OrderEvent> removeTPObs =
+                positionSingleTask.setTPObservable(orderToRemoveSLTP, platformSettings.noTPPrice());
+        final Observable<OrderEvent> removeSLObs =
+                Observable.defer(() -> positionSingleTask.setSLObservable(orderToRemoveSLTP,
+                                                                          platformSettings.noSLPrice()));
+        return removeTPObs.concatWith(removeSLObs);
     }
 }
