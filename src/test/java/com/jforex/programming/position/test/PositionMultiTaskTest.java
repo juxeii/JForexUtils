@@ -1,5 +1,7 @@
 package com.jforex.programming.position.test;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -209,18 +211,19 @@ public class PositionMultiTaskTest extends PositionCommonTest {
             @Before
             public void setUp() {
                 setTPTaskMockResult(buyOrder, noTP, exceptionObservable());
+                setTPTaskMockResult(sellOrder, noTP, exceptionObservable());
 
                 removeTPSLCompletableCall.run();
             }
 
             @Test
             public void testSetTPOnOrderHasBeenCalledWithoutRetry() {
-                verify(positionSingleTaskMock).setTPObservable(buyOrder, noTP);
+                verify(positionSingleTaskMock).setTPObservable(any(), eq(noTP));
             }
 
             @Test
             public void testSubscriberGetsJFExceptionNotification() {
-                // assertJFException(taskSubscriber);
+                assertJFException(taskSubscriber);
             }
         }
     }
