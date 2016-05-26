@@ -76,6 +76,10 @@ public class AuthentificationUtil {
                                                                  loginCredentials.username(),
                                                                  loginCredentials.password(),
                                                                  loginCredentials.maybePin());
+        return completableFromConnectResult(maybeException);
+    }
+
+    private Completable completableFromConnectResult(final Optional<Exception> maybeException) {
         return maybeException.isPresent()
                 ? Completable.error(maybeException.get())
                 : Completable.create(subscriber -> {
