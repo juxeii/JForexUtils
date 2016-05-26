@@ -6,12 +6,12 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
-import rx.Completable;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
+
 import rx.Observable;
 
 public class PositionMultiTask {
@@ -31,15 +31,14 @@ public class PositionMultiTask {
                 .concatWith(restoreTPObservable(mergeOrder, restoreSLTPData));
     }
 
-    public Completable removeTPSLObservable(final Set<IOrder> filledOrders) {
+    public Observable<OrderEvent> removeTPSLObservable(final Set<IOrder> filledOrders) {
         final Instrument instrument = filledOrders.iterator().next().getInstrument();
         logger.debug("Starting remove TPSL task for position " + instrument);
         return Observable.from(filledOrders)
                 .flatMap(order -> removeSingleTPSLObservable(order))
                 .doOnCompleted(() -> logger.debug("Removing TPSL from " + instrument + " was successful."))
                 .doOnError(e -> logger.error("Removing TPSL from " + instrument
-                        + " failed! Exception: " + e.getMessage()))
-                .toCompletable();
+                        + " failed! Exception: " + e.getMessage()));
     }
 
     private Observable<OrderEvent> removeSingleTPSLObservable(final IOrder orderToRemoveSLTP) {

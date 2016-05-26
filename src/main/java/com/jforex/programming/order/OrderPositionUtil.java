@@ -97,8 +97,7 @@ public class OrderPositionUtil {
                         .doOnNext(toMergeOrders -> logger.debug("Starting merge task for " + instrument
                                 + " position with label " + mergeOrderLabel))
                         .doOnNext(toMergeOrders -> position.markAllOrdersActive())
-                        .flatMap(toMergeOrders -> positionMultiTask.removeTPSLObservable(toMergeOrders)
-                                .toObservable())
+                        .flatMap(toMergeOrders -> positionMultiTask.removeTPSLObservable(toMergeOrders))
                         .concatWith(mergeAndRestoreObs)
                         .cast(OrderEvent.class);
 

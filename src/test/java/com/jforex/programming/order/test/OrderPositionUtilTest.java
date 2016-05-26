@@ -17,7 +17,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderParams;
@@ -33,6 +32,8 @@ import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.common.PositionCommonTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -314,7 +315,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
         private void setRemoveTPSLMockResult(final Observable<OrderEvent> observable) {
             when(positionMultiTaskMock.removeTPSLObservable(toMergeOrders))
-                    .thenReturn(observable.toCompletable());
+                    .thenReturn(observable);
         }
 
         private void setMergeMockResult(final Observable<OrderEvent> observable) {
