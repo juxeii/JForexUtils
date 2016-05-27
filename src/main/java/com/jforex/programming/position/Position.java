@@ -26,7 +26,7 @@ import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
-public class Position implements PositionChange, PositionOrders {
+public class Position implements PositionOrders {
 
     private final Instrument instrument;
     private final ConcurrentMap<IOrder, OrderProcessState> orderRepository =
@@ -50,7 +50,6 @@ public class Position implements PositionChange, PositionOrders {
                 .subscribe();
     }
 
-    @Override
     public synchronized void addOrder(final IOrder order) {
         if (!ofInstrument(instrument).test(order))
             logger.error("Tried to add instrument " + order.getInstrument() + " from order " +
@@ -62,7 +61,6 @@ public class Position implements PositionChange, PositionOrders {
         }
     }
 
-    @Override
     public synchronized void markAllOrdersActive() {
         orderRepository.replaceAll((k, v) -> OrderProcessState.ACTIVE);
     }
