@@ -7,6 +7,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.OrderStaticUtil.ofInstrument;
 import static java.util.stream.Collectors.toSet;
 
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
@@ -120,7 +121,7 @@ public class Position implements PositionOrders {
                 .stream()
                 .filter(entry -> orderPredicate.test(entry.getKey()))
                 .filter(entry -> entry.getValue() == OrderProcessState.IDLE)
-                .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()))
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue))
                 .keySet();
     }
 
