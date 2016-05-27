@@ -1,7 +1,6 @@
 package com.jforex.programming.position.test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -12,8 +11,6 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.jforex.programming.misc.MathUtil;
@@ -43,8 +40,6 @@ public class PositionSwitcherTest extends PositionCommonTest {
     private PositionOrders positionOrdersMock;
     @Mock
     private OrderParamsSupplier orderParamsSupplierMock;
-    @Captor
-    private ArgumentCaptor<OrderParams> orderParamsCaptor;
     private final OrderParams orderParamsBUY = OrderParamsForTest.paramsBuyEURUSD();
     private final OrderParams orderParamsSELL = OrderParamsForTest.paramsSellEURUSD();
     private final String buyLabel = orderParamsBUY.label();
@@ -70,15 +65,6 @@ public class PositionSwitcherTest extends PositionCommonTest {
         when(orderParamsSupplierMock.forCommand(OrderCommand.SELL)).thenReturn(orderParamsSELL);
     }
 
-    private void verifySendedOrderParamsAreCorrect(final String mergeLabel,
-                                                   final double expectedAmount,
-                                                   final OrderCommand expectedCommand) {
-        final OrderParams sendedOrderParams = orderParamsCaptor.getValue();
-        assertThat(sendedOrderParams.label(), equalTo(mergeLabel));
-        assertThat(sendedOrderParams.amount(), equalTo(expectedAmount));
-        assertThat(sendedOrderParams.orderCommand(), equalTo(expectedCommand));
-    }
-
     private void setPositionOrderDirection(final OrderDirection orderDirection) {
         when(positionOrdersMock.direction()).thenReturn(orderDirection);
     }
@@ -88,6 +74,14 @@ public class PositionSwitcherTest extends PositionCommonTest {
         final double expectedAmount = MathUtil.roundAmount(orderParams.amount() + Math.abs(signedExposure));
         when(positionOrdersMock.signedExposure()).thenReturn(signedExposure);
         return expectedAmount;
+    }
+
+    private void verifySendedOrderParams(final String label,
+                                         final OrderCommand orderCommand,
+                                         final double amount) {
+        verify(orderUtilMock).submitOrder(argLambda(params -> params.label().equals(label)
+                && params.orderCommand() == orderCommand
+                && params.amount() == amount));
     }
 
     public class FlatSetup {
@@ -112,9 +106,7 @@ public class PositionSwitcherTest extends PositionCommonTest {
                     .thenReturn(Observable.empty());
 
             positionSwitcher.sendBuySignal();
-
-            verify(orderUtilMock).submitOrder(orderParamsCaptor.capture());
-            verifySendedOrderParamsAreCorrect(buyLabel, orderParamsBUY.amount(), OrderCommand.BUY);
+            verifySendedOrderParams(buyLabel, OrderCommand.BUY, orderParamsBUY.amount());
         }
     }
 
@@ -129,8 +121,7 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
             positionSwitcher.sendBuySignal();
 
-            verify(orderUtilMock).submitOrder(orderParamsCaptor.capture());
-            verifySendedOrderParamsAreCorrect(buyLabel, orderParamsBUY.amount(), OrderCommand.BUY);
+            verifySendedOrderParams(buyLabel, OrderCommand.BUY, orderParamsBUY.amount());
         }
 
         public class WhenSubmitIsBusy {
@@ -250,8 +241,9 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
                     positionSwitcher.sendSellSignal();
 
-                    verify(orderUtilMock, times(2)).submitOrder(orderParamsCaptor.capture());
-                    verifySendedOrderParamsAreCorrect(sellLabel, expectedAmount, OrderCommand.SELL);
+                    verify(orderUtilMock).submitOrder(argLambda(params -> params.label().equals(sellLabel)
+                            && params.orderCommand() == OrderCommand.SELL
+                            && params.amount() == expectedAmount));
                 }
 
                 public class WhenCloseIsBusy {
@@ -335,9 +327,7 @@ public class PositionSwitcherTest extends PositionCommonTest {
                     .thenReturn(Observable.empty());
 
             positionSwitcher.sendSellSignal();
-
-            verify(orderUtilMock).submitOrder(orderParamsCaptor.capture());
-            verifySendedOrderParamsAreCorrect(sellLabel, orderParamsSELL.amount(), OrderCommand.SELL);
+            verifySendedOrderParams(sellLabel, OrderCommand.SELL, orderParamsSELL.amount());
         }
 
         public class WhenSubmitIsBusy {
@@ -441,8 +431,7 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
                     positionSwitcher.sendBuySignal();
 
-                    verify(orderUtilMock, times(2)).submitOrder(orderParamsCaptor.capture());
-                    verifySendedOrderParamsAreCorrect(buyLabel, expectedAmount, OrderCommand.BUY);
+                    verifySendedOrderParams(buyLabel, OrderCommand.BUY, expectedAmount);
                 }
 
                 public class WhenCloseIsBusy {
