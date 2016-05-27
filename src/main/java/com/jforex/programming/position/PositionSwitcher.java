@@ -24,7 +24,7 @@ import rx.Observable;
 public final class PositionSwitcher {
 
     private final OrderUtil orderUtil;
-    private final Position position;
+    private final PositionOrders positionOrders;
     private final Instrument instrument;
     private final OrderParamsSupplier orderParamsSupplier;
     private final RestoreSLTPPolicy noRestoreSLTPPolicy = new NoRestorePolicy();
@@ -56,7 +56,7 @@ public final class PositionSwitcher {
         this.instrument = instrument;
         this.orderUtil = orderUtil;
         this.orderParamsSupplier = orderParamsSupplier;
-        position = orderUtil.position(instrument);
+        positionOrders = orderUtil.positionOrders(instrument);
 
         configureFSM();
     }
@@ -94,7 +94,7 @@ public final class PositionSwitcher {
                 .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT))
                 .onEntryFrom(FSMTrigger.FLAT,
                              () -> orderUtil.closePosition(instrument).subscribe(() -> fsm.fire(FSMTrigger.CLOSE_DONE)))
-                .permitDynamic(FSMTrigger.MERGE_DONE, () -> nextStatesByDirection.get(position.direction()))
+                .permitDynamic(FSMTrigger.MERGE_DONE, () -> nextStatesByDirection.get(positionOrders.direction()))
                 .permit(FSMTrigger.CLOSE_DONE, FSMState.FLAT)
                 .ignore(FSMTrigger.FLAT)
                 .ignore(FSMTrigger.BUY)
@@ -131,7 +131,7 @@ public final class PositionSwitcher {
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {
-        final double absPositionExposure = Math.abs(position.signedExposure());
+        final double absPositionExposure = Math.abs(positionOrders.signedExposure());
         final OrderParams orderParams = orderParamsSupplier.forCommand(newOrderCommand);
         return orderParams
                 .clone()

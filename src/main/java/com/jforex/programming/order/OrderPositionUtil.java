@@ -12,6 +12,7 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionMultiTask;
+import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
@@ -41,7 +42,7 @@ public class OrderPositionUtil {
         this.positionFactory = positionFactory;
     }
 
-    public Position position(final Instrument instrument) {
+    public PositionOrders positionOrders(final Instrument instrument) {
         return positionFactory.forInstrument(instrument);
     }
 

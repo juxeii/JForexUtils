@@ -20,7 +20,7 @@ import com.jforex.programming.order.OrderPositionUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderSupplier;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
@@ -42,7 +42,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private RestoreSLTPPolicy restoreSLTPPolicyMock;
     @Mock
-    private Position positionMock;
+    private PositionOrders positionOrdersMock;
     @Captor
     private ArgumentCaptor<OrderSupplier> orderCallCaptor;
     @Captor
@@ -60,13 +60,13 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testPositionQueryReturnsCorrectPosition() {
-        when(orderPositionUtilMock.position(instrumentEURUSD))
-                .thenReturn(positionMock);
+    public void testPositionOrdersReturnsCorrectInstance() {
+        when(orderPositionUtilMock.positionOrders(instrumentEURUSD))
+                .thenReturn(positionOrdersMock);
 
-        final Position position = orderUtil.position(instrumentEURUSD);
+        final PositionOrders positionOrders = orderUtil.positionOrders(instrumentEURUSD);
 
-        assertThat(position, equalTo(positionMock));
+        assertThat(positionOrders, equalTo(positionOrdersMock));
     }
 
     @Test

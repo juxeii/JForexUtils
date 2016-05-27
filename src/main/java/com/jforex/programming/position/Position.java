@@ -15,17 +15,18 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
+
 import rx.Observable;
 
-public class Position {
+public class Position implements PositionChange, PositionOrders {
 
     private final Instrument instrument;
     private final ConcurrentMap<IOrder, OrderProcessState> orderRepository =
@@ -49,10 +50,7 @@ public class Position {
                 .subscribe();
     }
 
-    public Instrument instrument() {
-        return instrument;
-    }
-
+    @Override
     public synchronized void addOrder(final IOrder order) {
         if (!ofInstrument(instrument).test(order))
             logger.error("Tried to add instrument " + order.getInstrument() + " from order " +
@@ -64,28 +62,38 @@ public class Position {
         }
     }
 
+    @Override
+    public synchronized void markAllOrdersActive() {
+        orderRepository.replaceAll((k, v) -> OrderProcessState.ACTIVE);
+    }
+
     private synchronized void removeOrder(final IOrder order) {
         orderRepository.remove(order);
         logger.debug("Removed order " + order.getLabel() + " from position " + instrument + " Orderstate: "
                 + order.getState() + " repo size " + orderRepository.size());
     }
 
+    @Override
+    public Instrument instrument() {
+        return instrument;
+    }
+
+    @Override
     public boolean contains(final IOrder order) {
         return orderRepository.containsKey(order);
     }
 
+    @Override
     public int size() {
         return orderRepository.size();
     }
 
-    public synchronized void markAllOrdersActive() {
-        orderRepository.replaceAll((k, v) -> OrderProcessState.ACTIVE);
-    }
-
+    @Override
     public OrderDirection direction() {
         return OrderStaticUtil.combinedDirection(filterOrders(isFilled));
     }
 
+    @Override
     public double signedExposure() {
         return filterOrders(isFilled)
                 .stream()
@@ -93,10 +101,12 @@ public class Position {
                 .sum();
     }
 
+    @Override
     public Set<IOrder> orders() {
         return ImmutableSet.copyOf(orderRepository.keySet());
     }
 
+    @Override
     public Set<IOrder> filterOrders(final Predicate<IOrder> orderPredicate) {
         return orderRepository
                 .keySet()
@@ -105,6 +115,7 @@ public class Position {
                 .collect(toSet());
     }
 
+    @Override
     public Set<IOrder> notProcessingOrders(final Predicate<IOrder> orderPredicate) {
         return orderRepository
                 .entrySet()
@@ -115,10 +126,12 @@ public class Position {
                 .keySet();
     }
 
+    @Override
     public Set<IOrder> filledOrders() {
         return notProcessingOrders(isFilled);
     }
 
+    @Override
     public Set<IOrder> filledOrOpenedOrders() {
         return notProcessingOrders(isFilled.or(isOpened));
     }

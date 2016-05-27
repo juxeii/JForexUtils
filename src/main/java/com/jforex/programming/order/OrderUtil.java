@@ -3,7 +3,7 @@ package com.jforex.programming.order;
 import java.util.Collection;
 
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 
 import com.dukascopy.api.IOrder;
@@ -23,8 +23,8 @@ public class OrderUtil {
         this.orderPositionUtil = orderPositionUtil;
     }
 
-    public Position position(final Instrument instrument) {
-        return orderPositionUtil.position(instrument);
+    public PositionOrders positionOrders(final Instrument instrument) {
+        return orderPositionUtil.positionOrders(instrument);
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {

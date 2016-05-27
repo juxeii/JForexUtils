@@ -16,16 +16,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.common.PositionCommonTest;
+
+import com.dukascopy.api.IEngine.OrderCommand;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
@@ -39,7 +40,7 @@ public class PositionSwitcherTest extends PositionCommonTest {
     @Mock
     private OrderUtil orderUtilMock;
     @Mock
-    private Position positionMock;
+    private PositionOrders positionOrdersMock;
     @Mock
     private OrderParamsSupplier orderParamsSupplierMock;
     @Captor
@@ -61,7 +62,7 @@ public class PositionSwitcherTest extends PositionCommonTest {
     }
 
     private void setUpMocks() {
-        when(orderUtilMock.position(instrumentEURUSD)).thenReturn(positionMock);
+        when(orderUtilMock.positionOrders(instrumentEURUSD)).thenReturn(positionOrdersMock);
         when(orderUtilMock.submitOrder(any())).thenReturn(Observable.empty());
         when(orderUtilMock.closePosition(instrumentEURUSD)).thenReturn(Completable.complete());
 
@@ -79,13 +80,13 @@ public class PositionSwitcherTest extends PositionCommonTest {
     }
 
     private void setPositionOrderDirection(final OrderDirection orderDirection) {
-        when(positionMock.direction()).thenReturn(orderDirection);
+        when(positionOrdersMock.direction()).thenReturn(orderDirection);
     }
 
     private double expectedAmount(final double signedExposure,
                                   final OrderParams orderParams) {
         final double expectedAmount = MathUtil.roundAmount(orderParams.amount() + Math.abs(signedExposure));
-        when(positionMock.signedExposure()).thenReturn(signedExposure);
+        when(positionOrdersMock.signedExposure()).thenReturn(signedExposure);
         return expectedAmount;
     }
 
