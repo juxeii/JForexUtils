@@ -1,7 +1,6 @@
 package com.jforex.programming.order.test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,8 +14,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderParams;
@@ -26,6 +23,9 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -42,8 +42,6 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
     private OrderUtilHandler orderUtilHandlerMock;
     @Captor
     private ArgumentCaptor<OrderSupplier> orderCallCaptor;
-    @Captor
-    private ArgumentCaptor<OrderEventTypeData> typeDataCaptor;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
 
     @Before
@@ -53,8 +51,9 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
         orderCreateUtil = new OrderCreateUtil(engineMock, orderUtilHandlerMock);
     }
 
-    private void captureAndRunOrderCall() throws JFException {
-        verify(orderUtilHandlerMock).runOrderSupplierCall(orderCallCaptor.capture(), typeDataCaptor.capture());
+    private void captureAndRunOrderCall(final OrderEventTypeData orderEventTypeData) throws JFException {
+        verify(orderUtilHandlerMock).runOrderSupplierCall(orderCallCaptor.capture(),
+                                                          argLambda(td -> td == orderEventTypeData));
         orderCallCaptor.getValue().get();
     }
 
@@ -75,19 +74,12 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
 
                 orderCreateUtil.submitOrder(orderParamsBUY).subscribe(submitSubscriber);
 
-                captureAndRunOrderCall();
+                captureAndRunOrderCall(submitTypeData);
             }
 
             @Test
             public void testSubmitCallsOnIEngine() throws JFException {
                 engineForTest.verifySubmit(orderParamsBUY, 1);
-            }
-
-            @Test
-            public void testSubmitCallsHandlerWithCorrectTypeData() {
-                final OrderEventTypeData orderEventTypeData = typeDataCaptor.getValue();
-
-                assertThat(orderEventTypeData, equalTo(submitTypeData));
             }
 
             @Test
@@ -117,19 +109,12 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
 
                 orderCreateUtil.mergeOrders(mergeOrderLabel, mergeOrders).subscribe(mergeSubscriber);
 
-                captureAndRunOrderCall();
+                captureAndRunOrderCall(mergeTypeData);
             }
 
             @Test
             public void testMergeCallsOnIEngine() throws JFException {
                 engineForTest.verifyMerge(mergeOrderLabel, mergeOrders, 1);
-            }
-
-            @Test
-            public void testMergeCallsHandlerWithCorrectTypeData() {
-                final OrderEventTypeData orderEventTypeData = typeDataCaptor.getValue();
-
-                assertThat(orderEventTypeData, equalTo(mergeTypeData));
             }
 
             @Test

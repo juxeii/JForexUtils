@@ -1,7 +1,6 @@
 package com.jforex.programming.order.test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,7 +12,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.RunnableWithJFException;
@@ -21,6 +19,8 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -37,8 +37,6 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
     private OrderUtilHandler orderUtilHandlerMock;
     @Captor
     private ArgumentCaptor<RunnableWithJFException> orderCallCaptor;
-    @Captor
-    private ArgumentCaptor<OrderEventTypeData> typeDataCaptor;
     private final IOrderForTest orderUnterTest = IOrderForTest.buyOrderEURUSD();
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final Observable<OrderEvent> changeObservable = Observable.empty();
@@ -51,10 +49,10 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         orderChangeUtil = new OrderChangeUtil(orderUtilHandlerMock);
     }
 
-    private void captureAndRunOrderCall() throws JFException {
+    private void captureAndRunOrderCall(final OrderEventTypeData typeData) throws JFException {
         verify(orderUtilHandlerMock).runOrderChangeCall(orderCallCaptor.capture(),
                                                         eq(orderUnterTest),
-                                                        typeDataCaptor.capture());
+                                                        argLambda(td -> td == typeData));
         orderCallCaptor.getValue().run();
     }
 
@@ -62,17 +60,6 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         when(orderUtilHandlerMock
                 .runOrderChangeCall(orderCallCaptor.capture(), eq(orderUnterTest), eq(orderEventTypeData)))
                         .thenReturn(changeObservable);
-    }
-
-    private void runCommonTests(final OrderEventTypeData typeData) {
-        assertTypeData(typeData);
-        assertNotification();
-    }
-
-    private void assertTypeData(final OrderEventTypeData typeData) {
-        final OrderEventTypeData orderEventTypeData = typeDataCaptor.getValue();
-
-        assertThat(orderEventTypeData, equalTo(typeData));
     }
 
     private void assertNotification() {
@@ -91,8 +78,8 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
 
             orderChangeUtil.close(orderUnterTest).subscribe(changeSubscriber);
 
-            captureAndRunOrderCall();
-            runCommonTests(typeData);
+            captureAndRunOrderCall(typeData);
+            assertNotification();
         }
 
         @Test
@@ -112,8 +99,8 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
 
             orderChangeUtil.setLabel(orderUnterTest, newLabel).subscribe(changeSubscriber);
 
-            captureAndRunOrderCall();
-            runCommonTests(typeData);
+            captureAndRunOrderCall(typeData);
+            assertNotification();
         }
 
         @Test
@@ -133,8 +120,8 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
 
             orderChangeUtil.setGoodTillTime(orderUnterTest, newGTT).subscribe(changeSubscriber);
 
-            captureAndRunOrderCall();
-            runCommonTests(typeData);
+            captureAndRunOrderCall(typeData);
+            assertNotification();
         }
 
         @Test
@@ -154,8 +141,8 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
 
             orderChangeUtil.setOpenPrice(orderUnterTest, newOpenPrice).subscribe(changeSubscriber);
 
-            captureAndRunOrderCall();
-            runCommonTests(typeData);
+            captureAndRunOrderCall(typeData);
+            assertNotification();
         }
 
         @Test
@@ -175,8 +162,8 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
 
             orderChangeUtil.setRequestedAmount(orderUnterTest, newRequestedAmount).subscribe(changeSubscriber);
 
-            captureAndRunOrderCall();
-            runCommonTests(typeData);
+            captureAndRunOrderCall(typeData);
+            assertNotification();
         }
 
         @Test
@@ -196,8 +183,8 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
 
             orderChangeUtil.setStopLossPrice(orderUnterTest, newSL).subscribe(changeSubscriber);
 
-            captureAndRunOrderCall();
-            runCommonTests(typeData);
+            captureAndRunOrderCall(typeData);
+            assertNotification();
         }
 
         @Test
@@ -217,8 +204,8 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
 
             orderChangeUtil.setTakeProfitPrice(orderUnterTest, newTP).subscribe(changeSubscriber);
 
-            captureAndRunOrderCall();
-            runCommonTests(typeData);
+            captureAndRunOrderCall(typeData);
+            assertNotification();
         }
 
         @Test
