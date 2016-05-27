@@ -9,12 +9,13 @@ import java.util.Collection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.RxUtil;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.event.OrderEvent;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -62,7 +63,7 @@ public class PositionSingleTask {
                 .doOnError(e -> logger.debug("Failed to change TP from " + currentTP + " to " + newTP +
                         " for order " + orderToChangeTP.getLabel() + " and position "
                         + orderToChangeTP.getInstrument() + ".Excpetion: " + e.getMessage()))
-                .doOnCompleted(() -> logger.debug("Changed TP from " + currentTP + " to " + newTP +
+                .doOnNext(order -> logger.debug("Changed TP from " + currentTP + " to " + newTP +
                         " for order " + orderToChangeTP.getLabel() + " and position "
                         + orderToChangeTP.getInstrument()));
     }
@@ -90,7 +91,7 @@ public class PositionSingleTask {
                 .retryWhen(RxUtil::positionTaskRetry)
                 .doOnError(e -> logger.error("Closing position " + orderToClose.getInstrument()
                         + " failed! Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.debug("Closing position "
+                .doOnNext(order -> logger.debug("Closing position "
                         + orderToClose.getInstrument() + " was successful."));
     }
 }
