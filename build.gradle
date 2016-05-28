@@ -17,7 +17,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.1.0'
+        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.2.0'
     }
 }
 
@@ -45,7 +45,7 @@ dependencies {
    compile 'com.googlecode.combinatoricslib:combinatoricslib:2.1'
    compile 'org.apache.logging.log4j:log4j-api:2.5'
    compile 'org.apache.logging.log4j:log4j-core:2.5'
-   compile 'org.apache.commons:commons-collections4:4.0'
+   compile 'org.apache.commons:commons-collections4:4.1'
    compile 'org.apache.commons:commons-lang3:3.4'
    compile 'org.aeonbits.owner:owner:1.0.9'
    compile 'com.github.oxo42:stateless4j:2.5.0'
