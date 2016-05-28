@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven-publish'
 
 group= 'com.jforex.programming'
-version = '0.9.35'
+version = '0.9.5'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
