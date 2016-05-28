@@ -12,9 +12,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.jforex.programming.misc.RunnableWithJFException;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.call.RunnableWithJFException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;

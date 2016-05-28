@@ -1,4 +1,4 @@
-package com.jforex.programming.order.call;
+package com.jforex.programming.order;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;

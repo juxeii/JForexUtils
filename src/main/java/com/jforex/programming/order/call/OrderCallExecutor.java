@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.ConcurrentUtil;
+import com.jforex.programming.order.OrderSupplier;
 
 public class OrderCallExecutor {
 

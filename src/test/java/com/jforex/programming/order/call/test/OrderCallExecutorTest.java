@@ -19,9 +19,10 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
+
+import com.jforex.programming.order.OrderSupplier;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
-import com.jforex.programming.order.call.OrderSupplier;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
