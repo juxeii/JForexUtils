@@ -87,7 +87,7 @@ public class PositionSingleTask {
                 .filter(order -> !isClosed.test(order))
                 .doOnSubscribe(() -> logger.debug("Starting to close order " + orderToClose.getLabel()
                         + " for " + orderToClose.getInstrument() + " position."))
-                .flatMap(order -> orderChangeUtil.close(orderToClose))
+                .flatMap(orderChangeUtil::close)
                 .retryWhen(RxUtil::positionTaskRetry)
                 .doOnError(e -> logger.error("Closing position " + orderToClose.getInstrument()
                         + " failed! Exception: " + e.getMessage()))

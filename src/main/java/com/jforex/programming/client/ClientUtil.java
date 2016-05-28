@@ -9,6 +9,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
+import com.jforex.programming.connection.LoginState;
+
 import com.dukascopy.api.system.IClient;
 
 import javafx.embed.swing.SwingFXUtils;
@@ -31,6 +33,7 @@ public final class ClientUtil {
         initSystemListener();
         initAuthentification();
         setCacheDirectory(cacheDirectory);
+        keepConnection();
     }
 
     private final void initSystemListener() {
@@ -46,6 +49,17 @@ public final class ClientUtil {
         final File cacheDirectoryFile = new File(cacheDirectory);
         client.setCacheDirectory(cacheDirectoryFile);
         logger.debug("Setting of cache directory " + cacheDirectory + " for client done.");
+    }
+
+    private void keepConnection() {
+        connectionStateObs().subscribe(connectionState -> {
+            logger.debug(connectionState + " message received!");
+            if (connectionState == ConnectionState.DISCONNECTED
+                    && authentificationUtil.loginState() == LoginState.LOGGED_IN) {
+                logger.debug("Connection lost! Try to reconnect...");
+                client.reconnect();
+            }
+        });
     }
 
     public final Observable<ConnectionState> connectionStateObs() {

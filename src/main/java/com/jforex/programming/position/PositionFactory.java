@@ -24,7 +24,7 @@ public class PositionFactory {
     }
 
     public Position forInstrument(final Instrument instrument) {
-        return positionByInstrument.computeIfAbsent(instrument, inst -> createNew(inst));
+        return positionByInstrument.computeIfAbsent(instrument, this::createNew);
     }
 
     public Collection<Position> all() {

@@ -66,10 +66,6 @@ public interface PlatformSettings extends Config {
     @DefaultValue("1500")
     public long delayOnOrderFailRetry();
 
-    @Key("env.terminationtimeoutexecutor")
-    @DefaultValue("100")
-    public long terminationTimeoutExecutorService();
-
     @Key("env.logintimeoutseconds")
     @DefaultValue("20")
     public int logintimeoutseconds();
