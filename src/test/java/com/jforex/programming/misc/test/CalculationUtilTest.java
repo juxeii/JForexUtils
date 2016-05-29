@@ -9,19 +9,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
 import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
+
 public class CalculationUtilTest extends CurrencyUtilForTest {
 
     private CalculationUtil calculationUtil;
 
-    @Mock public TickQuoteProvider tickQuoteProviderMock;
+    @Mock
+    public TickQuoteProvider tickQuoteProviderMock;
 
     @Before
     public void setUp() {
@@ -60,30 +62,36 @@ public class CalculationUtilTest extends CurrencyUtilForTest {
 
     @Test
     public void testConvertAmountIsCorrectForEqualCurrencies() {
-        final double convertedAmount = calculationUtil.convertAmount(213456.78,
-                                                                     currencyEUR,
-                                                                     currencyEUR,
-                                                                     OfferSide.ASK);
+        final double convertedAmount = calculationUtil
+                .convertAmount(213456.78)
+                .fromCurrency(currencyEUR)
+                .toCurrency(currencyEUR)
+                .forOfferSide(OfferSide.ASK);
+
         assertThat(convertedAmount, equalTo(213456.78));
     }
 
     @Test
     public void testConvertAmountIsCorrectForTargetCurrencyIsBase() {
         final double amount = 2000.567;
-        final double convertedAmount = calculationUtil.convertAmount(amount,
-                                                                     currencyUSD,
-                                                                     currencyEUR,
-                                                                     OfferSide.BID);
+        final double convertedAmount = calculationUtil
+                .convertAmount(amount)
+                .fromCurrency(currencyUSD)
+                .toCurrency(currencyEUR)
+                .forOfferSide(OfferSide.BID);
+
         assertThat(convertedAmount, equalTo(convertedAmountForInvertedQuote(amount, bidEURUSD)));
     }
 
     @Test
     public void testConvertAmountIsCorrectForTargetCurrencyIsQuote() {
         final double amount = 45678.89;
-        final double convertedAmount = calculationUtil.convertAmount(amount,
-                                                                     currencyUSD,
-                                                                     currencyJPY,
-                                                                     OfferSide.BID);
+        final double convertedAmount = calculationUtil
+                .convertAmount(amount)
+                .fromCurrency(currencyUSD)
+                .toCurrency(currencyJPY)
+                .forOfferSide(OfferSide.BID);
+
         assertThat(convertedAmount, equalTo(convertedAmountForQuote(amount, bidUSDJPY)));
     }
 

@@ -41,11 +41,12 @@ public final class RiskPercentMM {
                                           final double betSize,
                                           final double pipsToSL) {
         final double pipValueAmountInAccountCurrency = betSize / pipsToSL;
-        final double pipValueAmountInQuoteCurrency =
-                calculationUtil.convertAmount(pipValueAmountInAccountCurrency,
-                                              account.getAccountCurrency(),
-                                              instrument.getSecondaryJFCurrency(),
-                                              offerSide);
+        final double pipValueAmountInQuoteCurrency = calculationUtil
+                .convertAmount(pipValueAmountInAccountCurrency)
+                .fromCurrency(account.getAccountCurrency())
+                .toCurrency(instrument.getSecondaryJFCurrency())
+                .forOfferSide(offerSide);
+
         final double scaledAmount = pipValueAmountInQuoteCurrency / instrument.getPipValue();
         return CalculationUtil.scaleToPlatformAmount(scaledAmount);
     }
