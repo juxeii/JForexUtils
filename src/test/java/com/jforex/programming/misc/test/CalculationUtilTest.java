@@ -9,14 +9,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
 
 public class CalculationUtilTest extends CurrencyUtilForTest {
 
@@ -98,30 +97,36 @@ public class CalculationUtilTest extends CurrencyUtilForTest {
     @Test
     public void testPipValueIsCorrectForEqualCurrencies() {
         final double amount = 456789.887;
-        final double pipValue = calculationUtil.pipValueInCurrency(instrumentEURUSD,
-                                                                   amount,
-                                                                   currencyUSD,
-                                                                   OfferSide.ASK);
+        final double pipValue = calculationUtil
+                .pipValueInCurrency(currencyUSD)
+                .ofInstrument(instrumentEURUSD)
+                .withAmount(amount)
+                .andOfferSide(OfferSide.ASK);
+
         assertThat(pipValue, equalTo(MathUtil.roundAmount(amount * instrumentEURUSD.getPipValue())));
     }
 
     @Test
     public void testPipValueIsCorrectForTargetCurrencyIsBase() {
         final double amount = 5456789.887;
-        final double pipValue = calculationUtil.pipValueInCurrency(instrumentEURUSD,
-                                                                   amount,
-                                                                   currencyEUR,
-                                                                   OfferSide.ASK);
+        final double pipValue = calculationUtil
+                .pipValueInCurrency(currencyEUR)
+                .ofInstrument(instrumentEURUSD)
+                .withAmount(amount)
+                .andOfferSide(OfferSide.ASK);
+
         assertThat(pipValue, equalTo(MathUtil.roundAmount(amount * instrumentEURUSD.getPipValue() / askEURUSD)));
     }
 
     @Test
     public void testPipValueIsCorrectForTargetCurrencyIsQuote() {
         final double amount = 456789.887;
-        final double pipValue = calculationUtil.pipValueInCurrency(instrumentEURUSD,
-                                                                   amount,
-                                                                   currencyJPY,
-                                                                   OfferSide.BID);
+        final double pipValue = calculationUtil
+                .pipValueInCurrency(currencyJPY)
+                .ofInstrument(instrumentEURUSD)
+                .withAmount(amount)
+                .andOfferSide(OfferSide.BID);
+
         assertThat(pipValue, equalTo(MathUtil.roundAmount(amount * instrumentEURUSD.getPipValue() * bidUSDJPY)));
     }
 

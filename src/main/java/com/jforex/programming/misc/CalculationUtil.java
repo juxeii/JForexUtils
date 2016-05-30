@@ -7,13 +7,12 @@ import static com.jforex.programming.misc.MathUtil.roundPrice;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.jforex.programming.instrument.InstrumentBuilder;
-import com.jforex.programming.quote.TickQuoteProvider;
-import com.jforex.programming.settings.PlatformSettings;
-
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.instrument.InstrumentBuilder;
+import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.settings.PlatformSettings;
 
 public final class CalculationUtil {
 
@@ -48,9 +47,9 @@ public final class CalculationUtil {
     }
 
     private class ConversionBuilder implements FromSource,
-                                    ToInstrument,
-                                    ToCurrency,
-                                    ForOfferSide {
+            ToInstrument,
+            ToCurrency,
+            ForOfferSide {
 
         private final double sourceAmount;
         private ICurrency sourceCurrency;
@@ -113,10 +112,59 @@ public final class CalculationUtil {
                 : conversionQuote;
     }
 
-    public final double pipValueInCurrency(final Instrument instrument,
-                                           final double amount,
-                                           final ICurrency targetCurrency,
-                                           final OfferSide offerSide) {
+    public OfInstrument pipValueInCurrency(final ICurrency currency) {
+        return new PipValueBuilder(currency);
+    }
+
+    public interface OfInstrument {
+        public WithAmount ofInstrument(Instrument instrument);
+    }
+
+    public interface WithAmount {
+        public AndOfferSide withAmount(double amount);
+    }
+
+    public interface AndOfferSide {
+        public double andOfferSide(OfferSide offerSide);
+    }
+
+    private class PipValueBuilder implements OfInstrument,
+            WithAmount,
+            AndOfferSide {
+
+        private final ICurrency currency;
+        private Instrument instrument;
+        private double amount;
+
+        private PipValueBuilder(final ICurrency currency) {
+            this.currency = currency;
+        }
+
+        @Override
+        public WithAmount ofInstrument(final Instrument instrument) {
+            this.instrument = instrument;
+            return this;
+        }
+
+        @Override
+        public AndOfferSide withAmount(final double amount) {
+            this.amount = amount;
+            return this;
+        }
+
+        @Override
+        public double andOfferSide(final OfferSide offerSide) {
+            return pipValueInCurrency(instrument,
+                                      amount,
+                                      currency,
+                                      offerSide);
+        }
+    }
+
+    private final double pipValueInCurrency(final Instrument instrument,
+                                            final double amount,
+                                            final ICurrency targetCurrency,
+                                            final OfferSide offerSide) {
         double pipValueAmount = amount * instrument.getPipValue();
         if (!targetCurrency.equals(instrument.getSecondaryJFCurrency()))
             pipValueAmount = convertAmount(pipValueAmount,
