@@ -15,15 +15,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.system.IClient;
-import com.dukascopy.api.system.JFAuthenticationException;
-import com.dukascopy.api.system.JFVersionException;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectException;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.test.common.CommonUtilForTest;
+
+import com.dukascopy.api.system.IClient;
+import com.dukascopy.api.system.JFAuthenticationException;
+import com.dukascopy.api.system.JFVersionException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
@@ -87,7 +88,9 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         try {
             doThrow(exceptionType).when(clientMock).connect(jnlpAddress, userName, password);
             doThrow(exceptionType).when(clientMock).connect(jnlpAddress, userName, password, pin);
-        } catch (final Exception e) {}
+        } catch (final Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void assertLoginException(final Class<? extends Exception> exceptionType) {

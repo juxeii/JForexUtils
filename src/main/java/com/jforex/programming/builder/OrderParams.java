@@ -2,12 +2,13 @@ package com.jforex.programming.builder;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
-public final class OrderParams {
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.Instrument;
+
+public final class OrderParams implements Cloneable {
 
     private final String label;
     private final Instrument instrument;
@@ -136,10 +137,10 @@ public final class OrderParams {
     }
 
     private static class Builder implements WithOrderCommand,
-            WithAmount,
-            WithLabel,
-            WithOptions,
-            Clone {
+                                 WithAmount,
+                                 WithLabel,
+                                 WithOptions,
+                                 Clone {
 
         private String label;
         private Instrument instrument;

@@ -35,8 +35,8 @@ public final class InstrumentBuilder {
         return fromString(InstrumentUtil.nameFromCurrencies(firstCurrency, secondCurrency));
     }
 
-    public final static Set<Instrument> combineAllFromCurrencySet(final Collection<ICurrency> currencies) {
-        return fromCurrencyPairs(MathUtil.kPowerSet((Set<ICurrency>) currencies, 2)
+    public final static Set<Instrument> combineAllFromCurrencySet(final Set<ICurrency> currencies) {
+        return fromCurrencyPairs(MathUtil.kPowerSet(currencies, 2)
                 .stream()
                 .map(InstrumentBuilder::currencyPairFromSet)
                 .collect(toSet()));
