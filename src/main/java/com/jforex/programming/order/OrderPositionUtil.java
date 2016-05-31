@@ -6,8 +6,6 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.builder.OrderParams;
 import com.jforex.programming.misc.RxUtil;
 import com.jforex.programming.order.event.OrderEvent;
@@ -19,6 +17,9 @@ import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -85,38 +86,26 @@ public class OrderPositionUtil {
         if (filledOrders.size() < 2)
             return Observable.empty();
 
-        final RestoreSLTPData restoreSLTPData =
-                new RestoreSLTPData(restoreSLTPPolicy.restoreSL(filledOrders),
-                                    restoreSLTPPolicy.restoreTP(filledOrders));
+        final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy.restoreSL(filledOrders),
+                                                                    restoreSLTPPolicy.restoreTP(filledOrders));
         final Observable<OrderEvent> mergeAndRestoreObs =
-                mergeAndRestoreObs(position, mergeOrderLabel, restoreSLTPData);
+                Observable.defer(() -> positionSingleTask.mergeObservable(mergeOrderLabel, filledOrders))
+                        .map(OrderEvent::order)
+                        .doOnNext(position::addOrder)
+                        .flatMap(order -> positionMultiTask.restoreSLTPObservable(order, restoreSLTPData))
+                        .doOnCompleted(() -> logger.debug("Merge task for " + instrument + " position with label "
+                                + mergeOrderLabel + " was successful."));
+
         final Observable<OrderEvent> mergeSequenceObs =
-                mergeSequenceObs(position, mergeAndRestoreObs, mergeOrderLabel);
+                Observable.just(filledOrders)
+                        .doOnSubscribe(position::markAllOrdersActive)
+                        .doOnNext(toMergeOrders -> logger.debug("Starting merge task for " + instrument
+                                + " position with label " + mergeOrderLabel))
+                        .flatMap(positionMultiTask::removeTPSLObservable)
+                        .concatWith(mergeAndRestoreObs)
+                        .cast(OrderEvent.class);
 
         return RxUtil.connectObservable(mergeSequenceObs);
-    }
-
-    private Observable<OrderEvent> mergeAndRestoreObs(final Position position,
-                                                      final String mergeOrderLabel,
-                                                      final RestoreSLTPData restoreSLTPData) {
-        return Observable.defer(() -> positionSingleTask.mergeObservable(mergeOrderLabel, position.filledOrders()))
-                .map(OrderEvent::order)
-                .doOnNext(position::addOrder)
-                .flatMap(order -> positionMultiTask.restoreSLTPObservable(order, restoreSLTPData))
-                .doOnCompleted(() -> logger.debug("Merge task for " + position.instrument() + " position with label "
-                        + mergeOrderLabel + " was successful."));
-    }
-
-    private Observable<OrderEvent> mergeSequenceObs(final Position position,
-                                                    final Observable<OrderEvent> mergeAndRestoreObs,
-                                                    final String mergeOrderLabel) {
-        return Observable.just(position.filledOrders())
-                .doOnSubscribe(position::markAllOrdersActive)
-                .doOnNext(toMergeOrders -> logger.debug("Starting merge task for " + position.instrument()
-                        + " position with label " + mergeOrderLabel))
-                .flatMap(positionMultiTask::removeTPSLObservable)
-                .concatWith(mergeAndRestoreObs)
-                .cast(OrderEvent.class);
     }
 
     public Completable closePosition(final Instrument instrument) {
