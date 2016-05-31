@@ -15,8 +15,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.google.common.collect.Sets;
+import com.jforex.programming.builder.OrderParams;
 import com.jforex.programming.order.OrderCreateUtil;
-import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderSupplier;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.event.OrderEvent;

@@ -1,8 +1,8 @@
 package com.jforex.programming.test.common;
 
 import com.dukascopy.api.IEngine.OrderCommand;
+import com.jforex.programming.builder.OrderParams;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.OrderParams;
 
 public class OrderParamsForTest extends CommonUtilForTest {
 

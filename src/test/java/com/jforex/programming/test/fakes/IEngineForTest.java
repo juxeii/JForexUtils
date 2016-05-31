@@ -6,11 +6,10 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Collection;
 
-import com.jforex.programming.order.OrderParams;
-
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
+import com.jforex.programming.builder.OrderParams;
 
 public class IEngineForTest {
 

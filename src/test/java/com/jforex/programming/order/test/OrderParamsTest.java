@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.builder.OrderParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class OrderParamsTest extends InstrumentUtilForTest {
