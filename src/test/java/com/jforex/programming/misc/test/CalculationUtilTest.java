@@ -41,7 +41,12 @@ public class CalculationUtilTest extends CurrencyUtilForTest {
     private void assertPipDistance(final Instrument instrument,
                                    final double priceA,
                                    final double priceB) {
-        assertThat(CalculationUtil.pipDistance(instrument, priceA, priceB),
+        final double pipDistance = CalculationUtil
+                .pipDistanceFrom(priceA)
+                .to(priceB)
+                .forInstrument(instrument);
+
+        assertThat(pipDistance,
                    equalTo(MathUtil.roundPips((priceA - priceB) / instrument.getPipValue())));
     }
 

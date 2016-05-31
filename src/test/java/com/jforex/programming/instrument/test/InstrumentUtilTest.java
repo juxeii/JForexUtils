@@ -87,7 +87,10 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
     @Test
     public void testSpreadCalculationIsCorrect() {
         assertThat(instrumentUtil.spread(),
-                   equalTo(CalculationUtil.pipDistance(instrumentEURUSD, askEURUSD, bidEURUSD)));
+                   equalTo(CalculationUtil
+                           .pipDistanceFrom(askEURUSD)
+                           .to(bidEURUSD)
+                           .forInstrument(instrumentEURUSD)));
     }
 
     @Test

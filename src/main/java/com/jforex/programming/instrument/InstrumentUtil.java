@@ -2,16 +2,15 @@ package com.jforex.programming.instrument;
 
 import java.util.Currency;
 
-import com.jforex.programming.currency.CurrencyUtil;
-import com.jforex.programming.misc.CalculationUtil;
-import com.jforex.programming.quote.BarQuoteProvider;
-import com.jforex.programming.quote.TickQuoteProvider;
-
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.Period;
+import com.jforex.programming.currency.CurrencyUtil;
+import com.jforex.programming.misc.CalculationUtil;
+import com.jforex.programming.quote.BarQuoteProvider;
+import com.jforex.programming.quote.TickQuoteProvider;
 
 public final class InstrumentUtil {
 
@@ -51,7 +50,10 @@ public final class InstrumentUtil {
     }
 
     public final double spread() {
-        return CalculationUtil.pipDistance(instrument, ask(), bid());
+        return CalculationUtil
+                .pipDistanceFrom(ask())
+                .to(bid())
+                .forInstrument(instrument);
     }
 
     public final IBar askBar(final Period period) {

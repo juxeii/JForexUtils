@@ -7,17 +7,18 @@ import static com.jforex.programming.misc.MathUtil.roundPrice;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.ICurrency;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.builder.ConversionBuilder;
 import com.jforex.programming.builder.ConversionBuilder.FromSource;
+import com.jforex.programming.builder.PipDistanceBuilder;
+import com.jforex.programming.builder.PipDistanceBuilder.To;
 import com.jforex.programming.builder.PipValueBuilder;
 import com.jforex.programming.builder.PipValueBuilder.OfInstrument;
 import com.jforex.programming.instrument.InstrumentBuilder;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
-
-import com.dukascopy.api.ICurrency;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
 
 public final class CalculationUtil {
 
@@ -86,10 +87,13 @@ public final class CalculationUtil {
         return roundPrice(price + scalePipsToInstrument(pipsToAdd, instrument), instrument);
     }
 
-    public final static double pipDistance(final Instrument instrument,
-                                           final double priceA,
-                                           final double priceB) {
-        final double pipDistance = (priceA - priceB) / instrument.getPipValue();
+    public final static To pipDistanceFrom(final double priceFrom) {
+        return new PipDistanceBuilder(CalculationUtil::pipDistance).pipDistanceFrom(priceFrom);
+    }
+
+    private final static double pipDistance(final PipDistanceBuilder pipDistanceBuilder) {
+        final double pipDistance = (pipDistanceBuilder.priceFrom() - pipDistanceBuilder.priceTo())
+                / pipDistanceBuilder.instrument().getPipValue();
         return roundPips(pipDistance);
     }
 
