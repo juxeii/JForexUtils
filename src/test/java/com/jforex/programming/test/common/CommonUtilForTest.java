@@ -19,14 +19,18 @@ import com.dukascopy.api.IHistory;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
+import com.dukascopy.api.system.IClient;
 import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
+import com.jforex.programming.test.fakes.IClientForTest;
 import com.jforex.programming.test.fakes.IEngineForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 
 public class CommonUtilForTest extends BDDMockito {
 
+    @Mock
+    protected IClient clientMock;
     @Mock
     protected IContext contextMock;
     @Mock
@@ -35,6 +39,7 @@ public class CommonUtilForTest extends BDDMockito {
     protected IHistory historyMock;
     @Mock
     protected ConcurrentUtil concurrentUtilMock;
+    protected IClientForTest clientForTest;
     protected IEngineForTest engineForTest;
     protected JFException jfException = new JFException("JFException for test");
     protected Optional<Exception> jfExceptionOpt = Optional.of(jfException);
@@ -48,6 +53,7 @@ public class CommonUtilForTest extends BDDMockito {
     protected void initCommonTestFramework() {
         initMocks(this);
 
+        clientForTest = new IClientForTest(clientMock);
         engineForTest = new IEngineForTest(engineMock, jfException);
     }
 

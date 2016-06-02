@@ -10,9 +10,7 @@ import java.util.function.Supplier;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 
-import com.dukascopy.api.system.IClient;
 import com.dukascopy.api.system.JFAuthenticationException;
 import com.dukascopy.api.system.JFVersionException;
 import com.jforex.programming.connection.AuthentificationUtil;
@@ -34,8 +32,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     private AuthentificationUtil authentificationUtil;
 
-    @Mock
-    private IClient clientMock;
     private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
     private final TestSubscriber<LoginState> loginStateSubscriber = new TestSubscriber<>();
     private final TestScheduler scheduler = new TestScheduler();
@@ -69,26 +65,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         return authentificationUtil.login(loginCredentialsWithPin);
     }
 
-    private void verifyConnectCall(final LoginCredentials loginCredentials,
-                                   final int times) {
-        try {
-            if (!loginCredentials.maybePin().isPresent())
-                verify(clientMock, times(times)).connect(jnlpAddress, userName, password);
-            else
-                verify(clientMock, times(times)).connect(jnlpAddress, userName, password, pin);
-        } catch (final Exception e) {}
-
-    }
-
-    private void setExceptionOnConnect(final Class<? extends Exception> exceptionType) {
-        try {
-            doThrow(exceptionType).when(clientMock).connect(jnlpAddress, userName, password);
-            doThrow(exceptionType).when(clientMock).connect(jnlpAddress, userName, password, pin);
-        } catch (final Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
     private void assertLoginException(final Class<? extends Exception> exceptionType) {
         assertLoginExceptionForLoginType(this::login, exceptionType);
         assertLoginExceptionForLoginType(this::loginWithPin, exceptionType);
@@ -96,7 +72,8 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     private void assertLoginExceptionForLoginType(final Supplier<Completable> loginCall,
                                                   final Class<? extends Exception> exceptionType) {
-        setExceptionOnConnect(exceptionType);
+        clientForTest.setExceptionOnConnect(loginCredentials, exceptionType);
+        clientForTest.setExceptionOnConnectWithPin(loginCredentialsWithPin, exceptionType);
 
         final TestSubscriber<?> loginSubscriber = new TestSubscriber<>();
         loginCall.get().subscribe(loginSubscriber);
@@ -144,7 +121,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     public void testLoginWithPinCallsClientWithPin() {
         loginWithPin();
 
-        verifyConnectCall(loginCredentialsWithPin, 1);
+        clientForTest.verifyConnectCall(loginCredentialsWithPin, 1);
     }
 
     public class AfterLogin {
@@ -160,7 +137,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
         @Test
         public void testLoginCallsClient() {
-            verifyConnectCall(loginCredentials, 1);
+            clientForTest.verifyConnectCall(loginCredentials, 1);
         }
 
         @Test
