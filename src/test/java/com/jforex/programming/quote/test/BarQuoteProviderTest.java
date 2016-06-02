@@ -2,29 +2,22 @@ package com.jforex.programming.quote.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.Period;
 import com.google.common.collect.Sets;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteConsumer;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
-
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;

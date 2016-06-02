@@ -2,27 +2,27 @@ package com.jforex.programming.mm.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.OfferSide;
-
 public class RiskPercentMMTest extends CurrencyUtilForTest {
 
     private RiskPercentMM riskPercentMM;
 
-    @Mock private IAccount accountMock;
-    @Mock private TickQuoteProvider quoteProviderMock;
+    @Mock
+    private IAccount accountMock;
+    @Mock
+    private TickQuoteProvider quoteProviderMock;
     private CalculationUtil calculationUtil;
     private final double askEURUSD = 1.10987;
     private final double bidEURUSD = 1.10975;

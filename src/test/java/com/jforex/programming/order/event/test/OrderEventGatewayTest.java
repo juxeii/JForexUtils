@@ -5,8 +5,8 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
+import com.dukascopy.api.IMessage;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
@@ -16,13 +16,9 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
-import com.dukascopy.api.IMessage;
-
-import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 
-@RunWith(HierarchicalContextRunner.class)
 public class OrderEventGatewayTest extends CommonUtilForTest {
 
     private OrderEventGateway orderGateway;
@@ -58,22 +54,16 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
         assertThat(orderEvent.type(), equalTo(OrderEventType.CHANGE_REJECTED));
     }
 
-    public class AfterCallResultRegistering {
+    @Test
+    public void testSubscriberIsNotifiedForARefinedRejectEvent() {
+        orderGateway.registerOrderRequest(orderUnderTest, OrderCallRequest.CHANGE_STOP_LOSS_PRICE);
+        orderGateway.onOrderMessageData(orderMessageData);
 
-        @Before
-        public void setUp() {
-            orderGateway.registerOrderRequest(orderUnderTest, OrderCallRequest.CHANGE_STOP_LOSS_PRICE);
-            orderGateway.onOrderMessageData(orderMessageData);
-        }
+        subscriber.assertNoErrors();
+        subscriber.assertValueCount(1);
+        final OrderEvent orderEvent = subscriber.getOnNextEvents().get(0);
 
-        @Test
-        public void testSubscriberIsNotifiedForARefinedRejectEvent() {
-            subscriber.assertNoErrors();
-            subscriber.assertValueCount(1);
-            final OrderEvent orderEvent = subscriber.getOnNextEvents().get(0);
-
-            assertThat(orderEvent.order(), equalTo(orderUnderTest));
-            assertThat(orderEvent.type(), equalTo(OrderEventType.CHANGE_SL_REJECTED));
-        }
+        assertThat(orderEvent.order(), equalTo(orderUnderTest));
+        assertThat(orderEvent.type(), equalTo(OrderEventType.CHANGE_SL_REJECTED));
     }
 }

@@ -1,18 +1,13 @@
 package com.jforex.programming.position.test;
 
 import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.jforex.programming.builder.OrderParams;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.order.OrderDirection;
@@ -22,8 +17,6 @@ import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.common.PositionCommonTest;
-
-import com.dukascopy.api.IEngine.OrderCommand;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;

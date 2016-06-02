@@ -3,11 +3,6 @@ package com.jforex.programming.order.call.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -19,7 +14,6 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
-
 import com.jforex.programming.order.OrderSupplier;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallExecutorResult;
@@ -30,8 +24,10 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
     private OrderCallExecutor orderCallExecutor;
 
-    @Mock private OrderSupplier orderCallMock;
-    @Mock private Future<IOrder> futureMock;
+    @Mock
+    private OrderSupplier orderCallMock;
+    @Mock
+    private Future<IOrder> futureMock;
     private final IOrderForTest order = IOrderForTest.buyOrderEURUSD();
     private OrderCallExecutorResult orderExecutorResult;
     private final Exception testException = new InterruptedException();

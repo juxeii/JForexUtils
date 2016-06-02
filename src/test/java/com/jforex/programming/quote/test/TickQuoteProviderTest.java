@@ -2,9 +2,6 @@ package com.jforex.programming.quote.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 
 import java.util.Set;
 import java.util.concurrent.TimeUnit;

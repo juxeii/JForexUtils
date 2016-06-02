@@ -2,14 +2,12 @@ package com.jforex.programming.test.common;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
 
 import java.util.function.Supplier;
 
+import com.dukascopy.api.JFException;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
-
-import com.dukascopy.api.JFException;
 
 import rx.Observable;
 import rx.observers.TestSubscriber;

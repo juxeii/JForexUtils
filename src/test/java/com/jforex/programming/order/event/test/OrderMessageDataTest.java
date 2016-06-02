@@ -21,7 +21,7 @@ public class OrderMessageDataTest extends CommonUtilForTest {
     private OrderMessageData orderEventDataByDedicatedParams;
     private OrderMessageData orderEventDataByMessage;
 
-    private IOrderForTest testOrder;
+    private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();;
     private IMessageForTest message;
     private final IOrder.State orderState = IOrder.State.FILLED;
     private final IMessage.Type messageType = IMessage.Type.ORDER_CHANGED_OK;
@@ -30,9 +30,9 @@ public class OrderMessageDataTest extends CommonUtilForTest {
     @Before
     public void setUp() {
         initCommonTestFramework();
-        testOrder = IOrderForTest.buyOrderEURUSD();
-        testOrder.setState(IOrder.State.FILLED);
-        message = new IMessageForTest(testOrder, messageType, messageReasons);
+
+        orderUnderTest.setState(IOrder.State.FILLED);
+        message = new IMessageForTest(orderUnderTest, messageType, messageReasons);
 
         orderEventDataByDedicatedParams = new OrderMessageData(message);
         orderEventDataByMessage = new OrderMessageData(message);
@@ -40,8 +40,8 @@ public class OrderMessageDataTest extends CommonUtilForTest {
 
     @Test
     public void testOrderReturnsCorrectOrderInstance() {
-        assertThat(orderEventDataByDedicatedParams.order(), equalTo(testOrder));
-        assertThat(orderEventDataByMessage.order(), equalTo(testOrder));
+        assertThat(orderEventDataByDedicatedParams.order(), equalTo(orderUnderTest));
+        assertThat(orderEventDataByMessage.order(), equalTo(orderUnderTest));
     }
 
     @Test
