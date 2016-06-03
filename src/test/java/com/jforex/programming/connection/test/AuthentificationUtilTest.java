@@ -66,14 +66,14 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     }
 
     private void assertLoginException(final Class<? extends Exception> exceptionType) {
-        assertLoginExceptionForLoginType(this::login, exceptionType);
-        assertLoginExceptionForLoginType(this::loginWithPin, exceptionType);
+        assertLoginExceptionForLoginType(this::login, exceptionType, loginCredentials);
+        assertLoginExceptionForLoginType(this::loginWithPin, exceptionType, loginCredentialsWithPin);
     }
 
     private void assertLoginExceptionForLoginType(final Supplier<Completable> loginCall,
-                                                  final Class<? extends Exception> exceptionType) {
+                                                  final Class<? extends Exception> exceptionType,
+                                                  final LoginCredentials loginCredentials) {
         clientForTest.setExceptionOnConnect(loginCredentials, exceptionType);
-        clientForTest.setExceptionOnConnectWithPin(loginCredentialsWithPin, exceptionType);
 
         final TestSubscriber<?> loginSubscriber = new TestSubscriber<>();
         loginCall.get().subscribe(loginSubscriber);

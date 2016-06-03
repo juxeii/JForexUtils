@@ -30,21 +30,15 @@ public class IClientForTest extends CommonUtilForTest {
     public void setExceptionOnConnect(final LoginCredentials loginCredentials,
                                       final Class<? extends Exception> exceptionType) {
         try {
-            doThrow(exceptionType).when(clientMock).connect(loginCredentials.jnlpAddress(),
-                                                            loginCredentials.username(),
-                                                            loginCredentials.password());
-        } catch (final Exception e) {
-            logger.error(e.getMessage());
-        }
-    }
-
-    public void setExceptionOnConnectWithPin(final LoginCredentials loginCredentials,
-                                             final Class<? extends Exception> exceptionType) {
-        try {
-            doThrow(exceptionType).when(clientMock).connect(loginCredentials.jnlpAddress(),
-                                                            loginCredentials.username(),
-                                                            loginCredentials.password(),
-                                                            loginCredentials.maybePin().get());
+            if (loginCredentials.maybePin().isPresent())
+                doThrow(exceptionType).when(clientMock).connect(loginCredentials.jnlpAddress(),
+                                                                loginCredentials.username(),
+                                                                loginCredentials.password(),
+                                                                loginCredentials.maybePin().get());
+            else
+                doThrow(exceptionType).when(clientMock).connect(loginCredentials.jnlpAddress(),
+                                                                loginCredentials.username(),
+                                                                loginCredentials.password());
         } catch (final Exception e) {
             logger.error(e.getMessage());
         }
