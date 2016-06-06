@@ -14,7 +14,7 @@ public class PipDistanceBuilder {
     }
 
     public interface To {
-        public ForInstrument to(double amount);
+        public ForInstrument to(double toPrice);
     }
 
     public interface ForInstrument {
@@ -27,11 +27,11 @@ public class PipDistanceBuilder {
     }
 
     public double priceFrom() {
-        return this.builder.priceFrom;
+        return this.builder.fromPrice;
     }
 
     public double priceTo() {
-        return this.builder.priceTo;
+        return this.builder.toPrice;
     }
 
     public Instrument instrument() {
@@ -41,17 +41,17 @@ public class PipDistanceBuilder {
     private class Builder implements To,
             ForInstrument {
 
-        private final double priceFrom;
-        private double priceTo;
+        private final double fromPrice;
+        private double toPrice;
         private Instrument instrument;
 
-        private Builder(final double priceFrom) {
-            this.priceFrom = priceFrom;
+        private Builder(final double fromPrice) {
+            this.fromPrice = fromPrice;
         }
 
         @Override
-        public ForInstrument to(final double priceTo) {
-            this.priceTo = priceTo;
+        public ForInstrument to(final double toPrice) {
+            this.toPrice = toPrice;
             return this;
         }
 
