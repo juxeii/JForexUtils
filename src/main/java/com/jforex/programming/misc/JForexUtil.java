@@ -1,15 +1,20 @@
 package com.jforex.programming.misc;
 
 import org.aeonbits.owner.ConfigFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IContext;
+import com.dukascopy.api.IDataService;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.ITick;
+import com.dukascopy.api.ITimeDomain;
 import com.dukascopy.api.Instrument;
+import com.dukascopy.api.JFException;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
@@ -38,6 +43,7 @@ public class JForexUtil implements IMessageConsumer {
     private IEngine engine;
     private IAccount account;
     private IHistory history;
+    private IDataService dataService;
 
     private ConcurrentUtil concurrentUtil;
 
@@ -66,6 +72,7 @@ public class JForexUtil implements IMessageConsumer {
     private Subscription eventGatewaySubscription;
 
     private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    private static final Logger logger = LogManager.getLogger(JForexUtil.class);
 
     public JForexUtil(final IContext context) {
         this.context = context;
@@ -83,6 +90,7 @@ public class JForexUtil implements IMessageConsumer {
         engine = context.getEngine();
         account = context.getAccount();
         history = context.getHistory();
+        dataService = context.getDataService();
         concurrentUtil = new ConcurrentUtil(context);
     }
 
@@ -175,7 +183,7 @@ public class JForexUtil implements IMessageConsumer {
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
-        if (userSettings.enableWeekendQuoteFilter() && !DateTimeUtil.isWeekendMillis(tick.getTime()))
+        if (userSettings.enableWeekendQuoteFilter() && !isMarketClosed(tick.getTime()))
             tickQuotePublisher.onNext(new TickQuote(instrument, tick));
     }
 
@@ -183,7 +191,21 @@ public class JForexUtil implements IMessageConsumer {
                       final Period period,
                       final IBar askBar,
                       final IBar bidBar) {
-        if (userSettings.enableWeekendQuoteFilter() && !DateTimeUtil.isWeekendMillis(askBar.getTime()))
+        if (userSettings.enableWeekendQuoteFilter() && !isMarketClosed(askBar.getTime()))
             barQuotePublisher.onNext(new BarQuote(instrument, period, askBar, bidBar));
+    }
+
+    public boolean isMarketClosed() {
+        return isMarketClosed(DateTimeUtil.localMillisNow());
+    }
+
+    private boolean isMarketClosed(final long time) {
+        try {
+            final ITimeDomain offlineDuration = dataService.getOfflineTimeDomain();
+            return time >= offlineDuration.getStart() && time <= offlineDuration.getEnd();
+        } catch (final JFException e) {
+            logger.error("Error retreiving offline time domain! " + e.getMessage());
+            return false;
+        }
     }
 }
