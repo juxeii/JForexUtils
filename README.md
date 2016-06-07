@@ -1,3 +1,6 @@
+[![Coverage Status](https://coveralls.io/repos/github/juxeii/JForexUtils/badge.svg?branch=master)](https://coveralls.io/github/juxeii/JForexUtils?branch=master)
+
+
 JForexUtils
 ===========
 
