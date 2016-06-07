@@ -24,6 +24,7 @@ buildscript {
 apply plugin: 'biz.aQute.bnd.builder'
 
 repositories {
+   mavenLocal()
    mavenCentral()
    maven {
        url "https://www.dukascopy.com/client/jforexlib/publicrepo"
@@ -42,7 +43,8 @@ dependencies {
    compile 'io.reactivex:rxjava:1.1.5'
    compile 'com.dukascopy.api:JForex-API:2.12.40'
    compile 'com.google.guava:guava:19.0'
-   compile 'com.googlecode.combinatoricslib:combinatoricslib:2.1'
+   //compile 'com.googlecode.combinatoricslib:combinatoricslib:2.1'
+   compile 'com.github.dpaukov:combinatoricslib3:3.0-SNAPSHOT'
    compile 'org.apache.logging.log4j:log4j-api:2.5'
    compile 'org.apache.logging.log4j:log4j-core:2.5'
    compile 'org.apache.commons:commons-collections4:4.1'
