@@ -1,8 +1,6 @@
 package com.jforex.programming.misc;
 
 import org.aeonbits.owner.ConfigFactory;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
@@ -12,9 +10,7 @@ import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.ITick;
-import com.dukascopy.api.ITimeDomain;
 import com.dukascopy.api.Instrument;
-import com.dukascopy.api.JFException;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
@@ -72,7 +68,6 @@ public class JForexUtil implements IMessageConsumer {
     private Subscription eventGatewaySubscription;
 
     private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
-    private static final Logger logger = LogManager.getLogger(JForexUtil.class);
 
     public JForexUtil(final IContext context) {
         this.context = context;
@@ -200,12 +195,6 @@ public class JForexUtil implements IMessageConsumer {
     }
 
     private boolean isMarketClosed(final long time) {
-        try {
-            final ITimeDomain offlineDuration = dataService.getOfflineTimeDomain();
-            return time >= offlineDuration.getStart() && time <= offlineDuration.getEnd();
-        } catch (final JFException e) {
-            logger.error("Error retreiving offline time domain! " + e.getMessage());
-            return false;
-        }
+        return dataService.isOfflineTime(time);
     }
 }
