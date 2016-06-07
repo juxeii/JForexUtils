@@ -3,10 +3,10 @@ package com.jforex.programming.misc;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.aeonbits.owner.ConfigFactory;
-import org.paukov.combinatorics3.Generator;
+import org.paukov.combinatorics.Factory;
+import org.paukov.combinatorics.Generator;
 
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.instrument.InstrumentUtil;
@@ -20,13 +20,12 @@ public final class MathUtil {
     }
 
     public final static <T> Set<Set<T>> kPowerSet(final Set<T> sourceSet,
-                                                  final int k) {
-        return Generator
-                .combination(sourceSet)
-                .simple(k)
-                .stream()
-                .map(list -> new HashSet<T>(list))
-                .collect(Collectors.<Set<T>> toSet());
+                                                  final int setSize) {
+        final Set<Set<T>> kPowerSet = new HashSet<>();
+        final Generator<T> generator =
+                Factory.createSimpleCombinationGenerator(Factory.createVector(sourceSet), setSize);
+        generator.forEach(kSubSet -> kPowerSet.add(new HashSet<>(kSubSet.getVector())));
+        return kPowerSet;
     }
 
     public final static double rateOfReturn(final double currentValue,
