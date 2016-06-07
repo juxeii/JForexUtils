@@ -92,14 +92,14 @@ public class PositionTest extends InstrumentUtilForTest {
 
         @Test
         public void testOrdersHasBuyOrder() {
-            final Set<IOrder> orders = position.orders();
+            final Set<IOrder> orders = position.get();
             assertTrue(orders.contains(buyOrder));
         }
 
         @Test
         public void testFilterWorksCorrect() {
             final Set<IOrder> orderFilter =
-                    position.filterOrders(order -> order.getLabel().equals(buyOrder.getLabel()));
+                    position.filter(order -> order.getLabel().equals(buyOrder.getLabel()));
             assertTrue(orderFilter.contains(buyOrder));
         }
 
@@ -112,13 +112,13 @@ public class PositionTest extends InstrumentUtilForTest {
 
         @Test
         public void testNoFilledOrders() {
-            final Set<IOrder> filledOrders = position.filledOrders();
+            final Set<IOrder> filledOrders = position.filled();
             assertTrue(filledOrders.isEmpty());
         }
 
         @Test
         public void testNoFilledOrOpenedOrdersHasBuyOrder() {
-            final Set<IOrder> filledOrOpenedOrders = position.filledOrOpenedOrders();
+            final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
             assertTrue(filledOrOpenedOrders.contains(buyOrder));
         }
 
@@ -141,13 +141,13 @@ public class PositionTest extends InstrumentUtilForTest {
 
             @Test
             public void testFilledOrdersHasBuyOrder() {
-                final Set<IOrder> filledOrders = position.filledOrders();
+                final Set<IOrder> filledOrders = position.filled();
                 assertTrue(filledOrders.contains(buyOrder));
             }
 
             @Test
             public void testFilledOrOpenedOrdersHasBuyOrder() {
-                final Set<IOrder> filledOrOpenedOrders = position.filledOrOpenedOrders();
+                final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
                 assertTrue(filledOrOpenedOrders.contains(buyOrder));
             }
 
@@ -187,7 +187,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                 @Test
                 public void testOrdersHasBuyAndSellOrder() {
-                    final Set<IOrder> orders = position.orders();
+                    final Set<IOrder> orders = position.get();
                     assertTrue(orders.contains(buyOrder));
                     assertTrue(orders.contains(sellOrder));
                 }
@@ -202,14 +202,14 @@ public class PositionTest extends InstrumentUtilForTest {
 
                 @Test
                 public void testFilledOrdersHasBuyAndSellOrder() {
-                    final Set<IOrder> filledOrders = position.filledOrders();
+                    final Set<IOrder> filledOrders = position.filled();
                     assertTrue(filledOrders.contains(buyOrder));
                     assertTrue(filledOrders.contains(sellOrder));
                 }
 
                 @Test
                 public void testFilledOrOpenedOrdersHasBuyAndSellOrder() {
-                    final Set<IOrder> filledOrOpenedOrders = position.filledOrOpenedOrders();
+                    final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
                     assertTrue(filledOrOpenedOrders.contains(buyOrder));
                     assertTrue(filledOrOpenedOrders.contains(sellOrder));
                 }
@@ -246,7 +246,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testOrdersHasBuyAndSellOrder() {
-                        final Set<IOrder> orders = position.orders();
+                        final Set<IOrder> orders = position.get();
                         assertTrue(orders.contains(buyOrder));
                         assertTrue(orders.contains(sellOrder));
                     }
@@ -260,13 +260,13 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testFilledOrdersIsEmptySinceAllActive() {
-                        final Set<IOrder> filledOrders = position.filledOrders();
+                        final Set<IOrder> filledOrders = position.filled();
                         assertTrue(filledOrders.isEmpty());
                     }
 
                     @Test
                     public void testFilledOrOpenedOrdersISEmptySinceAllActive() {
-                        final Set<IOrder> filledOrOpenedOrders = position.filledOrOpenedOrders();
+                        final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
                         assertTrue(filledOrOpenedOrders.isEmpty());
                     }
 
@@ -297,13 +297,13 @@ public class PositionTest extends InstrumentUtilForTest {
                     final double sellAmount = OrderStaticUtil.signedAmount(sellOrder);
                     assertThat(position.signedExposure(), equalTo(sellAmount));
 
-                    final Set<IOrder> orders = position.orders();
+                    final Set<IOrder> orders = position.get();
                     assertTrue(orders.contains(sellOrder));
 
-                    final Set<IOrder> filledOrders = position.filledOrders();
+                    final Set<IOrder> filledOrders = position.filled();
                     assertTrue(filledOrders.contains(sellOrder));
 
-                    final Set<IOrder> filledOrOpenedOrders = position.filledOrOpenedOrders();
+                    final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
                     assertTrue(filledOrOpenedOrders.contains(sellOrder));
                 }
 

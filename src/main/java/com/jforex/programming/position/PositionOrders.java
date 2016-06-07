@@ -3,10 +3,9 @@ package com.jforex.programming.position;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import com.jforex.programming.order.OrderDirection;
-
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.OrderDirection;
 
 public interface PositionOrders {
 
@@ -20,13 +19,11 @@ public interface PositionOrders {
 
     public double signedExposure();
 
-    public Set<IOrder> orders();
+    public Set<IOrder> get();
 
-    public Set<IOrder> filterOrders(final Predicate<IOrder> orderPredicate);
+    public Set<IOrder> filter(final Predicate<IOrder> orderPredicate);
 
-    public Set<IOrder> notProcessingOrders(final Predicate<IOrder> orderPredicate);
+    public Set<IOrder> filled();
 
-    public Set<IOrder> filledOrders();
-
-    public Set<IOrder> filledOrOpenedOrders();
+    public Set<IOrder> filledOrOpened();
 }

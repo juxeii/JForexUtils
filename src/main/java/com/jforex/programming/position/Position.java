@@ -16,14 +16,13 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -89,24 +88,24 @@ public class Position implements PositionOrders {
 
     @Override
     public OrderDirection direction() {
-        return OrderStaticUtil.combinedDirection(filterOrders(isFilled));
+        return OrderStaticUtil.combinedDirection(filter(isFilled));
     }
 
     @Override
     public double signedExposure() {
-        return filterOrders(isFilled)
+        return filter(isFilled)
                 .stream()
                 .mapToDouble(OrderStaticUtil::signedAmount)
                 .sum();
     }
 
     @Override
-    public Set<IOrder> orders() {
+    public Set<IOrder> get() {
         return ImmutableSet.copyOf(orderRepository.keySet());
     }
 
     @Override
-    public Set<IOrder> filterOrders(final Predicate<IOrder> orderPredicate) {
+    public Set<IOrder> filter(final Predicate<IOrder> orderPredicate) {
         return orderRepository
                 .keySet()
                 .stream()
@@ -115,6 +114,15 @@ public class Position implements PositionOrders {
     }
 
     @Override
+    public Set<IOrder> filled() {
+        return notProcessingOrders(isFilled);
+    }
+
+    @Override
+    public Set<IOrder> filledOrOpened() {
+        return notProcessingOrders(isFilled.or(isOpened));
+    }
+
     public Set<IOrder> notProcessingOrders(final Predicate<IOrder> orderPredicate) {
         return orderRepository
                 .entrySet()
@@ -123,15 +131,5 @@ public class Position implements PositionOrders {
                 .filter(entry -> entry.getValue() == OrderProcessState.IDLE)
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue))
                 .keySet();
-    }
-
-    @Override
-    public Set<IOrder> filledOrders() {
-        return notProcessingOrders(isFilled);
-    }
-
-    @Override
-    public Set<IOrder> filledOrOpenedOrders() {
-        return notProcessingOrders(isFilled.or(isOpened));
     }
 }

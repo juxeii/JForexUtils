@@ -82,7 +82,7 @@ public class OrderPositionUtil {
                                                       final Instrument instrument,
                                                       final RestoreSLTPPolicy restoreSLTPPolicy) {
         final Position position = positionFactory.forInstrument(instrument);
-        final Set<IOrder> filledOrders = position.filledOrders();
+        final Set<IOrder> filledOrders = position.filled();
         if (filledOrders.size() < 2)
             return Observable.empty();
 
@@ -112,7 +112,7 @@ public class OrderPositionUtil {
         final Position position = positionFactory.forInstrument(instrument);
 
         final Observable<OrderEvent> closeObs =
-                Observable.from(position.filledOrOpenedOrders())
+                Observable.from(position.filledOrOpened())
                         .doOnSubscribe(() -> logger.debug("Starting close task for position " + instrument))
                         .doOnSubscribe(position::markAllOrdersActive)
                         .flatMap(positionSingleTask::closeObservable)

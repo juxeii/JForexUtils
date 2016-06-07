@@ -330,7 +330,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
             when(restoreSLTPPolicyMock.restoreTP(toMergeOrders))
                     .thenReturn(restoreSLTPData.tp());
 
-            when(positionMock.filledOrders())
+            when(positionMock.filled())
                     .thenReturn(toMergeOrders);
         }
 
@@ -355,7 +355,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
         @Test
         public void testWhenLessThanTwoMergeOrdersNoRemoveTPSLCall() {
-            when(positionMock.filledOrders())
+            when(positionMock.filled())
                     .thenReturn(Sets.newHashSet());
 
             mergePositionCall.run();
@@ -597,7 +597,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
         public void setUp() {
             buyOrder.setState(IOrder.State.FILLED);
             sellOrder.setState(IOrder.State.FILLED);
-            when(positionMock.filledOrOpenedOrders())
+            when(positionMock.filledOrOpened())
                     .thenReturn(ordersToClose);
         }
 
@@ -633,7 +633,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
             @Before
             public void setUp() {
-                when(positionMock.filledOrOpenedOrders())
+                when(positionMock.filledOrOpened())
                         .thenReturn(Sets.newHashSet());
 
                 closeCompletableCall.run();
