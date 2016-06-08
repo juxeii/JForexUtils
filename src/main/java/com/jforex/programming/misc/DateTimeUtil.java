@@ -42,11 +42,11 @@ public final class DateTimeUtil {
         return TimeUnit.NANOSECONDS.toMillis(nanos);
     }
 
-    public final static String DateTimeToString(final LocalDateTime localDateTime) {
+    public final static String dateTimeToString(final LocalDateTime localDateTime) {
         return localDateTime.format(defaultformatter);
     }
 
-    public final static String MillisToString(final long millis) {
+    public final static String millisToString(final long millis) {
         return dateTimeFromMillis(millis).format(defaultformatter);
     }
 }
