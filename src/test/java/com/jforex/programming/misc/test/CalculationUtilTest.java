@@ -13,7 +13,7 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.misc.MathUtil;
-import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
@@ -22,7 +22,7 @@ public class CalculationUtilTest extends CurrencyUtilForTest {
     private CalculationUtil calculationUtil;
 
     @Mock
-    public TickQuoteProvider tickQuoteProviderMock;
+    public TickQuoteHandler tickQuoteProviderMock;
 
     @Before
     public void setUp() {

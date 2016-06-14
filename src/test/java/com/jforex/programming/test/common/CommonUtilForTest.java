@@ -13,6 +13,13 @@ import org.apache.logging.log4j.Logger;
 import org.mockito.BDDMockito;
 import org.mockito.Mock;
 
+import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.settings.UserSettings;
+import com.jforex.programming.test.fakes.IClientForTest;
+import com.jforex.programming.test.fakes.IEngineForTest;
+import com.jforex.programming.test.fakes.IMessageForTest;
+
 import com.dukascopy.api.IContext;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
@@ -20,14 +27,11 @@ import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.system.IClient;
-import com.jforex.programming.settings.PlatformSettings;
-import com.jforex.programming.settings.UserSettings;
-import com.jforex.programming.test.fakes.IClientForTest;
-import com.jforex.programming.test.fakes.IEngineForTest;
-import com.jforex.programming.test.fakes.IMessageForTest;
 
 public class CommonUtilForTest extends BDDMockito {
 
+    @Mock
+    protected JForexUtil jforexUtilMock;
     @Mock
     protected IClient clientMock;
     @Mock
@@ -52,6 +56,9 @@ public class CommonUtilForTest extends BDDMockito {
 
         clientForTest = new IClientForTest(clientMock);
         engineForTest = new IEngineForTest(engineMock, jfException);
+
+        when(jforexUtilMock.context()).thenReturn(contextMock);
+        when(jforexUtilMock.history()).thenReturn(historyMock);
     }
 
     protected IMessage someOrderMessage(final IOrder order) {

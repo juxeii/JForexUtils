@@ -9,13 +9,13 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 
-import com.jforex.programming.quote.BarQuoteProvider;
-import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.quote.BarQuoteHandler;
+import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.fakes.ITickForTest;
 
 public class QuoteProviderForTest {
 
-    public static void setQuoteExpectations(final TickQuoteProvider quoteProviderMock,
+    public static void setQuoteExpectations(final TickQuoteHandler quoteProviderMock,
                                             final Instrument instrument,
                                             final double bid,
                                             final double ask) {
@@ -27,7 +27,7 @@ public class QuoteProviderForTest {
         when(quoteProviderMock.forOfferSide(instrument, OfferSide.BID)).thenReturn(bid);
     }
 
-    public static void setBarQuoteExpectations(final BarQuoteProvider barQuoteProviderMock,
+    public static void setBarQuoteExpectations(final BarQuoteHandler barQuoteProviderMock,
                                                final Instrument instrument,
                                                final Period period,
                                                final IBar askBar,

@@ -19,8 +19,8 @@ import com.dukascopy.api.ITick;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.misc.CalculationUtil;
-import com.jforex.programming.quote.BarQuoteProvider;
-import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.quote.BarQuoteHandler;
+import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 import com.jforex.programming.test.fakes.ITickForTest;
@@ -30,9 +30,9 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
     private InstrumentUtil instrumentUtil;
 
     @Mock
-    private TickQuoteProvider tickQuoteProviderMock;
+    private TickQuoteHandler tickQuoteProviderMock;
     @Mock
-    private BarQuoteProvider barQuoteProviderMock;
+    private BarQuoteHandler barQuoteProviderMock;
     @Mock
     private IBar askBar;
     @Mock

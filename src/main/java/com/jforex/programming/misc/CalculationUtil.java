@@ -17,16 +17,16 @@ import com.jforex.programming.builder.PipDistanceBuilder.To;
 import com.jforex.programming.builder.PipValueBuilder;
 import com.jforex.programming.builder.PipValueBuilder.OfInstrument;
 import com.jforex.programming.instrument.InstrumentBuilder;
-import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.settings.PlatformSettings;
 
 public final class CalculationUtil {
 
-    private final TickQuoteProvider tickQuoteProvider;
+    private final TickQuoteHandler tickQuoteProvider;
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
-    public CalculationUtil(final TickQuoteProvider tickQuoteProvider) {
+    public CalculationUtil(final TickQuoteHandler tickQuoteProvider) {
         this.tickQuoteProvider = tickQuoteProvider;
     }
 

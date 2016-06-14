@@ -11,7 +11,7 @@ import com.dukascopy.api.IAccount;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.mm.RiskPercentMM;
-import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
@@ -22,7 +22,7 @@ public class RiskPercentMMTest extends CurrencyUtilForTest {
     @Mock
     private IAccount accountMock;
     @Mock
-    private TickQuoteProvider quoteProviderMock;
+    private TickQuoteHandler quoteProviderMock;
     private CalculationUtil calculationUtil;
     private final double askEURUSD = 1.10987;
     private final double bidEURUSD = 1.10975;

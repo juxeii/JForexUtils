@@ -8,17 +8,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.google.common.collect.Sets;
+import com.jforex.programming.builder.BarQuoteSubscription;
+import com.jforex.programming.quote.BarQuote;
+import com.jforex.programming.quote.BarQuoteHandler;
+import com.jforex.programming.quote.QuoteProviderException;
+import com.jforex.programming.test.common.CurrencyUtilForTest;
+
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
-import com.google.common.collect.Sets;
-import com.jforex.programming.builder.BarQuoteSubscription;
-import com.jforex.programming.misc.JForexUtil;
-import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteProvider;
-import com.jforex.programming.quote.QuoteProviderException;
-import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -27,10 +27,8 @@ import rx.subjects.Subject;
 @RunWith(HierarchicalContextRunner.class)
 public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
-    private BarQuoteProvider barQuoteProvider;
+    private BarQuoteHandler barQuoteHandler;
 
-    @Mock
-    private JForexUtil jforexUtilMock;
     @Mock
     private IBar askBarEURUSDOfHistory;
     @Mock
@@ -51,18 +49,16 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
     private Subject<BarQuote, BarQuote> barObservable;
     private BarQuote firstEURUSDBarQuote;
     private BarQuote secondEURUSDBarQuote;
-    private BarQuote firstAUDUSDBarQuote;
+    // private BarQuote firstAUDUSDBarQuote;
 
     @Before
     public void setUp() {
         initCommonTestFramework();
         barObservable = PublishSubject.create();
-        when(jforexUtilMock.context()).thenReturn(contextMock);
-        when(jforexUtilMock.history()).thenReturn(historyMock);
 
-        barQuoteProvider = new BarQuoteProvider(jforexUtilMock, barObservable);
+        barQuoteHandler = new BarQuoteHandler(jforexUtilMock);
 
-        barQuoteProvider.subscribe(BarQuoteSubscription
+        barQuoteHandler.quoteObservable(BarQuoteSubscription
                 .forInstruments(Sets.newHashSet(instrumentEURUSD))
                 .period(testPeriod)
                 .offerSide(OfferSide.ASK)
@@ -72,22 +68,17 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
     private void verifyBarValues(final IBar askBar,
                                  final IBar bidBar) {
-        assertThat(barQuoteProvider.askBar(instrumentEURUSD, testPeriod),
+        assertThat(barQuoteHandler.askBar(instrumentEURUSD, testPeriod),
                    equalTo(askBar));
 
-        assertThat(barQuoteProvider.bidBar(instrumentEURUSD, testPeriod),
+        assertThat(barQuoteHandler.bidBar(instrumentEURUSD, testPeriod),
                    equalTo(bidBar));
 
-        assertThat(barQuoteProvider.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.ASK),
+        assertThat(barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.ASK),
                    equalTo(askBar));
 
-        assertThat(barQuoteProvider.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID),
+        assertThat(barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID),
                    equalTo(bidBar));
-    }
-
-    @Test
-    public void testObservableIsCorrectReturned() {
-        assertThat(barQuoteProvider.observable(), equalTo(barObservable));
     }
 
     public class HistoryThrowsBeforeFirstBarQuoteIsReceived {
@@ -100,22 +91,22 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
         @Test(expected = QuoteProviderException.class)
         public void testAskBarThrows() {
-            barQuoteProvider.askBar(instrumentEURUSD, testPeriod);
+            barQuoteHandler.askBar(instrumentEURUSD, testPeriod);
         }
 
         @Test(expected = QuoteProviderException.class)
         public void testBidBarThrows() {
-            barQuoteProvider.bidBar(instrumentEURUSD, testPeriod);
+            barQuoteHandler.bidBar(instrumentEURUSD, testPeriod);
         }
 
         @Test(expected = QuoteProviderException.class)
         public void testForOfferSideAskThrows() {
-            barQuoteProvider.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.ASK);
+            barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.ASK);
         }
 
         @Test(expected = QuoteProviderException.class)
         public void testForOfferSideBidThrows() {
-            barQuoteProvider.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID);
+            barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID);
         }
     }
 
@@ -135,28 +126,28 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
         @Test
         public void testAskBarRetries() throws JFException {
-            barQuoteProvider.askBar(instrumentEURUSD, testPeriod);
+            barQuoteHandler.askBar(instrumentEURUSD, testPeriod);
 
             verifyHistoryRetry();
         }
 
         @Test
         public void testBidBarRetries() throws JFException {
-            barQuoteProvider.bidBar(instrumentEURUSD, testPeriod);
+            barQuoteHandler.bidBar(instrumentEURUSD, testPeriod);
 
             verifyHistoryRetry();
         }
 
         @Test
         public void testForOfferSideAskRetries() throws JFException {
-            barQuoteProvider.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.ASK);
+            barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.ASK);
 
             verifyHistoryRetry();
         }
 
         @Test
         public void testForOfferSideBidRetries() throws JFException {
-            barQuoteProvider.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID);
+            barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID);
 
             verifyHistoryRetry();
         }
@@ -166,7 +157,7 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
             when(historyMock.getBar(eq(instrumentEURUSD), eq(testPeriod), any(), eq(1)))
                     .thenReturn(null);
 
-            barQuoteProvider.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID);
+            barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID);
         }
     }
 
@@ -211,7 +202,7 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
             @Before
             public void setUp() {
-                barQuoteProvider.subscribe(BarQuoteSubscription
+                barQuoteHandler.quoteObservable(BarQuoteSubscription
                         .forInstruments(Sets.newHashSet(instrumentEURUSD))
                         .period(otherPeriod)
                         .offerSide(OfferSide.ASK)

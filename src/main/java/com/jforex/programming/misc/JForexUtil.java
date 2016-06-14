@@ -3,17 +3,6 @@ package com.jforex.programming.misc;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
 
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IDataService;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderChangeUtil;
@@ -27,12 +16,23 @@ import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionMultiTask;
 import com.jforex.programming.position.PositionSingleTask;
-import com.jforex.programming.quote.BarQuote;
+import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.BarQuoteProvider;
-import com.jforex.programming.quote.TickQuote;
+import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
-import com.jforex.programming.settings.UserSettings;
+
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IDataService;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.Period;
 
 import rx.Subscription;
 
@@ -44,8 +44,8 @@ public class JForexUtil implements IMessageConsumer {
     private IHistory history;
     private IDataService dataService;
 
-    private TickQuoteProvider tickQuoteProvider;
-    private BarQuoteProvider barQuoteProvider;
+    private TickQuoteHandler tickQuoteHandler;
+    private BarQuoteHandler barQuoteHandler;
 
     private PositionFactory positionFactory;
     private OrderEventGateway orderEventGateway;
@@ -63,12 +63,8 @@ public class JForexUtil implements IMessageConsumer {
     private final RiskPercentMM riskPercentMM;
 
     private final JFHotObservable<IMessage> messagePublisher = new JFHotObservable<>();
-    private final JFHotObservable<TickQuote> tickQuotePublisher = new JFHotObservable<>();
-    private final JFHotObservable<BarQuote> barQuotePublisher = new JFHotObservable<>();
-
     private Subscription eventGatewaySubscription;
 
-    private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
     public JForexUtil(final IContext context) {
@@ -79,7 +75,7 @@ public class JForexUtil implements IMessageConsumer {
         initQuoteProvider();
         initOrderRelated();
 
-        calculationUtil = new CalculationUtil(tickQuoteProvider);
+        calculationUtil = new CalculationUtil(tickQuoteHandler);
         riskPercentMM = new RiskPercentMM(account, calculationUtil);
     }
 
@@ -100,10 +96,9 @@ public class JForexUtil implements IMessageConsumer {
     }
 
     private void initQuoteProvider() {
-        tickQuoteProvider = new TickQuoteProvider(tickQuotePublisher.get(),
-                                                  context.getSubscribedInstruments(),
-                                                  history);
-        barQuoteProvider = new BarQuoteProvider(this, barQuotePublisher.get());
+        tickQuoteHandler = new TickQuoteHandler(this,
+                                                context.getSubscribedInstruments());
+        barQuoteHandler = new BarQuoteHandler(this);
     }
 
     private void initOrderRelated() {
@@ -139,15 +134,15 @@ public class JForexUtil implements IMessageConsumer {
     }
 
     public TickQuoteProvider tickQuoteProvider() {
-        return tickQuoteProvider;
+        return tickQuoteHandler;
     }
 
     public BarQuoteProvider barQuoteProvider() {
-        return barQuoteProvider;
+        return barQuoteHandler;
     }
 
     public InstrumentUtil instrumentUtil(final Instrument instrument) {
-        return new InstrumentUtil(instrument, tickQuoteProvider, barQuoteProvider);
+        return new InstrumentUtil(instrument, tickQuoteHandler, barQuoteHandler);
     }
 
     public CalculationUtil calculationUtil() {
@@ -179,18 +174,15 @@ public class JForexUtil implements IMessageConsumer {
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
-        if (userSettings.enableWeekendQuoteFilter() && !isMarketClosed(tick.getTime()))
-            tickQuotePublisher.onNext(new TickQuote(instrument, tick));
+        tickQuoteHandler.onTick(instrument, tick);
     }
 
     public void onBar(final Instrument instrument,
                       final Period period,
                       final IBar askBar,
                       final IBar bidBar) {
-        if (userSettings.enableWeekendQuoteFilter() && !isMarketClosed(askBar.getTime())) {
-            barQuotePublisher.onNext(new BarQuote(askBar, instrument, period, OfferSide.ASK));
-            barQuotePublisher.onNext(new BarQuote(bidBar, instrument, period, OfferSide.BID));
-        }
+        barQuoteHandler.onBar(instrument, period, OfferSide.ASK, askBar);
+        barQuoteHandler.onBar(instrument, period, OfferSide.BID, bidBar);
     }
 
     public boolean isMarketClosed() {

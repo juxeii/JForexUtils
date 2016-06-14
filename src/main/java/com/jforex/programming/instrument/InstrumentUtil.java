@@ -9,14 +9,14 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.Period;
 import com.jforex.programming.currency.CurrencyUtil;
 import com.jforex.programming.misc.CalculationUtil;
-import com.jforex.programming.quote.BarQuoteProvider;
-import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.quote.BarQuoteHandler;
+import com.jforex.programming.quote.TickQuoteHandler;
 
 public final class InstrumentUtil {
 
     private final Instrument instrument;
-    private final TickQuoteProvider tickQuoteProvider;
-    private final BarQuoteProvider barQuoteProvider;
+    private final TickQuoteHandler tickQuoteProvider;
+    private final BarQuoteHandler barQuoteProvider;
     private final Currency baseJavaCurrency;
     private final Currency quoteJavaCurrency;
     private final int numberOfDigits;
@@ -25,8 +25,8 @@ public final class InstrumentUtil {
     private final static String pairsSeparator = Instrument.getPairsSeparator();
 
     public InstrumentUtil(final Instrument instrument,
-                          final TickQuoteProvider tickQuoteProvider,
-                          final BarQuoteProvider barQuoteProvider) {
+                          final TickQuoteHandler tickQuoteProvider,
+                          final BarQuoteHandler barQuoteProvider) {
         this.instrument = instrument;
         this.tickQuoteProvider = tickQuoteProvider;
         this.barQuoteProvider = barQuoteProvider;
