@@ -1,5 +1,6 @@
 package com.jforex.programming.misc;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import org.aeonbits.owner.ConfigFactory;
@@ -18,7 +19,7 @@ public class ConcurrentUtil {
         this.context = context;
     }
 
-    public <T> Future<T> executeOnStrategyThread(final JFCallable<T> task) {
+    public <T> Future<T> executeOnStrategyThread(final Callable<T> task) {
         return context.executeTask(task);
     }
 
