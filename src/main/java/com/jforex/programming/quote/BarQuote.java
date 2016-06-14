@@ -2,23 +2,28 @@ package com.jforex.programming.quote;
 
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 
 public final class BarQuote {
 
+    private final IBar bar;
     private final Instrument instrument;
     private final Period period;
-    private final IBar askBar;
-    private final IBar bidBar;
+    private final OfferSide offerSide;
 
-    public BarQuote(final Instrument instrument,
+    public BarQuote(final IBar bar,
+                    final Instrument instrument,
                     final Period period,
-                    final IBar askBar,
-                    final IBar bidBar) {
+                    final OfferSide offerSide) {
+        this.bar = bar;
         this.instrument = instrument;
         this.period = period;
-        this.askBar = askBar;
-        this.bidBar = bidBar;
+        this.offerSide = offerSide;
+    }
+
+    public final IBar bar() {
+        return bar;
     }
 
     public final Instrument instrument() {
@@ -29,11 +34,7 @@ public final class BarQuote {
         return period;
     }
 
-    public final IBar askBar() {
-        return askBar;
-    }
-
-    public final IBar bidBar() {
-        return bidBar;
+    public final OfferSide offerSide() {
+        return offerSide;
     }
 }

@@ -51,7 +51,7 @@ public class BarQuoteProvider {
     private IBar bar(final Instrument instrument,
                      final Period period,
                      final OfferSide offerSide) {
-        return latestBarQuote.containsKey(barQuoteKey(instrument, period))
+        return latestBarQuote.containsKey(barQuoteKey(instrument, period, offerSide))
                 ? barQuoteByOfferSide(instrument, period, offerSide)
                 : barFromHistory(instrument, period, offerSide);
     }
@@ -77,24 +77,24 @@ public class BarQuoteProvider {
     private IBar barQuoteByOfferSide(final Instrument instrument,
                                      final Period period,
                                      final OfferSide offerSide) {
-        final BarQuote barQuote = latestBarQuote.get(barQuoteKey(instrument, period));
-        return offerSide == OfferSide.ASK
-                ? barQuote.askBar()
-                : barQuote.bidBar();
+        final BarQuote barQuote = latestBarQuote.get(barQuoteKey(instrument, period, offerSide));
+        return barQuote.bar();
     }
 
     private void onBarQuote(final BarQuote barQuote) {
-        final MultiKey<Object> multiKey = barQuoteKey(barQuote.instrument(), barQuote.period());
+        final MultiKey<Object> multiKey = barQuoteKey(barQuote.instrument(),
+                                                      barQuote.period(),
+                                                      barQuote.offerSide());
         latestBarQuote.put(multiKey, barQuote);
     }
 
-    public void subscribe(final Set<Instrument> instruments,
-                          final Period period,
-                          final BarQuoteConsumer barQuoteConsumer) {
-        barQuoteObservable
+    public Observable<BarQuote> subscribe(final Set<Instrument> instruments,
+                                          final Period period,
+                                          final OfferSide offerSide) {
+        return barQuoteObservable
                 .filter(barQuote -> instruments.contains(barQuote.instrument()))
                 .filter(barQuote -> period.equals(barQuote.period()))
-                .subscribe(barQuoteConsumer::onBarQuote);
+                .filter(barQuote -> barQuote.offerSide() == offerSide);
     }
 
     public Observable<BarQuote> observable() {
@@ -102,7 +102,8 @@ public class BarQuoteProvider {
     }
 
     private MultiKey<Object> barQuoteKey(final Instrument instrument,
-                                         final Period period) {
-        return new MultiKey<Object>(instrument, period);
+                                         final Period period,
+                                         final OfferSide offerSide) {
+        return new MultiKey<Object>(instrument, period, offerSide);
     }
 }

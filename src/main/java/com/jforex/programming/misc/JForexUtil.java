@@ -12,6 +12,7 @@ import com.dukascopy.api.IHistory;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
@@ -182,8 +183,10 @@ public class JForexUtil implements IMessageConsumer {
                       final Period period,
                       final IBar askBar,
                       final IBar bidBar) {
-        if (userSettings.enableWeekendQuoteFilter() && !isMarketClosed(askBar.getTime()))
-            barQuotePublisher.onNext(new BarQuote(instrument, period, askBar, bidBar));
+        if (userSettings.enableWeekendQuoteFilter() && !isMarketClosed(askBar.getTime())) {
+            barQuotePublisher.onNext(new BarQuote(askBar, instrument, period, OfferSide.ASK));
+            barQuotePublisher.onNext(new BarQuote(bidBar, instrument, period, OfferSide.BID));
+        }
     }
 
     public boolean isMarketClosed() {
