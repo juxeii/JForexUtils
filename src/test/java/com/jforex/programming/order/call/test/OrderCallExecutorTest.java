@@ -11,13 +11,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
@@ -41,7 +40,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
         initCommonTestFramework();
         setUpMocks();
 
-        orderCallExecutor = new OrderCallExecutor(concurrentUtilMock);
+        orderCallExecutor = new OrderCallExecutor(contextMock);
     }
 
     private void setUpMocks() throws InterruptedException, ExecutionException, JFException {
@@ -49,14 +48,14 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
         when(futureMock.get()).thenReturn(testOrder);
 
-        when(concurrentUtilMock.executeOnStrategyThread(orderCallMock)).thenReturn(futureMock);
+        when(contextMock.executeTask(orderCallMock)).thenReturn(futureMock);
     }
 
     private void assertWhenNotSubscribedNoExecutionHappens() {
         orderCallExecutor.callObservable(orderCallMock);
 
         verifyZeroInteractions(orderCallMock);
-        verifyZeroInteractions(concurrentUtilMock);
+        verifyZeroInteractions(contextMock);
         verifyZeroInteractions(futureMock);
     }
 
@@ -104,7 +103,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
             @Test
             public void noConcurrentUtilCall() {
                 verifyZeroInteractions(futureMock);
-                verifyZeroInteractions(concurrentUtilMock);
+                verifyZeroInteractions(contextMock);
             }
 
             @Test
@@ -144,7 +143,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
             @Test
             public void executionWithConcurrentUtil() throws InterruptedException, ExecutionException {
-                verify(concurrentUtilMock).executeOnStrategyThread(orderCallMock);
+                verify(contextMock).executeTask(orderCallMock);
                 verify(futureMock).get();
             }
 

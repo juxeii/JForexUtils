@@ -1,6 +1,7 @@
 package com.jforex.programming.misc;
 
 import org.aeonbits.owner.ConfigFactory;
+import org.apache.commons.lang3.StringUtils;
 
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
@@ -29,6 +30,7 @@ import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
 import rx.Subscription;
@@ -40,8 +42,6 @@ public class JForexUtil implements IMessageConsumer {
     private IAccount account;
     private IHistory history;
     private IDataService dataService;
-
-    private ConcurrentUtil concurrentUtil;
 
     private TickQuoteProvider tickQuoteProvider;
     private BarQuoteProvider barQuoteProvider;
@@ -68,6 +68,7 @@ public class JForexUtil implements IMessageConsumer {
     private Subscription eventGatewaySubscription;
 
     private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
     public JForexUtil(final IContext context) {
         this.context = context;
@@ -86,7 +87,6 @@ public class JForexUtil implements IMessageConsumer {
         account = context.getAccount();
         history = context.getHistory();
         dataService = context.getDataService();
-        concurrentUtil = new ConcurrentUtil(context);
     }
 
     private void initInfrastructure() {
@@ -106,7 +106,7 @@ public class JForexUtil implements IMessageConsumer {
     }
 
     private void initOrderRelated() {
-        orderCallExecutor = new OrderCallExecutor(concurrentUtil);
+        orderCallExecutor = new OrderCallExecutor(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
         orderCreateUtil = new OrderCreateUtil(context.getEngine(), orderUtilHandler);
@@ -147,10 +147,6 @@ public class JForexUtil implements IMessageConsumer {
 
     public CalculationUtil calculationUtil() {
         return calculationUtil;
-    }
-
-    public ConcurrentUtil concurrentUtil() {
-        return concurrentUtil;
     }
 
     public OrderUtil orderUtil() {
@@ -196,5 +192,13 @@ public class JForexUtil implements IMessageConsumer {
 
     private boolean isMarketClosed(final long time) {
         return dataService.isOfflineTime(time);
+    }
+
+    public static boolean isStrategyThread() {
+        return StringUtils.startsWith(threadName(), platformSettings.strategyThreadPrefix());
+    }
+
+    public static String threadName() {
+        return Thread.currentThread().getName();
     }
 }

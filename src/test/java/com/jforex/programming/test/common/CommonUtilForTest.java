@@ -20,7 +20,6 @@ import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.system.IClient;
-import com.jforex.programming.misc.ConcurrentUtil;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.test.fakes.IClientForTest;
@@ -37,8 +36,6 @@ public class CommonUtilForTest extends BDDMockito {
     protected IEngine engineMock;
     @Mock
     protected IHistory historyMock;
-    @Mock
-    protected ConcurrentUtil concurrentUtilMock;
     protected IClientForTest clientForTest;
     protected IEngineForTest engineForTest;
     protected JFException jfException = new JFException("JFException for test");
