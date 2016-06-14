@@ -3,14 +3,9 @@ package com.jforex.programming.order.event.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.Optional;
-
 import org.junit.Before;
 import org.junit.Test;
 
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -19,6 +14,10 @@ import com.jforex.programming.order.event.OrderEventTypeEvaluator;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 
 public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
 
@@ -39,23 +38,33 @@ public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
     private void assertCorrectEventTypeMapping(final OrderEventType expectedType,
                                                final IMessage.Type messageType,
                                                final IMessage.Reason... messageReasons) {
-        assertCorrectMapping(expectedType, messageType, Optional.empty(), messageReasons);
-    }
-
-    private void assertCorrectEventTypeMappingWithCallRequest(final OrderEventType expectedType,
-                                                              final IMessage.Type messageType,
-                                                              final OrderCallReason orderCallRequest,
-                                                              final IMessage.Reason... messageReasons) {
-        assertCorrectMapping(expectedType, messageType, Optional.of(orderCallRequest), messageReasons);
+        assertCorrectMapping(expectedType, messageType, messageReasons);
     }
 
     private void assertCorrectMapping(final OrderEventType expectedType,
                                       final IMessage.Type messageType,
-                                      final Optional<OrderCallReason> orderCallRequestOpt,
                                       final IMessage.Reason... messageReasons) {
         final OrderMessageData orderMessageData = orderMessageData(messageType, messageReasons);
 
-        final OrderEventType actualType = OrderEventTypeEvaluator.get(orderMessageData, orderCallRequestOpt);
+        final OrderEventType actualType = OrderEventTypeEvaluator.get(orderMessageData);
+
+        assertThat(actualType, equalTo(expectedType));
+    }
+
+    private void assertCorrectEventTypeMappingWithCallRequest(final OrderEventType expectedType,
+                                                              final IMessage.Type messageType,
+                                                              final OrderCallReason orderCallReason,
+                                                              final IMessage.Reason... messageReasons) {
+        assertCorrectMapping(expectedType, messageType, orderCallReason, messageReasons);
+    }
+
+    private void assertCorrectMapping(final OrderEventType expectedType,
+                                      final IMessage.Type messageType,
+                                      final OrderCallReason orderCallReason,
+                                      final IMessage.Reason... messageReasons) {
+        final OrderMessageData orderMessageData = orderMessageData(messageType, messageReasons);
+
+        final OrderEventType actualType = OrderEventTypeEvaluator.get(orderMessageData, orderCallReason);
 
         assertThat(actualType, equalTo(expectedType));
     }

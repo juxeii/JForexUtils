@@ -1,17 +1,13 @@
 package com.jforex.programming.order.event;
 
-import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.google.common.collect.MapMaker;
 import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.order.OrderMessageData;
-import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 
 import com.dukascopy.api.IOrder;
@@ -21,8 +17,7 @@ import rx.Observable;
 public class OrderEventGateway {
 
     private final JFHotObservable<OrderEvent> orderEventPublisher = new JFHotObservable<>();
-    private final ConcurrentMap<IOrder, Queue<OrderCallReason>> callRequestByOrder =
-            new MapMaker().weakKeys().makeMap();
+    private final Queue<OrderCallRequest> callRequestQueue = new ConcurrentLinkedQueue<>();
 
     private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);
 
@@ -31,8 +26,7 @@ public class OrderEventGateway {
     }
 
     public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
-        callRequestByOrder.putIfAbsent(orderCallRequest.order(), new ConcurrentLinkedQueue<>());
-        callRequestByOrder.get(orderCallRequest.order()).add(orderCallRequest.reason());
+        callRequestQueue.add(orderCallRequest);
     }
 
     public void onOrderMessageData(final OrderMessageData orderMessageData) {
@@ -44,19 +38,12 @@ public class OrderEventGateway {
     }
 
     private final OrderEventType orderEventTypeFromData(final OrderMessageData orderMessageData) {
-        return callRequestByOrder.containsKey(orderMessageData.order())
-                ? orderEventWithQueuePresent(orderMessageData)
-                : OrderEventTypeEvaluator.get(orderMessageData, Optional.empty());
-    }
+        if (callRequestQueue.isEmpty())
+            return OrderEventTypeEvaluator.get(orderMessageData);
 
-    private final OrderEventType orderEventWithQueuePresent(final OrderMessageData orderMessageData) {
-        final IOrder order = orderMessageData.order();
-        Optional<OrderCallReason> callRequestOpt = Optional.empty();
-        if (!callRequestByOrder.get(order).isEmpty())
-            callRequestOpt = Optional.of(callRequestByOrder.get(order).poll());
-        else
-            callRequestByOrder.remove(order);
-
-        return OrderEventTypeEvaluator.get(orderMessageData, callRequestOpt);
+        final OrderCallRequest orderCallRequest = callRequestQueue.poll();
+        return orderCallRequest.order() == orderMessageData.order()
+                ? OrderEventTypeEvaluator.get(orderMessageData, orderCallRequest.reason())
+                : OrderEventTypeEvaluator.get(orderMessageData);
     }
 }

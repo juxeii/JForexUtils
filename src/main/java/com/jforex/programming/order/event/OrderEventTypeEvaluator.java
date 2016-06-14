@@ -5,7 +5,6 @@ import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 import com.google.common.collect.ImmutableMap;
@@ -107,12 +106,14 @@ public final class OrderEventTypeEvaluator {
                          OrderEventType.CHANGE_TP_REJECTED)
                     .build());
 
+    public final static OrderEventType get(final OrderMessageData orderEventData) {
+        return evaluate(orderEventData);
+    }
+
     public final static OrderEventType get(final OrderMessageData orderEventData,
-                                           final Optional<OrderCallReason> orderCallRequestOpt) {
+                                           final OrderCallReason orderCallReason) {
         final OrderEventType orderEventType = evaluate(orderEventData);
-        return orderCallRequestOpt
-                .map(ocr -> refineWithCallRequest(orderEventType, ocr))
-                .orElse(orderEventType);
+        return refineWithCallReason(orderEventType, orderCallReason);
     }
 
     private final static OrderEventType evaluate(final OrderMessageData orderEventData) {
@@ -125,8 +126,8 @@ public final class OrderEventTypeEvaluator {
         return orderEventData.messageReasons().size() == 1;
     }
 
-    private final static OrderEventType refineWithCallRequest(final OrderEventType orderEventType,
-                                                              final OrderCallReason orderCallRequest) {
+    private final static OrderEventType refineWithCallReason(final OrderEventType orderEventType,
+                                                             final OrderCallReason orderCallRequest) {
         return orderEventType == OrderEventType.CHANGE_REJECTED
                 ? changeRejectEventByRequest.get(orderCallRequest)
                 : orderEventType;
