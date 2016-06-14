@@ -5,6 +5,7 @@ import java.util.Set;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.dukascopy.api.Unit;
 
 public class BarQuoteSubscription {
 
@@ -32,6 +33,9 @@ public class BarQuoteSubscription {
 
     public interface AndPeriod {
         public AndOfferSide period(Period period);
+
+        public AndOfferSide customPeriod(Unit unit,
+                                         int unitsCount);
     }
 
     public interface AndOfferSide {
@@ -63,6 +67,13 @@ public class BarQuoteSubscription {
         public AndOfferSide period(final Period period) {
             this.period = period;
             return this;
+        }
+
+        @Override
+        public AndOfferSide customPeriod(final Unit unit,
+                                         final int unitsCount) {
+            period = Period.createCustomPeriod(unit, unitsCount);
+            return null;
         }
 
         @Override

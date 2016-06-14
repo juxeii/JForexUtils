@@ -91,7 +91,7 @@ public class BarQuoteProvider {
     public Observable<BarQuote> subscribe(final BarQuoteSubscription subscription) {
         return barQuoteObservable
                 .filter(barQuote -> subscription.instruments().contains(barQuote.instrument()))
-                .filter(barQuote -> subscription.period().equals(barQuote.period()))
+                .filter(barQuote -> subscription.period().compareTo(barQuote.period()) == 0)
                 .filter(barQuote -> barQuote.offerSide() == subscription.offerSide());
     }
 
