@@ -13,6 +13,7 @@ import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.google.common.collect.Sets;
+import com.jforex.programming.builder.BarQuoteSubscription;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.QuoteProviderException;
@@ -55,9 +56,12 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
         barObservable = PublishSubject.create();
 
         barQuoteProvider = new BarQuoteProvider(barObservable, historyMock);
-        barQuoteProvider.subscribe(Sets.newHashSet(instrumentEURUSD),
-                                   testPeriod,
-                                   OfferSide.ASK)
+
+        barQuoteProvider.subscribe(BarQuoteSubscription
+                .forInstruments(Sets.newHashSet(instrumentEURUSD))
+                .period(testPeriod)
+                .offerSide(OfferSide.ASK)
+                .build())
                 .subscribe();
     }
 
@@ -202,9 +206,11 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
             @Before
             public void setUp() {
-                barQuoteProvider.subscribe(Sets.newHashSet(instrumentEURUSD),
-                                           otherPeriod,
-                                           OfferSide.ASK)
+                barQuoteProvider.subscribe(BarQuoteSubscription
+                        .forInstruments(Sets.newHashSet(instrumentEURUSD))
+                        .period(otherPeriod)
+                        .offerSide(OfferSide.ASK)
+                        .build())
                         .subscribe();
                 firstEURUSDBarQuote = new BarQuote(firstAskBarEURUSD, instrumentEURUSD, otherPeriod, OfferSide.ASK);
 

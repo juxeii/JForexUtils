@@ -1,7 +1,6 @@
 package com.jforex.programming.quote;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections4.keyvalue.MultiKey;
@@ -13,6 +12,7 @@ import com.dukascopy.api.IHistory;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.jforex.programming.builder.BarQuoteSubscription;
 
 import rx.Observable;
 
@@ -88,13 +88,11 @@ public class BarQuoteProvider {
         latestBarQuote.put(multiKey, barQuote);
     }
 
-    public Observable<BarQuote> subscribe(final Set<Instrument> instruments,
-                                          final Period period,
-                                          final OfferSide offerSide) {
+    public Observable<BarQuote> subscribe(final BarQuoteSubscription subscription) {
         return barQuoteObservable
-                .filter(barQuote -> instruments.contains(barQuote.instrument()))
-                .filter(barQuote -> period.equals(barQuote.period()))
-                .filter(barQuote -> barQuote.offerSide() == offerSide);
+                .filter(barQuote -> subscription.instruments().contains(barQuote.instrument()))
+                .filter(barQuote -> subscription.period().equals(barQuote.period()))
+                .filter(barQuote -> barQuote.offerSide() == subscription.offerSide());
     }
 
     public Observable<BarQuote> observable() {
