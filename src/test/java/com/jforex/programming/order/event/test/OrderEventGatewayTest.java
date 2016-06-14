@@ -6,8 +6,8 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.dukascopy.api.IMessage;
 import com.jforex.programming.order.OrderMessageData;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
@@ -15,6 +15,8 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IMessage;
 
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -56,7 +58,8 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Test
     public void testSubscriberIsNotifiedForARefinedRejectEvent() {
-        orderGateway.registerOrderRequest(orderUnderTest, OrderCallRequest.CHANGE_STOP_LOSS_PRICE);
+        orderGateway
+                .registerOrderCallRequest(new OrderCallRequest(orderUnderTest, OrderCallReason.CHANGE_STOP_LOSS_PRICE));
         orderGateway.onOrderMessageData(orderMessageData);
 
         subscriber.assertNoErrors();

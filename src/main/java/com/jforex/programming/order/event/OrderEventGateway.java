@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import com.google.common.collect.MapMaker;
 import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.order.OrderMessageData;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 
 import com.dukascopy.api.IOrder;
@@ -20,7 +21,7 @@ import rx.Observable;
 public class OrderEventGateway {
 
     private final JFHotObservable<OrderEvent> orderEventPublisher = new JFHotObservable<>();
-    private final ConcurrentMap<IOrder, Queue<OrderCallRequest>> callRequestByOrder =
+    private final ConcurrentMap<IOrder, Queue<OrderCallReason>> callRequestByOrder =
             new MapMaker().weakKeys().makeMap();
 
     private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);
@@ -29,10 +30,9 @@ public class OrderEventGateway {
         return orderEventPublisher.observable();
     }
 
-    public void registerOrderRequest(final IOrder order,
-                                     final OrderCallRequest orderCallRequest) {
-        callRequestByOrder.putIfAbsent(order, new ConcurrentLinkedQueue<>());
-        callRequestByOrder.get(order).add(orderCallRequest);
+    public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
+        callRequestByOrder.putIfAbsent(orderCallRequest.order(), new ConcurrentLinkedQueue<>());
+        callRequestByOrder.get(orderCallRequest.order()).add(orderCallRequest.reason());
     }
 
     public void onOrderMessageData(final OrderMessageData orderMessageData) {
@@ -51,7 +51,7 @@ public class OrderEventGateway {
 
     private final OrderEventType orderEventWithQueuePresent(final OrderMessageData orderMessageData) {
         final IOrder order = orderMessageData.order();
-        Optional<OrderCallRequest> callRequestOpt = Optional.empty();
+        Optional<OrderCallReason> callRequestOpt = Optional.empty();
         if (!callRequestByOrder.get(order).isEmpty())
             callRequestOpt = Optional.of(callRequestByOrder.get(order).poll());
         else

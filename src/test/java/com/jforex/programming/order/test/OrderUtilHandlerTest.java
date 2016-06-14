@@ -10,21 +10,21 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallRejectException;
-import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -125,7 +125,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void testMergeOrderIsNotRegisteredAtGateway() {
-                verify(orderEventGatewayMock, never()).registerOrderRequest(eq(mergeOrder), any());
+                verify(orderEventGatewayMock, never()).registerOrderCallRequest(any());
             }
         }
 
@@ -150,7 +150,8 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void testMergeOrderRegisteredAtGateway() {
-                verify(orderEventGatewayMock).registerOrderRequest(mergeOrder, OrderCallRequest.MERGE);
+//                verify(orderEventGatewayMock)
+//                        .registerOrderCallRequest(new OrderCallRequest(mergeOrder, OrderCallReason.MERGE));
             }
 
             @Test
@@ -221,7 +222,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void testMergeOrderIsNotRegisteredAtGateway() {
-                verify(orderEventGatewayMock, never()).registerOrderRequest(eq(orderToChange), any());
+                verify(orderEventGatewayMock, never()).registerOrderCallRequest(any());
             }
         }
 
@@ -246,7 +247,8 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void testMergeOrderRegisteredAtGateway() {
-                verify(orderEventGatewayMock).registerOrderRequest(orderToChange, OrderCallRequest.CLOSE);
+//                verify(orderEventGatewayMock)
+//                        .registerOrderCallRequest(new OrderCallRequest(orderToChange, OrderCallReason.CLOSE));
             }
 
             @Test

@@ -1,14 +1,23 @@
 package com.jforex.programming.order.call;
 
-public enum OrderCallRequest {
+import com.dukascopy.api.IOrder;
 
-    SUBMIT,
-    MERGE,
-    CLOSE,
-    CHANGE_STOP_LOSS_PRICE,
-    CHANGE_TAKE_PROFIT_PRICE,
-    CHANGE_GOOD_TILL_TIME,
-    CHANGE_LABEL,
-    CHANGE_REQUESTED_AMOUNT,
-    CHANGE_OPENPRICE,
+public class OrderCallRequest {
+
+    private final IOrder order;
+    private final OrderCallReason reason;
+
+    public OrderCallRequest(final IOrder order,
+                            final OrderCallReason reason) {
+        this.order = order;
+        this.reason = reason;
+    }
+
+    public final IOrder order() {
+        return order;
+    }
+
+    public final OrderCallReason reason() {
+        return reason;
+    }
 }

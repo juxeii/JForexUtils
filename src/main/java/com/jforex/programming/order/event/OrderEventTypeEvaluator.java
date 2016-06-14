@@ -11,7 +11,7 @@ import java.util.function.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jforex.programming.order.OrderMessageData;
-import com.jforex.programming.order.call.OrderCallRequest;
+import com.jforex.programming.order.call.OrderCallReason;
 
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
@@ -91,24 +91,24 @@ public final class OrderEventTypeEvaluator {
                          OrderEventType.LABEL_CHANGE_OK)
                     .build());
 
-    private final static Map<OrderCallRequest, OrderEventType> changeRejectEventByRequest =
-            Maps.immutableEnumMap(ImmutableMap.<OrderCallRequest, OrderEventType> builder()
-                    .put(OrderCallRequest.CHANGE_REQUESTED_AMOUNT,
+    private final static Map<OrderCallReason, OrderEventType> changeRejectEventByRequest =
+            Maps.immutableEnumMap(ImmutableMap.<OrderCallReason, OrderEventType> builder()
+                    .put(OrderCallReason.CHANGE_REQUESTED_AMOUNT,
                          OrderEventType.CHANGE_AMOUNT_REJECTED)
-                    .put(OrderCallRequest.CHANGE_LABEL,
+                    .put(OrderCallReason.CHANGE_LABEL,
                          OrderEventType.CHANGE_LABEL_REJECTED)
-                    .put(OrderCallRequest.CHANGE_GOOD_TILL_TIME,
+                    .put(OrderCallReason.CHANGE_GOOD_TILL_TIME,
                          OrderEventType.CHANGE_GTT_REJECTED)
-                    .put(OrderCallRequest.CHANGE_OPENPRICE,
+                    .put(OrderCallReason.CHANGE_OPENPRICE,
                          OrderEventType.CHANGE_OPENPRICE_REJECTED)
-                    .put(OrderCallRequest.CHANGE_STOP_LOSS_PRICE,
+                    .put(OrderCallReason.CHANGE_STOP_LOSS_PRICE,
                          OrderEventType.CHANGE_SL_REJECTED)
-                    .put(OrderCallRequest.CHANGE_TAKE_PROFIT_PRICE,
+                    .put(OrderCallReason.CHANGE_TAKE_PROFIT_PRICE,
                          OrderEventType.CHANGE_TP_REJECTED)
                     .build());
 
     public final static OrderEventType get(final OrderMessageData orderEventData,
-                                           final Optional<OrderCallRequest> orderCallRequestOpt) {
+                                           final Optional<OrderCallReason> orderCallRequestOpt) {
         final OrderEventType orderEventType = evaluate(orderEventData);
         return orderCallRequestOpt
                 .map(ocr -> refineWithCallRequest(orderEventType, ocr))
@@ -126,7 +126,7 @@ public final class OrderEventTypeEvaluator {
     }
 
     private final static OrderEventType refineWithCallRequest(final OrderEventType orderEventType,
-                                                              final OrderCallRequest orderCallRequest) {
+                                                              final OrderCallReason orderCallRequest) {
         return orderEventType == OrderEventType.CHANGE_REJECTED
                 ? changeRejectEventByRequest.get(orderCallRequest)
                 : orderEventType;

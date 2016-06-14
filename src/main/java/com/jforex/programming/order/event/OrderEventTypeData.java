@@ -28,21 +28,21 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.call.OrderCallRequest;
+import com.jforex.programming.order.call.OrderCallReason;
 
 public final class OrderEventTypeData {
 
     private final ImmutableSet<OrderEventType> doneEventTypes;
     private final ImmutableSet<OrderEventType> rejectEventTypes;
     private final ImmutableSet<OrderEventType> allTypes;
-    private final OrderCallRequest callRequest;
+    private final OrderCallReason callReason;
 
     private OrderEventTypeData(final EnumSet<OrderEventType> doneEventTypes,
                                final EnumSet<OrderEventType> rejectEventTypes,
-                               final OrderCallRequest callRequest) {
+                               final OrderCallReason callReason) {
         this.doneEventTypes = Sets.immutableEnumSet(doneEventTypes);
         this.rejectEventTypes = Sets.immutableEnumSet(rejectEventTypes);
-        this.callRequest = callRequest;
+        this.callReason = callReason;
 
         final EnumSet<OrderEventType> tmpAllTypes = doneEventTypes;
         tmpAllTypes.addAll(rejectEventTypes);
@@ -61,52 +61,52 @@ public final class OrderEventTypeData {
         return allTypes;
     }
 
-    public final OrderCallRequest callRequest() {
-        return callRequest;
+    public final OrderCallReason callReason() {
+        return callReason;
     }
 
     public final static OrderEventTypeData submitData =
             new OrderEventTypeData(EnumSet.of(FULL_FILL_OK, SUBMIT_CONDITIONAL_OK, PARTIAL_FILL_OK),
                                    EnumSet.of(FILL_REJECTED, SUBMIT_REJECTED),
-                                   OrderCallRequest.SUBMIT);
+                                   OrderCallReason.SUBMIT);
 
     public final static OrderEventTypeData mergeData =
             new OrderEventTypeData(EnumSet.of(MERGE_OK, MERGE_CLOSE_OK),
                                    EnumSet.of(MERGE_REJECTED),
-                                   OrderCallRequest.MERGE);
+                                   OrderCallReason.MERGE);
 
     public final static OrderEventTypeData closeData =
             new OrderEventTypeData(EnumSet.of(CLOSE_OK),
                                    EnumSet.of(CLOSE_REJECTED),
-                                   OrderCallRequest.CLOSE);
+                                   OrderCallReason.CLOSE);
 
     public final static OrderEventTypeData changeLabelData =
             new OrderEventTypeData(EnumSet.of(LABEL_CHANGE_OK),
                                    EnumSet.of(CHANGE_LABEL_REJECTED),
-                                   OrderCallRequest.CHANGE_LABEL);
+                                   OrderCallReason.CHANGE_LABEL);
 
     public final static OrderEventTypeData changeGTTData =
             new OrderEventTypeData(EnumSet.of(GTT_CHANGE_OK),
                                    EnumSet.of(CHANGE_GTT_REJECTED),
-                                   OrderCallRequest.CHANGE_GOOD_TILL_TIME);
+                                   OrderCallReason.CHANGE_GOOD_TILL_TIME);
 
     public final static OrderEventTypeData changeOpenPriceData =
             new OrderEventTypeData(EnumSet.of(OPENPRICE_CHANGE_OK),
                                    EnumSet.of(CHANGE_OPENPRICE_REJECTED),
-                                   OrderCallRequest.CHANGE_OPENPRICE);
+                                   OrderCallReason.CHANGE_OPENPRICE);
 
     public final static OrderEventTypeData changeAmountData =
             new OrderEventTypeData(EnumSet.of(REQUESTED_AMOUNT_CHANGE_OK),
                                    EnumSet.of(CHANGE_AMOUNT_REJECTED),
-                                   OrderCallRequest.CHANGE_REQUESTED_AMOUNT);
+                                   OrderCallReason.CHANGE_REQUESTED_AMOUNT);
 
     public final static OrderEventTypeData changeSLData =
             new OrderEventTypeData(EnumSet.of(SL_CHANGE_OK),
                                    EnumSet.of(CHANGE_SL_REJECTED),
-                                   OrderCallRequest.CHANGE_STOP_LOSS_PRICE);
+                                   OrderCallReason.CHANGE_STOP_LOSS_PRICE);
 
     public final static OrderEventTypeData changeTPData =
             new OrderEventTypeData(EnumSet.of(TP_CHANGE_OK),
                                    EnumSet.of(CHANGE_TP_REJECTED),
-                                   OrderCallRequest.CHANGE_TAKE_PROFIT_PRICE);
+                                   OrderCallReason.CHANGE_TAKE_PROFIT_PRICE);
 }
