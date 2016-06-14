@@ -52,15 +52,12 @@ public class OrderPositionUtil {
         final Position position = positionFactory.forInstrument(instrument);
         return orderCreateUtil
                 .submitOrder(orderParams)
-                .doOnNext(submitEvent -> onSubmitEvent(position, submitEvent))
+                .doOnNext(submitEvent -> {
+                    if (OrderEventTypeData.submitData.isDoneType(submitEvent.type()))
+                        position.addOrder(submitEvent.order());
+                })
                 .doOnError(e -> logger.error("Submit " + orderParams.label() + " for position "
                         + instrument + " failed! Exception: " + e.getMessage()));
-    }
-
-    private void onSubmitEvent(final Position position,
-                               final OrderEvent submitEvent) {
-        if (OrderEventTypeData.submitData.isDoneType(submitEvent.type()))
-            position.addOrder(submitEvent.order());
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
