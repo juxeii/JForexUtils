@@ -11,12 +11,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
@@ -43,7 +44,6 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
         orderCallExecutor = new OrderCallExecutor(concurrentUtilMock);
     }
 
-    @SuppressWarnings("unchecked")
     private void setUpMocks() throws InterruptedException, ExecutionException, JFException {
         when(orderCallMock.call()).thenReturn(testOrder);
 

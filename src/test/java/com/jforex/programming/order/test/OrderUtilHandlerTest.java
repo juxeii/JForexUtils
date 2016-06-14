@@ -10,8 +10,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.misc.JFRunnable;
@@ -25,6 +23,9 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -58,6 +59,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         when(orderEventGatewayMock.observable()).thenReturn(orderEventSubject);
     }
 
+    @SuppressWarnings("unchecked")
     private void prepareJFException() {
         when(orderCallExecutorMock.callObservable(any(JFCallable.class)))
                 .thenReturn(Observable.error(jfException));
@@ -98,6 +100,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         private final Supplier<Observable<OrderEvent>> runCall =
                 () -> orderUtilHandler.createObservable(orderCall, OrderEventTypeData.mergeData);
 
+        @SuppressWarnings("unchecked")
         @Before
         public void setUp() {
             when(orderCallExecutorMock.callObservable(any(JFCallable.class))).thenReturn(Observable.just(mergeOrder));
@@ -211,6 +214,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         private final Supplier<Observable<OrderEvent>> runCall =
                 () -> orderUtilHandler.changeObservable(orderCall, orderToChange, OrderEventTypeData.closeData);
 
+        @SuppressWarnings("unchecked")
         @Before
         public void setUp() {
             when(orderCallExecutorMock.callObservable(any(JFCallable.class)))
