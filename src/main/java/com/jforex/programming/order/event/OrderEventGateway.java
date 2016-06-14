@@ -26,7 +26,7 @@ public class OrderEventGateway {
     private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);
 
     public Observable<OrderEvent> observable() {
-        return orderEventPublisher.get();
+        return orderEventPublisher.observable();
     }
 
     public void registerOrderRequest(final IOrder order,

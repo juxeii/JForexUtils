@@ -110,7 +110,8 @@ public final class OrderEventTypeEvaluator {
     public final static OrderEventType get(final OrderMessageData orderEventData,
                                            final Optional<OrderCallRequest> orderCallRequestOpt) {
         final OrderEventType orderEventType = evaluate(orderEventData);
-        return orderCallRequestOpt.map(ocr -> refineWithCallRequest(orderEventType, ocr))
+        return orderCallRequestOpt
+                .map(ocr -> refineWithCallRequest(orderEventType, ocr))
                 .orElse(orderEventType);
     }
 

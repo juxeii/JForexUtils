@@ -89,7 +89,7 @@ public class JForexUtil implements IMessageConsumer {
     private void initInfrastructure() {
         orderEventGateway = new OrderEventGateway();
 
-        eventGatewaySubscription = messagePublisher.get()
+        eventGatewaySubscription = messagePublisher.observable()
                 .filter(message -> message.getOrder() != null)
                 .map(OrderMessageData::new)
                 .subscribe(orderEventGateway::onOrderMessageData);

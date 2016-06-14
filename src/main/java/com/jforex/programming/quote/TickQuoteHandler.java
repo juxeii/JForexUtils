@@ -27,7 +27,7 @@ public class TickQuoteHandler implements TickQuoteProvider {
     private final Set<Instrument> subscribedInstruments;
     private final IHistory history;
     private final JFHotObservable<TickQuote> tickQuotePublisher = new JFHotObservable<>();
-    private final Observable<TickQuote> tickQuoteObservable = tickQuotePublisher.get();
+    private final Observable<TickQuote> tickQuoteObservable = tickQuotePublisher.observable();
     private final Map<Instrument, ITick> latestTickQuote = new ConcurrentHashMap<>();
 
     private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);

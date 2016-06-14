@@ -20,7 +20,7 @@ public final class JFHotObservable<T> {
         hotObservable.connect();
     }
 
-    public final Observable<T> get() {
+    public final Observable<T> observable() {
         return hotObservable;
     }
 

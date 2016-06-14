@@ -28,7 +28,7 @@ public class BarQuoteHandler implements BarQuoteProvider {
     private final IContext context;
     private final IHistory history;
     private final JFHotObservable<BarQuote> barQuotePublisher = new JFHotObservable<>();
-    private final Observable<BarQuote> barQuoteObservable = barQuotePublisher.get();
+    private final Observable<BarQuote> barQuoteObservable = barQuotePublisher.observable();
     private final Map<MultiKey<Object>, BarQuote> latestBarQuote = new ConcurrentHashMap<>();
 
     private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);

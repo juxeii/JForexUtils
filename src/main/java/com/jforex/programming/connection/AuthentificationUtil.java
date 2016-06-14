@@ -64,7 +64,7 @@ public class AuthentificationUtil {
     }
 
     public final Observable<LoginState> loginStateObs() {
-        return loginStatePublisher.get();
+        return loginStatePublisher.observable();
     }
 
     public LoginState loginState() {

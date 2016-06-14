@@ -13,11 +13,11 @@ public final class JFSystemListener implements ISystemListener {
     private final JFHotObservable<ConnectionState> connectionStatePublisher = new JFHotObservable<>();
 
     public final Observable<StrategyRunData> strategyObs() {
-        return strategyRunDataPublisher.get();
+        return strategyRunDataPublisher.observable();
     }
 
     public final Observable<ConnectionState> connectionObs() {
-        return connectionStatePublisher.get();
+        return connectionStatePublisher.observable();
     }
 
     @Override
