@@ -103,7 +103,7 @@ public class JForexUtil implements IMessageConsumer {
         tickQuoteProvider = new TickQuoteProvider(tickQuotePublisher.get(),
                                                   context.getSubscribedInstruments(),
                                                   history);
-        barQuoteProvider = new BarQuoteProvider(barQuotePublisher.get(), history);
+        barQuoteProvider = new BarQuoteProvider(this, barQuotePublisher.get());
     }
 
     private void initOrderRelated() {
@@ -132,6 +132,10 @@ public class JForexUtil implements IMessageConsumer {
 
     public IAccount account() {
         return account;
+    }
+
+    public IHistory history() {
+        return history;
     }
 
     public TickQuoteProvider tickQuoteProvider() {
@@ -193,7 +197,7 @@ public class JForexUtil implements IMessageConsumer {
         return isMarketClosed(DateTimeUtil.localMillisNow());
     }
 
-    private boolean isMarketClosed(final long time) {
+    public boolean isMarketClosed(final long time) {
         return dataService.isOfflineTime(time);
     }
 

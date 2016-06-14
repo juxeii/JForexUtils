@@ -14,6 +14,7 @@ import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.google.common.collect.Sets;
 import com.jforex.programming.builder.BarQuoteSubscription;
+import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.QuoteProviderException;
@@ -28,6 +29,8 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
 
     private BarQuoteProvider barQuoteProvider;
 
+    @Mock
+    private JForexUtil jforexUtilMock;
     @Mock
     private IBar askBarEURUSDOfHistory;
     @Mock
@@ -54,8 +57,10 @@ public class BarQuoteProviderTest extends CurrencyUtilForTest {
     public void setUp() {
         initCommonTestFramework();
         barObservable = PublishSubject.create();
+        when(jforexUtilMock.context()).thenReturn(contextMock);
+        when(jforexUtilMock.history()).thenReturn(historyMock);
 
-        barQuoteProvider = new BarQuoteProvider(barObservable, historyMock);
+        barQuoteProvider = new BarQuoteProvider(jforexUtilMock, barObservable);
 
         barQuoteProvider.subscribe(BarQuoteSubscription
                 .forInstruments(Sets.newHashSet(instrumentEURUSD))

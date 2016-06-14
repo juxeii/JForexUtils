@@ -3,31 +3,43 @@ package com.jforex.programming.quote;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.dukascopy.api.feed.IBarFeedListener;
 import com.jforex.programming.builder.BarQuoteSubscription;
+import com.jforex.programming.misc.JFHotObservable;
+import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.settings.UserSettings;
 
 import rx.Observable;
 
-public class BarQuoteProvider {
+public class BarQuoteProvider implements IBarFeedListener {
 
-    private final Observable<BarQuote> barQuoteObservable;
+    private final JForexUtil jforexUtil;
+    private final IContext context;
     private final IHistory history;
+    private final Observable<BarQuote> barQuoteObservable;
+    private final JFHotObservable<BarQuote> customBarQuotePublisher = new JFHotObservable<>();
     private final Map<MultiKey<Object>, BarQuote> latestBarQuote = new ConcurrentHashMap<>();
 
+    private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
     private final static Logger logger = LogManager.getLogger(BarQuoteProvider.class);
 
-    public BarQuoteProvider(final Observable<BarQuote> barQuoteObservable,
-                            final IHistory history) {
+    public BarQuoteProvider(final JForexUtil jforexUtil,
+                            final Observable<BarQuote> barQuoteObservable) {
+        this.jforexUtil = jforexUtil;
         this.barQuoteObservable = barQuoteObservable;
-        this.history = history;
+        context = jforexUtil.context();
+        history = jforexUtil.history();
 
         barQuoteObservable.subscribe(this::onBarQuote);
     }
@@ -89,10 +101,22 @@ public class BarQuoteProvider {
     }
 
     public Observable<BarQuote> subscribe(final BarQuoteSubscription subscription) {
-        return barQuoteObservable
-                .filter(barQuote -> subscription.instruments().contains(barQuote.instrument()))
-                .filter(barQuote -> subscription.period().compareTo(barQuote.period()) == 0)
-                .filter(barQuote -> barQuote.offerSide() == subscription.offerSide());
+        final Period subscriptionPeriod = subscription.period();
+        if (subscriptionPeriod.name() != null) {
+            return barQuoteObservable
+                    .filter(barQuote -> subscription.instruments().contains(barQuote.instrument()))
+                    .filter(barQuote -> subscriptionPeriod.compareTo(barQuote.period()) == 0)
+                    .filter(barQuote -> barQuote.offerSide() == subscription.offerSide());
+        } else {
+            subscription.instruments().forEach(instrument -> context.subscribeToBarsFeed(instrument,
+                                                                                         subscriptionPeriod,
+                                                                                         subscription.offerSide(),
+                                                                                         this));
+            return customBarQuotePublisher.get()
+                    .filter(barQuote -> subscription.instruments().contains(barQuote.instrument()))
+                    .filter(barQuote -> subscriptionPeriod.compareTo(barQuote.period()) == 0)
+                    .filter(barQuote -> barQuote.offerSide() == subscription.offerSide());
+        }
     }
 
     public Observable<BarQuote> observable() {
@@ -103,5 +127,14 @@ public class BarQuoteProvider {
                                          final Period period,
                                          final OfferSide offerSide) {
         return new MultiKey<Object>(instrument, period, offerSide);
+    }
+
+    @Override
+    public void onBar(final Instrument instrument,
+                      final Period period,
+                      final OfferSide offerSide,
+                      final IBar bar) {
+        if (userSettings.enableWeekendQuoteFilter() && !jforexUtil.isMarketClosed(bar.getTime()))
+            customBarQuotePublisher.onNext(new BarQuote(bar, instrument, period, offerSide));
     }
 }
