@@ -8,12 +8,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.jforex.programming.order.call.OrderCallRejectException;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
-import rx.Completable;
 import rx.Observable;
-import rx.observables.ConnectableObservable;
 
 public final class RxUtil {
 
@@ -23,17 +20,6 @@ public final class RxUtil {
     private static final Logger logger = LogManager.getLogger(RxUtil.class);
 
     private RxUtil() {
-    }
-
-    public final static <T> Observable<T> connectObservable(final Observable<T> observable) {
-        final ConnectableObservable<T> connectableObservable = observable.replay();
-        connectableObservable.connect();
-        return connectableObservable;
-    }
-
-    public final static Completable connectCompletable(final Completable completable) {
-        final Observable<OrderEvent> connectedObservable = connectObservable(completable.toObservable());
-        return connectedObservable.toCompletable();
     }
 
     public final static Observable<Long> retryWithDelay(final Observable<? extends Throwable> errors,

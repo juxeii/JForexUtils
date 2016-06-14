@@ -340,7 +340,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
 
             orderPositionUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock);
 
-            verify(positionMultiTaskMock).removeTPSLObservable(toMergeOrders);
+            verify(positionMultiTaskMock, never()).removeTPSLObservable(toMergeOrders);
             taskSubscriber.assertNotCompleted();
         }
 
@@ -611,12 +611,12 @@ public class OrderPositionUtilTest extends PositionCommonTest {
         }
 
         @Test
-        public void testCloseOrdersIsCalledAlsoWhenNotSubscribed() {
+        public void testCloseOrdersIsNotCalledWhenNotSubscribed() {
             setSingleMockResult(buyOrder, doneObservable());
 
             orderPositionUtil.closePosition(instrumentEURUSD);
 
-            verify(positionSingleTaskMock).closeObservable(buyOrder);
+            verify(positionSingleTaskMock, never()).closeObservable(buyOrder);
             taskSubscriber.assertNotCompleted();
         }
 

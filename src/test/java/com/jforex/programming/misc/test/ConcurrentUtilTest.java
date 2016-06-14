@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import org.junit.Before;
@@ -15,6 +14,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.IContext;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.ConcurrentUtil;
+import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class ConcurrentUtilTest extends CommonUtilForTest {
@@ -26,7 +26,7 @@ public class ConcurrentUtilTest extends CommonUtilForTest {
     @Mock
     private Runnable threadMock;
     @Mock
-    private Callable<IOrder> taskMock;
+    private JFCallable<IOrder> callableMock;
     @Mock
     private Future<IOrder> futureMock;
 
@@ -41,14 +41,14 @@ public class ConcurrentUtilTest extends CommonUtilForTest {
     }
 
     private void setUpMocks() {
-        when(contextMock.executeTask(taskMock)).thenReturn(futureMock);
+        when(contextMock.executeTask(callableMock)).thenReturn(futureMock);
     }
 
     @Test
     public void testExecuteOnStrategyThreadInvokesContextExecutor() {
-        final Future<IOrder> future = concurrentUtil.executeOnStrategyThread(taskMock);
+        final Future<IOrder> future = concurrentUtil.executeOnStrategyThread(callableMock);
 
-        verify(contextMock).executeTask(taskMock);
+        verify(contextMock).executeTask(callableMock);
         assertThat(future, equalTo(futureMock));
     }
 

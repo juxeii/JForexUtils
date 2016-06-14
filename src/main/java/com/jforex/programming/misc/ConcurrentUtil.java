@@ -1,14 +1,12 @@
 package com.jforex.programming.misc;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
 
-import com.jforex.programming.settings.PlatformSettings;
-
 import com.dukascopy.api.IContext;
+import com.jforex.programming.settings.PlatformSettings;
 
 public class ConcurrentUtil {
 
@@ -20,7 +18,7 @@ public class ConcurrentUtil {
         this.context = context;
     }
 
-    public <T> Future<T> executeOnStrategyThread(final Callable<T> task) {
+    public <T> Future<T> executeOnStrategyThread(final JFCallable<T> task) {
         return context.executeTask(task);
     }
 

@@ -14,9 +14,9 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.builder.OrderParams;
+import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderPositionUtil;
-import com.jforex.programming.order.OrderSupplier;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
@@ -41,7 +41,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private PositionOrders positionOrdersMock;
     @Captor
-    private ArgumentCaptor<OrderSupplier> orderCallCaptor;
+    private ArgumentCaptor<JFCallable<IOrder>> orderCallCaptor;
     @Captor
     private ArgumentCaptor<Set<IOrder>> toMergeOrdersCaptor;
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();

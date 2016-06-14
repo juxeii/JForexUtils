@@ -1,42 +1,26 @@
 package com.jforex.programming.order.call;
 
-import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.ConcurrentUtil;
-import com.jforex.programming.order.OrderSupplier;
+import com.jforex.programming.misc.JFCallable;
+
+import rx.Observable;
 
 public class OrderCallExecutor {
 
     private final ConcurrentUtil concurrentUtil;
 
-    private interface ExecutorOrderCall {
-        public IOrder run() throws JFException, InterruptedException, ExecutionException;
-    }
-
     public OrderCallExecutor(final ConcurrentUtil concurrentUtil) {
         this.concurrentUtil = concurrentUtil;
     }
 
-    public OrderCallExecutorResult run(final OrderSupplier orderSupplier) {
+    public Observable<IOrder> callObservable(final JFCallable<IOrder> orderCallable) {
         return ConcurrentUtil.isStrategyThread()
-                ? execute(() -> orderSupplier.get())
-                : execute(strategyThreadCall(() -> orderSupplier.get()));
+                ? Observable.fromCallable(orderCallable)
+                : Observable.defer(() -> futureObservable(orderCallable));
     }
 
-    private final ExecutorOrderCall strategyThreadCall(final Callable<IOrder> orderCallable) {
-        return () -> concurrentUtil.executeOnStrategyThread(orderCallable).get();
-    }
-
-    private final OrderCallExecutorResult execute(final ExecutorOrderCall executorOrderCall) {
-        try {
-            final IOrder order = executorOrderCall.run();
-            return new OrderCallExecutorResult(Optional.ofNullable(order), Optional.empty());
-        } catch (JFException | InterruptedException | ExecutionException exception) {
-            return new OrderCallExecutorResult(Optional.empty(), Optional.of(exception));
-        }
+    private final Observable<IOrder> futureObservable(final JFCallable<IOrder> orderCallable) {
+        return Observable.from(concurrentUtil.executeOnStrategyThread(orderCallable));
     }
 }

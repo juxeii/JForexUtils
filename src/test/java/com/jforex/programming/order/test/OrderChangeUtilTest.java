@@ -10,7 +10,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.dukascopy.api.JFException;
-import com.jforex.programming.misc.RunnableWithJFException;
+import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.event.OrderEvent;
@@ -32,7 +32,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
     @Mock
     private OrderUtilHandler orderUtilHandlerMock;
     @Captor
-    private ArgumentCaptor<RunnableWithJFException> orderCallCaptor;
+    private ArgumentCaptor<JFRunnable> orderCallCaptor;
     private final IOrderForTest orderUnterTest = IOrderForTest.buyOrderEURUSD();
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
     private final Observable<OrderEvent> changeObservable = Observable.empty();
@@ -46,15 +46,15 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
     }
 
     private void captureAndRunOrderCall(final OrderEventTypeData typeData) throws JFException {
-        verify(orderUtilHandlerMock).runOrderChangeCall(orderCallCaptor.capture(),
-                                                        eq(orderUnterTest),
-                                                        argLambda(td -> td == typeData));
+        verify(orderUtilHandlerMock).changeObservable(orderCallCaptor.capture(),
+                                                      eq(orderUnterTest),
+                                                      argLambda(td -> td == typeData));
         orderCallCaptor.getValue().run();
     }
 
     private void setUpHanderMock(final OrderEventTypeData orderEventTypeData) {
         when(orderUtilHandlerMock
-                .runOrderChangeCall(orderCallCaptor.capture(), eq(orderUnterTest), eq(orderEventTypeData)))
+                .changeObservable(orderCallCaptor.capture(), eq(orderUnterTest), eq(orderEventTypeData)))
                         .thenReturn(changeObservable);
     }
 

@@ -15,50 +15,50 @@ public class OrderChangeUtil {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        return orderUtilHandler.runOrderChangeCall(() -> orderToClose.close(),
-                                                   orderToClose,
-                                                   OrderEventTypeData.closeData);
+        return orderUtilHandler.changeObservable(() -> orderToClose.close(),
+                                                 orderToClose,
+                                                 OrderEventTypeData.closeData);
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
                                            final String newLabel) {
-        return orderUtilHandler.runOrderChangeCall(() -> orderToChangeLabel.setLabel(newLabel),
-                                                   orderToChangeLabel,
-                                                   OrderEventTypeData.changeLabelData);
+        return orderUtilHandler.changeObservable(() -> orderToChangeLabel.setLabel(newLabel),
+                                                 orderToChangeLabel,
+                                                 OrderEventTypeData.changeLabelData);
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
                                                   final long newGTT) {
-        return orderUtilHandler.runOrderChangeCall(() -> orderToChangeGTT.setGoodTillTime(newGTT),
-                                                   orderToChangeGTT,
-                                                   OrderEventTypeData.changeGTTData);
+        return orderUtilHandler.changeObservable(() -> orderToChangeGTT.setGoodTillTime(newGTT),
+                                                 orderToChangeGTT,
+                                                 OrderEventTypeData.changeGTTData);
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
-        return orderUtilHandler.runOrderChangeCall(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
-                                                   orderToChangeOpenPrice,
-                                                   OrderEventTypeData.changeOpenPriceData);
+        return orderUtilHandler.changeObservable(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
+                                                 orderToChangeOpenPrice,
+                                                 OrderEventTypeData.changeOpenPriceData);
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
                                                      final double newAmount) {
-        return orderUtilHandler.runOrderChangeCall(() -> orderToChangeAmount.setRequestedAmount(newAmount),
-                                                   orderToChangeAmount,
-                                                   OrderEventTypeData.changeAmountData);
+        return orderUtilHandler.changeObservable(() -> orderToChangeAmount.setRequestedAmount(newAmount),
+                                                 orderToChangeAmount,
+                                                 OrderEventTypeData.changeAmountData);
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
                                                    final double newSL) {
-        return orderUtilHandler.runOrderChangeCall(() -> orderToChangeSL.setStopLossPrice(newSL),
-                                                   orderToChangeSL,
-                                                   OrderEventTypeData.changeSLData);
+        return orderUtilHandler.changeObservable(() -> orderToChangeSL.setStopLossPrice(newSL),
+                                                 orderToChangeSL,
+                                                 OrderEventTypeData.changeSLData);
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
                                                      final double newTP) {
-        return orderUtilHandler.runOrderChangeCall(() -> orderToChangeTP.setTakeProfitPrice(newTP),
-                                                   orderToChangeTP,
-                                                   OrderEventTypeData.changeTPData);
+        return orderUtilHandler.changeObservable(() -> orderToChangeTP.setTakeProfitPrice(newTP),
+                                                 orderToChangeTP,
+                                                 OrderEventTypeData.changeTPData);
     }
 }

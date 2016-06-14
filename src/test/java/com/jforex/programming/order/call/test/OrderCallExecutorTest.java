@@ -1,39 +1,42 @@
 package com.jforex.programming.order.call.test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
-import com.jforex.programming.order.OrderSupplier;
+import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.order.call.OrderCallExecutor;
-import com.jforex.programming.order.call.OrderCallExecutorResult;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
+import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import rx.observers.TestSubscriber;
+
+@RunWith(HierarchicalContextRunner.class)
 public class OrderCallExecutorTest extends CommonUtilForTest {
 
     private OrderCallExecutor orderCallExecutor;
 
     @Mock
-    private OrderSupplier orderCallMock;
+    private JFCallable<IOrder> orderCallMock;
     @Mock
     private Future<IOrder> futureMock;
-    private final IOrderForTest order = IOrderForTest.buyOrderEURUSD();
-    private OrderCallExecutorResult orderExecutorResult;
-    private final Exception testException = new InterruptedException();
+    private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
+    private final IOrderForTest testOrder = IOrderForTest.buyOrderEURUSD();
+    private final Runnable executorCall =
+            () -> orderCallExecutor.callObservable(orderCallMock).subscribe(orderSubscriber);
 
     @Before
-    public void setUp() throws InterruptedException, ExecutionException {
+    public void setUp() throws InterruptedException, ExecutionException, JFException {
         initCommonTestFramework();
         setUpMocks();
 
@@ -41,63 +44,114 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
     }
 
     @SuppressWarnings("unchecked")
-    private void setUpMocks() throws InterruptedException, ExecutionException {
-        when(futureMock.get()).thenReturn(order);
+    private void setUpMocks() throws InterruptedException, ExecutionException, JFException {
+        when(orderCallMock.call()).thenReturn(testOrder);
 
-        doAnswer(invocation -> {
-            final Callable<IOrder> orderCallable = (Callable<IOrder>) (invocation.getArguments())[0];
-            orderCallable.call();
-            return futureMock;
-        }).when(concurrentUtilMock).executeOnStrategyThread(any());
+        when(futureMock.get()).thenReturn(testOrder);
+
+        when(concurrentUtilMock.executeOnStrategyThread(orderCallMock)).thenReturn(futureMock);
     }
 
-    @Test
-    public void testWhenOnStrategyThreadNoConcurrentUtilCall() throws JFException {
-        CommonUtilForTest.setStrategyThread();
+    private void assertWhenNotSubscribedNoExecutionHappens() {
+        orderCallExecutor.callObservable(orderCallMock);
 
-        orderCallExecutor.run(orderCallMock);
-
-        verify(orderCallMock).get();
+        verifyZeroInteractions(orderCallMock);
         verifyZeroInteractions(concurrentUtilMock);
+        verifyZeroInteractions(futureMock);
     }
 
-    @Test
-    public void testWhenOnNonStrategyThreadConcurrentUtilExecutesOrderRunnable() throws JFException {
-        CommonUtilForTest.setNotStrategyThread();
+    private void assertOrderEmissionAndCompletion() {
+        orderSubscriber.assertCompleted();
+        orderSubscriber.assertNoErrors();
+        orderSubscriber.assertValueCount(1);
 
-        orderCallExecutor.run(orderCallMock);
-
-        verify(orderCallMock).get();
-        verify(concurrentUtilMock).executeOnStrategyThread((any()));
+        assertThat(orderSubscriber.getOnNextEvents().get(0), equalTo(testOrder));
     }
 
-    @Test
-    public void testVerifyExecutorResultContents() {
-        orderExecutorResult = orderCallExecutor.run(orderCallMock);
+    public class OnStrategyThread {
 
-        assertThat(orderExecutorResult.maybeOrder().get(), equalTo(order));
-        assertFalse(orderExecutorResult.maybeException().isPresent());
+        @Before
+        public void setUp() {
+            CommonUtilForTest.setStrategyThread();
+        }
+
+        @Test
+        public void whenNotSubscribedNoExecutionHappens() {
+            assertWhenNotSubscribedNoExecutionHappens();
+        }
+
+        @Test
+        public void onErrorExceptionIsEmitted() throws JFException {
+            when(orderCallMock.call()).thenThrow(jfException);
+
+            executorCall.run();
+
+            orderSubscriber.assertError(jfException);
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                executorCall.run();
+            }
+
+            @Test
+            public void orderCallIsExecuted() throws JFException {
+                verify(orderCallMock).call();
+            }
+
+            @Test
+            public void noConcurrentUtilCall() {
+                verifyZeroInteractions(futureMock);
+                verifyZeroInteractions(concurrentUtilMock);
+            }
+
+            @Test
+            public void testOrderIsEmittedAndCompleted() {
+                assertOrderEmissionAndCompletion();
+            }
+        }
     }
 
-    @Test
-    public void testFutureThrowsExecutorResultContentsAreCorrect() throws InterruptedException,
-                                                                   ExecutionException {
-        when(futureMock.get()).thenThrow(testException);
+    public class OnNotStrategyThread {
 
-        orderExecutorResult = orderCallExecutor.run(orderCallMock);
+        @Before
+        public void setUp() {
+            CommonUtilForTest.setNotStrategyThread();
+        }
 
-        assertFalse(orderExecutorResult.maybeOrder().isPresent());
-        assertThat(orderExecutorResult.maybeException().get(), equalTo(testException));
-    }
+        @Test
+        public void whenNotSubscribedNoExecutionHappens() {
+            assertWhenNotSubscribedNoExecutionHappens();
+        }
 
-    @Test
-    public void testWhenOrderCallThrowsExecutorResultContentsAreCorrect() throws InterruptedException,
-                                                                          ExecutionException, JFException {
-        when(orderCallMock.get()).thenThrow(jfException);
+        @Test
+        public void onErrorExceptionIsEmitted() throws InterruptedException, ExecutionException {
+            when(futureMock.get()).thenThrow(InterruptedException.class);
 
-        orderExecutorResult = orderCallExecutor.run(orderCallMock);
+            executorCall.run();
 
-        assertFalse(orderExecutorResult.maybeOrder().isPresent());
-        assertThat(orderExecutorResult.maybeException().get(), equalTo(jfException));
+            orderSubscriber.assertError(InterruptedException.class);
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                executorCall.run();
+            }
+
+            @Test
+            public void executionWithConcurrentUtil() throws InterruptedException, ExecutionException {
+                verify(concurrentUtilMock).executeOnStrategyThread(orderCallMock);
+                verify(futureMock).get();
+            }
+
+            @Test
+            public void testOrderIsEmittedAndCompleted() {
+                assertOrderEmissionAndCompletion();
+            }
+        }
     }
 }
