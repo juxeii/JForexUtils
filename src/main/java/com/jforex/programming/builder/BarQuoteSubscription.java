@@ -5,7 +5,6 @@ import java.util.Set;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
-import com.dukascopy.api.Unit;
 
 public class BarQuoteSubscription {
 
@@ -33,17 +32,10 @@ public class BarQuoteSubscription {
 
     public interface AndPeriod {
         public AndOfferSide period(Period period);
-
-        public AndOfferSide customPeriod(Unit unit,
-                                         int unitsCount);
     }
 
     public interface AndOfferSide {
-        public Build offerSide(OfferSide offerSide);
-    }
-
-    public interface Build {
-        public BarQuoteSubscription build();
+        public BarQuoteSubscription offerSide(OfferSide offerSide);
     }
 
     public static AndPeriod forInstruments(final Set<Instrument> instruments) {
@@ -52,8 +44,7 @@ public class BarQuoteSubscription {
 
     private static class Builder implements
             AndPeriod,
-            AndOfferSide,
-            Build {
+            AndOfferSide {
 
         private final Set<Instrument> instruments;
         private Period period;
@@ -70,20 +61,8 @@ public class BarQuoteSubscription {
         }
 
         @Override
-        public AndOfferSide customPeriod(final Unit unit,
-                                         final int unitsCount) {
-            period = Period.createCustomPeriod(unit, unitsCount);
-            return null;
-        }
-
-        @Override
-        public Build offerSide(final OfferSide offerSide) {
+        public BarQuoteSubscription offerSide(final OfferSide offerSide) {
             this.offerSide = offerSide;
-            return this;
-        }
-
-        @Override
-        public BarQuoteSubscription build() {
             return new BarQuoteSubscription(this);
         }
     }

@@ -18,10 +18,10 @@ public class OrderCallExecutor {
     public Observable<IOrder> callObservable(final JFCallable<IOrder> orderCallable) {
         return JForexUtil.isStrategyThread()
                 ? Observable.fromCallable(orderCallable)
-                : Observable.defer(() -> futureObservable(orderCallable));
+                : Observable.defer(() -> contextCallObservable(orderCallable));
     }
 
-    private final Observable<IOrder> futureObservable(final JFCallable<IOrder> orderCallable) {
+    private final Observable<IOrder> contextCallObservable(final JFCallable<IOrder> orderCallable) {
         return Observable.from(context.executeTask(orderCallable));
     }
 }
