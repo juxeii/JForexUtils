@@ -1,14 +1,18 @@
 package com.jforex.programming.order.event;
 
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
+import com.google.common.collect.Sets;
 import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.order.OrderMessageData;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 
 import rx.Observable;
@@ -18,6 +22,18 @@ public class OrderEventGateway {
     private final JFHotObservable<OrderEvent> orderEventPublisher = new JFHotObservable<>();
     private final Queue<OrderCallRequest> callRequestQueue = new ConcurrentLinkedQueue<>();
 
+    public final static Set<IMessage.Type> changeEventTypes =
+            Sets.immutableEnumSet(IMessage.Type.ORDER_CHANGED_OK,
+                                  IMessage.Type.ORDER_CHANGED_REJECTED);
+
+    public final static Set<OrderCallReason> changeReasons =
+            Sets.immutableEnumSet(OrderCallReason.CHANGE_GOOD_TILL_TIME,
+                                  OrderCallReason.CHANGE_LABEL,
+                                  OrderCallReason.CHANGE_OPEN_PRICE,
+                                  OrderCallReason.CHANGE_REQUESTED_AMOUNT,
+                                  OrderCallReason.CHANGE_STOP_LOSS_PRICE,
+                                  OrderCallReason.CHANGE_TAKE_PROFIT_PRICE);
+
     private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);
 
     public Observable<OrderEvent> observable() {
@@ -25,7 +41,8 @@ public class OrderEventGateway {
     }
 
     public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
-        callRequestQueue.add(orderCallRequest);
+        if (changeReasons.contains(orderCallRequest.reason()))
+            callRequestQueue.add(orderCallRequest);
     }
 
     public void onOrderMessageData(final OrderMessageData orderMessageData) {
@@ -41,7 +58,7 @@ public class OrderEventGateway {
             return OrderEventTypeEvaluator.get(orderMessageData);
         if (callRequestQueue.peek().order() != orderMessageData.order())
             return OrderEventTypeEvaluator.get(orderMessageData);
-        if (OrderEventTypeSets.changeEventTypes.contains(orderMessageData.messageType()))
+        if (changeEventTypes.contains(orderMessageData.messageType()))
             return OrderEventTypeEvaluator.get(orderMessageData, callRequestQueue.poll().reason());
         return OrderEventTypeEvaluator.get(orderMessageData);
     }
