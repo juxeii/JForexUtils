@@ -6,11 +6,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallRequest;
-
-import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 
@@ -40,10 +39,9 @@ public class OrderEventGateway {
     private final OrderEventType orderEventTypeFromData(final OrderMessageData orderMessageData) {
         if (callRequestQueue.isEmpty())
             return OrderEventTypeEvaluator.get(orderMessageData);
+        if (callRequestQueue.peek().order() != orderMessageData.order())
+            return OrderEventTypeEvaluator.get(orderMessageData);
 
-        final OrderCallRequest orderCallRequest = callRequestQueue.poll();
-        return orderCallRequest.order() == orderMessageData.order()
-                ? OrderEventTypeEvaluator.get(orderMessageData, orderCallRequest.reason())
-                : OrderEventTypeEvaluator.get(orderMessageData);
+        return OrderEventTypeEvaluator.get(orderMessageData, callRequestQueue.poll().reason());
     }
 }
