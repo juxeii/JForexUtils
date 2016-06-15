@@ -99,6 +99,7 @@ public class JForexUtil implements IMessageConsumer {
 
     private void initQuoteProvider() {
         tickQuoteHandler = new TickQuoteHandler(this,
+                                                historyUtil,
                                                 context.getSubscribedInstruments());
         barQuoteHandler = new BarQuoteHandler(this);
     }

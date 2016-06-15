@@ -1,5 +1,8 @@
 package com.jforex.programming.misc;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
@@ -39,6 +42,12 @@ public class HistoryUtil {
                 .first()
                 .toBlocking()
                 .first();
+    }
+
+    public Map<Instrument, ITick> latestTicks(final Set<Instrument> instruments) {
+        final Map<Instrument, ITick> ticksByInstrument = new ConcurrentHashMap<>();
+        instruments.forEach(instrument -> ticksByInstrument.put(instrument, latestTick(instrument)));
+        return ticksByInstrument;
     }
 
     public IBar latestBar(final Instrument instrument,

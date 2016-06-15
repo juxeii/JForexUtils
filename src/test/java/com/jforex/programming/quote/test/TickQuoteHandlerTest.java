@@ -3,22 +3,25 @@ package com.jforex.programming.quote.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
+import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.fakes.ITickForTest;
+
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.OfferSide;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
@@ -29,6 +32,7 @@ public class TickQuoteHandlerTest extends CurrencyUtilForTest {
     private TickQuoteHandler tickQuoteHandler;
 
     private final Set<Instrument> subscribedInstruments = Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD);
+    private final Map<Instrument, ITick> latestTicks = new ConcurrentHashMap<>();
     private final ITick tickEURUSDOfHistory = new ITickForTest(1.23413, 1.23488);
     private final ITick firstTickEURUSD = new ITickForTest(1.23456, 1.23451);
     private final ITick firstTickAUDUSD = new ITickForTest(1.10345, 1.10348);
@@ -38,14 +42,15 @@ public class TickQuoteHandlerTest extends CurrencyUtilForTest {
         initCommonTestFramework();
         setupMocks();
 
-        tickQuoteHandler = new TickQuoteHandler(jforexUtilMock, subscribedInstruments);
+        tickQuoteHandler = new TickQuoteHandler(jforexUtilMock, historyUtilMock, subscribedInstruments);
     }
 
     private void setupMocks() {
-        try {
-            when(historyMock.getLastTick(instrumentEURUSD)).thenReturn(tickEURUSDOfHistory);
-            when(historyMock.getLastTick(instrumentAUDUSD)).thenReturn(firstTickAUDUSD);
-        } catch (final JFException e) {}
+        when(historyUtilMock.latestTick(instrumentEURUSD)).thenReturn(tickEURUSDOfHistory);
+        when(historyUtilMock.latestTick(instrumentAUDUSD)).thenReturn(firstTickAUDUSD);
+
+        latestTicks.put(instrumentEURUSD, tickEURUSDOfHistory);
+        when(historyUtilMock.latestTicks(subscribedInstruments)).thenReturn(latestTicks);
     }
 
     private void verifyTickValues(final ITick tick) {
@@ -65,32 +70,18 @@ public class TickQuoteHandlerTest extends CurrencyUtilForTest {
                    equalTo(tick.getBid()));
     }
 
-    public class HistoryThrowsAtInitialization {
+    @Test(expected = QuoteProviderException.class)
+    public void historyThrowsAtCreation() {
+        when(historyUtilMock.latestTicks(subscribedInstruments)).thenThrow(QuoteProviderException.class);
 
-        @Before
-        public void setUp() throws JFException {
-            when(historyMock.getLastTick(instrumentEURUSD)).thenThrow(jfException);
-        }
-
-        @Test(expected = Exception.class)
-        public void testTickThrows() {
-            tickQuoteHandler = new TickQuoteHandler(jforexUtilMock, subscribedInstruments);
-
-            rxTestUtil.advanceTimeBy(5000L, TimeUnit.MILLISECONDS);
-        }
+        tickQuoteHandler = new TickQuoteHandler(jforexUtilMock, historyUtilMock, subscribedInstruments);
     }
 
-    public class HistoryReturnsTickBeforeFirstTickQuoteIsReceived {
+    @Test
+    public void historyReturnsTickBeforeFirstTickQuoteIsReceived() {
+        when(historyUtilMock.latestTick(instrumentEURUSD)).thenReturn(tickEURUSDOfHistory);
 
-        @Before
-        public void setUp() throws JFException {
-            when(historyMock.getLastTick(instrumentEURUSD)).thenReturn(tickEURUSDOfHistory);
-        }
-
-        @Test
-        public void testTickReturnsHistoryTick() {
-            verifyTickValues(tickEURUSDOfHistory);
-        }
+        verifyTickValues(tickEURUSDOfHistory);
     }
 
     public class AfterFirstTickQuoteIsConsumed {
