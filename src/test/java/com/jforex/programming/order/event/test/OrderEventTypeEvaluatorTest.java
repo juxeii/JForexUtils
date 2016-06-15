@@ -6,6 +6,9 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -14,10 +17,6 @@ import com.jforex.programming.order.event.OrderEventTypeEvaluator;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 
 public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
 
@@ -64,7 +63,7 @@ public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
                                       final IMessage.Reason... messageReasons) {
         final OrderMessageData orderMessageData = orderMessageData(messageType, messageReasons);
 
-        final OrderEventType actualType = OrderEventTypeEvaluator.get(orderMessageData, orderCallReason);
+        final OrderEventType actualType = OrderEventTypeEvaluator.getWithCallReason(orderMessageData, orderCallReason);
 
         assertThat(actualType, equalTo(expectedType));
     }

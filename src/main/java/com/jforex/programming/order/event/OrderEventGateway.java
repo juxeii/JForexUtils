@@ -20,7 +20,7 @@ import rx.Observable;
 public class OrderEventGateway {
 
     private final JFHotObservable<OrderEvent> orderEventPublisher = new JFHotObservable<>();
-    private final Queue<OrderCallRequest> callRequestQueue = new ConcurrentLinkedQueue<>();
+    private final Queue<OrderCallRequest> changeRequestQueue = new ConcurrentLinkedQueue<>();
 
     public final static Set<IMessage.Type> changeEventTypes =
             Sets.immutableEnumSet(IMessage.Type.ORDER_CHANGED_OK,
@@ -42,7 +42,7 @@ public class OrderEventGateway {
 
     public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
         if (changeReasons.contains(orderCallRequest.reason()))
-            callRequestQueue.add(orderCallRequest);
+            changeRequestQueue.add(orderCallRequest);
     }
 
     public void onOrderMessageData(final OrderMessageData orderMessageData) {
@@ -54,12 +54,12 @@ public class OrderEventGateway {
     }
 
     private final OrderEventType orderEventTypeFromData(final OrderMessageData orderMessageData) {
-        if (callRequestQueue.isEmpty())
+        if (changeRequestQueue.isEmpty())
             return OrderEventTypeEvaluator.get(orderMessageData);
-        if (callRequestQueue.peek().order() != orderMessageData.order())
+        if (changeRequestQueue.peek().order() != orderMessageData.order())
             return OrderEventTypeEvaluator.get(orderMessageData);
         if (changeEventTypes.contains(orderMessageData.messageType()))
-            return OrderEventTypeEvaluator.get(orderMessageData, callRequestQueue.poll().reason());
+            return OrderEventTypeEvaluator.getWithCallReason(orderMessageData, changeRequestQueue.poll().reason());
         return OrderEventTypeEvaluator.get(orderMessageData);
     }
 }
