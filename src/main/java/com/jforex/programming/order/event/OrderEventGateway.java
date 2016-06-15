@@ -7,13 +7,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
+
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 
@@ -54,12 +55,14 @@ public class OrderEventGateway {
     }
 
     private final OrderEventType orderEventTypeFromData(final OrderMessageData orderMessageData) {
-        if (changeRequestQueue.isEmpty())
-            return OrderEventTypeEvaluator.get(orderMessageData);
-        if (changeRequestQueue.peek().order() != orderMessageData.order())
-            return OrderEventTypeEvaluator.get(orderMessageData);
-        if (changeEventTypes.contains(orderMessageData.messageType()))
-            return OrderEventTypeEvaluator.getWithCallReason(orderMessageData, changeRequestQueue.poll().reason());
-        return OrderEventTypeEvaluator.get(orderMessageData);
+        return isNotForChangeReason(orderMessageData)
+                ? OrderEventTypeEvaluator.get(orderMessageData)
+                : OrderEventTypeEvaluator.getForChangeReason(orderMessageData, changeRequestQueue.poll().reason());
+    }
+
+    private boolean isNotForChangeReason(final OrderMessageData orderMessageData) {
+        return changeRequestQueue.isEmpty()
+                || changeRequestQueue.peek().order() != orderMessageData.order()
+                || !changeEventTypes.contains(orderMessageData.messageType());
     }
 }

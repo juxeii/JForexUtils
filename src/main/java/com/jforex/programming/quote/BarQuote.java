@@ -7,10 +7,10 @@ import com.dukascopy.api.Period;
 
 public final class BarQuote {
 
-    private final IBar bar;
     private final Instrument instrument;
     private final Period period;
     private final OfferSide offerSide;
+    private final IBar bar;
 
     public BarQuote(final Instrument instrument,
                     final Period period,

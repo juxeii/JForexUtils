@@ -29,6 +29,12 @@ public class HistoryUtil {
         this.history = history;
     }
 
+    public Map<Instrument, ITick> latestTicks(final Set<Instrument> instruments) {
+        final Map<Instrument, ITick> ticksByInstrument = new ConcurrentHashMap<>();
+        instruments.forEach(instrument -> ticksByInstrument.put(instrument, latestTick(instrument)));
+        return ticksByInstrument;
+    }
+
     public ITick latestTick(final Instrument instrument) {
         return Observable.fromCallable(() -> history.getLastTick(instrument))
                 .flatMap(tick -> {
@@ -42,12 +48,6 @@ public class HistoryUtil {
                 .first()
                 .toBlocking()
                 .first();
-    }
-
-    public Map<Instrument, ITick> latestTicks(final Set<Instrument> instruments) {
-        final Map<Instrument, ITick> ticksByInstrument = new ConcurrentHashMap<>();
-        instruments.forEach(instrument -> ticksByInstrument.put(instrument, latestTick(instrument)));
-        return ticksByInstrument;
     }
 
     public IBar latestBar(final Instrument instrument,

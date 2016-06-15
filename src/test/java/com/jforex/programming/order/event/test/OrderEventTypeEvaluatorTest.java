@@ -63,7 +63,7 @@ public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
                                       final IMessage.Reason... messageReasons) {
         final OrderMessageData orderMessageData = orderMessageData(messageType, messageReasons);
 
-        final OrderEventType actualType = OrderEventTypeEvaluator.getWithCallReason(orderMessageData, orderCallReason);
+        final OrderEventType actualType = OrderEventTypeEvaluator.getForChangeReason(orderMessageData, orderCallReason);
 
         assertThat(actualType, equalTo(expectedType));
     }

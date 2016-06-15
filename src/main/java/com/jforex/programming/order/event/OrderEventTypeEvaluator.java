@@ -7,12 +7,13 @@ import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
+
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
 
 public final class OrderEventTypeEvaluator {
 
@@ -109,8 +110,8 @@ public final class OrderEventTypeEvaluator {
         return evaluate(orderEventData);
     }
 
-    public final static OrderEventType getWithCallReason(final OrderMessageData orderEventData,
-                                                         final OrderCallReason orderCallReason) {
+    public final static OrderEventType getForChangeReason(final OrderMessageData orderEventData,
+                                                          final OrderCallReason orderCallReason) {
         final OrderEventType orderEventType = evaluate(orderEventData);
         return refineWithCallReason(orderEventType, orderCallReason);
     }
