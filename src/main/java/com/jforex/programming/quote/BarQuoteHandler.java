@@ -8,17 +8,16 @@ import org.apache.commons.collections4.keyvalue.MultiKey;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.builder.BarQuoteSubscription;
-import com.jforex.programming.misc.JFHotObservable;
-import com.jforex.programming.misc.JForexUtil;
-import com.jforex.programming.settings.UserSettings;
-
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IContext;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.jforex.programming.builder.BarQuoteSubscription;
+import com.jforex.programming.misc.JFHotObservable;
+import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.settings.UserSettings;
 
 import rx.Observable;
 
@@ -74,7 +73,7 @@ public class BarQuoteHandler implements BarQuoteProvider {
                 .flatMap(bar -> {
                     if (bar == null) {
                         logger.error("Last bar for " + instrument + " and period " + period
-                                + " from history returned null!");
+                                + " and offerside " + offerSide + " from history returned null!");
                         return Observable.error(new QuoteProviderException("History bar is null!"));
                     }
                     return Observable.just(bar);
