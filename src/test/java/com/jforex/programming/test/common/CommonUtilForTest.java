@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.mockito.BDDMockito;
 import org.mockito.Mock;
 
+import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
@@ -40,6 +41,8 @@ public class CommonUtilForTest extends BDDMockito {
     protected IEngine engineMock;
     @Mock
     protected IHistory historyMock;
+    @Mock
+    protected HistoryUtil historyUtilMock;
     protected IClientForTest clientForTest;
     protected IEngineForTest engineForTest;
     protected JFException jfException = new JFException("JFException for test");
@@ -59,6 +62,7 @@ public class CommonUtilForTest extends BDDMockito {
 
         when(jforexUtilMock.context()).thenReturn(contextMock);
         when(jforexUtilMock.history()).thenReturn(historyMock);
+        when(jforexUtilMock.historyUtil()).thenReturn(historyUtilMock);
     }
 
     protected IMessage someOrderMessage(final IOrder order) {

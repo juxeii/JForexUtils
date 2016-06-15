@@ -12,18 +12,14 @@ public final class BarQuote {
     private final Period period;
     private final OfferSide offerSide;
 
-    public BarQuote(final IBar bar,
-                    final Instrument instrument,
+    public BarQuote(final Instrument instrument,
                     final Period period,
-                    final OfferSide offerSide) {
-        this.bar = bar;
+                    final OfferSide offerSide,
+                    final IBar bar) {
         this.instrument = instrument;
         this.period = period;
         this.offerSide = offerSide;
-    }
-
-    public final IBar bar() {
-        return bar;
+        this.bar = bar;
     }
 
     public final Instrument instrument() {
@@ -37,4 +33,9 @@ public final class BarQuote {
     public final OfferSide offerSide() {
         return offerSide;
     }
+
+    public final IBar bar() {
+        return bar;
+    }
+
 }

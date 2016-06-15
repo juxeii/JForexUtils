@@ -42,6 +42,7 @@ public class JForexUtil implements IMessageConsumer {
     private IEngine engine;
     private IAccount account;
     private IHistory history;
+    private HistoryUtil historyUtil;
     private IDataService dataService;
 
     private TickQuoteHandler tickQuoteHandler;
@@ -83,6 +84,7 @@ public class JForexUtil implements IMessageConsumer {
         engine = context.getEngine();
         account = context.getAccount();
         history = context.getHistory();
+        historyUtil = new HistoryUtil(history);
         dataService = context.getDataService();
     }
 
@@ -131,6 +133,10 @@ public class JForexUtil implements IMessageConsumer {
 
     public IHistory history() {
         return history;
+    }
+
+    public HistoryUtil historyUtil() {
+        return historyUtil;
     }
 
     public TickQuoteProvider tickQuoteProvider() {
