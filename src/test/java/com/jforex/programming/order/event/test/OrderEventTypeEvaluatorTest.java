@@ -236,7 +236,7 @@ public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
     public void testOpenPriceChangeRejectIsMappedCorrect() {
         assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_OPENPRICE_REJECTED,
                                                      IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     OrderCallReason.CHANGE_OPENPRICE);
+                                                     OrderCallReason.CHANGE_OPEN_PRICE);
     }
 
     @Test

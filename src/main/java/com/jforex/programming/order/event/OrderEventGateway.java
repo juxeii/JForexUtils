@@ -41,7 +41,8 @@ public class OrderEventGateway {
             return OrderEventTypeEvaluator.get(orderMessageData);
         if (callRequestQueue.peek().order() != orderMessageData.order())
             return OrderEventTypeEvaluator.get(orderMessageData);
-
-        return OrderEventTypeEvaluator.get(orderMessageData, callRequestQueue.poll().reason());
+        if (OrderEventTypeSets.changeEventTypes.contains(orderMessageData.messageType()))
+            return OrderEventTypeEvaluator.get(orderMessageData, callRequestQueue.poll().reason());
+        return OrderEventTypeEvaluator.get(orderMessageData);
     }
 }

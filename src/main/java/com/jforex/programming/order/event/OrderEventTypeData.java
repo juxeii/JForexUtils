@@ -93,7 +93,7 @@ public final class OrderEventTypeData {
     public final static OrderEventTypeData changeOpenPriceData =
             new OrderEventTypeData(EnumSet.of(OPENPRICE_CHANGE_OK),
                                    EnumSet.of(CHANGE_OPENPRICE_REJECTED),
-                                   OrderCallReason.CHANGE_OPENPRICE);
+                                   OrderCallReason.CHANGE_OPEN_PRICE);
 
     public final static OrderEventTypeData changeAmountData =
             new OrderEventTypeData(EnumSet.of(REQUESTED_AMOUNT_CHANGE_OK),

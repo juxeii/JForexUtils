@@ -30,6 +30,7 @@ import static com.jforex.programming.order.event.OrderEventType.TP_CHANGE_OK;
 import java.util.EnumSet;
 import java.util.Set;
 
+import com.dukascopy.api.IMessage;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
@@ -79,4 +80,17 @@ public final class OrderEventTypeSets {
                                                         CHANGE_TP_REJECTED,
                                                         CHANGE_SL_REJECTED,
                                                         CHANGE_LABEL_REJECTED)));
+
+    public final static Set<IMessage.Reason> changeEventReasons =
+            Sets.immutableEnumSet(IMessage.Reason.ORDER_CHANGED_AMOUNT,
+                                  IMessage.Reason.ORDER_CHANGED_GTT,
+                                  IMessage.Reason.ORDER_CHANGED_LABEL,
+                                  IMessage.Reason.ORDER_CHANGED_PRICE,
+                                  IMessage.Reason.ORDER_CHANGED_SL,
+                                  IMessage.Reason.ORDER_CHANGED_TP,
+                                  IMessage.Reason.ORDER_CHANGED_TYPE);
+
+    public final static Set<IMessage.Type> changeEventTypes =
+            Sets.immutableEnumSet(IMessage.Type.ORDER_CHANGED_OK,
+                                  IMessage.Type.ORDER_CHANGED_REJECTED);
 }

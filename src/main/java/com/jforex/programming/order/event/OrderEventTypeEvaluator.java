@@ -98,7 +98,7 @@ public final class OrderEventTypeEvaluator {
                          OrderEventType.CHANGE_LABEL_REJECTED)
                     .put(OrderCallReason.CHANGE_GOOD_TILL_TIME,
                          OrderEventType.CHANGE_GTT_REJECTED)
-                    .put(OrderCallReason.CHANGE_OPENPRICE,
+                    .put(OrderCallReason.CHANGE_OPEN_PRICE,
                          OrderEventType.CHANGE_OPENPRICE_REJECTED)
                     .put(OrderCallReason.CHANGE_STOP_LOSS_PRICE,
                          OrderEventType.CHANGE_SL_REJECTED)
