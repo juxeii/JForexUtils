@@ -20,7 +20,7 @@ public class TickQuoteHandler implements TickQuoteProvider {
     private final JForexUtil jforexUtil;
     private final JFHotObservable<TickQuote> tickQuotePublisher = new JFHotObservable<>();
     private final Observable<TickQuote> tickQuoteObservable = tickQuotePublisher.observable();
-    private final Map<Instrument, ITick> latestTickQuote;
+    private final Map<Instrument, ITick> latestTickQuotes;
 
     private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
@@ -29,12 +29,12 @@ public class TickQuoteHandler implements TickQuoteProvider {
                             final Set<Instrument> subscribedInstruments) {
         this.jforexUtil = jforexUtil;
 
-        latestTickQuote = historyUtil.latestTicks(subscribedInstruments);
+        latestTickQuotes = historyUtil.latestTicks(subscribedInstruments);
     }
 
     @Override
     public ITick tick(final Instrument instrument) {
-        return latestTickQuote.get(instrument);
+        return latestTickQuotes.get(instrument);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class TickQuoteHandler implements TickQuoteProvider {
     }
 
     @Override
-    public Observable<TickQuote> quoteObservable(final Set<Instrument> instruments) {
+    public Observable<TickQuote> observableForInstrument(final Set<Instrument> instruments) {
         return tickQuoteObservable
                 .filter(tickQuote -> instruments.contains(tickQuote.instrument()));
     }
@@ -69,7 +69,7 @@ public class TickQuoteHandler implements TickQuoteProvider {
     public void onTick(final Instrument instrument,
                        final ITick tick) {
         if (!userSettings.enableWeekendQuoteFilter() || !jforexUtil.isMarketClosed(tick.getTime())) {
-            latestTickQuote.put(instrument, tick);
+            latestTickQuotes.put(instrument, tick);
             tickQuotePublisher.onNext(new TickQuote(instrument, tick));
         }
     }

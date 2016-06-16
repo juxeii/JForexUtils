@@ -24,6 +24,9 @@ public class InstrumentUtilForTest extends CommonUtilForTest {
     public final double askEURJPY = 134.992;
     public final double bidEURJPY = 134.981;
 
+    public final double askAUDUSD = 1.10348;
+    public final double bidAUDUSD = 1.10345;
+
     public final double askGBPAUD = 1.12321;
     public final double bidGBPAUD = 1.12319;
 

@@ -21,7 +21,7 @@ public interface BarQuoteProvider {
                              final Period period,
                              final OfferSide offerSide);
 
-    public Observable<BarQuote> quoteObservable(final BarQuoteSubscription subscription);
+    public Observable<BarQuote> observableForSubscription(final BarQuoteSubscription subscription);
 
     public Observable<BarQuote> observable();
 }

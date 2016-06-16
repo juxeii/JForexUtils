@@ -71,7 +71,7 @@ public class BarQuoteHandler implements BarQuoteProvider {
     }
 
     @Override
-    public Observable<BarQuote> quoteObservable(final BarQuoteSubscription subscription) {
+    public Observable<BarQuote> observableForSubscription(final BarQuoteSubscription subscription) {
         if (subscription.period().name() == null)
             subscribeInstrumentsToContext(subscription);
         return quoteFilterObservable(subscription);

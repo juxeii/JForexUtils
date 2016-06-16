@@ -211,19 +211,19 @@ public class BarQuoteHandlerTest extends CurrencyUtilForTest {
 
             @Before
             public void setUp() {
-                barQuoteHandler.quoteObservable(BarQuoteSubscription
+                barQuoteHandler.observableForSubscription(BarQuoteSubscription
                         .forInstruments(Sets.newHashSet(instrumentEURUSD))
                         .period(testPeriod)
                         .offerSide(OfferSide.ASK))
                         .subscribe(quoteEURUSDSubscriber);
 
-                barQuoteHandler.quoteObservable(BarQuoteSubscription
+                barQuoteHandler.observableForSubscription(BarQuoteSubscription
                         .forInstruments(Sets.newHashSet(instrumentEURUSD))
                         .period(custom3MinutePeriod)
                         .offerSide(OfferSide.ASK))
                         .subscribe(customPeriodEURUSDSubscriber);
 
-                barQuoteHandler.quoteObservable(BarQuoteSubscription
+                barQuoteHandler.observableForSubscription(BarQuoteSubscription
                         .forInstruments(Sets.newHashSet(instrumentAUDUSD))
                         .period(testPeriod)
                         .offerSide(OfferSide.ASK))

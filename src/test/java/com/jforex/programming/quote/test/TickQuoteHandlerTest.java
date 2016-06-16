@@ -11,31 +11,30 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.google.common.collect.Sets;
-import com.jforex.programming.quote.QuoteProviderException;
-import com.jforex.programming.quote.TickQuote;
-import com.jforex.programming.quote.TickQuoteHandler;
-import com.jforex.programming.test.common.CurrencyUtilForTest;
-import com.jforex.programming.test.fakes.ITickForTest;
-
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
+import com.google.common.collect.Sets;
+import com.jforex.programming.quote.QuoteProviderException;
+import com.jforex.programming.quote.TickQuote;
+import com.jforex.programming.quote.TickQuoteHandler;
+import com.jforex.programming.test.common.QuoteProviderForTest;
+import com.jforex.programming.test.fakes.ITickForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
-public class TickQuoteHandlerTest extends CurrencyUtilForTest {
+public class TickQuoteHandlerTest extends QuoteProviderForTest {
 
     private TickQuoteHandler tickQuoteHandler;
 
     private final Set<Instrument> subscribedInstruments = Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD);
     private final Map<Instrument, ITick> latestTicks = new ConcurrentHashMap<>();
     private final ITick tickEURUSDOfHistory = new ITickForTest(1.23413, 1.23488);
-    private final ITick firstTickEURUSD = new ITickForTest(1.23456, 1.23451);
-    private final ITick firstTickAUDUSD = new ITickForTest(1.10345, 1.10348);
+    private final ITick firstTickEURUSD = tickEURUSD;
+    private final ITick firstTickAUDUSD = tickAUDUSD;
 
     @Before
     public void setUp() {
@@ -71,14 +70,14 @@ public class TickQuoteHandlerTest extends CurrencyUtilForTest {
     }
 
     @Test(expected = QuoteProviderException.class)
-    public void historyThrowsAtCreation() {
+    public void historyUtilThrowsAtCreation() {
         when(historyUtilMock.latestTicks(subscribedInstruments)).thenThrow(QuoteProviderException.class);
 
         tickQuoteHandler = new TickQuoteHandler(jforexUtilMock, historyUtilMock, subscribedInstruments);
     }
 
     @Test
-    public void historyReturnsTickBeforeFirstTickQuoteIsReceived() {
+    public void historyUtilReturnsTickBeforeFirstTickQuoteIsReceived() {
         when(historyUtilMock.latestTick(instrumentEURUSD)).thenReturn(tickEURUSDOfHistory);
 
         verifyTickValues(tickEURUSDOfHistory);
@@ -88,8 +87,6 @@ public class TickQuoteHandlerTest extends CurrencyUtilForTest {
 
         @Before
         public void setUp() throws JFException {
-            when(historyMock.getLastTick(instrumentEURUSD)).thenReturn(tickEURUSDOfHistory);
-
             tickQuoteHandler.onTick(instrumentEURUSD, firstTickEURUSD);
         }
 
@@ -128,11 +125,11 @@ public class TickQuoteHandlerTest extends CurrencyUtilForTest {
             @Before
             public void setUp() {
                 tickQuoteHandler
-                        .quoteObservable(Sets.newHashSet(instrumentEURUSD))
+                        .observableForInstrument(Sets.newHashSet(instrumentEURUSD))
                         .subscribe(quoteEURUSDSubscriber);
 
                 tickQuoteHandler
-                        .quoteObservable(Sets.newHashSet(instrumentAUDUSD))
+                        .observableForInstrument(Sets.newHashSet(instrumentAUDUSD))
                         .subscribe(quoteAUDUSDSubscriber);
 
                 tickQuoteHandler.onTick(instrumentEURUSD, firstTickEURUSD);

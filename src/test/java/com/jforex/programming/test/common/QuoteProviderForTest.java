@@ -1,19 +1,18 @@
 package com.jforex.programming.test.common;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
-
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.fakes.ITickForTest;
 
-public class QuoteProviderForTest {
+public class QuoteProviderForTest extends CurrencyUtilForTest {
+
+    public final ITick tickEURUSD = new ITickForTest(bidEURUSD, askEURUSD);
+    public final ITick tickAUDUSD = new ITickForTest(bidAUDUSD, askAUDUSD);
 
     public static void setQuoteExpectations(final TickQuoteHandler quoteProviderMock,
                                             final Instrument instrument,
