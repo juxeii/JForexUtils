@@ -1,14 +1,6 @@
 package com.jforex.programming.quote;
 
-import java.util.Map;
 import java.util.Set;
-
-import org.aeonbits.owner.ConfigFactory;
-
-import com.jforex.programming.misc.HistoryUtil;
-import com.jforex.programming.misc.JFHotObservable;
-import com.jforex.programming.misc.JForexUtil;
-import com.jforex.programming.settings.UserSettings;
 
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
@@ -18,24 +10,18 @@ import rx.Observable;
 
 public class TickQuoteHandler implements TickQuoteProvider {
 
-    private final JForexUtil jforexUtil;
-    private final JFHotObservable<TickQuote> tickQuotePublisher = new JFHotObservable<>();
-    private final Observable<TickQuote> tickQuoteObservable = tickQuotePublisher.observable();
-    private final Map<Instrument, ITick> latestTickQuotes;
+    private final Observable<TickQuote> tickQuoteObservable;
+    private final TickQuoteRepository tickQuoteRepository;
 
-    private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
-
-    public TickQuoteHandler(final JForexUtil jforexUtil,
-                            final HistoryUtil historyUtil,
-                            final Set<Instrument> subscribedInstruments) {
-        this.jforexUtil = jforexUtil;
-
-        latestTickQuotes = historyUtil.latestTicks(subscribedInstruments);
+    public TickQuoteHandler(final Observable<TickQuote> tickQuoteObservable,
+                            final TickQuoteRepository tickQuoteRepository) {
+        this.tickQuoteObservable = tickQuoteObservable;
+        this.tickQuoteRepository = tickQuoteRepository;
     }
 
     @Override
     public ITick tick(final Instrument instrument) {
-        return latestTickQuotes.get(instrument);
+        return tickQuoteRepository.get(instrument);
     }
 
     @Override
@@ -65,13 +51,5 @@ public class TickQuoteHandler implements TickQuoteProvider {
     public Observable<TickQuote> observableForInstruments(final Set<Instrument> instruments) {
         return tickQuoteObservable
                 .filter(tickQuote -> instruments.contains(tickQuote.instrument()));
-    }
-
-    public void onTick(final Instrument instrument,
-                       final ITick tick) {
-        if (!userSettings.enableWeekendQuoteFilter() || !jforexUtil.isMarketClosed(tick.getTime())) {
-            latestTickQuotes.put(instrument, tick);
-            tickQuotePublisher.onNext(new TickQuote(instrument, tick));
-        }
     }
 }

@@ -1,6 +1,6 @@
 package com.jforex.programming.quote;
 
-import com.jforex.programming.builder.BarQuoteSubscription;
+import com.jforex.programming.builder.BarQuoteParams;
 
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.Instrument;
@@ -21,7 +21,7 @@ public interface BarQuoteProvider {
                              final Period period,
                              final OfferSide offerSide);
 
-    public Observable<BarQuote> observableForSubscription(final BarQuoteSubscription subscription);
+    public Observable<BarQuote> observableForSubscription(final BarQuoteParams subscription);
 
     public Observable<BarQuote> observable();
 }

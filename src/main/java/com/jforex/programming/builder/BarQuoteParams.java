@@ -6,13 +6,13 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 
-public class BarQuoteSubscription {
+public class BarQuoteParams {
 
     private final Set<Instrument> instruments;
     private final Period period;
     private final OfferSide offerSide;
 
-    private BarQuoteSubscription(final Builder builder) {
+    private BarQuoteParams(final Builder builder) {
         instruments = builder.instruments;
         period = builder.period;
         offerSide = builder.offerSide;
@@ -35,7 +35,7 @@ public class BarQuoteSubscription {
     }
 
     public interface AndOfferSide {
-        public BarQuoteSubscription offerSide(OfferSide offerSide);
+        public BarQuoteParams offerSide(OfferSide offerSide);
     }
 
     public static AndPeriod forInstruments(final Set<Instrument> instruments) {
@@ -61,9 +61,9 @@ public class BarQuoteSubscription {
         }
 
         @Override
-        public BarQuoteSubscription offerSide(final OfferSide offerSide) {
+        public BarQuoteParams offerSide(final OfferSide offerSide) {
             this.offerSide = offerSide;
-            return new BarQuoteSubscription(this);
+            return new BarQuoteParams(this);
         }
     }
 }

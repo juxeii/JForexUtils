@@ -3,6 +3,17 @@ package com.jforex.programming.misc;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
 
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IDataService;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderChangeUtil;
@@ -16,23 +27,16 @@ import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionMultiTask;
 import com.jforex.programming.position.PositionSingleTask;
+import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.BarQuoteProvider;
+import com.jforex.programming.quote.BarQuoteRepository;
+import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.settings.PlatformSettings;
-
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IDataService;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
+import com.jforex.programming.settings.UserSettings;
 
 import rx.Subscription;
 
@@ -46,7 +50,9 @@ public class JForexUtil implements IMessageConsumer {
     private IDataService dataService;
 
     private TickQuoteHandler tickQuoteHandler;
+    private TickQuoteRepository tickQuoteRepository;
     private BarQuoteHandler barQuoteHandler;
+    private BarQuoteRepository barQuoteRepository;
 
     private PositionFactory positionFactory;
     private OrderEventGateway orderEventGateway;
@@ -63,10 +69,13 @@ public class JForexUtil implements IMessageConsumer {
     private final CalculationUtil calculationUtil;
     private final RiskPercentMM riskPercentMM;
 
+    private final JFHotObservable<TickQuote> tickQuotePublisher = new JFHotObservable<>();
+    private final JFHotObservable<BarQuote> barQuotePublisher = new JFHotObservable<>();
     private final JFHotObservable<IMessage> messagePublisher = new JFHotObservable<>();
     private Subscription eventGatewaySubscription;
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
     public JForexUtil(final IContext context) {
         this.context = context;
@@ -98,10 +107,16 @@ public class JForexUtil implements IMessageConsumer {
     }
 
     private void initQuoteProvider() {
-        tickQuoteHandler = new TickQuoteHandler(this,
-                                                historyUtil,
-                                                context.getSubscribedInstruments());
-        barQuoteHandler = new BarQuoteHandler(this);
+        tickQuoteRepository = new TickQuoteRepository(tickQuotePublisher.observable(),
+                                                      historyUtil,
+                                                      context.getSubscribedInstruments());
+        tickQuoteHandler = new TickQuoteHandler(tickQuotePublisher.observable(),
+                                                tickQuoteRepository);
+        barQuoteRepository = new BarQuoteRepository(barQuotePublisher.observable(),
+                                                    historyUtil);
+        barQuoteHandler = new BarQuoteHandler(this,
+                                              barQuotePublisher.observable(),
+                                              barQuoteRepository);
     }
 
     private void initOrderRelated() {
@@ -181,15 +196,37 @@ public class JForexUtil implements IMessageConsumer {
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
-        tickQuoteHandler.onTick(instrument, tick);
+        if (!userSettings.enableWeekendQuoteFilter() || !isMarketClosed(tick.getTime())) {
+            final TickQuote tickQuote = new TickQuote(instrument, tick);
+            tickQuotePublisher.onNext(tickQuote);
+        }
     }
 
     public void onBar(final Instrument instrument,
                       final Period period,
                       final IBar askBar,
                       final IBar bidBar) {
-        barQuoteHandler.onBar(instrument, period, OfferSide.ASK, askBar);
-        barQuoteHandler.onBar(instrument, period, OfferSide.BID, bidBar);
+        onOfferSidedBar(instrument, period, OfferSide.ASK, askBar);
+        onOfferSidedBar(instrument, period, OfferSide.BID, bidBar);
+    }
+
+    public void onOfferSidedBar(final Instrument instrument,
+                                final Period period,
+                                final OfferSide offerside,
+                                final IBar askBar) {
+        if (!userSettings.enableWeekendQuoteFilter() || !isMarketClosed(askBar.getTime())) {
+            final BarQuote askBarQuote = new BarQuote(instrument, period, offerside, askBar);
+            barQuotePublisher.onNext(askBarQuote);
+        }
+    }
+
+    public void subscribeToBarsFeed(final Instrument instrument,
+                                    final Period period,
+                                    final OfferSide offerside) {
+        context.subscribeToBarsFeed(instrument,
+                                    period,
+                                    offerside,
+                                    this::onOfferSidedBar);
     }
 
     public boolean isMarketClosed() {

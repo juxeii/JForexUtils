@@ -12,12 +12,12 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.google.common.collect.Sets;
-import com.jforex.programming.builder.BarQuoteSubscription;
+import com.jforex.programming.builder.BarQuoteParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class BarQuoteSubscriptionTest extends InstrumentUtilForTest {
 
-    private BarQuoteSubscription barQuoteSubscription;
+    private BarQuoteParams barQuoteSubscription;
 
     private final Set<Instrument> instruments = Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD);
     private final Period period = Period.FIVE_MINS;
@@ -25,7 +25,7 @@ public class BarQuoteSubscriptionTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
-        barQuoteSubscription = BarQuoteSubscription
+        barQuoteSubscription = BarQuoteParams
                 .forInstruments(instruments)
                 .period(period)
                 .offerSide(offerSide);

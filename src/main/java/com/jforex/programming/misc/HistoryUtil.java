@@ -8,14 +8,14 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.quote.QuoteProviderException;
-
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.jforex.programming.quote.QuoteProviderException;
+import com.jforex.programming.quote.TickQuote;
 
 import rx.Observable;
 
@@ -29,10 +29,11 @@ public class HistoryUtil {
         this.history = history;
     }
 
-    public Map<Instrument, ITick> latestTicks(final Set<Instrument> instruments) {
-        final Map<Instrument, ITick> ticksByInstrument = new ConcurrentHashMap<>();
-        instruments.forEach(instrument -> ticksByInstrument.put(instrument, latestTick(instrument)));
-        return ticksByInstrument;
+    public Map<Instrument, TickQuote> tickQuotes(final Set<Instrument> instruments) {
+        final Map<Instrument, TickQuote> quoteByInstrument = new ConcurrentHashMap<>();
+        instruments.forEach(instrument -> quoteByInstrument.put(instrument,
+                                                                new TickQuote(instrument, latestTick(instrument))));
+        return quoteByInstrument;
     }
 
     public ITick latestTick(final Instrument instrument) {
@@ -57,7 +58,7 @@ public class HistoryUtil {
                 .flatMap(bar -> {
                     if (bar == null) {
                         logger.error("Last bar for " + instrument + " and period " + period
-                                + " and offerside " + offerSide + " from history returned null!");
+                                     + " and offerside " + offerSide + " from history returned null!");
                         return Observable.error(new QuoteProviderException("History bar is null!"));
                     }
                     return Observable.just(bar);
