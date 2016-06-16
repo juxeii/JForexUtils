@@ -109,7 +109,7 @@ public class BarQuoteHandler implements BarQuoteProvider {
                       final Period period,
                       final OfferSide offerSide,
                       final IBar bar) {
-        if (userSettings.enableWeekendQuoteFilter() && !jforexUtil.isMarketClosed(bar.getTime()))
+        if (!userSettings.enableWeekendQuoteFilter() || !jforexUtil.isMarketClosed(bar.getTime()))
             onBarQuote(new BarQuote(instrument, period, offerSide, bar));
     }
 

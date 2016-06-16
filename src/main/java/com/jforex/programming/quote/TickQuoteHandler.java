@@ -69,7 +69,7 @@ public class TickQuoteHandler implements TickQuoteProvider {
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
-        if (userSettings.enableWeekendQuoteFilter() && !jforexUtil.isMarketClosed(tick.getTime()))
+        if (!userSettings.enableWeekendQuoteFilter() || !jforexUtil.isMarketClosed(tick.getTime()))
             onTickQuote(new TickQuote(instrument, tick));
     }
 
