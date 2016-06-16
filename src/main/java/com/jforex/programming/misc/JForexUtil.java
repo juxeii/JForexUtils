@@ -163,7 +163,7 @@ public class JForexUtil implements IMessageConsumer {
     public void closeAllPositions() {
         positionFactory
                 .all()
-                .forEach(position -> orderUtil.closePosition(position.instrument()));
+                .forEach(position -> orderUtil.closePosition(position.instrument()).subscribe());
     }
 
     public RiskPercentMM riskPercentMM() {

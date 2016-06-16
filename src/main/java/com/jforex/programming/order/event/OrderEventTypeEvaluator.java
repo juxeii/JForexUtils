@@ -5,6 +5,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.google.common.collect.ImmutableMap;
@@ -13,6 +14,7 @@ import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
 
 import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IMessage.Reason;
 import com.dukascopy.api.IOrder;
 
 public final class OrderEventTypeEvaluator {
@@ -116,16 +118,6 @@ public final class OrderEventTypeEvaluator {
         return refineWithCallReason(orderEventType, orderCallReason);
     }
 
-    private final static OrderEventType evaluate(final OrderMessageData orderEventData) {
-        return isEventByReason(orderEventData)
-                ? eventByReason(orderEventData)
-                : eventByType(orderEventData);
-    }
-
-    private final static boolean isEventByReason(final OrderMessageData orderEventData) {
-        return orderEventData.messageReasons().size() == 1;
-    }
-
     private final static OrderEventType refineWithCallReason(final OrderEventType orderEventType,
                                                              final OrderCallReason orderCallRequest) {
         return orderEventType == OrderEventType.CHANGE_REJECTED
@@ -133,11 +125,21 @@ public final class OrderEventTypeEvaluator {
                 : orderEventType;
     }
 
+    private final static OrderEventType evaluate(final OrderMessageData orderEventData) {
+        return isEventByReason(orderEventData.messageReasons())
+                ? eventByReason(orderEventData.messageReasons())
+                : eventByType(orderEventData);
+    }
+
+    private final static boolean isEventByReason(final Set<Reason> reasons) {
+        return reasons.size() == 1;
+    }
+
     private final static OrderEventType eventByType(final OrderMessageData orderEventData) {
         return orderEventByType.get(orderEventData.messageType()).apply(orderEventData.order());
     }
 
-    private final static OrderEventType eventByReason(final OrderMessageData orderEventData) {
-        return orderEventByReason.get(orderEventData.messageReasons().iterator().next());
+    private final static OrderEventType eventByReason(final Set<Reason> reasons) {
+        return orderEventByReason.get(reasons.iterator().next());
     }
 }
