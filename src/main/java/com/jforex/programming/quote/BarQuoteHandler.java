@@ -49,17 +49,22 @@ public class BarQuoteHandler implements BarQuoteProvider {
     }
 
     @Override
-    public Observable<BarQuote> observableForSubscription(final BarQuoteParams subscription) {
-        if (subscription.period().name() == null)
-            subscribeInstrumentsToContext(subscription);
-        return quoteFilterObservable(subscription);
+    public Observable<BarQuote> observableForSubscription(final BarQuoteParams barQuoteParams) {
+        if (barQuoteParams.period().name() == null)
+            subscribeInstruments(barQuoteParams);
+        return quoteFilterObservable(barQuoteParams);
     }
 
-    private void subscribeInstrumentsToContext(final BarQuoteParams subscription) {
+    private void subscribeInstruments(final BarQuoteParams subscription) {
         subscription.instruments()
-                .forEach(instrument -> jforexUtil.subscribeToBarsFeed(instrument,
-                                                                      subscription.period(),
-                                                                      subscription.offerSide()));
+                .forEach(instrument -> subscribeAtJForexUtil(instrument, subscription));
+    }
+
+    private void subscribeAtJForexUtil(final Instrument instrument,
+                                       final BarQuoteParams subscription) {
+        jforexUtil.subscribeToBarsFeed(instrument,
+                                       subscription.period(),
+                                       subscription.offerSide());
     }
 
     private Observable<BarQuote> quoteFilterObservable(final BarQuoteParams subscription) {
