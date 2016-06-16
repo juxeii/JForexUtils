@@ -5,13 +5,14 @@ import java.util.Set;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.settings.UserSettings;
+
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 
 import rx.Observable;
 
@@ -61,7 +62,7 @@ public class TickQuoteHandler implements TickQuoteProvider {
     }
 
     @Override
-    public Observable<TickQuote> observableForInstrument(final Set<Instrument> instruments) {
+    public Observable<TickQuote> observableForInstruments(final Set<Instrument> instruments) {
         return tickQuoteObservable
                 .filter(tickQuote -> instruments.contains(tickQuote.instrument()));
     }

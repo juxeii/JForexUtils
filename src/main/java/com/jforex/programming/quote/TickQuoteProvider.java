@@ -19,7 +19,7 @@ public interface TickQuoteProvider {
     public double forOfferSide(final Instrument instrument,
                                final OfferSide offerSide);
 
-    public Observable<TickQuote> observableForInstrument(final Set<Instrument> instruments);
+    public Observable<TickQuote> observableForInstruments(final Set<Instrument> instruments);
 
     public Observable<TickQuote> observable();
 }

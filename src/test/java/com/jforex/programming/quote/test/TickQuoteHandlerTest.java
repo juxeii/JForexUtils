@@ -11,16 +11,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 import com.jforex.programming.test.fakes.ITickForTest;
+
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.OfferSide;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
@@ -125,11 +126,11 @@ public class TickQuoteHandlerTest extends QuoteProviderForTest {
             @Before
             public void setUp() {
                 tickQuoteHandler
-                        .observableForInstrument(Sets.newHashSet(instrumentEURUSD))
+                        .observableForInstruments(Sets.newHashSet(instrumentEURUSD))
                         .subscribe(quoteEURUSDSubscriber);
 
                 tickQuoteHandler
-                        .observableForInstrument(Sets.newHashSet(instrumentAUDUSD))
+                        .observableForInstruments(Sets.newHashSet(instrumentAUDUSD))
                         .subscribe(quoteAUDUSDSubscriber);
 
                 tickQuoteHandler.onTick(instrumentEURUSD, firstTickEURUSD);
