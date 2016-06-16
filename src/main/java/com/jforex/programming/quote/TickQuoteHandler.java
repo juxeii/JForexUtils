@@ -5,14 +5,13 @@ import java.util.Set;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.settings.UserSettings;
-
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
 
 import rx.Observable;
 
@@ -69,12 +68,9 @@ public class TickQuoteHandler implements TickQuoteProvider {
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
-        if (!userSettings.enableWeekendQuoteFilter() || !jforexUtil.isMarketClosed(tick.getTime()))
-            onTickQuote(new TickQuote(instrument, tick));
-    }
-
-    private void onTickQuote(final TickQuote tickQuote) {
-        latestTickQuote.put(tickQuote.instrument(), tickQuote.tick());
-        tickQuotePublisher.onNext(tickQuote);
+        if (!userSettings.enableWeekendQuoteFilter() || !jforexUtil.isMarketClosed(tick.getTime())) {
+            latestTickQuote.put(instrument, tick);
+            tickQuotePublisher.onNext(new TickQuote(instrument, tick));
+        }
     }
 }
