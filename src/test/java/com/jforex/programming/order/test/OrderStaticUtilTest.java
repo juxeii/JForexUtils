@@ -37,15 +37,15 @@ import java.util.function.Predicate;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.jforex.programming.misc.CalculationUtil;
-import com.jforex.programming.order.OrderDirection;
-import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
-
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
+import com.google.common.collect.Sets;
+import com.jforex.programming.misc.CalculationUtil;
+import com.jforex.programming.order.OrderDirection;
+import com.jforex.programming.test.common.InstrumentUtilForTest;
+import com.jforex.programming.test.fakes.IOrderForTest;
 
 public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
@@ -61,7 +61,7 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         sellOrderEURUSD.setState(IOrder.State.FILLED);
         sellOrderEURUSD.setLabel("SecondOrderLabel");
 
-        orders = createSet(buyOrderEURUSD, sellOrderEURUSD);
+        orders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     }
 
     private void assertSLTPCalculation(final IOrder order,

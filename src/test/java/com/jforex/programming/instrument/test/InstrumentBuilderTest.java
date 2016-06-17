@@ -15,22 +15,23 @@ import org.junit.Test;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
+import com.google.common.collect.Sets;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 public class InstrumentBuilderTest extends CurrencyUtilForTest {
 
     private final Set<Instrument> instrumentsForCombineTests =
-            createSet(instrumentEURUSD,
-                      instrumentEURAUD,
-                      instrumentEURJPY,
-                      instrumentAUDUSD,
-                      instrumentUSDJPY,
-                      instrumentAUDJPY);
+            Sets.newHashSet(instrumentEURUSD,
+                            instrumentEURAUD,
+                            instrumentEURJPY,
+                            instrumentAUDUSD,
+                            instrumentUSDJPY,
+                            instrumentAUDJPY);
 
     private final Set<Instrument> instrumentsForAnchorCurrencyTests =
-            createSet(instrumentEURUSD,
-                      instrumentEURAUD,
-                      instrumentEURJPY);
+            Sets.newHashSet(instrumentEURUSD,
+                            instrumentEURAUD,
+                            instrumentEURJPY);
 
     private void assertCombineCurrencySet(final Set<ICurrency> currencies,
                                           final Set<Instrument> instruments) {
@@ -86,34 +87,34 @@ public class InstrumentBuilderTest extends CurrencyUtilForTest {
 
     @Test
     public void testCombineAllFromCurrencySetReturnsEmptySetForOneCurrency() {
-        assertCombineCurrencySet(createSet(currencyEUR), Collections.emptySet());
+        assertCombineCurrencySet(Sets.newHashSet(currencyEUR), Collections.emptySet());
     }
 
     @Test
     public void testCombineAllFromCurrencySetReturnsEmptySetForOnlyEqualCurrencies() {
-        final Set<ICurrency> currencies = createSet(currencyEUR, currencyEUR);
+        final Set<ICurrency> currencies = Sets.newHashSet(currencyEUR, currencyEUR);
 
         assertCombineCurrencySet(currencies, Collections.emptySet());
     }
 
     @Test
     public void testCombineAllFromCurrencySetReturnsCorrectInstruments() {
-        final Set<ICurrency> currencies = createSet(currencyEUR,
-                                                    currencyUSD,
-                                                    currencyAUD,
-                                                    currencyJPY);
+        final Set<ICurrency> currencies = Sets.newHashSet(currencyEUR,
+                                                          currencyUSD,
+                                                          currencyAUD,
+                                                          currencyJPY);
 
         assertCombineCurrencySet(currencies, instrumentsForCombineTests);
     }
 
     @Test
     public void testCombineAllFromCurrencySetReturnsCorrectInstrumentsForEqualCurrenciesInCollection() {
-        final Set<ICurrency> currencies = createSet(currencyEUR,
-                                                    currencyEUR,
-                                                    currencyUSD,
-                                                    currencyAUD,
-                                                    currencyJPY,
-                                                    currencyJPY);
+        final Set<ICurrency> currencies = Sets.newHashSet(currencyEUR,
+                                                          currencyEUR,
+                                                          currencyUSD,
+                                                          currencyAUD,
+                                                          currencyJPY,
+                                                          currencyJPY);
 
         assertThat(combineAllFromCurrencySet(currencies), equalTo(instrumentsForCombineTests));
     }
@@ -127,27 +128,27 @@ public class InstrumentBuilderTest extends CurrencyUtilForTest {
 
     @Test
     public void testCombineAllWithAnchorCurrencyReturnsEmptySetForEqualPartnerCurrency() {
-        assertAnchorCurrencySet(createSet(currencyEUR), Collections.emptySet());
+        assertAnchorCurrencySet(Sets.newHashSet(currencyEUR), Collections.emptySet());
     }
 
     @Test
     public void testCombineAllWithAnchorCurrencyReturnsCorrectInstruments() {
-        final Set<ICurrency> partnerCurrencies = createSet(currencyEUR,
-                                                           currencyUSD,
-                                                           currencyAUD,
-                                                           currencyJPY);
+        final Set<ICurrency> partnerCurrencies = Sets.newHashSet(currencyEUR,
+                                                                 currencyUSD,
+                                                                 currencyAUD,
+                                                                 currencyJPY);
 
         assertAnchorCurrencySet(partnerCurrencies, instrumentsForAnchorCurrencyTests);
     }
 
     @Test
     public void testCombineAllWithAnchorCurrencyReturnsCorrectInstrumentsForEqualCurrenciesInCollection() {
-        final Set<ICurrency> partnerCurrencies = createSet(currencyEUR,
-                                                           currencyUSD,
-                                                           currencyUSD,
-                                                           currencyAUD,
-                                                           currencyJPY,
-                                                           currencyJPY);
+        final Set<ICurrency> partnerCurrencies = Sets.newHashSet(currencyEUR,
+                                                                 currencyUSD,
+                                                                 currencyUSD,
+                                                                 currencyAUD,
+                                                                 currencyJPY,
+                                                                 currencyJPY);
 
         assertAnchorCurrencySet(partnerCurrencies, instrumentsForAnchorCurrencyTests);
     }

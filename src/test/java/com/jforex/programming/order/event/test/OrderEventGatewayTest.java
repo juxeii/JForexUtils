@@ -6,6 +6,8 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.dukascopy.api.IMessage;
+import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -15,8 +17,6 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IMessage;
 
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -36,7 +36,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
         initCommonTestFramework();
         message = new IMessageForTest(orderUnderTest,
                                       IMessage.Type.ORDER_CHANGED_REJECTED,
-                                      createSet());
+                                      Sets.newHashSet());
         orderMessageData = new OrderMessageData(message);
 
         orderGateway = new OrderEventGateway();

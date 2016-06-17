@@ -13,6 +13,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.dukascopy.api.ICurrency;
+import com.google.common.collect.Sets;
 import com.jforex.programming.currency.CurrencyBuilder;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
@@ -27,7 +28,7 @@ public class MathUtilTest extends CurrencyUtilForTest {
 
     @SuppressWarnings("unchecked")
     private Set<Set<ICurrency>> getEmptyPowerSet() {
-        return createSet(CurrencyBuilder.fromNames(""));
+        return Sets.newHashSet(CurrencyBuilder.fromNames(""));
     }
 
     @Test
@@ -39,7 +40,7 @@ public class MathUtilTest extends CurrencyUtilForTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testkPowerSetRetunsEmptySetForSourceSetWithSizeOne() {
-        final Set<Set<ICurrency>> currencies = createSet(CurrencyBuilder.fromNames(currencyNameEUR));
+        final Set<Set<ICurrency>> currencies = Sets.newHashSet(CurrencyBuilder.fromNames(currencyNameEUR));
 
         assertThat(MathUtil.kPowerSet(currencies, 2),
                    equalTo(Collections.<Currency> emptySet()));
@@ -61,10 +62,10 @@ public class MathUtilTest extends CurrencyUtilForTest {
     @SuppressWarnings("unchecked")
     public void testkPowerSetRetunsCorrectPowerSet() {
         final Set<Set<ICurrency>> expectedkPowerset =
-                createSet(CurrencyBuilder.fromNames(currencyNameEUR, currencyNameJPY, currencyNameUSD),
-                          CurrencyBuilder.fromNames(currencyNameJPY, currencyNameUSD, currencyNameAUD),
-                          CurrencyBuilder.fromNames(currencyNameEUR, currencyNameUSD, currencyNameAUD),
-                          CurrencyBuilder.fromNames(currencyNameEUR, currencyNameJPY, currencyNameAUD));
+                Sets.newHashSet(CurrencyBuilder.fromNames(currencyNameEUR, currencyNameJPY, currencyNameUSD),
+                                CurrencyBuilder.fromNames(currencyNameJPY, currencyNameUSD, currencyNameAUD),
+                                CurrencyBuilder.fromNames(currencyNameEUR, currencyNameUSD, currencyNameAUD),
+                                CurrencyBuilder.fromNames(currencyNameEUR, currencyNameJPY, currencyNameAUD));
 
         assertThat(MathUtil.kPowerSet(currenciesForkPowerSetTests, 3),
                    equalTo(expectedkPowerset));

@@ -5,11 +5,8 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.dukascopy.api.Unit;
@@ -18,188 +15,131 @@ import com.jforex.programming.builder.BarQuoteParams;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.BarQuoteRepository;
-import com.jforex.programming.test.common.CurrencyUtilForTest;
+import com.jforex.programming.test.common.QuoteProviderForTest;
 
-import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import rx.Observable;
 import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
 
-@RunWith(HierarchicalContextRunner.class)
-public class BarQuoteHandlerTest extends CurrencyUtilForTest {
+public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     private BarQuoteHandler barQuoteHandler;
 
     @Mock
     private BarQuoteRepository barQuoteRepositoryMock;
-    @Mock
-    private IBar askBarEURUSDOfHistory;
-    @Mock
-    private IBar bidBarEURUSDOfHistory;
-    @Mock
-    private IBar firstAskBarEURUSD;
-    @Mock
-    private IBar firstBidBarEURUSD;
-    @Mock
-    private IBar secondAskBarEURUSD;
-    @Mock
-    private IBar secondBidBarEURUSD;
-    @Mock
-    private IBar firstAskBarAUDUSD;
-    @Mock
-    private IBar firstBidBarAUDUSD;
-    private final Subject<BarQuote, BarQuote> barQuoteSubject = PublishSubject.create();
     private final Period testPeriod = Period.ONE_MIN;
+    private final Period custom3MinutePeriod = Period.createCustomPeriod(Unit.Minute, 3);
+    private final BarQuote askQuoteEURUSD = new BarQuote(instrumentEURUSD, testPeriod, OfferSide.ASK, askBarEURUSD);
+    private final BarQuote askQuoteAUDUSD = new BarQuote(instrumentAUDUSD, testPeriod, OfferSide.ASK, askBarAUDUSD);
+    private final BarQuote askQuote5MinAUDUSD =
+            new BarQuote(instrumentAUDUSD, Period.FIVE_MINS, OfferSide.ASK, askBarAUDUSD);
+    private final Observable<BarQuote> quoteObservable =
+            Observable.just(askQuoteEURUSD, askQuoteAUDUSD, askQuote5MinAUDUSD);
+    private final TestSubscriber<BarQuote> quoteEURUSDAndAUDUSDSubscriber = new TestSubscriber<>();
+    private final TestSubscriber<BarQuote> quoteGBPAUDSubscriber = new TestSubscriber<>();
 
     @Before
     public void setUp() {
         initCommonTestFramework();
+        setUpMocks();
 
         barQuoteHandler = new BarQuoteHandler(jforexUtilMock,
-                                              barQuoteSubject,
+                                              quoteObservable,
                                               barQuoteRepositoryMock);
+
+        barQuoteHandler.observableForSubscription(BarQuoteParams
+                .forInstruments(Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD))
+                .period(testPeriod)
+                .offerSide(OfferSide.ASK))
+                .subscribe(quoteEURUSDAndAUDUSDSubscriber);
+
+        barQuoteHandler.observableForSubscription(BarQuoteParams
+                .forInstruments(Sets.newHashSet(instrumentGBPAUD))
+                .period(testPeriod)
+                .offerSide(OfferSide.ASK))
+                .subscribe(quoteGBPAUDSubscriber);
+
+        barQuoteHandler.observableForSubscription(BarQuoteParams
+                .forInstruments(Sets.newHashSet(instrumentEURUSD))
+                .period(custom3MinutePeriod)
+                .offerSide(OfferSide.ASK))
+                .subscribe();
     }
 
-    private void setUpQuoteRepository() throws JFException {
+    private void setUpMocks() {
         when(barQuoteRepositoryMock.get(eq(instrumentEURUSD), eq(testPeriod), eq(OfferSide.ASK)))
-                .thenReturn(askBarEURUSDOfHistory);
+                .thenReturn(askBarEURUSD);
         when(barQuoteRepositoryMock.get(eq(instrumentEURUSD), eq(testPeriod), eq(OfferSide.BID)))
-                .thenReturn(bidBarEURUSDOfHistory);
+                .thenReturn(bidBarEURUSD);
+        when(barQuoteRepositoryMock.get(eq(instrumentAUDUSD), eq(testPeriod), eq(OfferSide.ASK)))
+                .thenReturn(askBarAUDUSD);
+        when(barQuoteRepositoryMock.get(eq(instrumentAUDUSD), eq(testPeriod), eq(OfferSide.BID)))
+                .thenReturn(bidBarAUDUSD);
     }
 
-    public class AskBarEURUSDIsConsumed {
+    @Test
+    public void returnedAskBarIsCorrect() {
+        assertThat(barQuoteHandler.askBar(instrumentEURUSD, testPeriod),
+                   equalTo(askBarEURUSD));
 
-        @Before
-        public void setUp() throws JFException {
-            setUpQuoteRepository();
+        assertThat(barQuoteHandler.askBar(instrumentAUDUSD, testPeriod),
+                   equalTo(askBarAUDUSD));
+    }
 
-            when(barQuoteRepositoryMock.get(eq(instrumentEURUSD), eq(testPeriod), eq(OfferSide.ASK)))
-                    .thenReturn(firstAskBarEURUSD);
-            when(barQuoteRepositoryMock.get(eq(instrumentEURUSD), eq(testPeriod), eq(OfferSide.BID)))
-                    .thenReturn(bidBarEURUSDOfHistory);
-        }
+    @Test
+    public void returnedBidBarIsCorrect() {
+        assertThat(barQuoteHandler.bidBar(instrumentEURUSD, testPeriod),
+                   equalTo(bidBarEURUSD));
 
-        @Test
-        public void askBarReturnsReceivedAskBar() {
-            assertThat(barQuoteHandler.askBar(instrumentEURUSD, testPeriod),
-                       equalTo(firstAskBarEURUSD));
-        }
+        assertThat(barQuoteHandler.bidBar(instrumentAUDUSD, testPeriod),
+                   equalTo(bidBarAUDUSD));
+    }
 
-        @Test
-        public void bidBarReturnsHistoryBidBar() {
-            assertThat(barQuoteHandler.bidBar(instrumentEURUSD, testPeriod),
-                       equalTo(bidBarEURUSDOfHistory));
-        }
+    @Test
+    public void returnedAskBarForOfferSideIsCorrect() {
+        assertThat(barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.ASK),
+                   equalTo(askBarEURUSD));
 
-        @Test
-        public void forAskOfferSideReturnsReceivedAskBar() {
-            assertThat(barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.ASK),
-                       equalTo(firstAskBarEURUSD));
-        }
+        assertThat(barQuoteHandler.forOfferSide(instrumentAUDUSD, testPeriod, OfferSide.ASK),
+                   equalTo(askBarAUDUSD));
+    }
 
-        @Test
-        public void forBidOfferSideReturnsReturnsHistoryBidBar() {
-            verifyZeroInteractions(historyUtilMock);
+    @Test
+    public void returnedBidBarForOfferSideIsCorrect() {
+        assertThat(barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID),
+                   equalTo(bidBarEURUSD));
 
-            assertThat(barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID),
-                       equalTo(bidBarEURUSDOfHistory));
-        }
+        assertThat(barQuoteHandler.forOfferSide(instrumentAUDUSD, testPeriod, OfferSide.BID),
+                   equalTo(bidBarAUDUSD));
+    }
 
-        public class SubscriptionToAskBar {
+    @Test
+    public void barsAreEmitted() {
+        quoteEURUSDAndAUDUSDSubscriber.assertNoErrors();
+        quoteEURUSDAndAUDUSDSubscriber.assertValueCount(2);
 
-            private final TestSubscriber<BarQuote> quoteEURUSDSubscriber = new TestSubscriber<>();
-            private final TestSubscriber<BarQuote> customPeriodEURUSDSubscriber = new TestSubscriber<>();
-            private final TestSubscriber<BarQuote> quoteAUDUSDSubscriber = new TestSubscriber<>();
+        final BarQuote barQuoteEURUSD = quoteEURUSDAndAUDUSDSubscriber.getOnNextEvents().get(0);
+        assertThat(barQuoteEURUSD.instrument(), equalTo(instrumentEURUSD));
+        assertThat(barQuoteEURUSD.period(), equalTo(testPeriod));
+        assertThat(barQuoteEURUSD.offerSide(), equalTo(OfferSide.ASK));
+        assertThat(barQuoteEURUSD.bar(), equalTo(askBarEURUSD));
 
-            private final Period custom3MinutePeriod = Period.createCustomPeriod(Unit.Minute, 3);
+        final BarQuote barQuoteAUDUSD = quoteEURUSDAndAUDUSDSubscriber.getOnNextEvents().get(1);
+        assertThat(barQuoteAUDUSD.instrument(), equalTo(instrumentAUDUSD));
+        assertThat(barQuoteAUDUSD.period(), equalTo(testPeriod));
+        assertThat(barQuoteEURUSD.offerSide(), equalTo(OfferSide.ASK));
+        assertThat(barQuoteAUDUSD.bar(), equalTo(askBarAUDUSD));
+    }
 
-            @Before
-            public void setUp() {
-                barQuoteHandler.observableForSubscription(BarQuoteParams
-                        .forInstruments(Sets.newHashSet(instrumentEURUSD))
-                        .period(testPeriod)
-                        .offerSide(OfferSide.ASK))
-                        .subscribe(quoteEURUSDSubscriber);
+    @Test
+    public void barsAreNotEmittedForGBPAUDSubscriber() {
+        quoteGBPAUDSubscriber.assertNoErrors();
+        quoteGBPAUDSubscriber.assertValueCount(0);
+    }
 
-                barQuoteHandler.observableForSubscription(BarQuoteParams
-                        .forInstruments(Sets.newHashSet(instrumentEURUSD))
-                        .period(custom3MinutePeriod)
-                        .offerSide(OfferSide.ASK))
-                        .subscribe(customPeriodEURUSDSubscriber);
-
-                barQuoteHandler.observableForSubscription(BarQuoteParams
-                        .forInstruments(Sets.newHashSet(instrumentAUDUSD))
-                        .period(testPeriod)
-                        .offerSide(OfferSide.ASK))
-                        .subscribe(quoteAUDUSDSubscriber);
-
-                barQuoteSubject.onNext(new BarQuote(instrumentEURUSD,
-                                                    testPeriod,
-                                                    OfferSide.ASK,
-                                                    firstAskBarEURUSD));
-                barQuoteSubject.onNext(new BarQuote(instrumentEURUSD,
-                                                    custom3MinutePeriod,
-                                                    OfferSide.ASK,
-                                                    firstAskBarEURUSD));
-            }
-
-            @Test
-            public void newBarIsEmitted() {
-                quoteEURUSDSubscriber.assertNoErrors();
-                quoteEURUSDSubscriber.assertValueCount(1);
-
-                final BarQuote barQuote = quoteEURUSDSubscriber.getOnNextEvents().get(0);
-                assertThat(barQuote.bar(), equalTo(firstAskBarEURUSD));
-                assertThat(barQuote.instrument(), equalTo(instrumentEURUSD));
-                assertThat(barQuote.period(), equalTo(testPeriod));
-                assertThat(barQuote.offerSide(), equalTo(OfferSide.ASK));
-            }
-
-            @Test
-            public void newCustomBarIsEmitted() {
-                customPeriodEURUSDSubscriber.assertNoErrors();
-                customPeriodEURUSDSubscriber.assertValueCount(1);
-
-                final BarQuote barQuote = customPeriodEURUSDSubscriber.getOnNextEvents().get(0);
-                assertThat(barQuote.bar(), equalTo(firstAskBarEURUSD));
-                assertThat(barQuote.instrument(), equalTo(instrumentEURUSD));
-                assertThat(barQuote.period(), equalTo(custom3MinutePeriod));
-                assertThat(barQuote.offerSide(), equalTo(OfferSide.ASK));
-            }
-
-            @Test
-            public void contextSubscribesToCustomBarFeed() {
-                verify(jforexUtilMock).subscribeToBarsFeed(eq(instrumentEURUSD),
-                                                           eq(custom3MinutePeriod),
-                                                           eq(OfferSide.ASK));
-            }
-
-            @Test
-            public void newBarIsNotEmittedForAUDUSDSubscriber() {
-                quoteAUDUSDSubscriber.assertNoErrors();
-                quoteAUDUSDSubscriber.assertValueCount(0);
-            }
-        }
-
-        public class BidkBarEURUSDIsConsumed {
-
-            @Before
-            public void setUp() {
-                when(barQuoteRepositoryMock.get(eq(instrumentEURUSD), eq(testPeriod), eq(OfferSide.BID)))
-                        .thenReturn(firstBidBarEURUSD);
-            }
-
-            @Test
-            public void askBarReturnsReceivedAskBar() {
-                assertThat(barQuoteHandler.askBar(instrumentEURUSD, testPeriod),
-                           equalTo(firstAskBarEURUSD));
-            }
-
-            @Test
-            public void bidBarReturnsReceivedBidBar() {
-                assertThat(barQuoteHandler.bidBar(instrumentEURUSD, testPeriod),
-                           equalTo(firstBidBarEURUSD));
-            }
-        }
+    @Test
+    public void onCustomPeriodSubscriptionJForexUtilIsCalled() {
+        verify(jforexUtilMock).subscribeToBarsFeed(eq(instrumentEURUSD),
+                                                   eq(custom3MinutePeriod),
+                                                   eq(OfferSide.ASK));
     }
 }

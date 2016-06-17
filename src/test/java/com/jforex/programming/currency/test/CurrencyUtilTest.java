@@ -14,12 +14,13 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.dukascopy.api.Instrument;
+import com.google.common.collect.Sets;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 public class CurrencyUtilTest extends CurrencyUtilForTest {
 
-    private final Set<Instrument> instrumentsTestSet = createSet(instrumentEURUSD,
-                                                                 instrumentUSDJPY);
+    private final Set<Instrument> instrumentsTestSet = Sets.newHashSet(instrumentEURUSD,
+                                                                       instrumentUSDJPY);
 
     @Test
     public void testEmptyCurrencyNameIsNotValid() {

@@ -17,17 +17,18 @@ import org.junit.Test;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
+import com.google.common.collect.Sets;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 public class CurrencyBuilderTest extends CurrencyUtilForTest {
 
-    private final Set<String> currencyNamesAsSet = createSet(invalidEmptyCurrencyName,
-                                                             invalidLowerCaseCurrencyName,
-                                                             currencyNameLowerCaseJPY,
-                                                             currencyNameEUR);
+    private final Set<String> currencyNamesAsSet = Sets.newHashSet(invalidEmptyCurrencyName,
+                                                                   invalidLowerCaseCurrencyName,
+                                                                   currencyNameLowerCaseJPY,
+                                                                   currencyNameEUR);
 
-    private final Set<Instrument> instrumentsAsSet = createSet(instrumentEURUSD,
-                                                               instrumentUSDJPY);
+    private final Set<Instrument> instrumentsAsSet = Sets.newHashSet(instrumentEURUSD,
+                                                                     instrumentUSDJPY);
 
     private final String currencyNamesAsArray[] = currencyNamesAsSet.stream().toArray(String[]::new);
     private final Instrument instrumentsAsArray[] = instrumentsAsSet.stream().toArray(Instrument[]::new);
