@@ -21,40 +21,45 @@ import com.jforex.programming.test.fakes.IOrderForTest;
 
 import com.dukascopy.api.IMessage;
 
-import rx.Observable;
 import rx.observers.TestSubscriber;
 
 public class OrderEventGatewayTest extends CommonUtilForTest {
 
-    private OrderEventGateway orderGateway;
+    private OrderEventGateway orderEventGateway;
 
     @Mock
     private OrderEventMapper orderEventMapperMock;
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
-    private Observable<OrderEvent> orderEventObservable;
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
-    private IMessage message;
-    private OrderMessageData orderMessageData;
+    private final IMessage message = new IMessageForTest(orderUnderTest,
+                                                         IMessage.Type.ORDER_CHANGED_REJECTED,
+                                                         Sets.newHashSet());
+    private final OrderMessageData orderMessageData = new OrderMessageData(message);
 
     @Before
     public void setUp() {
         initCommonTestFramework();
 
-        message = new IMessageForTest(orderUnderTest,
-                                      IMessage.Type.ORDER_CHANGED_REJECTED,
-                                      Sets.newHashSet());
-        orderMessageData = new OrderMessageData(message);
-
-        orderGateway = new OrderEventGateway(orderEventMapperMock);
-        orderEventObservable = orderGateway.observable();
-        orderEventObservable.subscribe(subscriber);
+        orderEventGateway = new OrderEventGateway(orderEventMapperMock);
     }
 
     @Test
-    public void testSubscriberIsNotifiedWithoutRefiningSinceNoCallResultRegistered() {
-        when(orderEventMapperMock.get(any())).thenReturn(OrderEventType.CHANGED_REJECTED);
+    public void registerCallRequestIsRoutedToEventMapper() {
+        final OrderCallRequest orderCallRequest =
+                new OrderCallRequest(orderUnderTest, OrderCallReason.CHANGE_GTT);
 
-        orderGateway.onOrderMessageData(orderMessageData);
+        orderEventGateway.registerOrderCallRequest(orderCallRequest);
+
+        verify(orderEventMapperMock).registerOrderCallRequest(orderCallRequest);
+    }
+
+    @Test
+    public void subscriberIsNotifiedOnOrderMessageData() {
+        when(orderEventMapperMock.get(orderMessageData))
+                .thenReturn(OrderEventType.CHANGED_REJECTED);
+
+        orderEventGateway.observable().subscribe(subscriber);
+        orderEventGateway.onOrderMessageData(orderMessageData);
 
         subscriber.assertNoErrors();
         subscriber.assertValueCount(1);
@@ -62,21 +67,5 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
         assertThat(orderEvent.order(), equalTo(orderUnderTest));
         assertThat(orderEvent.type(), equalTo(OrderEventType.CHANGED_REJECTED));
-    }
-
-    @Test
-    public void testSubscriberIsNotifiedForARefinedRejectEvent() {
-        when(orderEventMapperMock.get(any())).thenReturn(OrderEventType.CHANGE_SL_REJECTED);
-
-        orderGateway
-                .registerOrderCallRequest(new OrderCallRequest(orderUnderTest, OrderCallReason.CHANGE_SL));
-        orderGateway.onOrderMessageData(orderMessageData);
-
-        subscriber.assertNoErrors();
-        subscriber.assertValueCount(1);
-        final OrderEvent orderEvent = subscriber.getOnNextEvents().get(0);
-
-        assertThat(orderEvent.order(), equalTo(orderUnderTest));
-        assertThat(orderEvent.type(), equalTo(OrderEventType.CHANGE_SL_REJECTED));
     }
 }
