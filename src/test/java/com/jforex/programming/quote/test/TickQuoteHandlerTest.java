@@ -23,9 +23,7 @@ public class TickQuoteHandlerTest extends QuoteProviderForTest {
 
     @Mock
     private TickQuoteRepository tickQuoteRepositoryMock;
-    private final TickQuote quoteEURUSD = new TickQuote(instrumentEURUSD, tickEURUSD);
-    private final TickQuote quoteAUDUSD = new TickQuote(instrumentAUDUSD, tickAUDUSD);
-    private final Observable<TickQuote> quoteObservable = Observable.just(quoteEURUSD, quoteAUDUSD);
+    private final Observable<TickQuote> quoteObservable = Observable.just(tickQuoteEURUSD, tickQuoteAUDUSD);
     private final TestSubscriber<TickQuote> quoteEURUSDAndAUDUSDSubscriber = new TestSubscriber<>();
     private final TestSubscriber<TickQuote> quoteGBPAUDSubscriber = new TestSubscriber<>();
 

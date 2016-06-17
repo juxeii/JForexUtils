@@ -33,7 +33,7 @@ public class MathUtilTest extends CurrencyUtilForTest {
 
     @Test
     public void testkPowerSetRetunsEmptySetForEmptySourceSet() {
-        assertThat(MathUtil.kPowerSet(getEmptyPowerSet(), 2),
+        assertThat(MathUtil.kPowerSet(Sets.newHashSet(CurrencyBuilder.fromNames("")), 2),
                    equalTo(Collections.<Currency> emptySet()));
     }
 

@@ -6,6 +6,7 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.jforex.programming.quote.BarQuoteHandler;
+import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.fakes.IBarForTest;
 import com.jforex.programming.test.fakes.ITickForTest;
@@ -14,6 +15,9 @@ public class QuoteProviderForTest extends CurrencyUtilForTest {
 
     public final ITick tickEURUSD = new ITickForTest(bidEURUSD, askEURUSD);
     public final ITick tickAUDUSD = new ITickForTest(bidAUDUSD, askAUDUSD);
+
+    public final TickQuote tickQuoteEURUSD = new TickQuote(instrumentEURUSD, tickEURUSD);
+    public final TickQuote tickQuoteAUDUSD = new TickQuote(instrumentAUDUSD, tickAUDUSD);
 
     public final IBar askBarEURUSD = new IBarForTest();
     public final IBar bidBarEURUSD = new IBarForTest();
