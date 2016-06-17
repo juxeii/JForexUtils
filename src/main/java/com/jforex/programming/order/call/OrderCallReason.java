@@ -10,5 +10,5 @@ public enum OrderCallReason {
     CHANGE_GTT,
     CHANGE_LABEL,
     CHANGE_REQUESTED_AMOUNT,
-    CHANGE_OPEN_PRICE,
+    CHANGE_OPENPRICE,
 }

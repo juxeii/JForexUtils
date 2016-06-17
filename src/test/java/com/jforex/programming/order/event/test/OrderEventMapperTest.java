@@ -18,7 +18,7 @@ import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 
-public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
+public class OrderEventMapperTest extends CommonUtilForTest {
 
     private OrderEventMapper orderEventMapper;
 
