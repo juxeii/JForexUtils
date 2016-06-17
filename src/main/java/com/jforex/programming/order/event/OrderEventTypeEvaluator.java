@@ -22,9 +22,6 @@ import com.jforex.programming.order.call.OrderCallRequest;
 
 public final class OrderEventTypeEvaluator {
 
-    private OrderEventTypeEvaluator() {
-    }
-
     private final static Queue<OrderCallRequest> changeRequestQueue = new ConcurrentLinkedQueue<>();
 
     private final static Function<IOrder, OrderEventType> submitEvaluator =
@@ -103,13 +100,13 @@ public final class OrderEventTypeEvaluator {
                          OrderEventType.CHANGE_AMOUNT_REJECTED)
                     .put(OrderCallReason.CHANGE_LABEL,
                          OrderEventType.CHANGE_LABEL_REJECTED)
-                    .put(OrderCallReason.CHANGE_GOOD_TILL_TIME,
+                    .put(OrderCallReason.CHANGE_GTT,
                          OrderEventType.CHANGE_GTT_REJECTED)
                     .put(OrderCallReason.CHANGE_OPEN_PRICE,
                          OrderEventType.CHANGE_OPENPRICE_REJECTED)
-                    .put(OrderCallReason.CHANGE_STOP_LOSS_PRICE,
+                    .put(OrderCallReason.CHANGE_SL,
                          OrderEventType.CHANGE_SL_REJECTED)
-                    .put(OrderCallReason.CHANGE_TAKE_PROFIT_PRICE,
+                    .put(OrderCallReason.CHANGE_TP,
                          OrderEventType.CHANGE_TP_REJECTED)
                     .build());
 
@@ -118,12 +115,15 @@ public final class OrderEventTypeEvaluator {
                                   IMessage.Type.ORDER_CHANGED_REJECTED);
 
     private final static Set<OrderCallReason> changeReasons =
-            Sets.immutableEnumSet(OrderCallReason.CHANGE_GOOD_TILL_TIME,
+            Sets.immutableEnumSet(OrderCallReason.CHANGE_GTT,
                                   OrderCallReason.CHANGE_LABEL,
                                   OrderCallReason.CHANGE_OPEN_PRICE,
                                   OrderCallReason.CHANGE_REQUESTED_AMOUNT,
-                                  OrderCallReason.CHANGE_STOP_LOSS_PRICE,
-                                  OrderCallReason.CHANGE_TAKE_PROFIT_PRICE);
+                                  OrderCallReason.CHANGE_SL,
+                                  OrderCallReason.CHANGE_TP);
+
+    private OrderEventTypeEvaluator() {
+    }
 
     public final static void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
         if (changeReasons.contains(orderCallRequest.reason()))

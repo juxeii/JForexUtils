@@ -59,7 +59,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
     @Test
     public void testSubscriberIsNotifiedForARefinedRejectEvent() {
         orderGateway
-                .registerOrderCallRequest(new OrderCallRequest(orderUnderTest, OrderCallReason.CHANGE_STOP_LOSS_PRICE));
+                .registerOrderCallRequest(new OrderCallRequest(orderUnderTest, OrderCallReason.CHANGE_SL));
         orderGateway.onOrderMessageData(orderMessageData);
 
         subscriber.assertNoErrors();
