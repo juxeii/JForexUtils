@@ -108,7 +108,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     @Test
     public void testChangeRejectIsMappedCorrect() {
-        assertCorrectEventTypeMapping(OrderEventType.CHANGE_REJECTED,
+        assertCorrectEventTypeMapping(OrderEventType.CHANGED_REJECTED,
                                       IMessage.Type.ORDER_CHANGED_REJECTED);
     }
 
@@ -138,7 +138,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     @Test
     public void testFullFillIsMappedCorrect() {
-        assertCorrectEventTypeMapping(OrderEventType.FULL_FILL_OK,
+        assertCorrectEventTypeMapping(OrderEventType.FULLY_FILLED,
                                       IMessage.Type.ORDER_FILL_OK,
                                       IMessage.Reason.ORDER_FULLY_FILLED);
     }
@@ -166,42 +166,42 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     @Test
     public void testSLChangeOKIsMappedCorrect() {
-        assertCorrectEventTypeMapping(OrderEventType.SL_CHANGE_OK,
+        assertCorrectEventTypeMapping(OrderEventType.CHANGED_SL,
                                       IMessage.Type.ORDER_CHANGED_OK,
                                       IMessage.Reason.ORDER_CHANGED_SL);
     }
 
     @Test
     public void testTPChangeOKIsMappedCorrect() {
-        assertCorrectEventTypeMapping(OrderEventType.TP_CHANGE_OK,
+        assertCorrectEventTypeMapping(OrderEventType.CHANGED_TP,
                                       IMessage.Type.ORDER_CHANGED_OK,
                                       IMessage.Reason.ORDER_CHANGED_TP);
     }
 
     @Test
     public void testLabelChangeOKIsMappedCorrect() {
-        assertCorrectEventTypeMapping(OrderEventType.LABEL_CHANGE_OK,
+        assertCorrectEventTypeMapping(OrderEventType.CHANGED_LABEL,
                                       IMessage.Type.ORDER_CHANGED_OK,
                                       IMessage.Reason.ORDER_CHANGED_LABEL);
     }
 
     @Test
     public void testAmountChangeOKIsMappedCorrect() {
-        assertCorrectEventTypeMapping(OrderEventType.REQUESTED_AMOUNT_CHANGE_OK,
+        assertCorrectEventTypeMapping(OrderEventType.CHANGED_AMOUNT,
                                       IMessage.Type.ORDER_CHANGED_OK,
                                       IMessage.Reason.ORDER_CHANGED_AMOUNT);
     }
 
     @Test
     public void testGTTChangeOKIsMappedCorrect() {
-        assertCorrectEventTypeMapping(OrderEventType.GTT_CHANGE_OK,
+        assertCorrectEventTypeMapping(OrderEventType.CHANGED_GTT,
                                       IMessage.Type.ORDER_CHANGED_OK,
                                       IMessage.Reason.ORDER_CHANGED_GTT);
     }
 
     @Test
     public void testPriceChangeOKIsMappedCorrect() {
-        assertCorrectEventTypeMapping(OrderEventType.OPENPRICE_CHANGE_OK,
+        assertCorrectEventTypeMapping(OrderEventType.CHANGED_PRICE,
                                       IMessage.Type.ORDER_CHANGED_OK,
                                       IMessage.Reason.ORDER_CHANGED_PRICE);
     }

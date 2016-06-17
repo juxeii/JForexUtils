@@ -88,7 +88,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
         public class SLIsNew {
 
             private final OrderEvent changedSLEvent =
-                    new OrderEvent(orderUnderTest, OrderEventType.SL_CHANGE_OK);
+                    new OrderEvent(orderUnderTest, OrderEventType.CHANGED_SL);
             private final OrderEvent rejectEvent =
                     new OrderEvent(orderUnderTest, OrderEventType.CHANGE_SL_REJECTED);
             private final static double newSL = 1.10123;
@@ -235,7 +235,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
         public class TPIsNew {
 
             private final OrderEvent changedTPEvent =
-                    new OrderEvent(orderUnderTest, OrderEventType.TP_CHANGE_OK);
+                    new OrderEvent(orderUnderTest, OrderEventType.CHANGED_TP);
             private final OrderEvent rejectEvent =
                     new OrderEvent(orderUnderTest, OrderEventType.CHANGE_TP_REJECTED);
             private final static double newTP = 1.12123;

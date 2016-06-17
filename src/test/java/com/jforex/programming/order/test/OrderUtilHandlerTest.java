@@ -177,7 +177,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void testNotCallRelatedEventIsIgnored() {
-                sendOrderEvent(mergeOrder, OrderEventType.GTT_CHANGE_OK);
+                sendOrderEvent(mergeOrder, OrderEventType.CHANGED_GTT);
 
                 callSubscriber.assertNotCompleted();
             }
@@ -274,7 +274,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void testNotCallRelatedEventIsIgnored() {
-                sendOrderEvent(orderToChange, OrderEventType.GTT_CHANGE_OK);
+                sendOrderEvent(orderToChange, OrderEventType.CHANGED_GTT);
 
                 callSubscriber.assertNotCompleted();
             }

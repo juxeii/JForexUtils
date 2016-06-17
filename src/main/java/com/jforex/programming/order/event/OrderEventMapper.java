@@ -39,7 +39,7 @@ public class OrderEventMapper {
 
     private final OrderEventType refineWithCallReason(final OrderEventType orderEventType,
                                                       final OrderCallReason orderCallReason) {
-        return orderEventType == OrderEventType.CHANGE_REJECTED
+        return orderEventType == OrderEventType.CHANGED_REJECTED
                 ? ChangeEventMapper.map(orderCallReason)
                 : orderEventType;
     }

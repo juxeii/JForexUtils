@@ -33,7 +33,7 @@ public final class TypeEventMapper {
     private final static Function<IOrder, OrderEventType> fillEvaluator =
             order -> order.getAmount() < order.getRequestedAmount()
                     ? OrderEventType.PARTIAL_FILL_OK
-                    : OrderEventType.FULL_FILL_OK;
+                    : OrderEventType.FULLY_FILLED;
 
     private final static Map<IMessage.Type, Function<IOrder, OrderEventType>> orderEventByType =
             Maps.immutableEnumMap(ImmutableMap.<IMessage.Type, Function<IOrder, OrderEventType>> builder()
@@ -50,7 +50,7 @@ public final class TypeEventMapper {
                     .put(IMessage.Type.ORDER_CHANGED_OK,
                          order -> OrderEventType.PARTIAL_FILL_OK)
                     .put(IMessage.Type.ORDER_CHANGED_REJECTED,
-                         order -> OrderEventType.CHANGE_REJECTED)
+                         order -> OrderEventType.CHANGED_REJECTED)
                     .put(IMessage.Type.ORDER_CLOSE_OK,
                          closeEvaluator)
                     .put(IMessage.Type.ORDER_CLOSE_REJECTED,

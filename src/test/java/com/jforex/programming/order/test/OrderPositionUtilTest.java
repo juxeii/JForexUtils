@@ -83,7 +83,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
     public class SubmitSetup {
 
         private final OrderEvent submitEvent =
-                new OrderEvent(orderUnderTest, OrderEventType.FULL_FILL_OK);
+                new OrderEvent(orderUnderTest, OrderEventType.FULLY_FILLED);
         private final OrderEvent rejectEvent =
                 new OrderEvent(orderUnderTest, OrderEventType.SUBMIT_REJECTED);
         private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
@@ -555,7 +555,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
                 public class RestoreSLTPOKCall {
 
                     private final OrderEvent restoreTPEvent =
-                            new OrderEvent(orderUnderTest, OrderEventType.TP_CHANGE_OK);
+                            new OrderEvent(orderUnderTest, OrderEventType.CHANGED_TP);
 
                     @Before
                     public void setUp() {

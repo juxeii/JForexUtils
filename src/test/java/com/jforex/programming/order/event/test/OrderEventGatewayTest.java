@@ -52,7 +52,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Test
     public void testSubscriberIsNotifiedWithoutRefiningSinceNoCallResultRegistered() {
-        when(orderEventMapperMock.get(any())).thenReturn(OrderEventType.CHANGE_REJECTED);
+        when(orderEventMapperMock.get(any())).thenReturn(OrderEventType.CHANGED_REJECTED);
 
         orderGateway.onOrderMessageData(orderMessageData);
 
@@ -61,7 +61,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
         final OrderEvent orderEvent = subscriber.getOnNextEvents().get(0);
 
         assertThat(orderEvent.order(), equalTo(orderUnderTest));
-        assertThat(orderEvent.type(), equalTo(OrderEventType.CHANGE_REJECTED));
+        assertThat(orderEvent.type(), equalTo(OrderEventType.CHANGED_REJECTED));
     }
 
     @Test
