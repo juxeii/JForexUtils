@@ -11,7 +11,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMessageData;
-import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeEvaluator;
 import com.jforex.programming.test.common.CommonUtilForTest;
@@ -50,23 +49,23 @@ public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
         assertThat(actualType, equalTo(expectedType));
     }
 
-    private void assertCorrectEventTypeMappingWithCallRequest(final OrderEventType expectedType,
-                                                              final IMessage.Type messageType,
-                                                              final OrderCallReason orderCallReason,
-                                                              final IMessage.Reason... messageReasons) {
-        assertCorrectMapping(expectedType, messageType, orderCallReason, messageReasons);
-    }
+//    private void assertCorrectEventTypeMappingWithCallRequest(final OrderEventType expectedType,
+//                                                              final IMessage.Type messageType,
+//                                                              final OrderCallReason orderCallReason,
+//                                                              final IMessage.Reason... messageReasons) {
+//        assertCorrectMapping(expectedType, messageType, orderCallReason, messageReasons);
+//    }
 
-    private void assertCorrectMapping(final OrderEventType expectedType,
-                                      final IMessage.Type messageType,
-                                      final OrderCallReason orderCallReason,
-                                      final IMessage.Reason... messageReasons) {
-        final OrderMessageData orderMessageData = orderMessageData(messageType, messageReasons);
-
-        final OrderEventType actualType = OrderEventTypeEvaluator.getForChangeReason(orderMessageData, orderCallReason);
-
-        assertThat(actualType, equalTo(expectedType));
-    }
+//    private void assertCorrectMapping(final OrderEventType expectedType,
+//                                      final IMessage.Type messageType,
+//                                      final OrderCallReason orderCallReason,
+//                                      final IMessage.Reason... messageReasons) {
+//        final OrderMessageData orderMessageData = orderMessageData(messageType, messageReasons);
+//
+//        final OrderEventType actualType = OrderEventTypeEvaluator.get(orderMessageData);
+//
+//        assertThat(actualType, equalTo(expectedType));
+//    }
 
     @Test
     public void testNotificationIsMappedCorrect() {
@@ -209,46 +208,46 @@ public class OrderEventTypeEvaluatorTest extends CommonUtilForTest {
                                       IMessage.Type.ORDER_CLOSE_OK);
     }
 
-    @Test
-    public void testLabelChangeRejectIsMappedCorrect() {
-        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_LABEL_REJECTED,
-                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     OrderCallReason.CHANGE_LABEL);
-    }
+//    @Test
+//    public void testLabelChangeRejectIsMappedCorrect() {
+//        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_LABEL_REJECTED,
+//                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
+//                                                     OrderCallReason.CHANGE_LABEL);
+//    }
 
 //
-    @Test
-    public void testGTTChangeRejectIsMappedCorrect() {
-        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_GTT_REJECTED,
-                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     OrderCallReason.CHANGE_GOOD_TILL_TIME);
-    }
+//    @Test
+//    public void testGTTChangeRejectIsMappedCorrect() {
+//        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_GTT_REJECTED,
+//                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
+//                                                     OrderCallReason.CHANGE_GOOD_TILL_TIME);
+//    }
 
-    @Test
-    public void testAmountChangeRejectIsMappedCorrect() {
-        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_AMOUNT_REJECTED,
-                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     OrderCallReason.CHANGE_REQUESTED_AMOUNT);
-    }
+//    @Test
+//    public void testAmountChangeRejectIsMappedCorrect() {
+//        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_AMOUNT_REJECTED,
+//                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
+//                                                     OrderCallReason.CHANGE_REQUESTED_AMOUNT);
+//    }
 
-    @Test
-    public void testOpenPriceChangeRejectIsMappedCorrect() {
-        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_OPENPRICE_REJECTED,
-                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     OrderCallReason.CHANGE_OPEN_PRICE);
-    }
+//    @Test
+//    public void testOpenPriceChangeRejectIsMappedCorrect() {
+//        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_OPENPRICE_REJECTED,
+//                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
+//                                                     OrderCallReason.CHANGE_OPEN_PRICE);
+//    }
 
-    @Test
-    public void testSLChangeRejectIsMappedCorrect() {
-        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_SL_REJECTED,
-                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     OrderCallReason.CHANGE_STOP_LOSS_PRICE);
-    }
+//    @Test
+//    public void testSLChangeRejectIsMappedCorrect() {
+//        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_SL_REJECTED,
+//                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
+//                                                     OrderCallReason.CHANGE_STOP_LOSS_PRICE);
+//    }
 
-    @Test
-    public void testTPChangeRejectIsMappedCorrect() {
-        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_TP_REJECTED,
-                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     OrderCallReason.CHANGE_TAKE_PROFIT_PRICE);
-    }
+//    @Test
+//    public void testTPChangeRejectIsMappedCorrect() {
+//        assertCorrectEventTypeMappingWithCallRequest(OrderEventType.CHANGE_TP_REJECTED,
+//                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
+//                                                     OrderCallReason.CHANGE_TAKE_PROFIT_PRICE);
+//    }
 }

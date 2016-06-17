@@ -63,8 +63,8 @@ public class HistoryUtil {
                 .flatMap(bar -> barObservableForHistoryBar(instrument, period, offerSide, bar))
                 .doOnError(e -> logger.error("Last bar for " + instrument + " and period " + period
                         + " and offerside " + offerSide + " from history returned null!"))
-                .retry(10)
-                .onErrorResumeNext(e -> Observable.error(new QuoteProviderException(e.getMessage())))
+                .retryWhen(errors -> RxUtil.retryWithDelay(errors, 500L, TimeUnit.MILLISECONDS, 10))
+                .first()
                 .toBlocking()
                 .first();
     }

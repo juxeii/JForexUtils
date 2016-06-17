@@ -5,22 +5,27 @@ import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.jforex.programming.order.OrderMessageData;
-import com.jforex.programming.order.call.OrderCallReason;
 
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IMessage.Reason;
 import com.dukascopy.api.IOrder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.jforex.programming.order.OrderMessageData;
+import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.call.OrderCallRequest;
 
 public final class OrderEventTypeEvaluator {
 
     private OrderEventTypeEvaluator() {
     }
+
+    private final static Queue<OrderCallRequest> changeRequestQueue = new ConcurrentLinkedQueue<>();
 
     private final static Function<IOrder, OrderEventType> submitEvaluator =
             order -> isConditional.test(order)
@@ -108,12 +113,37 @@ public final class OrderEventTypeEvaluator {
                          OrderEventType.CHANGE_TP_REJECTED)
                     .build());
 
-    public final static OrderEventType get(final OrderMessageData orderEventData) {
-        return evaluate(orderEventData);
+    private final static Set<IMessage.Type> changeEventTypes =
+            Sets.immutableEnumSet(IMessage.Type.ORDER_CHANGED_OK,
+                                  IMessage.Type.ORDER_CHANGED_REJECTED);
+
+    private final static Set<OrderCallReason> changeReasons =
+            Sets.immutableEnumSet(OrderCallReason.CHANGE_GOOD_TILL_TIME,
+                                  OrderCallReason.CHANGE_LABEL,
+                                  OrderCallReason.CHANGE_OPEN_PRICE,
+                                  OrderCallReason.CHANGE_REQUESTED_AMOUNT,
+                                  OrderCallReason.CHANGE_STOP_LOSS_PRICE,
+                                  OrderCallReason.CHANGE_TAKE_PROFIT_PRICE);
+
+    public final static void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
+        if (changeReasons.contains(orderCallRequest.reason()))
+            changeRequestQueue.add(orderCallRequest);
     }
 
-    public final static OrderEventType getForChangeReason(final OrderMessageData orderEventData,
-                                                          final OrderCallReason orderCallReason) {
+    public final static OrderEventType get(final OrderMessageData orderMessageData) {
+        return isNotForChangeReason(orderMessageData)
+                ? evaluate(orderMessageData)
+                : OrderEventTypeEvaluator.getForChangeReason(orderMessageData, changeRequestQueue.poll().reason());
+    }
+
+    private final static boolean isNotForChangeReason(final OrderMessageData orderMessageData) {
+        return changeRequestQueue.isEmpty()
+                || changeRequestQueue.peek().order() != orderMessageData.order()
+                || !changeEventTypes.contains(orderMessageData.messageType());
+    }
+
+    private final static OrderEventType getForChangeReason(final OrderMessageData orderEventData,
+                                                           final OrderCallReason orderCallReason) {
         final OrderEventType orderEventType = evaluate(orderEventData);
         return refineWithCallReason(orderEventType, orderCallReason);
     }
