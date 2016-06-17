@@ -10,9 +10,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IMessage.Reason;
-import com.dukascopy.api.IOrder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -20,9 +17,13 @@ import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 
-public final class OrderEventTypeEvaluator {
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IMessage.Reason;
+import com.dukascopy.api.IOrder;
 
-    private final static Queue<OrderCallRequest> changeRequestQueue = new ConcurrentLinkedQueue<>();
+public class OrderEventMapper {
+
+    private final Queue<OrderCallRequest> changeRequestQueue = new ConcurrentLinkedQueue<>();
 
     private final static Function<IOrder, OrderEventType> submitEvaluator =
             order -> isConditional.test(order)
@@ -122,54 +123,51 @@ public final class OrderEventTypeEvaluator {
                                   OrderCallReason.CHANGE_SL,
                                   OrderCallReason.CHANGE_TP);
 
-    private OrderEventTypeEvaluator() {
-    }
-
-    public final static void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
+    public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
         if (changeReasons.contains(orderCallRequest.reason()))
             changeRequestQueue.add(orderCallRequest);
     }
 
-    public final static OrderEventType get(final OrderMessageData orderMessageData) {
+    public OrderEventType get(final OrderMessageData orderMessageData) {
         return isNotForChangeReason(orderMessageData)
                 ? evaluate(orderMessageData)
-                : OrderEventTypeEvaluator.getForChangeReason(orderMessageData, changeRequestQueue.poll().reason());
+                : getForChangeReason(orderMessageData, changeRequestQueue.poll().reason());
     }
 
-    private final static boolean isNotForChangeReason(final OrderMessageData orderMessageData) {
+    private final boolean isNotForChangeReason(final OrderMessageData orderMessageData) {
         return changeRequestQueue.isEmpty()
                 || changeRequestQueue.peek().order() != orderMessageData.order()
                 || !changeEventTypes.contains(orderMessageData.messageType());
     }
 
-    private final static OrderEventType getForChangeReason(final OrderMessageData orderEventData,
-                                                           final OrderCallReason orderCallReason) {
+    private final OrderEventType getForChangeReason(final OrderMessageData orderEventData,
+                                                    final OrderCallReason orderCallReason) {
         final OrderEventType orderEventType = evaluate(orderEventData);
         return refineWithCallReason(orderEventType, orderCallReason);
     }
 
-    private final static OrderEventType refineWithCallReason(final OrderEventType orderEventType,
-                                                             final OrderCallReason orderCallRequest) {
+    private final OrderEventType refineWithCallReason(final OrderEventType orderEventType,
+                                                      final OrderCallReason orderCallRequest) {
         return orderEventType == OrderEventType.CHANGE_REJECTED
                 ? changeRejectEventByRequest.get(orderCallRequest)
                 : orderEventType;
     }
 
-    private final static OrderEventType evaluate(final OrderMessageData orderEventData) {
+    private final OrderEventType evaluate(final OrderMessageData orderEventData) {
         return isEventByReason(orderEventData.messageReasons())
                 ? eventByReason(orderEventData.messageReasons())
                 : eventByType(orderEventData);
     }
 
-    private final static boolean isEventByReason(final Set<Reason> reasons) {
+    private final boolean isEventByReason(final Set<Reason> reasons) {
         return reasons.size() == 1;
     }
 
-    private final static OrderEventType eventByType(final OrderMessageData orderEventData) {
+    private final OrderEventType eventByType(final OrderMessageData orderEventData) {
         return orderEventByType.get(orderEventData.messageType()).apply(orderEventData.order());
     }
 
-    private final static OrderEventType eventByReason(final Set<Reason> reasons) {
+    private final OrderEventType eventByReason(final Set<Reason> reasons) {
         return orderEventByReason.get(reasons.iterator().next());
     }
 }

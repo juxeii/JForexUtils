@@ -3,17 +3,6 @@ package com.jforex.programming.misc;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
 
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IDataService;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderChangeUtil;
@@ -24,6 +13,7 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
+import com.jforex.programming.order.event.OrderEventMapper;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionMultiTask;
 import com.jforex.programming.position.PositionSingleTask;
@@ -37,6 +27,18 @@ import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
+
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IDataService;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.Period;
 
 import rx.Subscription;
 
@@ -61,6 +63,7 @@ public class JForexUtil implements IMessageConsumer {
     private OrderCreateUtil orderCreateUtil;
     private OrderChangeUtil orderChangeUtil;
     private OrderUtil orderUtil;
+    private final OrderEventMapper orderEventMapper = new OrderEventMapper();
 
     private PositionSingleTask positionSingleTask;
     private PositionMultiTask positionMultiTask;
@@ -98,7 +101,7 @@ public class JForexUtil implements IMessageConsumer {
     }
 
     private void initInfrastructure() {
-        orderEventGateway = new OrderEventGateway();
+        orderEventGateway = new OrderEventGateway(orderEventMapper);
 
         eventGatewaySubscription = messagePublisher.observable()
                 .filter(message -> message.getOrder() != null)
