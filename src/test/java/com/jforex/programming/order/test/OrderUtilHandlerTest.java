@@ -1,5 +1,7 @@
 package com.jforex.programming.order.test;
 
+import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
+
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -15,6 +17,7 @@ import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
@@ -150,8 +153,9 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void testMergeOrderRegisteredAtGateway() {
-//                verify(orderEventGatewayMock)
-//                        .registerOrderCallRequest(new OrderCallRequest(mergeOrder, OrderCallReason.MERGE));
+                verify(orderEventGatewayMock)
+                        .registerOrderCallRequest(argLambda(req -> req.order() == mergeOrder
+                                && req.reason() == OrderCallReason.MERGE));
             }
 
             @Test
@@ -247,8 +251,9 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void testMergeOrderRegisteredAtGateway() {
-//                verify(orderEventGatewayMock)
-//                        .registerOrderCallRequest(new OrderCallRequest(orderToChange, OrderCallReason.CLOSE));
+                verify(orderEventGatewayMock)
+                        .registerOrderCallRequest(argLambda(req -> req.order() == orderToChange
+                                && req.reason() == OrderCallReason.CLOSE));
             }
 
             @Test
