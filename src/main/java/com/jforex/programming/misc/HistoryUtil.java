@@ -43,15 +43,14 @@ public class HistoryUtil {
     public ITick latestTick(final Instrument instrument) {
         final Observable<ITick> tickObservable = Observable
                 .fromCallable(() -> history.getLastTick(instrument))
-                .flatMap(tick -> tickObservableForHistoryTick(instrument, tick))
+                .flatMap(tick -> tickObservableForHistoryTick(tick))
                 .doOnError(e -> logger.warn("Last tick for " + instrument +
                         " from history returned null! Retrying..."));
 
         return observableValue(tickObservable);
     }
 
-    private Observable<ITick> tickObservableForHistoryTick(final Instrument instrument,
-                                                           final ITick tick) {
+    private Observable<ITick> tickObservableForHistoryTick(final ITick tick) {
         return tick == null
                 ? Observable.error(new QuoteProviderException("History tick is null!"))
                 : Observable.just(tick);
@@ -62,7 +61,7 @@ public class HistoryUtil {
                           final OfferSide offerSide) {
         final Observable<IBar> barObservable = Observable
                 .fromCallable(() -> history.getBar(instrument, period, offerSide, 1))
-                .flatMap(bar -> barObservableForHistoryBar(instrument, period, offerSide, bar))
+                .flatMap(bar -> barObservableForHistoryBar(bar))
                 .doOnError(e -> logger.error("Last bar for " + instrument + " and period " + period
                         + " and offerside " + offerSide + " from history returned null!"));
 
@@ -77,10 +76,7 @@ public class HistoryUtil {
                 .first();
     }
 
-    private Observable<IBar> barObservableForHistoryBar(final Instrument instrument,
-                                                        final Period period,
-                                                        final OfferSide offerSide,
-                                                        final IBar bar) {
+    private Observable<IBar> barObservableForHistoryBar(final IBar bar) {
         return bar == null
                 ? Observable.error(new QuoteProviderException("History bar is null!"))
                 : Observable.just(bar);
