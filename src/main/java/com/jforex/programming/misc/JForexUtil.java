@@ -42,7 +42,7 @@ import com.dukascopy.api.Period;
 
 import rx.Subscription;
 
-public class JForexUtil implements IMessageConsumer {
+public class JForexUtil {
 
     private final IContext context;
     private IEngine engine;
@@ -192,7 +192,6 @@ public class JForexUtil implements IMessageConsumer {
         eventGatewaySubscription.unsubscribe();
     }
 
-    @Override
     public void onMessage(final IMessage message) {
         messagePublisher.onNext(message);
     }
