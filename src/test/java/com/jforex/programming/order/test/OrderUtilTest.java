@@ -7,14 +7,10 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.builder.OrderParams;
-import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderPositionUtil;
 import com.jforex.programming.order.OrderUtil;
@@ -24,6 +20,8 @@ import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -40,10 +38,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private RestoreSLTPPolicy restoreSLTPPolicyMock;
     @Mock
     private PositionOrders positionOrdersMock;
-    @Captor
-    private ArgumentCaptor<JFCallable<IOrder>> orderCallCaptor;
-    @Captor
-    private ArgumentCaptor<Set<IOrder>> toMergeOrdersCaptor;
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
     private final IOrderForTest orderToChange = IOrderForTest.buyOrderEURUSD();
     private final Set<IOrder> toMergeOrders = Sets.newHashSet();
