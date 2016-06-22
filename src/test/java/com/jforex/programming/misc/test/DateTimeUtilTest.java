@@ -11,8 +11,9 @@ import java.time.format.DateTimeFormatter;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.DateTimeUtil;
+
+import com.dukascopy.api.JFException;
 
 public class DateTimeUtilTest {
 
@@ -42,12 +43,5 @@ public class DateTimeUtilTest {
         assertThat(dateTimeOfMillis.getMinute(), equalTo(12));
         assertThat(dateTimeOfMillis.getSecond(), equalTo(42));
         assertThat(dateTimeOfMillis.getDayOfWeek(), equalTo(DayOfWeek.TUESDAY));
-    }
-
-    @Test
-    public void testToDukascopyTimeIsCorrect() {
-        final LocalDateTime dukascopyTime = DateTimeUtil.toDukascopyDateTime(testDateTime);
-
-        assertThat(testDateTime.getHour(), equalTo(dukascopyTime.getHour() + 2));
     }
 }
