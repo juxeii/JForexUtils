@@ -12,11 +12,12 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.dukascopy.api.ICurrency;
 import com.google.common.collect.Sets;
 import com.jforex.programming.currency.CurrencyBuilder;
 import com.jforex.programming.misc.MathUtil;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
+
+import com.dukascopy.api.ICurrency;
 
 public class MathUtilTest extends CurrencyUtilForTest {
 
@@ -26,11 +27,6 @@ public class MathUtilTest extends CurrencyUtilForTest {
                                       currencyNameAUD,
                                       currencyNameJPY);
 
-    @SuppressWarnings("unchecked")
-    private Set<Set<ICurrency>> getEmptyPowerSet() {
-        return Sets.newHashSet(CurrencyBuilder.fromNames(""));
-    }
-
     @Test
     public void testkPowerSetRetunsEmptySetForEmptySourceSet() {
         assertThat(MathUtil.kPowerSet(Sets.newHashSet(CurrencyBuilder.fromNames("")), 2),
@@ -38,18 +34,18 @@ public class MathUtilTest extends CurrencyUtilForTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void testkPowerSetRetunsEmptySetForSourceSetWithSizeOne() {
-        final Set<Set<ICurrency>> currencies = Sets.newHashSet(CurrencyBuilder.fromNames(currencyNameEUR));
-
-        assertThat(MathUtil.kPowerSet(currencies, 2),
-                   equalTo(Collections.<Currency> emptySet()));
+        assertThat(MathUtil.kPowerSet(CurrencyBuilder.fromNames(currencyNameEUR), 2),
+                   equalTo(Sets.newHashSet()));
     }
 
     @Test
     public void testkPowerSetRetunsEmptyPowerSetSetWhenkIsZero() {
-        assertThat(MathUtil.kPowerSet(currenciesForkPowerSetTests, 0),
-                   equalTo(getEmptyPowerSet()));
+        final Set<Set<ICurrency>> kPowerSet = MathUtil.kPowerSet(currenciesForkPowerSetTests, 0);
+        final Set<ICurrency> firstPowerSet = kPowerSet.iterator().next();
+
+        assertThat(kPowerSet.size(), equalTo(1));
+        assertThat(firstPowerSet, equalTo(Sets.newHashSet()));
     }
 
     @Test
