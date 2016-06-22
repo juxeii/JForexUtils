@@ -7,8 +7,4 @@ jdk:
   
 cache:
   directories:
-    - $HOME/.gradle/caches/2.11
-    - $HOME/.gradle/caches/jars-1
-    - $HOME/.gradle/daemon
-    - $HOME/.gradle/native
-    - $HOME/.gradle/wrapper
+    - $HOME/.gradle/caches/
