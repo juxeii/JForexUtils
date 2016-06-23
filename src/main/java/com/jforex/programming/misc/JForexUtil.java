@@ -72,9 +72,9 @@ public class JForexUtil {
     private final CalculationUtil calculationUtil;
     private final RiskPercentMM riskPercentMM;
 
-    private final JFHotObservable<TickQuote> tickQuotePublisher = new JFHotObservable<>();
-    private final JFHotObservable<BarQuote> barQuotePublisher = new JFHotObservable<>();
-    private final JFHotObservable<IMessage> messagePublisher = new JFHotObservable<>();
+    private final JFHotSubject<TickQuote> tickQuotePublisher = new JFHotSubject<>();
+    private final JFHotSubject<BarQuote> barQuotePublisher = new JFHotSubject<>();
+    private final JFHotSubject<IMessage> messagePublisher = new JFHotSubject<>();
     private Subscription eventGatewaySubscription;
 
     private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);

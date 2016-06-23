@@ -7,7 +7,7 @@ import org.aeonbits.owner.ConfigFactory;
 
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
-import com.jforex.programming.misc.JFHotObservable;
+import com.jforex.programming.misc.JFHotSubject;
 import com.jforex.programming.settings.PlatformSettings;
 
 import com.dukascopy.api.system.IClient;
@@ -18,7 +18,7 @@ import rx.Observable;
 public class AuthentificationUtil {
 
     private final IClient client;
-    private final JFHotObservable<LoginState> loginStatePublisher = new JFHotObservable<>();
+    private final JFHotSubject<LoginState> loginStatePublisher = new JFHotSubject<>();
     private final Observable<ConnectionState> connectionStateObs;
     private final StateMachineConfig<LoginState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
     private final StateMachine<LoginState, FSMTrigger> fsm = new StateMachine<>(LoginState.LOGGED_OUT, fsmConfig);

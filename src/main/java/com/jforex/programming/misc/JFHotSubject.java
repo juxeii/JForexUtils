@@ -9,12 +9,12 @@ import rx.Subscriber;
 import rx.observables.ConnectableObservable;
 import rx.subscriptions.Subscriptions;
 
-public final class JFHotObservable<T> {
+public final class JFHotSubject<T> {
 
     private final ConnectableObservable<T> hotObservable;
     private final Set<Subscriber<? super T>> subscribers = Sets.newConcurrentHashSet();
 
-    public JFHotObservable() {
+    public JFHotSubject() {
         final Observable<T> coldObservable = Observable.create(subscriber -> subscribe(subscriber));
         hotObservable = coldObservable.publish();
         hotObservable.connect();
