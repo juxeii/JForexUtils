@@ -198,10 +198,14 @@ public class JForexUtil {
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
-        if (!userSettings.enableWeekendQuoteFilter() || !isMarketClosed(tick.getTime())) {
+        if (shouldForwardQuote(tick.getTime())) {
             final TickQuote tickQuote = new TickQuote(instrument, tick);
             tickQuotePublisher.onNext(tickQuote);
         }
+    }
+
+    private boolean shouldForwardQuote(final long time) {
+        return !userSettings.enableWeekendQuoteFilter() || !isMarketClosed(time);
     }
 
     public void onBar(final Instrument instrument,
@@ -216,8 +220,11 @@ public class JForexUtil {
                                 final Period period,
                                 final OfferSide offerside,
                                 final IBar askBar) {
-        if (!userSettings.enableWeekendQuoteFilter() || !isMarketClosed(askBar.getTime())) {
-            final BarQuote askBarQuote = new BarQuote(instrument, period, offerside, askBar);
+        if (shouldForwardQuote(askBar.getTime())) {
+            final BarQuote askBarQuote = new BarQuote(instrument,
+                                                      period,
+                                                      offerside,
+                                                      askBar);
             barQuotePublisher.onNext(askBarQuote);
         }
     }

@@ -15,7 +15,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.builder.BarQuoteParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
-public class BarQuoteSubscriptionTest extends InstrumentUtilForTest {
+public class BarQuoteParamsTest extends InstrumentUtilForTest {
 
     private BarQuoteParams barQuoteSubscription;
 
