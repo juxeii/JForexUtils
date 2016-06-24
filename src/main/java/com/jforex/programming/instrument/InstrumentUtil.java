@@ -2,15 +2,16 @@ package com.jforex.programming.instrument;
 
 import java.util.Currency;
 
+import com.jforex.programming.currency.CurrencyUtil;
+import com.jforex.programming.misc.CalculationUtil;
+import com.jforex.programming.quote.BarQuoteHandler;
+import com.jforex.programming.quote.TickQuoteHandler;
+
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.Period;
-import com.jforex.programming.currency.CurrencyUtil;
-import com.jforex.programming.misc.CalculationUtil;
-import com.jforex.programming.quote.BarQuoteHandler;
-import com.jforex.programming.quote.TickQuoteHandler;
 
 public final class InstrumentUtil {
 
@@ -84,8 +85,8 @@ public final class InstrumentUtil {
         return CurrencyUtil.isInInstrument(currency, instrument);
     }
 
-    public final boolean containsCurrency(final String currencyName) {
-        return CurrencyUtil.isInInstrument(currencyName, instrument);
+    public final boolean containsCurrencyCode(final String currencyCode) {
+        return CurrencyUtil.isInInstrument(currencyCode, instrument);
     }
 
     public final static int numberOfDigits(final Instrument instrument) {
@@ -93,22 +94,28 @@ public final class InstrumentUtil {
     }
 
     public final static String toStringNoSeparator(final Instrument instrument) {
-        return instrument.getPrimaryJFCurrency()
+        return instrument
+                .getPrimaryJFCurrency()
                 .toString()
                 .concat(instrument.getSecondaryJFCurrency().toString());
     }
 
     public final static Currency baseJavaCurrency(final Instrument instrument) {
-        return instrument.getPrimaryJFCurrency().getJavaCurrency();
+        return instrument
+                .getPrimaryJFCurrency()
+                .getJavaCurrency();
     }
 
     public final static Currency quoteJavaCurrency(final Instrument instrument) {
-        return instrument.getSecondaryJFCurrency().getJavaCurrency();
+        return instrument
+                .getSecondaryJFCurrency()
+                .getJavaCurrency();
     }
 
     public final static String nameFromCurrencies(final ICurrency baseCurrency,
                                                   final ICurrency quoteCurrency) {
-        return baseCurrency.toString()
+        return baseCurrency
+                .toString()
                 .concat(pairsSeparator)
                 .concat(quoteCurrency.toString());
     }

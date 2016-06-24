@@ -121,11 +121,11 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
 
     @Test
     public void testContainsCurrencyForNameIsCorrect() {
-        assertTrue(instrumentUtil.containsCurrency(currencyNameEUR));
-        assertTrue(instrumentUtil.containsCurrency(currencyNameUSD));
-        assertFalse(instrumentUtil.containsCurrency(invalidEmptyCurrencyName));
-        assertFalse(instrumentUtil.containsCurrency(invalidCurrencyName));
-        assertFalse(instrumentUtil.containsCurrency(invalidLowerCaseCurrencyName));
+        assertTrue(instrumentUtil.containsCurrencyCode(currencyNameEUR));
+        assertTrue(instrumentUtil.containsCurrencyCode(currencyNameUSD));
+        assertFalse(instrumentUtil.containsCurrencyCode(invalidEmptyCurrencyName));
+        assertFalse(instrumentUtil.containsCurrencyCode(invalidCurrencyName));
+        assertFalse(instrumentUtil.containsCurrencyCode(invalidLowerCaseCurrencyName));
     }
 
     @Test
