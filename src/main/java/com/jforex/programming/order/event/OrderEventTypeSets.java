@@ -3,7 +3,7 @@ package com.jforex.programming.order.event;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_AMOUNT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_GTT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_LABEL_REJECTED;
-import static com.jforex.programming.order.event.OrderEventType.CHANGE_OPENPRICE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_PRICE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGED_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_SL_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_TP_REJECTED;
@@ -75,7 +75,7 @@ public final class OrderEventTypeSets {
                                                         CHANGED_REJECTED,
                                                         CHANGE_AMOUNT_REJECTED,
                                                         CHANGE_GTT_REJECTED,
-                                                        CHANGE_OPENPRICE_REJECTED,
+                                                        CHANGE_PRICE_REJECTED,
                                                         CHANGE_TP_REJECTED,
                                                         CHANGE_SL_REJECTED,
                                                         CHANGE_LABEL_REJECTED)));

@@ -3,29 +3,30 @@ package com.jforex.programming.order.event.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.Collections;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
+import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
 
 public class OrderMessageDataTest extends CommonUtilForTest {
 
     private OrderMessageData orderEventDataByDedicatedParams;
     private OrderMessageData orderEventDataByMessage;
 
-    private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();;
+    private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
     private IMessageForTest message;
     private final IOrder.State orderState = IOrder.State.FILLED;
     private final IMessage.Type messageType = IMessage.Type.ORDER_CHANGED_OK;
-    private final Set<IMessage.Reason> messageReasons = Collections.emptySet();
+    private final Set<IMessage.Reason> messageReasons = Sets.newHashSet();
 
     @Before
     public void setUp() {

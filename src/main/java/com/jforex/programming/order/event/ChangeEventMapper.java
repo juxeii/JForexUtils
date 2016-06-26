@@ -14,10 +14,10 @@ public final class ChangeEventMapper {
 
     private final static Map<OrderCallReason, OrderEventType> changeRejectEventByRequest =
             Maps.immutableEnumMap(ImmutableMap.<OrderCallReason, OrderEventType> builder()
-                    .put(OrderCallReason.CHANGE_REQUESTED_AMOUNT, OrderEventType.CHANGE_AMOUNT_REJECTED)
+                    .put(OrderCallReason.CHANGE_AMOUNT, OrderEventType.CHANGE_AMOUNT_REJECTED)
                     .put(OrderCallReason.CHANGE_LABEL, OrderEventType.CHANGE_LABEL_REJECTED)
                     .put(OrderCallReason.CHANGE_GTT, OrderEventType.CHANGE_GTT_REJECTED)
-                    .put(OrderCallReason.CHANGE_OPENPRICE, OrderEventType.CHANGE_OPENPRICE_REJECTED)
+                    .put(OrderCallReason.CHANGE_PRICE, OrderEventType.CHANGE_PRICE_REJECTED)
                     .put(OrderCallReason.CHANGE_SL, OrderEventType.CHANGE_SL_REJECTED)
                     .put(OrderCallReason.CHANGE_TP, OrderEventType.CHANGE_TP_REJECTED)
                     .build());
@@ -29,8 +29,8 @@ public final class ChangeEventMapper {
     public final static Set<OrderCallReason> changeReasons =
             Sets.immutableEnumSet(OrderCallReason.CHANGE_GTT,
                                   OrderCallReason.CHANGE_LABEL,
-                                  OrderCallReason.CHANGE_OPENPRICE,
-                                  OrderCallReason.CHANGE_REQUESTED_AMOUNT,
+                                  OrderCallReason.CHANGE_PRICE,
+                                  OrderCallReason.CHANGE_AMOUNT,
                                   OrderCallReason.CHANGE_SL,
                                   OrderCallReason.CHANGE_TP);
 

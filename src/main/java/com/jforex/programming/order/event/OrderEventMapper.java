@@ -34,19 +34,15 @@ public class OrderEventMapper {
     private final OrderEventType getForChangeReason(final OrderMessageData orderEventData,
                                                     final OrderCallReason orderCallReason) {
         final OrderEventType orderEventType = evaluate(orderEventData);
-        return refineWithCallReason(orderEventType, orderCallReason);
-    }
-
-    private final OrderEventType refineWithCallReason(final OrderEventType orderEventType,
-                                                      final OrderCallReason orderCallReason) {
         return orderEventType == OrderEventType.CHANGED_REJECTED
                 ? ChangeEventMapper.map(orderCallReason)
                 : orderEventType;
     }
 
     private final OrderEventType evaluate(final OrderMessageData orderEventData) {
-        return isEventByReason(orderEventData.messageReasons())
-                ? eventByReason(orderEventData.messageReasons())
+        final Set<Reason> reasons = orderEventData.messageReasons();
+        return isEventByReason(reasons)
+                ? eventByReason(reasons)
                 : eventByType(orderEventData);
     }
 

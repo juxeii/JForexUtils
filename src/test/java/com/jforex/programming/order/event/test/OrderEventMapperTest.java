@@ -219,14 +219,14 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     @Test
     public void onChangeAmountRejectRefinementMappingIsCorrect() {
-        assertCorrectMappingForChangeRejectRefinement(OrderCallReason.CHANGE_REQUESTED_AMOUNT,
+        assertCorrectMappingForChangeRejectRefinement(OrderCallReason.CHANGE_AMOUNT,
                                                       OrderEventType.CHANGE_AMOUNT_REJECTED);
     }
 
     @Test
     public void onChangeOpenPriceRejectRefinementMappingIsCorrect() {
-        assertCorrectMappingForChangeRejectRefinement(OrderCallReason.CHANGE_OPENPRICE,
-                                                      OrderEventType.CHANGE_OPENPRICE_REJECTED);
+        assertCorrectMappingForChangeRejectRefinement(OrderCallReason.CHANGE_PRICE,
+                                                      OrderEventType.CHANGE_PRICE_REJECTED);
     }
 
     @Test
@@ -255,7 +255,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
         public void setUp() {
             registerCallRequest(OrderCallReason.SUBMIT);
             registerCallRequest(OrderCallReason.CHANGE_LABEL);
-            registerCallRequest(OrderCallReason.CHANGE_OPENPRICE);
+            registerCallRequest(OrderCallReason.CHANGE_PRICE);
             registerCallRequest(OrderCallReason.CHANGE_SL);
             registerCallRequest(OrderCallReason.CLOSE);
         }
@@ -300,7 +300,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
                     @Test
                     public void eventTypeIsOpenPriceRejected() {
-                        assertThat(changeOpenPriceType, equalTo(OrderEventType.CHANGE_OPENPRICE_REJECTED));
+                        assertThat(changeOpenPriceType, equalTo(OrderEventType.CHANGE_PRICE_REJECTED));
                     }
 
                     public class OnChangeSL {

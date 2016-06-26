@@ -3,7 +3,7 @@ package com.jforex.programming.order.event;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_AMOUNT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_GTT_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_LABEL_REJECTED;
-import static com.jforex.programming.order.event.OrderEventType.CHANGE_OPENPRICE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_PRICE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_SL_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_TP_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.CLOSE_OK;
@@ -92,13 +92,13 @@ public final class OrderEventTypeData {
 
     public final static OrderEventTypeData changeOpenPriceData =
             new OrderEventTypeData(EnumSet.of(CHANGED_PRICE),
-                                   EnumSet.of(CHANGE_OPENPRICE_REJECTED),
-                                   OrderCallReason.CHANGE_OPENPRICE);
+                                   EnumSet.of(CHANGE_PRICE_REJECTED),
+                                   OrderCallReason.CHANGE_PRICE);
 
     public final static OrderEventTypeData changeAmountData =
             new OrderEventTypeData(EnumSet.of(CHANGED_AMOUNT),
                                    EnumSet.of(CHANGE_AMOUNT_REJECTED),
-                                   OrderCallReason.CHANGE_REQUESTED_AMOUNT);
+                                   OrderCallReason.CHANGE_AMOUNT);
 
     public final static OrderEventTypeData changeSLData =
             new OrderEventTypeData(EnumSet.of(CHANGED_SL),
