@@ -16,7 +16,6 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ITick;
-import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.misc.CalculationUtil;
 import com.jforex.programming.quote.BarQuoteHandler;
@@ -38,8 +37,6 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
     @Mock
     private IBar bidBar;
     private final ITick tickEURUSD = new ITickForTest(bidEURUSD, askEURUSD);
-    private final Period testAskBarPeriod = Period.ONE_MIN;
-    private final Period testBidBarPeriod = Period.FIFTEEN_MINS;
 
     @Before
     public void setUp() {
@@ -51,9 +48,6 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
 
     private void setUpMocks() {
         QuoteProviderForTest.setQuoteExpectations(tickQuoteProviderMock, instrumentEURUSD, bidEURUSD, askEURUSD);
-
-        when(barQuoteProviderMock.askBar(instrumentEURUSD, testAskBarPeriod)).thenReturn(askBar);
-        when(barQuoteProviderMock.bidBar(instrumentEURUSD, testBidBarPeriod)).thenReturn(bidBar);
     }
 
     @Test
@@ -71,16 +65,6 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
     @Test
     public void testBidReturnsBidQuote() {
         assertThat(instrumentUtil.bid(), equalTo(bidEURUSD));
-    }
-
-    @Test
-    public void testAskBarReturnsAskBarQuote() {
-        assertThat(instrumentUtil.askBar(testAskBarPeriod), equalTo(askBar));
-    }
-
-    @Test
-    public void testBidBarReturnsBidBarQuote() {
-        assertThat(instrumentUtil.bidBar(testBidBarPeriod), equalTo(bidBar));
     }
 
     @Test

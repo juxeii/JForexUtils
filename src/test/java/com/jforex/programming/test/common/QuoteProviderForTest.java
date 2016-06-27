@@ -1,5 +1,7 @@
 package com.jforex.programming.test.common;
 
+import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
+
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
@@ -41,10 +43,12 @@ public class QuoteProviderForTest extends CurrencyUtilForTest {
                                                final Period period,
                                                final IBar askBar,
                                                final IBar bidBar) {
-        when(barQuoteProviderMock.askBar(instrument, period)).thenReturn(askBar);
-        when(barQuoteProviderMock.bidBar(instrument, period)).thenReturn(bidBar);
-        when(barQuoteProviderMock.forOfferSide(instrument, period, OfferSide.ASK)).thenReturn(askBar);
-        when(barQuoteProviderMock.forOfferSide(instrument, period, OfferSide.BID)).thenReturn(bidBar);
+        when(barQuoteProviderMock.quote(argLambda(td -> td.instrument() == instrument
+                && td.period() == period
+                && td.offerSide() == OfferSide.ASK))).thenReturn(askBar);
+        when(barQuoteProviderMock.quote(argLambda(td -> td.instrument() == instrument
+                && td.period() == period
+                && td.offerSide() == OfferSide.BID))).thenReturn(bidBar);
     }
 
     public static IBar barPriceExpectations(final double open,

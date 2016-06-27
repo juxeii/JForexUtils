@@ -1,10 +1,10 @@
 package com.jforex.programming.quote;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.dukascopy.api.IBar;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
-import com.jforex.programming.builder.BarQuoteParams;
+import com.jforex.programming.builder.BarQuoteFilter;
 import com.jforex.programming.misc.JForexUtil;
 
 import rx.Observable;
@@ -24,54 +24,31 @@ public class BarQuoteHandler implements BarQuoteProvider {
     }
 
     @Override
-    public IBar askBar(final Instrument instrument,
-                       final Period period) {
-        return bar(instrument, period, OfferSide.ASK);
+    public IBar quote(final BarQuoteFilter barQuoteFilter) {
+        return barQuoteRepository.get(barQuoteFilter.instrument(),
+                                      barQuoteFilter.period(),
+                                      barQuoteFilter.offerSide());
     }
 
     @Override
-    public IBar bidBar(final Instrument instrument,
-                       final Period period) {
-        return bar(instrument, period, OfferSide.BID);
+    public Observable<BarQuote> observableForFilters(final List<BarQuoteFilter> filters) {
+        final List<Observable<BarQuote>> filterObservables = filters
+                .stream()
+                .map(filter -> {
+                    if (filter.period().name() == null)
+                        jforexUtil.subscribeToBarsFeed(filter);
+                    return observableForFilter(filter);
+                })
+                .collect(Collectors.toList());
+
+        return Observable.merge(filterObservables);
     }
 
-    @Override
-    public IBar forOfferSide(final Instrument instrument,
-                             final Period period,
-                             final OfferSide offerSide) {
-        return bar(instrument, period, offerSide);
-    }
-
-    private IBar bar(final Instrument instrument,
-                     final Period period,
-                     final OfferSide offerSide) {
-        return barQuoteRepository.get(instrument, period, offerSide);
-    }
-
-    @Override
-    public Observable<BarQuote> observableForSubscription(final BarQuoteParams barQuoteParams) {
-        if (barQuoteParams.period().name() == null)
-            subscribeInstruments(barQuoteParams);
-        return quoteFilterObservable(barQuoteParams);
-    }
-
-    private void subscribeInstruments(final BarQuoteParams subscription) {
-        subscription.instruments()
-                .forEach(instrument -> subscribeAtJForexUtil(instrument, subscription));
-    }
-
-    private void subscribeAtJForexUtil(final Instrument instrument,
-                                       final BarQuoteParams subscription) {
-        jforexUtil.subscribeToBarsFeed(instrument,
-                                       subscription.period(),
-                                       subscription.offerSide());
-    }
-
-    private Observable<BarQuote> quoteFilterObservable(final BarQuoteParams subscription) {
+    private Observable<BarQuote> observableForFilter(final BarQuoteFilter barQuoteFilter) {
         return barQuoteObservable
-                .filter(barQuote -> subscription.instruments().contains(barQuote.instrument()))
-                .filter(barQuote -> subscription.period().compareTo(barQuote.period()) == 0)
-                .filter(barQuote -> barQuote.offerSide() == subscription.offerSide());
+                .filter(barQuote -> barQuote.instrument() == barQuoteFilter.instrument())
+                .filter(barQuote -> barQuoteFilter.period().compareTo(barQuote.period()) == 0)
+                .filter(barQuote -> barQuote.offerSide() == barQuoteFilter.offerSide());
     }
 
     @Override

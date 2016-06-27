@@ -3,6 +3,18 @@ package com.jforex.programming.misc;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
 
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IDataService;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.Period;
+import com.jforex.programming.builder.BarQuoteFilter;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderChangeUtil;
@@ -27,18 +39,6 @@ import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
-
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IDataService;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
 
 import rx.Subscription;
 
@@ -229,12 +229,10 @@ public class JForexUtil {
         }
     }
 
-    public void subscribeToBarsFeed(final Instrument instrument,
-                                    final Period period,
-                                    final OfferSide offerside) {
-        context.subscribeToBarsFeed(instrument,
-                                    period,
-                                    offerside,
+    public void subscribeToBarsFeed(final BarQuoteFilter barQuoteFilter) {
+        context.subscribeToBarsFeed(barQuoteFilter.instrument(),
+                                    barQuoteFilter.period(),
+                                    barQuoteFilter.offerSide(),
                                     this::onOfferSidedBar);
     }
 

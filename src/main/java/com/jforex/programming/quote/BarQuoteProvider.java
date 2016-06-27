@@ -1,27 +1,17 @@
 package com.jforex.programming.quote;
 
-import com.jforex.programming.builder.BarQuoteParams;
+import java.util.List;
 
 import com.dukascopy.api.IBar;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
+import com.jforex.programming.builder.BarQuoteFilter;
 
 import rx.Observable;
 
 public interface BarQuoteProvider {
 
-    public IBar askBar(final Instrument instrument,
-                       final Period period);
+    public IBar quote(BarQuoteFilter barQuoteFilter);
 
-    public IBar bidBar(final Instrument instrument,
-                       final Period period);
-
-    public IBar forOfferSide(final Instrument instrument,
-                             final Period period,
-                             final OfferSide offerSide);
-
-    public Observable<BarQuote> observableForSubscription(final BarQuoteParams subscription);
+    public Observable<BarQuote> observableForFilters(final List<BarQuoteFilter> filters);
 
     public Observable<BarQuote> observable();
 }

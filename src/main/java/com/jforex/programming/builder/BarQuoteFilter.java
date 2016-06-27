@@ -1,25 +1,23 @@
 package com.jforex.programming.builder;
 
-import java.util.Set;
-
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 
-public class BarQuoteParams {
+public class BarQuoteFilter {
 
-    private final Set<Instrument> instruments;
+    private final Instrument instrument;
     private final Period period;
     private final OfferSide offerSide;
 
-    private BarQuoteParams(final Builder builder) {
-        instruments = builder.instruments;
+    private BarQuoteFilter(final Builder builder) {
+        instrument = builder.instrument;
         period = builder.period;
         offerSide = builder.offerSide;
     }
 
-    public final Set<Instrument> instruments() {
-        return instruments;
+    public final Instrument instrument() {
+        return instrument;
     }
 
     public Period period() {
@@ -35,23 +33,23 @@ public class BarQuoteParams {
     }
 
     public interface AndOfferSide {
-        public BarQuoteParams offerSide(OfferSide offerSide);
+        public BarQuoteFilter offerSide(OfferSide offerSide);
     }
 
-    public static AndPeriod forInstruments(final Set<Instrument> instruments) {
-        return new Builder(instruments);
+    public static AndPeriod forInstrument(final Instrument instrument) {
+        return new Builder(instrument);
     }
 
     private static class Builder implements
             AndPeriod,
             AndOfferSide {
 
-        private final Set<Instrument> instruments;
+        private final Instrument instrument;
         private Period period;
         private OfferSide offerSide;
 
-        private Builder(final Set<Instrument> instruments) {
-            this.instruments = instruments;
+        private Builder(final Instrument instrument) {
+            this.instrument = instrument;
         }
 
         @Override
@@ -61,9 +59,9 @@ public class BarQuoteParams {
         }
 
         @Override
-        public BarQuoteParams offerSide(final OfferSide offerSide) {
+        public BarQuoteFilter offerSide(final OfferSide offerSide) {
             this.offerSide = offerSide;
-            return new BarQuoteParams(this);
+            return new BarQuoteFilter(this);
         }
     }
 }

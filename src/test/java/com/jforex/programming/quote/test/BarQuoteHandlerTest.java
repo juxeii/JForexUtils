@@ -1,7 +1,11 @@
 package com.jforex.programming.quote.test;
 
+import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -10,8 +14,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.dukascopy.api.Unit;
-import com.google.common.collect.Sets;
-import com.jforex.programming.builder.BarQuoteParams;
+import com.jforex.programming.builder.BarQuoteFilter;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.BarQuoteRepository;
@@ -34,8 +37,24 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
             new BarQuote(instrumentAUDUSD, Period.FIVE_MINS, OfferSide.ASK, askBarAUDUSD);
     private final Observable<BarQuote> quoteObservable =
             Observable.just(askQuoteEURUSD, askQuoteAUDUSD, askQuote5MinAUDUSD);
-    private final TestSubscriber<BarQuote> quoteEURUSDAndAUDUSDSubscriber = new TestSubscriber<>();
-    private final TestSubscriber<BarQuote> quoteGBPAUDSubscriber = new TestSubscriber<>();
+    private final TestSubscriber<BarQuote> quoteSubscriber = new TestSubscriber<>();
+    private final BarQuoteFilter filterEURUSD = BarQuoteFilter
+            .forInstrument(instrumentEURUSD)
+            .period(testPeriod)
+            .offerSide(OfferSide.ASK);
+    private final BarQuoteFilter filterAUDUSD = BarQuoteFilter
+            .forInstrument(instrumentAUDUSD)
+            .period(testPeriod)
+            .offerSide(OfferSide.ASK);
+    private final BarQuoteFilter filterGBPAUD = BarQuoteFilter
+            .forInstrument(instrumentGBPAUD)
+            .period(testPeriod)
+            .offerSide(OfferSide.ASK);
+    private final BarQuoteFilter filterEURUSDCustomPeriod = BarQuoteFilter
+            .forInstrument(instrumentEURUSD)
+            .period(custom3MinutePeriod)
+            .offerSide(OfferSide.ASK);
+    private final List<BarQuoteFilter> quoteFilters = new ArrayList<>();
 
     @Before
     public void setUp() {
@@ -46,23 +65,12 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
                                               quoteObservable,
                                               barQuoteRepositoryMock);
 
-        barQuoteHandler.observableForSubscription(BarQuoteParams
-                .forInstruments(Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD))
-                .period(testPeriod)
-                .offerSide(OfferSide.ASK))
-                .subscribe(quoteEURUSDAndAUDUSDSubscriber);
+        quoteFilters.add(filterEURUSD);
+        quoteFilters.add(filterAUDUSD);
+        quoteFilters.add(filterGBPAUD);
+        quoteFilters.add(filterEURUSDCustomPeriod);
 
-        barQuoteHandler.observableForSubscription(BarQuoteParams
-                .forInstruments(Sets.newHashSet(instrumentGBPAUD))
-                .period(testPeriod)
-                .offerSide(OfferSide.ASK))
-                .subscribe(quoteGBPAUDSubscriber);
-
-        barQuoteHandler.observableForSubscription(BarQuoteParams
-                .forInstruments(Sets.newHashSet(instrumentEURUSD))
-                .period(custom3MinutePeriod)
-                .offerSide(OfferSide.ASK))
-                .subscribe();
+        barQuoteHandler.observableForFilters(quoteFilters).subscribe(quoteSubscriber);
     }
 
     private void setUpMocks() {
@@ -77,53 +85,26 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     }
 
     @Test
-    public void returnedAskBarIsCorrect() {
-        assertThat(barQuoteHandler.askBar(instrumentEURUSD, testPeriod),
+    public void returnedBarIsCorrect() {
+        assertThat(barQuoteHandler.quote(filterEURUSD),
                    equalTo(askBarEURUSD));
 
-        assertThat(barQuoteHandler.askBar(instrumentAUDUSD, testPeriod),
+        assertThat(barQuoteHandler.quote(filterAUDUSD),
                    equalTo(askBarAUDUSD));
-    }
-
-    @Test
-    public void returnedBidBarIsCorrect() {
-        assertThat(barQuoteHandler.bidBar(instrumentEURUSD, testPeriod),
-                   equalTo(bidBarEURUSD));
-
-        assertThat(barQuoteHandler.bidBar(instrumentAUDUSD, testPeriod),
-                   equalTo(bidBarAUDUSD));
-    }
-
-    @Test
-    public void returnedAskBarForOfferSideIsCorrect() {
-        assertThat(barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.ASK),
-                   equalTo(askBarEURUSD));
-
-        assertThat(barQuoteHandler.forOfferSide(instrumentAUDUSD, testPeriod, OfferSide.ASK),
-                   equalTo(askBarAUDUSD));
-    }
-
-    @Test
-    public void returnedBidBarForOfferSideIsCorrect() {
-        assertThat(barQuoteHandler.forOfferSide(instrumentEURUSD, testPeriod, OfferSide.BID),
-                   equalTo(bidBarEURUSD));
-
-        assertThat(barQuoteHandler.forOfferSide(instrumentAUDUSD, testPeriod, OfferSide.BID),
-                   equalTo(bidBarAUDUSD));
     }
 
     @Test
     public void barsAreEmitted() {
-        quoteEURUSDAndAUDUSDSubscriber.assertNoErrors();
-        quoteEURUSDAndAUDUSDSubscriber.assertValueCount(2);
+        quoteSubscriber.assertNoErrors();
+        quoteSubscriber.assertValueCount(2);
 
-        final BarQuote barQuoteEURUSD = quoteEURUSDAndAUDUSDSubscriber.getOnNextEvents().get(0);
+        final BarQuote barQuoteEURUSD = quoteSubscriber.getOnNextEvents().get(0);
         assertThat(barQuoteEURUSD.instrument(), equalTo(instrumentEURUSD));
         assertThat(barQuoteEURUSD.period(), equalTo(testPeriod));
         assertThat(barQuoteEURUSD.offerSide(), equalTo(OfferSide.ASK));
         assertThat(barQuoteEURUSD.bar(), equalTo(askBarEURUSD));
 
-        final BarQuote barQuoteAUDUSD = quoteEURUSDAndAUDUSDSubscriber.getOnNextEvents().get(1);
+        final BarQuote barQuoteAUDUSD = quoteSubscriber.getOnNextEvents().get(1);
         assertThat(barQuoteAUDUSD.instrument(), equalTo(instrumentAUDUSD));
         assertThat(barQuoteAUDUSD.period(), equalTo(testPeriod));
         assertThat(barQuoteEURUSD.offerSide(), equalTo(OfferSide.ASK));
@@ -131,15 +112,9 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     }
 
     @Test
-    public void barsAreNotEmittedForGBPAUDSubscriber() {
-        quoteGBPAUDSubscriber.assertNoErrors();
-        quoteGBPAUDSubscriber.assertValueCount(0);
-    }
-
-    @Test
     public void onCustomPeriodSubscriptionJForexUtilIsCalled() {
-        verify(jforexUtilMock).subscribeToBarsFeed(eq(instrumentEURUSD),
-                                                   eq(custom3MinutePeriod),
-                                                   eq(OfferSide.ASK));
+        verify(jforexUtilMock).subscribeToBarsFeed(argLambda(td -> td.instrument() == instrumentEURUSD
+                && td.period() == custom3MinutePeriod
+                && td.offerSide() == OfferSide.ASK));
     }
 }
