@@ -9,15 +9,15 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.quote.QuoteProviderException;
-import com.jforex.programming.quote.TickQuote;
-
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.jforex.programming.builder.BarQuoteFilter;
+import com.jforex.programming.quote.QuoteProviderException;
+import com.jforex.programming.quote.TickQuote;
 
 import rx.Observable;
 
@@ -56,9 +56,11 @@ public class HistoryUtil {
                 : Observable.just(tick);
     }
 
-    public IBar latestBar(final Instrument instrument,
-                          final Period period,
-                          final OfferSide offerSide) {
+    public IBar latestBar(final BarQuoteFilter barQuoteFilter) {
+        final Instrument instrument = barQuoteFilter.instrument();
+        final Period period = barQuoteFilter.period();
+        final OfferSide offerSide = barQuoteFilter.offerSide();
+
         final Observable<IBar> barObservable = Observable
                 .fromCallable(() -> history.getBar(instrument, period, offerSide, 1))
                 .flatMap(bar -> barObservableForHistoryBar(bar))

@@ -25,9 +25,7 @@ public class BarQuoteHandler implements BarQuoteProvider {
 
     @Override
     public IBar quote(final BarQuoteFilter barQuoteFilter) {
-        return barQuoteRepository.get(barQuoteFilter.instrument(),
-                                      barQuoteFilter.period(),
-                                      barQuoteFilter.offerSide());
+        return barQuoteRepository.get(barQuoteFilter);
     }
 
     @Override

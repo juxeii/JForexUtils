@@ -1,5 +1,6 @@
 package com.jforex.programming.quote.test;
 
+import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -10,6 +11,7 @@ import org.junit.runner.RunWith;
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.jforex.programming.builder.BarQuoteFilter;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
@@ -36,28 +38,40 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
 
     public class BeforeBarsReceived {
 
-        @Before
-        public void setUp() {
-            when(historyUtilMock.latestBar(instrumentEURUSD, testPeriod, OfferSide.ASK))
-                    .thenReturn(askBarEURUSD);
-            when(historyUtilMock.latestBar(instrumentAUDUSD, testPeriod, OfferSide.BID))
-                    .thenReturn(bidBarAUDUSD);
-        }
-
         @Test
         public void askBarForEURUSDComesFromHistory() {
-            assertThat(barQuoteRepository.get(instrumentEURUSD, testPeriod, OfferSide.ASK),
+            when(historyUtilMock.latestBar(argLambda(td -> td.instrument() == instrumentEURUSD
+                    && td.period() == testPeriod
+                    && td.offerSide() == OfferSide.ASK)))
+                            .thenReturn(askBarEURUSD);
+
+            assertThat(barQuoteRepository.get(BarQuoteFilter
+                    .forInstrument(instrumentEURUSD)
+                    .period(testPeriod)
+                    .offerSide(OfferSide.ASK)),
                        equalTo(askBarEURUSD));
 
-            verify(historyUtilMock).latestBar(instrumentEURUSD, testPeriod, OfferSide.ASK);
+            verify(historyUtilMock).latestBar(argLambda(td -> td.instrument() == instrumentEURUSD
+                    && td.period() == testPeriod
+                    && td.offerSide() == OfferSide.ASK));
         }
 
         @Test
         public void bidBarForAUDUSDComesFromHistory() {
-            assertThat(barQuoteRepository.get(instrumentAUDUSD, testPeriod, OfferSide.BID),
+            when(historyUtilMock.latestBar(argLambda(td -> td.instrument() == instrumentAUDUSD
+                    && td.period() == testPeriod
+                    && td.offerSide() == OfferSide.BID)))
+                            .thenReturn(bidBarAUDUSD);
+
+            assertThat(barQuoteRepository.get(BarQuoteFilter
+                    .forInstrument(instrumentAUDUSD)
+                    .period(testPeriod)
+                    .offerSide(OfferSide.BID)),
                        equalTo(bidBarAUDUSD));
 
-            verify(historyUtilMock).latestBar(instrumentAUDUSD, testPeriod, OfferSide.BID);
+            verify(historyUtilMock).latestBar(argLambda(td -> td.instrument() == instrumentAUDUSD
+                    && td.period() == testPeriod
+                    && td.offerSide() == OfferSide.BID));
         }
 
         public class AfterReceivedBars {
@@ -84,7 +98,10 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
             public void barForEURUSDComesFromObservable() {
                 verifyNoMoreInteractions(historyMock);
 
-                assertThat(barQuoteRepository.get(instrumentEURUSD, testPeriod, OfferSide.ASK),
+                assertThat(barQuoteRepository.get(BarQuoteFilter
+                        .forInstrument(instrumentEURUSD)
+                        .period(testPeriod)
+                        .offerSide(OfferSide.ASK)),
                            equalTo(newEURUSDBar));
             }
 
@@ -92,7 +109,10 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
             public void barForAUDUSDComesFromObservable() {
                 verifyNoMoreInteractions(historyMock);
 
-                assertThat(barQuoteRepository.get(instrumentAUDUSD, testPeriod, OfferSide.BID),
+                assertThat(barQuoteRepository.get(BarQuoteFilter
+                        .forInstrument(instrumentAUDUSD)
+                        .period(testPeriod)
+                        .offerSide(OfferSide.BID)),
                            equalTo(newAUDUSDBar));
             }
         }

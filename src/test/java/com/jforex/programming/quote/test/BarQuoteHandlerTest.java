@@ -59,7 +59,6 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     @Before
     public void setUp() {
         initCommonTestFramework();
-        setUpMocks();
 
         barQuoteHandler = new BarQuoteHandler(jforexUtilMock,
                                               quoteObservable,
@@ -73,21 +72,23 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         barQuoteHandler.observableForFilters(quoteFilters).subscribe(quoteSubscriber);
     }
 
-    private void setUpMocks() {
-        when(barQuoteRepositoryMock.get(eq(instrumentEURUSD), eq(testPeriod), eq(OfferSide.ASK)))
-                .thenReturn(askBarEURUSD);
-        when(barQuoteRepositoryMock.get(eq(instrumentEURUSD), eq(testPeriod), eq(OfferSide.BID)))
-                .thenReturn(bidBarEURUSD);
-        when(barQuoteRepositoryMock.get(eq(instrumentAUDUSD), eq(testPeriod), eq(OfferSide.ASK)))
-                .thenReturn(askBarAUDUSD);
-        when(barQuoteRepositoryMock.get(eq(instrumentAUDUSD), eq(testPeriod), eq(OfferSide.BID)))
-                .thenReturn(bidBarAUDUSD);
+    @Test
+    public void returnedEURUSDBarIsCorrect() {
+        when(barQuoteRepositoryMock.get(argLambda(td -> td.instrument() == instrumentEURUSD
+                && td.period() == testPeriod
+                && td.offerSide() == OfferSide.ASK)))
+                        .thenReturn(askBarEURUSD);
+
+        assertThat(barQuoteHandler.quote(filterEURUSD),
+                   equalTo(askBarEURUSD));
     }
 
     @Test
-    public void returnedBarIsCorrect() {
-        assertThat(barQuoteHandler.quote(filterEURUSD),
-                   equalTo(askBarEURUSD));
+    public void returnedAUDUSDBarIsCorrect() {
+        when(barQuoteRepositoryMock.get(argLambda(td -> td.instrument() == instrumentAUDUSD
+                && td.period() == testPeriod
+                && td.offerSide() == OfferSide.ASK)))
+                        .thenReturn(askBarAUDUSD);
 
         assertThat(barQuoteHandler.quote(filterAUDUSD),
                    equalTo(askBarAUDUSD));

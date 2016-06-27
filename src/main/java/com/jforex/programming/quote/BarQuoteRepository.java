@@ -6,9 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.collections4.keyvalue.MultiKey;
 
 import com.dukascopy.api.IBar;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
+import com.jforex.programming.builder.BarQuoteFilter;
 import com.jforex.programming.misc.HistoryUtil;
 
 import rx.Observable;
@@ -32,26 +30,25 @@ public class BarQuoteRepository {
         barQuotes.put(multiKey, barQuote);
     }
 
-    public IBar get(final Instrument instrument,
-                    final Period period,
-                    final OfferSide offerSide) {
-        return barQuotes.containsKey(new MultiKey<Object>(instrument, period, offerSide))
-                ? barQuoteByOfferSide(instrument, period, offerSide)
-                : barQuoteFromHistory(instrument, period, offerSide);
+    public IBar get(final BarQuoteFilter barQuoteFilter) {
+        final MultiKey<Object> quoteKey = quoteKeyFromFilter(barQuoteFilter);
+        return barQuotes.containsKey(quoteKey)
+                ? barQuotes.get(quoteKey).bar()
+                : barFromHistory(barQuoteFilter);
     }
 
-    private IBar barQuoteByOfferSide(final Instrument instrument,
-                                     final Period period,
-                                     final OfferSide offerSide) {
-        final BarQuote barQuote = barQuotes.get(new MultiKey<Object>(instrument, period, offerSide));
-        return barQuote.bar();
+    private MultiKey<Object> quoteKeyFromFilter(final BarQuoteFilter barQuoteFilter) {
+        return new MultiKey<Object>(barQuoteFilter.instrument(),
+                                    barQuoteFilter.period(),
+                                    barQuoteFilter.offerSide());
     }
 
-    private IBar barQuoteFromHistory(final Instrument instrument,
-                                     final Period period,
-                                     final OfferSide offerSide) {
-        final IBar historyBar = historyUtil.latestBar(instrument, period, offerSide);
-        onBarQuote(new BarQuote(instrument, period, offerSide, historyBar));
+    private IBar barFromHistory(final BarQuoteFilter barQuoteFilter) {
+        final IBar historyBar = historyUtil.latestBar(barQuoteFilter);
+        onBarQuote(new BarQuote(barQuoteFilter.instrument(),
+                                barQuoteFilter.period(),
+                                barQuoteFilter.offerSide(),
+                                historyBar));
         return historyBar;
     }
 }
