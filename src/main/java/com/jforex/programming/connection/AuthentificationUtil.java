@@ -73,45 +73,37 @@ public class AuthentificationUtil {
     }
 
     public Completable login(final LoginCredentials loginCredentials) {
-        final Optional<Exception> maybeException = connectClient(loginCredentials);
-        return completableFromConnectResult(maybeException);
-    }
-
-    private Completable completableFromConnectResult(final Optional<Exception> maybeException) {
-        return maybeException.isPresent()
-                ? Completable.error(maybeException.get())
-                : Completable
-                        .create(this::loginSubscription)
-                        .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS);
+        try {
+            connect(loginCredentials);
+        } catch (final Exception e) {
+            return Completable.error(e);
+        }
+        return Completable
+                .create(this::loginSubscription)
+                .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS);
     }
 
     private final Subscription loginSubscription(final CompletableSubscriber subscriber) {
-        return connectionStateObs.take(1)
-                .subscribe(connectionState -> processConnectionStateForLogin(connectionState, subscriber));
+        return connectionStateObs
+                .take(1)
+                .subscribe(connectionState -> {
+                    if (connectionState == ConnectionState.CONNECTED)
+                        subscriber.onCompleted();
+                    else
+                        subscriber.onError(new ConnectException());
+                });
     }
 
-    private final void processConnectionStateForLogin(final ConnectionState connectionState,
-                                                      final CompletableSubscriber subscriber) {
-        if (connectionState == ConnectionState.CONNECTED)
-            subscriber.onCompleted();
-        else
-            subscriber.onError(new ConnectException());
-    }
-
-    private final Optional<Exception> connectClient(final LoginCredentials loginCredentials) {
+    private void connect(final LoginCredentials loginCredentials) throws Exception {
         final String jnlpAddress = loginCredentials.jnlpAddress();
         final String username = loginCredentials.username();
         final String password = loginCredentials.password();
+        final Optional<String> maybePin = loginCredentials.maybePin();
 
-        try {
-            if (loginCredentials.maybePin().isPresent())
-                client.connect(jnlpAddress, username, password, loginCredentials.maybePin().get());
-            else
-                client.connect(jnlpAddress, username, password);
-        } catch (final Exception e) {
-            return Optional.of(e);
-        }
-        return Optional.empty();
+        if (maybePin.isPresent())
+            client.connect(jnlpAddress, username, password, maybePin.get());
+        else
+            client.connect(jnlpAddress, username, password);
     }
 
     public final void logout() {
