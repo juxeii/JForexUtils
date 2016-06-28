@@ -9,7 +9,7 @@ import java.util.Collection;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
-import com.jforex.programming.builder.OrderParams;
+import com.jforex.programming.order.OrderParams;
 
 public class IEngineForTest {
 

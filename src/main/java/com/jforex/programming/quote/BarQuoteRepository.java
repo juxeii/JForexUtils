@@ -6,7 +6,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.collections4.keyvalue.MultiKey;
 
 import com.dukascopy.api.IBar;
-import com.jforex.programming.builder.BarQuoteFilter;
 import com.jforex.programming.misc.HistoryUtil;
 
 import rx.Observable;

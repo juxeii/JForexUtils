@@ -3,7 +3,7 @@ package com.jforex.programming.test.common;
 import java.util.Set;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.CalculationUtil;
+import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 

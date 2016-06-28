@@ -1,4 +1,4 @@
-package com.jforex.programming.builder;
+package com.jforex.programming.math;
 
 import java.util.function.Function;
 

@@ -1,8 +1,7 @@
 package com.jforex.programming.mm;
 
-import com.jforex.programming.misc.CalculationUtil;
-import com.jforex.programming.misc.MathUtil;
-
+import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.math.MathUtil;
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;

@@ -9,7 +9,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.misc.CalculationUtil;
+import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.common.CurrencyUtilForTest;

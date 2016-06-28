@@ -1,4 +1,4 @@
-package com.jforex.programming.misc.test;
+package com.jforex.programming.math.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -11,8 +11,8 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.misc.CalculationUtil;
-import com.jforex.programming.misc.MathUtil;
+import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.math.MathUtil;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;

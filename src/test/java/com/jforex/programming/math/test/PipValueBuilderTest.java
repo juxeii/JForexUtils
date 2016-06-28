@@ -1,11 +1,11 @@
-package com.jforex.programming.builder.test;
+package com.jforex.programming.math.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import com.jforex.programming.builder.PipValueBuilder;
+import com.jforex.programming.math.PipValueBuilder;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 import com.dukascopy.api.OfferSide;

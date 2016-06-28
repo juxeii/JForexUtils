@@ -8,9 +8,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IEngine.OrderCommand;
-import com.jforex.programming.builder.OrderParams;
-import com.jforex.programming.misc.MathUtil;
+import com.jforex.programming.math.MathUtil;
 import com.jforex.programming.order.OrderDirection;
+import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.position.PositionOrders;

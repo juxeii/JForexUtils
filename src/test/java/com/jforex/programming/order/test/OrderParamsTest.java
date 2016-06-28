@@ -1,4 +1,4 @@
-package com.jforex.programming.builder.test;
+package com.jforex.programming.order.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.builder.OrderParams;
+import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class OrderParamsTest extends InstrumentUtilForTest {

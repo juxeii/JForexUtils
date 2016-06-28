@@ -1,4 +1,4 @@
-package com.jforex.programming.builder;
+package com.jforex.programming.quote;
 
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;

@@ -1,11 +1,11 @@
-package com.jforex.programming.builder.test;
+package com.jforex.programming.math.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import com.jforex.programming.builder.PipDistanceBuilder;
+import com.jforex.programming.math.PipDistanceBuilder;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 public class PipDistanceBuilderTest extends CurrencyUtilForTest {

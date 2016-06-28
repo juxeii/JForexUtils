@@ -2,7 +2,6 @@ package com.jforex.programming.order;
 
 import java.util.Collection;
 
-import com.jforex.programming.builder.OrderParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.RestoreSLTPPolicy;

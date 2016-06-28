@@ -1,4 +1,4 @@
-package com.jforex.programming.misc;
+package com.jforex.programming.math;
 
 import java.math.BigDecimal;
 import java.util.HashSet;

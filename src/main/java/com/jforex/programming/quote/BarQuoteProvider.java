@@ -3,7 +3,6 @@ package com.jforex.programming.quote;
 import java.util.List;
 
 import com.dukascopy.api.IBar;
-import com.jforex.programming.builder.BarQuoteFilter;
 
 import rx.Observable;
 

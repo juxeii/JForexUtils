@@ -9,7 +9,7 @@ import org.aeonbits.owner.ConfigFactory;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.jforex.programming.misc.CalculationUtil;
+import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.settings.PlatformSettings;
 
 import com.dukascopy.api.IEngine.OrderCommand;

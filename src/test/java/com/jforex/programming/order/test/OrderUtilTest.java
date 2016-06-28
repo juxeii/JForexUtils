@@ -10,8 +10,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.google.common.collect.Sets;
-import com.jforex.programming.builder.OrderParams;
 import com.jforex.programming.order.OrderChangeUtil;
+import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderPositionUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;

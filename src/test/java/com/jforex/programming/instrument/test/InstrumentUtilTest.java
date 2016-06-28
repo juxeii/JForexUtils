@@ -17,7 +17,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ITick;
 import com.jforex.programming.instrument.InstrumentUtil;
-import com.jforex.programming.misc.CalculationUtil;
+import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.common.CurrencyUtilForTest;

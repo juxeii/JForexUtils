@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.dukascopy.api.IBar;
-import com.jforex.programming.builder.BarQuoteFilter;
 import com.jforex.programming.misc.JForexUtil;
 
 import rx.Observable;

@@ -1,4 +1,4 @@
-package com.jforex.programming.builder.test;
+package com.jforex.programming.quote.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
-import com.jforex.programming.builder.BarQuoteFilter;
+import com.jforex.programming.quote.BarQuoteFilter;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class BarQuoteFilterTest extends InstrumentUtilForTest {

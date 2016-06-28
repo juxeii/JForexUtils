@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.jforex.programming.builder.OrderParams;
+import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.test.common.OrderParamsForTest;

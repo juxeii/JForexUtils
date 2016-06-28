@@ -1,4 +1,4 @@
-package com.jforex.programming.misc.test;
+package com.jforex.programming.math.test;
 
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Sets;
 import com.jforex.programming.currency.CurrencyBuilder;
-import com.jforex.programming.misc.MathUtil;
+import com.jforex.programming.math.MathUtil;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 import com.dukascopy.api.ICurrency;

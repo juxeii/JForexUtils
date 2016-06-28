@@ -1,22 +1,19 @@
-package com.jforex.programming.misc;
+package com.jforex.programming.math;
 
-import static com.jforex.programming.misc.MathUtil.isValueDivisibleByX;
-import static com.jforex.programming.misc.MathUtil.roundAmount;
-import static com.jforex.programming.misc.MathUtil.roundPips;
-import static com.jforex.programming.misc.MathUtil.roundPrice;
+import static com.jforex.programming.math.MathUtil.isValueDivisibleByX;
+import static com.jforex.programming.math.MathUtil.roundAmount;
+import static com.jforex.programming.math.MathUtil.roundPips;
+import static com.jforex.programming.math.MathUtil.roundPrice;
 
 import org.aeonbits.owner.ConfigFactory;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.builder.ConversionBuilder;
-import com.jforex.programming.builder.ConversionBuilder.FromSource;
-import com.jforex.programming.builder.PipDistanceBuilder;
-import com.jforex.programming.builder.PipDistanceBuilder.To;
-import com.jforex.programming.builder.PipValueBuilder;
-import com.jforex.programming.builder.PipValueBuilder.OfInstrument;
 import com.jforex.programming.instrument.InstrumentBuilder;
+import com.jforex.programming.math.ConversionBuilder.FromSource;
+import com.jforex.programming.math.PipDistanceBuilder.To;
+import com.jforex.programming.math.PipValueBuilder.OfInstrument;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.settings.PlatformSettings;
 

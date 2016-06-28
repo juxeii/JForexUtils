@@ -14,8 +14,8 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.builder.OrderParams;
 import com.jforex.programming.order.OrderCreateUtil;
+import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderPositionUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;

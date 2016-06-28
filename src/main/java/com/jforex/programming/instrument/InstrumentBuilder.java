@@ -10,10 +10,9 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.jforex.programming.misc.MathUtil;
-
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.math.MathUtil;
 
 public final class InstrumentBuilder {
 

@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.builder.OrderParams;
 import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;

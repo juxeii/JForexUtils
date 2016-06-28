@@ -6,9 +6,9 @@ import com.dukascopy.api.IBar;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.builder.BarQuoteFilter;
 import com.jforex.programming.currency.CurrencyUtil;
-import com.jforex.programming.misc.CalculationUtil;
+import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.quote.BarQuoteFilter;
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.TickQuoteHandler;
 

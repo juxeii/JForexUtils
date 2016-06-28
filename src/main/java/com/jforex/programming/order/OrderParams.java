@@ -1,4 +1,4 @@
-package com.jforex.programming.builder;
+package com.jforex.programming.order;
 
 import org.aeonbits.owner.ConfigFactory;
 
