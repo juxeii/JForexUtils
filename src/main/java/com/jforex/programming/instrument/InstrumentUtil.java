@@ -49,15 +49,15 @@ public final class InstrumentUtil {
         return tickQuoteProvider.bid(instrument);
     }
 
+    public final IBar barQuote(final BarQuoteFilter barQuoteFilter) {
+        return barQuoteProvider.quote(barQuoteFilter);
+    }
+
     public final double spread() {
         return CalculationUtil
                 .pipDistanceFrom(ask())
                 .to(bid())
                 .forInstrument(instrument);
-    }
-
-    public final IBar barQuote(final BarQuoteFilter barQuoteFilter) {
-        return barQuoteProvider.quote(barQuoteFilter);
     }
 
     public final Currency baseJavaCurrency() {

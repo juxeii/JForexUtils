@@ -30,7 +30,7 @@ public final class MathUtil {
 
     public final static double rateOfReturn(final double currentValue,
                                             final double previousValue) {
-        return 100 * (currentValue - previousValue) / previousValue;
+        return 100.0 * (currentValue - previousValue) / previousValue;
     }
 
     public final static double roundDouble(final double unroundedValue,
