@@ -3,6 +3,7 @@ package com.jforex.programming.order.test;
 import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 import org.junit.Before;
@@ -13,7 +14,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.google.common.collect.Sets;
-import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
@@ -45,7 +45,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     @Mock
     private OrderEventGateway orderEventGatewayMock;
     @Captor
-    private ArgumentCaptor<JFCallable<IOrder>> orderCallCaptor;
+    private ArgumentCaptor<Callable<IOrder>> orderCallCaptor;
     private final IOrderForTest externalOrder = IOrderForTest.orderAUDUSD();
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
 
@@ -65,7 +65,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         when(orderCallExecutorMock.callObservable(any())).thenReturn(Observable.error(jfException));
     }
 
-    private void captureAndRunOrderCall() throws JFException {
+    private void captureAndRunOrderCall() throws Exception {
         verify(orderCallExecutorMock).callObservable(orderCallCaptor.capture());
         orderCallCaptor.getValue().call();
     }
@@ -95,7 +95,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         private final IOrderForTest mergeOrder = IOrderForTest.buyOrderEURUSD();
         private final Set<IOrder> mergeOrders = Sets.newHashSet();
         private final String mergeOrderLabel = "MergeLabel";
-        private final JFCallable<IOrder> orderCall = () -> engineMock.mergeOrders(mergeOrderLabel, mergeOrders);
+        private final Callable<IOrder> orderCall = () -> engineMock.mergeOrders(mergeOrderLabel, mergeOrders);
         private final TestSubscriber<OrderEvent> callSubscriber = new TestSubscriber<>();
         private final Supplier<Observable<OrderEvent>> runCall =
                 () -> orderUtilHandler.createObservable(orderCall, OrderEventTypeData.mergeData);
@@ -115,7 +115,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void testCorrectCallIsExecuted() throws JFException {
+            public void testCorrectCallIsExecuted() throws Exception {
                 captureAndRunOrderCall();
 
                 verify(engineMock).mergeOrders(mergeOrderLabel, mergeOrders);
@@ -140,7 +140,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void testCorrectCallIsExecuted() throws JFException {
+            public void testCorrectCallIsExecuted() throws Exception {
                 captureAndRunOrderCall();
 
                 verify(engineMock).mergeOrders(mergeOrderLabel, mergeOrders);
@@ -199,7 +199,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         @SuppressWarnings("unchecked")
         @Before
         public void setUp() {
-            when(orderCallExecutorMock.callObservable(any(JFCallable.class)))
+            when(orderCallExecutorMock.callObservable(any(Callable.class)))
                     .thenReturn(Observable.just(orderToChange));
         }
 
@@ -213,7 +213,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void testCorrectCallIsExecuted() throws JFException {
+            public void testCorrectCallIsExecuted() throws Exception {
                 captureAndRunOrderCall();
 
                 verify(orderToChange).close();
@@ -238,7 +238,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void testCorrectCallIsExecuted() throws JFException {
+            public void testCorrectCallIsExecuted() throws Exception {
                 captureAndRunOrderCall();
 
                 verify(orderToChange).close();

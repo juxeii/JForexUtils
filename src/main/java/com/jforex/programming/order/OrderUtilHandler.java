@@ -2,7 +2,8 @@ package com.jforex.programming.order;
 
 import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
 
-import com.jforex.programming.misc.JFCallable;
+import java.util.concurrent.Callable;
+
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -31,14 +32,14 @@ public class OrderUtilHandler {
     public Observable<OrderEvent> changeObservable(final JFRunnable orderRunnable,
                                                    final IOrder orderToChange,
                                                    final OrderEventTypeData orderEventTypeData) {
-        final JFCallable<IOrder> orderCallable = () -> {
+        final Callable<IOrder> orderCallable = () -> {
             orderRunnable.run();
             return orderToChange;
         };
         return createObservable(orderCallable, orderEventTypeData);
     }
 
-    public Observable<OrderEvent> createObservable(final JFCallable<IOrder> orderCallable,
+    public Observable<OrderEvent> createObservable(final Callable<IOrder> orderCallable,
                                                    final OrderEventTypeData orderEventTypeData) {
         return orderCallExecutor
                 .callObservable(orderCallable)

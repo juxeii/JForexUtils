@@ -3,6 +3,7 @@ package com.jforex.programming.order.call.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -11,12 +12,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
-import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
@@ -27,7 +27,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
     private OrderCallExecutor orderCallExecutor;
 
     @Mock
-    private JFCallable<IOrder> orderCallMock;
+    private Callable<IOrder> orderCallMock;
     @Mock
     private Future<IOrder> futureMock;
     private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
@@ -36,14 +36,14 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
             () -> orderCallExecutor.callObservable(orderCallMock).subscribe(orderSubscriber);
 
     @Before
-    public void setUp() throws InterruptedException, ExecutionException, JFException {
+    public void setUp() throws Exception {
         initCommonTestFramework();
         setUpMocks();
 
         orderCallExecutor = new OrderCallExecutor(contextMock);
     }
 
-    private void setUpMocks() throws InterruptedException, ExecutionException, JFException {
+    private void setUpMocks() throws Exception {
         when(orderCallMock.call()).thenReturn(testOrder);
 
         when(futureMock.get()).thenReturn(testOrder);
@@ -80,7 +80,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void onErrorExceptionIsEmitted() throws JFException {
+        public void onErrorExceptionIsEmitted() throws Exception {
             when(orderCallMock.call()).thenThrow(jfException);
 
             executorCall.run();
@@ -96,7 +96,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
             }
 
             @Test
-            public void orderCallIsExecuted() throws JFException {
+            public void orderCallIsExecuted() throws Exception {
                 verify(orderCallMock).call();
             }
 

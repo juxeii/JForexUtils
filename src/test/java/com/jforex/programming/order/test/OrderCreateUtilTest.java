@@ -3,6 +3,7 @@ package com.jforex.programming.order.test;
 import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -11,10 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
-import com.jforex.programming.misc.JFCallable;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -22,6 +20,9 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -37,7 +38,7 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
     @Mock
     private OrderUtilHandler orderUtilHandlerMock;
     @Captor
-    private ArgumentCaptor<JFCallable<IOrder>> orderCallCaptor;
+    private ArgumentCaptor<Callable<IOrder>> orderCallCaptor;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
 
     @Before
@@ -47,7 +48,7 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
         orderCreateUtil = new OrderCreateUtil(engineMock, orderUtilHandlerMock);
     }
 
-    private void captureAndRunOrderCall(final OrderEventTypeData orderEventTypeData) throws JFException {
+    private void captureAndRunOrderCall(final OrderEventTypeData orderEventTypeData) throws Exception {
         verify(orderUtilHandlerMock).createObservable(orderCallCaptor.capture(),
                                                       argLambda(td -> td == orderEventTypeData));
         orderCallCaptor.getValue().call();
@@ -63,7 +64,7 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
         public class SubmitCall {
 
             @Before
-            public void setUp() throws JFException {
+            public void setUp() throws Exception {
                 when(orderUtilHandlerMock
                         .createObservable(orderCallCaptor.capture(), eq(submitTypeData)))
                                 .thenReturn(submitObservable);
@@ -98,7 +99,7 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
         public class MergeCall {
 
             @Before
-            public void setUp() throws JFException {
+            public void setUp() throws Exception {
                 when(orderUtilHandlerMock
                         .createObservable(orderCallCaptor.capture(), eq(mergeTypeData)))
                                 .thenReturn(mergeObservable);

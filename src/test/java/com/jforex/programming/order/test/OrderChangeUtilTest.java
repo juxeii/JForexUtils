@@ -9,7 +9,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -45,7 +44,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         orderChangeUtil = new OrderChangeUtil(orderUtilHandlerMock);
     }
 
-    private void captureAndRunOrderCall(final OrderEventTypeData typeData) throws JFException {
+    private void captureAndRunOrderCall(final OrderEventTypeData typeData) throws Exception {
         verify(orderUtilHandlerMock).changeObservable(orderCallCaptor.capture(),
                                                       eq(orderUnterTest),
                                                       argLambda(td -> td == typeData));
@@ -69,7 +68,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         private final OrderEventTypeData typeData = OrderEventTypeData.closeData;
 
         @Before
-        public void setUp() throws JFException {
+        public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
             orderChangeUtil.close(orderUnterTest).subscribe(changeSubscriber);
@@ -90,7 +89,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         private final String newLabel = "NewLabel";
 
         @Before
-        public void setUp() throws JFException {
+        public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
             orderChangeUtil.setLabel(orderUnterTest, newLabel).subscribe(changeSubscriber);
@@ -111,7 +110,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         private final long newGTT = 1L;
 
         @Before
-        public void setUp() throws JFException {
+        public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
             orderChangeUtil.setGoodTillTime(orderUnterTest, newGTT).subscribe(changeSubscriber);
@@ -132,7 +131,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         private final double newOpenPrice = askEURUSD;
 
         @Before
-        public void setUp() throws JFException {
+        public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
             orderChangeUtil.setOpenPrice(orderUnterTest, newOpenPrice).subscribe(changeSubscriber);
@@ -153,7 +152,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         private final double newRequestedAmount = 0.12;
 
         @Before
-        public void setUp() throws JFException {
+        public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
             orderChangeUtil.setRequestedAmount(orderUnterTest, newRequestedAmount).subscribe(changeSubscriber);
@@ -174,7 +173,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         private final double newSL = 1.09123;
 
         @Before
-        public void setUp() throws JFException {
+        public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
             orderChangeUtil.setStopLossPrice(orderUnterTest, newSL).subscribe(changeSubscriber);
@@ -195,7 +194,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         private final double newTP = 1.09123;
 
         @Before
-        public void setUp() throws JFException {
+        public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
             orderChangeUtil.setTakeProfitPrice(orderUnterTest, newTP).subscribe(changeSubscriber);
