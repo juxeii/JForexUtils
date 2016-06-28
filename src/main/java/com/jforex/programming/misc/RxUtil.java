@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.settings.PlatformSettings;
 
+import rx.Completable;
 import rx.Observable;
 
 public final class RxUtil {
@@ -52,6 +53,13 @@ public final class RxUtil {
 
     public final static Observable<Integer> retryCounter(final int maxRetries) {
         return Observable.range(1, maxRetries + 1);
+    }
+
+    public final static Completable CompletableFromJFRunnable(final JFRunnable jfRunnable) {
+        return Completable.fromCallable(() -> {
+            jfRunnable.run();
+            return null;
+        });
     }
 
     private final static Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair,

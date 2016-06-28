@@ -5,11 +5,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.misc.JFHotSubject;
+import com.jforex.programming.misc.RxUtil;
 import com.jforex.programming.settings.PlatformSettings;
+
+import com.dukascopy.api.system.IClient;
 
 import rx.Completable;
 import rx.Completable.CompletableSubscriber;
@@ -72,15 +74,13 @@ public class AuthentificationUtil {
         return fsm.getState();
     }
 
-    public Completable login(final LoginCredentials loginCredentials) {
-        try {
-            connect(loginCredentials);
-        } catch (final Exception e) {
-            return Completable.error(e);
-        }
-        return Completable
+    public Completable loginCompletable(final LoginCredentials loginCredentials) {
+        final Completable connectCompletable = connectCompletable(loginCredentials);
+        final Completable stateCompletable = Completable
                 .create(this::loginSubscription)
                 .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS);
+
+        return connectCompletable.andThen(stateCompletable);
     }
 
     private final Subscription loginSubscription(final CompletableSubscriber subscriber) {
@@ -94,16 +94,20 @@ public class AuthentificationUtil {
                 });
     }
 
-    private void connect(final LoginCredentials loginCredentials) throws Exception {
+    private Completable connectCompletable(final LoginCredentials loginCredentials) {
         final String jnlpAddress = loginCredentials.jnlpAddress();
         final String username = loginCredentials.username();
         final String password = loginCredentials.password();
         final Optional<String> maybePin = loginCredentials.maybePin();
 
-        if (maybePin.isPresent())
-            client.connect(jnlpAddress, username, password, maybePin.get());
-        else
-            client.connect(jnlpAddress, username, password);
+        return maybePin.isPresent()
+                ? RxUtil.CompletableFromJFRunnable(() -> client.connect(jnlpAddress,
+                                                                        username,
+                                                                        password,
+                                                                        maybePin.get()))
+                : RxUtil.CompletableFromJFRunnable(() -> client.connect(jnlpAddress,
+                                                                        username,
+                                                                        password));
     }
 
     public final void logout() {

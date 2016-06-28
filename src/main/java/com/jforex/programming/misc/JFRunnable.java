@@ -5,5 +5,5 @@ import com.dukascopy.api.JFException;
 @FunctionalInterface
 public interface JFRunnable {
 
-    public void run() throws JFException;
+    public void run() throws JFException, Exception;
 }

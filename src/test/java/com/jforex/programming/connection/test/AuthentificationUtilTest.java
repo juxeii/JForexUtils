@@ -11,14 +11,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.dukascopy.api.system.JFAuthenticationException;
-import com.dukascopy.api.system.JFVersionException;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectException;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.test.common.CommonUtilForTest;
+
+import com.dukascopy.api.system.JFAuthenticationException;
+import com.dukascopy.api.system.JFVersionException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
@@ -58,11 +59,11 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     }
 
     private Completable login() {
-        return authentificationUtil.login(loginCredentials);
+        return authentificationUtil.loginCompletable(loginCredentials);
     }
 
     private Completable loginWithPin() {
-        return authentificationUtil.login(loginCredentialsWithPin);
+        return authentificationUtil.loginCompletable(loginCredentialsWithPin);
     }
 
     private void assertLoginException(final Class<? extends Exception> exceptionType) {
@@ -119,7 +120,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     @Test
     public void testLoginWithPinCallsClientWithPin() {
-        loginWithPin();
+        loginWithPin().subscribe();
 
         clientForTest.verifyConnectCall(loginCredentialsWithPin, 1);
     }
