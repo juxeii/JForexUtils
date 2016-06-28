@@ -1,6 +1,5 @@
 package com.jforex.programming.quote.test;
 
-import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -38,16 +37,12 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     private final Observable<BarQuote> quoteObservable =
             Observable.just(askQuoteEURUSD, askQuoteAUDUSD, askQuote5MinAUDUSD);
     private final TestSubscriber<BarQuote> quoteSubscriber = new TestSubscriber<>();
-    private final BarQuoteFilter filterEURUSD = BarQuoteFilter
+    private final BarQuoteFilter quoteEURUSDFilter = BarQuoteFilter
             .forInstrument(instrumentEURUSD)
             .period(testPeriod)
             .offerSide(OfferSide.ASK);
-    private final BarQuoteFilter filterAUDUSD = BarQuoteFilter
+    private final BarQuoteFilter quoteAUDUSDFilter = BarQuoteFilter
             .forInstrument(instrumentAUDUSD)
-            .period(testPeriod)
-            .offerSide(OfferSide.ASK);
-    private final BarQuoteFilter filterGBPAUD = BarQuoteFilter
-            .forInstrument(instrumentGBPAUD)
             .period(testPeriod)
             .offerSide(OfferSide.ASK);
     private final BarQuoteFilter filterEURUSDCustomPeriod = BarQuoteFilter
@@ -64,9 +59,8 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
                                               quoteObservable,
                                               barQuoteRepositoryMock);
 
-        quoteFilters.add(filterEURUSD);
-        quoteFilters.add(filterAUDUSD);
-        quoteFilters.add(filterGBPAUD);
+        quoteFilters.add(quoteEURUSDFilter);
+        quoteFilters.add(quoteAUDUSDFilter);
         quoteFilters.add(filterEURUSDCustomPeriod);
 
         barQuoteHandler.observableForFilters(quoteFilters).subscribe(quoteSubscriber);
@@ -74,23 +68,19 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     @Test
     public void returnedEURUSDBarIsCorrect() {
-        when(barQuoteRepositoryMock.get(argLambda(td -> td.instrument() == instrumentEURUSD
-                && td.period() == testPeriod
-                && td.offerSide() == OfferSide.ASK)))
-                        .thenReturn(askBarEURUSD);
+        when(barQuoteRepositoryMock.get(quoteEURUSDFilter))
+                .thenReturn(askBarEURUSD);
 
-        assertThat(barQuoteHandler.quote(filterEURUSD),
+        assertThat(barQuoteHandler.quote(quoteEURUSDFilter),
                    equalTo(askBarEURUSD));
     }
 
     @Test
     public void returnedAUDUSDBarIsCorrect() {
-        when(barQuoteRepositoryMock.get(argLambda(td -> td.instrument() == instrumentAUDUSD
-                && td.period() == testPeriod
-                && td.offerSide() == OfferSide.ASK)))
-                        .thenReturn(askBarAUDUSD);
+        when(barQuoteRepositoryMock.get(quoteAUDUSDFilter))
+                .thenReturn(askBarAUDUSD);
 
-        assertThat(barQuoteHandler.quote(filterAUDUSD),
+        assertThat(barQuoteHandler.quote(quoteAUDUSDFilter),
                    equalTo(askBarAUDUSD));
     }
 
@@ -114,8 +104,6 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     @Test
     public void onCustomPeriodSubscriptionJForexUtilIsCalled() {
-        verify(jforexUtilMock).subscribeToBarsFeed(argLambda(td -> td.instrument() == instrumentEURUSD
-                && td.period() == custom3MinutePeriod
-                && td.offerSide() == OfferSide.ASK));
+        verify(jforexUtilMock).subscribeToBarsFeed(filterEURUSDCustomPeriod);
     }
 }
