@@ -44,7 +44,7 @@ publishing {
 }
 
 dependencies {
-   compile 'io.reactivex:rxjava:1.1.5'
+   compile 'io.reactivex:rxjava:1.1.6'
    compile 'com.dukascopy.api:JForex-API:2.12.40'
    compile 'com.google.guava:guava:19.0'
    compile 'com.googlecode.combinatoricslib:combinatoricslib:2.1'
