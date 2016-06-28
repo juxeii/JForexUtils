@@ -3,8 +3,6 @@ package com.jforex.programming.connection.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import org.junit.Before;
@@ -12,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.jforex.programming.connection.AuthentificationUtil;
-import com.jforex.programming.connection.ConnectException;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
@@ -24,7 +21,6 @@ import com.dukascopy.api.system.JFVersionException;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
 import rx.observers.TestSubscriber;
-import rx.schedulers.TestScheduler;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
@@ -35,7 +31,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
     private final TestSubscriber<LoginState> loginStateSubscriber = new TestSubscriber<>();
-    private final TestScheduler scheduler = new TestScheduler();
     private final static String jnlpAddress = "http://jnlp.test.address";
     private final static String userName = "username";
     private final static String password = "password";
@@ -147,11 +142,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         }
 
         @Test
-        public void testNoLoginCompletionYet() {
-            loginCompletionSubscriber.assertNotCompleted();
-        }
-
-        @Test
         public void testNoLogoutPossibleYet() {
             authentificationUtil.logout();
 
@@ -174,36 +164,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
             public void testNoNotificationHappens() {
                 loginStateSubscriber.assertNoErrors();
                 loginStateSubscriber.assertValueCount(0);
-            }
-
-            @Test
-            public void testLoginCompletionError() {
-                loginCompletionSubscriber.assertError(ConnectException.class);
-            }
-        }
-
-        public class AfterLoginTimeOut {
-
-            @Before
-            public void setUp() {
-                scheduler.advanceTimeBy(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS);
-            }
-
-            @Test
-            public void testLoginStateIsStillLoggedOut() {
-                assertThat(authentificationUtil.loginState(), equalTo(LoginState.LOGGED_OUT));
-            }
-
-            @Test
-            public void testNoNotificationHappens() {
-                loginStateSubscriber.assertNoErrors();
-                loginStateSubscriber.assertValueCount(0);
-            }
-
-            @Test
-            public void testLoginCompletionError() {
-                rxTestUtil.advanceTimeBy(20, TimeUnit.SECONDS);
-                loginCompletionSubscriber.assertError(TimeoutException.class);
             }
         }
 

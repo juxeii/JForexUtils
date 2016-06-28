@@ -1,28 +1,21 @@
 package com.jforex.programming.connection;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-
-import org.aeonbits.owner.ConfigFactory;
 
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.misc.JFHotSubject;
 import com.jforex.programming.misc.RxUtil;
-import com.jforex.programming.settings.PlatformSettings;
 
 import com.dukascopy.api.system.IClient;
 
 import rx.Completable;
-import rx.Completable.CompletableSubscriber;
 import rx.Observable;
-import rx.Subscription;
 
 public class AuthentificationUtil {
 
     private final IClient client;
     private final JFHotSubject<LoginState> loginStateSubject = new JFHotSubject<>();
-    private final Observable<ConnectionState> connectionStateObs;
     private final StateMachineConfig<LoginState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
     private final StateMachine<LoginState, FSMTrigger> fsm = new StateMachine<>(LoginState.LOGGED_OUT, fsmConfig);
 
@@ -32,12 +25,9 @@ public class AuthentificationUtil {
         LOGOUT
     }
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-
     public AuthentificationUtil(final IClient client,
                                 final Observable<ConnectionState> connectionStateObs) {
         this.client = client;
-        this.connectionStateObs = connectionStateObs;
 
         initConnectionStateObs(connectionStateObs);
         configureFSM();
@@ -75,26 +65,6 @@ public class AuthentificationUtil {
     }
 
     public Completable loginCompletable(final LoginCredentials loginCredentials) {
-        final Completable connectCompletable = connectCompletable(loginCredentials);
-        final Completable stateCompletable = Completable
-                .create(this::loginSubscription)
-                .timeout(platformSettings.logintimeoutseconds(), TimeUnit.SECONDS);
-
-        return connectCompletable.andThen(stateCompletable);
-    }
-
-    private final Subscription loginSubscription(final CompletableSubscriber subscriber) {
-        return connectionStateObs
-                .take(1)
-                .subscribe(connectionState -> {
-                    if (connectionState == ConnectionState.CONNECTED)
-                        subscriber.onCompleted();
-                    else
-                        subscriber.onError(new ConnectException());
-                });
-    }
-
-    private Completable connectCompletable(final LoginCredentials loginCredentials) {
         final String jnlpAddress = loginCredentials.jnlpAddress();
         final String username = loginCredentials.username();
         final String password = loginCredentials.password();
