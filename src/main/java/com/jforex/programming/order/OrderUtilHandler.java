@@ -4,16 +4,16 @@ import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEv
 
 import java.util.concurrent.Callable;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.call.OrderCallExecutor;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-
-import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -43,9 +43,14 @@ public class OrderUtilHandler {
                                                    final OrderEventTypeData orderEventTypeData) {
         return orderCallExecutor
                 .callObservable(orderCallable)
-                .doOnNext(order -> orderEventGateway
-                        .registerOrderCallRequest(new OrderCallRequest(order, orderEventTypeData.callReason())))
+                .doOnNext(order -> registerOrder(order, orderEventTypeData.callReason()))
                 .flatMap(order -> createObs(order, orderEventTypeData));
+    }
+
+    private void registerOrder(final IOrder order,
+                               final OrderCallReason orderCallReason) {
+        final OrderCallRequest orderCallRequest = new OrderCallRequest(order, orderCallReason);
+        orderEventGateway.registerOrderCallRequest(orderCallRequest);
     }
 
     private final Observable<OrderEvent> createObs(final IOrder order,

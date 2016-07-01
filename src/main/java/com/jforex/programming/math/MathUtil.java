@@ -1,7 +1,6 @@
 package com.jforex.programming.math;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.aeonbits.owner.ConfigFactory;
@@ -9,6 +8,7 @@ import org.paukov.combinatorics.Factory;
 import org.paukov.combinatorics.Generator;
 
 import com.dukascopy.api.Instrument;
+import com.google.common.collect.Sets;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.settings.PlatformSettings;
 
@@ -21,10 +21,10 @@ public final class MathUtil {
 
     public final static <T> Set<Set<T>> kPowerSet(final Set<T> sourceSet,
                                                   final int setSize) {
-        final Set<Set<T>> kPowerSet = new HashSet<>();
+        final Set<Set<T>> kPowerSet = Sets.newHashSet();
         final Generator<T> generator =
                 Factory.createSimpleCombinationGenerator(Factory.createVector(sourceSet), setSize);
-        generator.forEach(kSubSet -> kPowerSet.add(new HashSet<>(kSubSet.getVector())));
+        generator.forEach(kSubSet -> kPowerSet.add(Sets.newHashSet(kSubSet.getVector())));
         return kPowerSet;
     }
 
@@ -33,9 +33,9 @@ public final class MathUtil {
         return 100.0 * (currentValue - previousValue) / previousValue;
     }
 
-    public final static double roundDouble(final double unroundedValue,
+    public final static double roundDouble(final double rawValue,
                                            final int digitPrecision) {
-        return BigDecimal.valueOf(unroundedValue)
+        return BigDecimal.valueOf(rawValue)
                 .setScale(digitPrecision, BigDecimal.ROUND_HALF_UP)
                 .doubleValue();
     }
@@ -44,8 +44,8 @@ public final class MathUtil {
         return roundDouble(rawAmount, platformSettings.amountPrecision());
     }
 
-    public final static double roundPips(final double pips) {
-        return roundDouble(pips, platformSettings.pipPrecision());
+    public final static double roundPips(final double rawPips) {
+        return roundDouble(rawPips, platformSettings.pipPrecision());
     }
 
     public final static double roundPrice(final double rawPrice,
