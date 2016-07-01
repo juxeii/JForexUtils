@@ -7,14 +7,15 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.system.IClient;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
+import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
-
-import com.dukascopy.api.system.IClient;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
+import rx.Completable;
 import rx.Observable;
 
 public final class ClientUtil {
@@ -88,5 +89,9 @@ public final class ClientUtil {
 
     public final AuthentificationUtil authentificationUtil() {
         return authentificationUtil;
+    }
+
+    public Completable loginCompletable(final LoginCredentials loginCredentials) {
+        return authentificationUtil.loginCompletable(loginCredentials);
     }
 }
