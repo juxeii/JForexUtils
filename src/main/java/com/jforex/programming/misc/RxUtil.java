@@ -1,9 +1,6 @@
 package com.jforex.programming.misc;
 
-import static java.util.stream.Collectors.toSet;
-
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -81,11 +78,10 @@ public final class RxUtil {
         return Observable.interval(delay, timeUnit).take(1);
     }
 
-    public static <T> Set<T> optionalStreamToSet(final Stream<Optional<T>> optStream) {
-        return optStream
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toSet());
+    public static <T> Stream<T> streamOpt(final Optional<T> opt) {
+        return opt.isPresent()
+                ? Stream.of(opt.get())
+                : Stream.empty();
     }
 
     private final static Observable<? extends Throwable> filterErrorType(final Throwable error) {

@@ -1,5 +1,7 @@
 package com.jforex.programming.instrument;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
@@ -31,17 +33,21 @@ public final class InstrumentBuilder {
     }
 
     public final static Set<Instrument> combineAllFromCurrencySet(final Set<ICurrency> currencies) {
-        return RxUtil.optionalStreamToSet(MathUtil
+        return MathUtil
                 .kPowerSet(currencies, 2)
                 .stream()
                 .map(ArrayList::new)
-                .map(pair -> fromCurrencies(pair.get(0), pair.get(1))));
+                .map(pair -> fromCurrencies(pair.get(0), pair.get(1)))
+                .flatMap(RxUtil::streamOpt)
+                .collect(toSet());
     }
 
     public final static Set<Instrument> combineAllWithAnchorCurrency(final ICurrency anchorCurrency,
                                                                      final Collection<ICurrency> partnerCurrencies) {
-        return RxUtil.optionalStreamToSet(partnerCurrencies
+        return partnerCurrencies
                 .stream()
-                .map(partnerCurrency -> fromCurrencies(anchorCurrency, partnerCurrency)));
+                .map(partnerCurrency -> fromCurrencies(anchorCurrency, partnerCurrency))
+                .flatMap(RxUtil::streamOpt)
+                .collect(toSet());
     }
 }
