@@ -1,6 +1,11 @@
 package com.jforex.programming.misc;
 
+import static java.util.stream.Collectors.toSet;
+
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.tuple.Pair;
@@ -74,6 +79,13 @@ public final class RxUtil {
     public static Observable<Long> retryWait(final long delay,
                                              final TimeUnit timeUnit) {
         return Observable.interval(delay, timeUnit).take(1);
+    }
+
+    public static <T> Set<T> optionalStreamToSet(final Stream<Optional<T>> optStream) {
+        return optStream
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(toSet());
     }
 
     private final static Observable<? extends Throwable> filterErrorType(final Throwable error) {

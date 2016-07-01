@@ -25,8 +25,8 @@ public class JFSystemListenerTest {
     public void setUp() {
         jfSystemListener = new JFSystemListener();
 
-        jfSystemListener.strategyObs().subscribe(strategyInfoSubscriber);
-        jfSystemListener.connectionObs().subscribe(connectionStateSubscriber);
+        jfSystemListener.strategyRunDataObservable().subscribe(strategyInfoSubscriber);
+        jfSystemListener.connectionStateObservable().subscribe(connectionStateSubscriber);
     }
 
     private void assertStrategyInfoNotification(final StrategyRunState strategyState) {

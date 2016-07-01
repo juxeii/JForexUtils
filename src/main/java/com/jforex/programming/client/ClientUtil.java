@@ -64,11 +64,11 @@ public final class ClientUtil {
     }
 
     public final Observable<ConnectionState> connectionStateObs() {
-        return jfSystemListener.connectionObs();
+        return jfSystemListener.connectionStateObservable();
     }
 
     public final Observable<StrategyRunData> strategyInfoObs() {
-        return jfSystemListener.strategyObs();
+        return jfSystemListener.strategyRunDataObservable();
     }
 
     public final Optional<BufferedImage> pinCaptchaForAWT(final String jnlpAddress) {
@@ -91,7 +91,7 @@ public final class ClientUtil {
         return authentificationUtil;
     }
 
-    public Completable loginCompletable(final LoginCredentials loginCredentials) {
+    public final Completable loginCompletable(final LoginCredentials loginCredentials) {
         return authentificationUtil.loginCompletable(loginCredentials);
     }
 }
