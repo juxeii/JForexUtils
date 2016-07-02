@@ -5,28 +5,27 @@ import java.util.Set;
 
 import com.jforex.programming.misc.HistoryUtil;
 
-import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
 public class TickQuoteRepository {
 
-    private final Map<Instrument, TickQuote> tickQuotes;
+    private final Map<Instrument, TickQuote> quotesByInstrument;
 
     public TickQuoteRepository(final Observable<TickQuote> tickQuoteObservable,
                                final HistoryUtil historyUtil,
                                final Set<Instrument> subscribedInstruments) {
-        tickQuotes = historyUtil.tickQuotes(subscribedInstruments);
+        quotesByInstrument = historyUtil.tickQuotes(subscribedInstruments);
 
         tickQuoteObservable.subscribe(this::onTickQuote);
     }
 
-    private final void onTickQuote(final TickQuote tickQuote) {
-        tickQuotes.put(tickQuote.instrument(), tickQuote);
+    private final void onTickQuote(final TickQuote aNewQuote) {
+        quotesByInstrument.put(aNewQuote.instrument(), aNewQuote);
     }
 
-    public ITick get(final Instrument instrument) {
-        return tickQuotes.get(instrument).tick();
+    public TickQuote get(final Instrument instrument) {
+        return quotesByInstrument.get(instrument);
     }
 }

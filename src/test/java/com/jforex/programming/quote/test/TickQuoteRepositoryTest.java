@@ -11,13 +11,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 import com.jforex.programming.test.fakes.ITickForTest;
+
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -56,15 +57,15 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
         }
 
         @Test
-        public void tickForEURUSDComesFromHistory() {
+        public void quoteForEURUSDComesFromHistory() {
             assertThat(tickQuoteRepository.get(instrumentEURUSD),
-                       equalTo(tickQuoteEURUSD.tick()));
+                       equalTo(tickQuoteEURUSD));
         }
 
         @Test
-        public void tickForAUDUSDComesFromHistory() {
+        public void quoteForAUDUSDComesFromHistory() {
             assertThat(tickQuoteRepository.get(instrumentAUDUSD),
-                       equalTo(tickQuoteAUDUSD.tick()));
+                       equalTo(tickQuoteAUDUSD));
         }
 
         public class AfterReceivedQuotes {
@@ -82,19 +83,19 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
             }
 
             @Test
-            public void tickForEURUSDComesFromObservable() {
+            public void quoteForEURUSDComesFromObservable() {
                 verifyNoMoreInteractions(historyMock);
 
                 assertThat(tickQuoteRepository.get(instrumentEURUSD),
-                           equalTo(newEURUSDTick));
+                           equalTo(newEURUSDQuote));
             }
 
             @Test
-            public void tickForAUDUSDComesFromObservable() {
+            public void quoteForAUDUSDComesFromObservable() {
                 verifyNoMoreInteractions(historyMock);
 
                 assertThat(tickQuoteRepository.get(instrumentAUDUSD),
-                           equalTo(newAUDUSDDTick));
+                           equalTo(newAUDUSDQuote));
             }
         }
     }

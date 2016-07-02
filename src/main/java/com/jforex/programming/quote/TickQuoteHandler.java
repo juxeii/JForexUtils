@@ -21,7 +21,7 @@ public class TickQuoteHandler implements TickQuoteProvider {
 
     @Override
     public ITick tick(final Instrument instrument) {
-        return tickQuoteRepository.get(instrument);
+        return tickQuoteRepository.get(instrument).tick();
     }
 
     @Override
