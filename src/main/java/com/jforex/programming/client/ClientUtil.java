@@ -7,11 +7,12 @@ import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.system.IClient;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
+
+import com.dukascopy.api.system.IClient;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
@@ -57,7 +58,7 @@ public final class ClientUtil {
             logger.debug(connectionState + " message received!");
             if (connectionState == ConnectionState.DISCONNECTED
                     && authentificationUtil.loginState() == LoginState.LOGGED_IN) {
-                logger.debug("Connection lost! Try to reconnect...");
+                logger.warn("Connection lost! Try to reconnect...");
                 client.reconnect();
             }
         });

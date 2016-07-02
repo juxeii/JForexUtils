@@ -30,21 +30,24 @@ public class BarQuoteRepository {
         barQuotes.put(quoteKey, barQuote);
     }
 
-    public IBar get(final BarQuoteFilter barQuoteFilter) {
+    public BarQuote get(final BarQuoteFilter barQuoteFilter) {
         final MultiKey<Object> quoteKey = new MultiKey<Object>(barQuoteFilter.instrument(),
                                                                barQuoteFilter.period(),
                                                                barQuoteFilter.offerSide());
         return barQuotes.containsKey(quoteKey)
-                ? barQuotes.get(quoteKey).bar()
-                : barFromHistory(barQuoteFilter);
+                ? barQuotes.get(quoteKey)
+                : quoteFromHistory(barQuoteFilter);
     }
 
-    private IBar barFromHistory(final BarQuoteFilter barQuoteFilter) {
+    private BarQuote quoteFromHistory(final BarQuoteFilter barQuoteFilter) {
         final IBar historyBar = historyUtil.latestBar(barQuoteFilter);
-        onBarQuote(new BarQuote(barQuoteFilter.instrument(),
-                                barQuoteFilter.period(),
-                                barQuoteFilter.offerSide(),
-                                historyBar));
-        return historyBar;
+        final BarQuote barQuote = new BarQuote(barQuoteFilter.instrument(),
+                                               barQuoteFilter.period(),
+                                               barQuoteFilter.offerSide(),
+                                               historyBar);
+
+        onBarQuote(barQuote);
+
+        return barQuote;
     }
 }

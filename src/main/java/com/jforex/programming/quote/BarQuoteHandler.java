@@ -3,8 +3,9 @@ package com.jforex.programming.quote;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.dukascopy.api.IBar;
 import com.jforex.programming.misc.JForexUtil;
+
+import com.dukascopy.api.IBar;
 
 import rx.Observable;
 
@@ -24,7 +25,7 @@ public class BarQuoteHandler implements BarQuoteProvider {
 
     @Override
     public IBar quote(final BarQuoteFilter barQuoteFilter) {
-        return barQuoteRepository.get(barQuoteFilter);
+        return barQuoteRepository.get(barQuoteFilter).bar();
     }
 
     @Override

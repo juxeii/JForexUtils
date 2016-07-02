@@ -10,14 +10,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
-import com.dukascopy.api.Unit;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteFilter;
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
+
+import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.Period;
+import com.dukascopy.api.Unit;
 
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -69,7 +70,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     @Test
     public void returnedEURUSDBarIsCorrect() {
         when(barQuoteRepositoryMock.get(quoteEURUSDFilter))
-                .thenReturn(askBarEURUSD);
+                .thenReturn(askQuoteEURUSD);
 
         assertThat(barQuoteHandler.quote(quoteEURUSDFilter),
                    equalTo(askBarEURUSD));
@@ -78,7 +79,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     @Test
     public void returnedAUDUSDBarIsCorrect() {
         when(barQuoteRepositoryMock.get(quoteAUDUSDFilter))
-                .thenReturn(askBarAUDUSD);
+                .thenReturn(askQuoteAUDUSD);
 
         assertThat(barQuoteHandler.quote(quoteAUDUSDFilter),
                    equalTo(askBarAUDUSD));

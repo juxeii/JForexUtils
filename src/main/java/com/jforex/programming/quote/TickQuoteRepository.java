@@ -25,7 +25,7 @@ public class TickQuoteRepository {
         quotesByInstrument.put(aNewQuote.instrument(), aNewQuote);
     }
 
-    public TickQuote get(final Instrument instrument) {
-        return quotesByInstrument.get(instrument);
+    public TickQuote get(final Instrument instrumentForQuote) {
+        return quotesByInstrument.get(instrumentForQuote);
     }
 }

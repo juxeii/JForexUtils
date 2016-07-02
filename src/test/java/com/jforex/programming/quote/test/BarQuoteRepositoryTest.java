@@ -7,14 +7,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteFilter;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 import com.jforex.programming.test.fakes.IBarForTest;
+
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.Period;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -34,9 +35,25 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
         barQuoteRepository = new BarQuoteRepository(quoteObservable, historyUtilMock);
     }
 
+    private void assertQuote(final BarQuote receivedQuote,
+                             final BarQuote expectedQuote) {
+        assertThat(receivedQuote.instrument(), equalTo(expectedQuote.instrument()));
+        assertThat(receivedQuote.offerSide(), equalTo(expectedQuote.offerSide()));
+        assertThat(receivedQuote.period(), equalTo(expectedQuote.period()));
+        assertThat(receivedQuote.bar(), equalTo(expectedQuote.bar()));
+    }
+
     public class BeforeBarsReceived {
 
         private final Period testPeriod = Period.ONE_MIN;
+        private final BarQuote askQuoteEURUSD = new BarQuote(instrumentEURUSD,
+                                                             testPeriod,
+                                                             OfferSide.ASK,
+                                                             askBarEURUSD);
+        private final BarQuote askQuoteAUDUSD = new BarQuote(instrumentAUDUSD,
+                                                             testPeriod,
+                                                             OfferSide.BID,
+                                                             bidBarAUDUSD);
         private BarQuoteFilter quoteEURUSDFilter;
         private BarQuoteFilter quoteAUDUSDFilter;
 
@@ -54,24 +71,24 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
         }
 
         @Test
-        public void askBarForEURUSDComesFromHistory() {
+        public void askQuoteForEURUSDComesFromHistory() {
             when(historyUtilMock.latestBar(quoteEURUSDFilter))
                     .thenReturn(askBarEURUSD);
 
-            assertThat(barQuoteRepository.get(quoteEURUSDFilter),
-                       equalTo(askBarEURUSD));
+            final BarQuote receivedQuoteEURUSD = barQuoteRepository.get(quoteEURUSDFilter);
 
+            assertQuote(receivedQuoteEURUSD, askQuoteEURUSD);
             verify(historyUtilMock).latestBar(quoteEURUSDFilter);
         }
 
         @Test
-        public void bidBarForAUDUSDComesFromHistory() {
+        public void bidQuoteForAUDUSDComesFromHistory() {
             when(historyUtilMock.latestBar(quoteAUDUSDFilter))
                     .thenReturn(bidBarAUDUSD);
 
-            assertThat(barQuoteRepository.get(quoteAUDUSDFilter),
-                       equalTo(bidBarAUDUSD));
+            final BarQuote receivedQuoteAUDUSD = barQuoteRepository.get(quoteAUDUSDFilter);
 
+            assertQuote(receivedQuoteAUDUSD, askQuoteAUDUSD);
             verify(historyUtilMock).latestBar(quoteAUDUSDFilter);
         }
 
@@ -96,19 +113,19 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
             }
 
             @Test
-            public void barForEURUSDComesFromObservable() {
-                verifyNoMoreInteractions(historyMock);
+            public void quoteForEURUSDComesFromObservable() {
+                final BarQuote receivedQuoteEURUSD = barQuoteRepository.get(quoteEURUSDFilter);
 
-                assertThat(barQuoteRepository.get(quoteEURUSDFilter),
-                           equalTo(newEURUSDBar));
+                assertQuote(receivedQuoteEURUSD, newEURUSDQuote);
+                verifyNoMoreInteractions(historyMock);
             }
 
             @Test
-            public void barForAUDUSDComesFromObservable() {
-                verifyNoMoreInteractions(historyMock);
+            public void quoteForAUDUSDComesFromObservable() {
+                final BarQuote receivedQuoteAUDUSD = barQuoteRepository.get(quoteAUDUSDFilter);
 
-                assertThat(barQuoteRepository.get(quoteAUDUSDFilter),
-                           equalTo(newAUDUSDBar));
+                assertQuote(receivedQuoteAUDUSD, newAUDUSDQuote);
+                verifyNoMoreInteractions(historyMock);
             }
         }
     }
