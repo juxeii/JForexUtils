@@ -44,7 +44,7 @@ public final class ClientUtil {
     }
 
     private final void initAuthentification() {
-        authentificationUtil = new AuthentificationUtil(client, connectionStateObs());
+        authentificationUtil = new AuthentificationUtil(client, connectionStateObservable());
     }
 
     private void setCacheDirectory(final String cacheDirectory) {
@@ -54,7 +54,7 @@ public final class ClientUtil {
     }
 
     private void keepConnection() {
-        connectionStateObs().subscribe(connectionState -> {
+        connectionStateObservable().subscribe(connectionState -> {
             logger.debug(connectionState + " message received!");
             if (connectionState == ConnectionState.DISCONNECTED
                     && authentificationUtil.loginState() == LoginState.LOGGED_IN) {
@@ -64,7 +64,7 @@ public final class ClientUtil {
         });
     }
 
-    public final Observable<ConnectionState> connectionStateObs() {
+    public final Observable<ConnectionState> connectionStateObservable() {
         return jfSystemListener.connectionStateObservable();
     }
 

@@ -21,11 +21,11 @@ public class TickQuoteRepository {
         tickQuoteObservable.subscribe(this::onTickQuote);
     }
 
-    private final void onTickQuote(final TickQuote aNewQuote) {
-        quotesByInstrument.put(aNewQuote.instrument(), aNewQuote);
+    private final void onTickQuote(final TickQuote tickQuote) {
+        quotesByInstrument.put(tickQuote.instrument(), tickQuote);
     }
 
-    public TickQuote get(final Instrument instrumentForQuote) {
-        return quotesByInstrument.get(instrumentForQuote);
+    public TickQuote get(final Instrument instrument) {
+        return quotesByInstrument.get(instrument);
     }
 }
