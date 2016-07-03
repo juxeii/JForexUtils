@@ -72,7 +72,7 @@ public class HistoryUtil {
 
     private <T> T observableValue(final Observable<T> observable) {
         return observable
-                .retryWhen(errors -> RxUtil.retryWithDelay(errors, 500L, TimeUnit.MILLISECONDS, 10))
+                .retryWhen(errors -> StreamUtil.retryWithDelay(errors, 500L, TimeUnit.MILLISECONDS, 10))
                 .first()
                 .toBlocking()
                 .first();

@@ -9,7 +9,7 @@ import java.util.Collection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.misc.RxUtil;
+import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.event.OrderEvent;
@@ -41,7 +41,7 @@ public class PositionSingleTask {
                         + newSL + " for order " + orderToChangeSL.getLabel() + " and position "
                         + orderToChangeSL.getInstrument()))
                 .flatMap(order -> orderChangeUtil.setStopLossPrice(order, newSL))
-                .retryWhen(RxUtil::positionTaskRetry)
+                .retryWhen(StreamUtil::positionTaskRetry)
                 .doOnError(e -> logger.debug("Failed to change SL from " + currentSL + " to " + newSL +
                         " for order " + orderToChangeSL.getLabel() + " and position "
                         + orderToChangeSL.getInstrument() + ".Excpetion: " + e.getMessage()))
@@ -59,7 +59,7 @@ public class PositionSingleTask {
                         + newTP + " for order " + orderToChangeTP.getLabel() + " and position "
                         + orderToChangeTP.getInstrument()))
                 .flatMap(order -> orderChangeUtil.setTakeProfitPrice(order, newTP))
-                .retryWhen(RxUtil::positionTaskRetry)
+                .retryWhen(StreamUtil::positionTaskRetry)
                 .doOnError(e -> logger.debug("Failed to change TP from " + currentTP + " to " + newTP +
                         " for order " + orderToChangeTP.getLabel() + " and position "
                         + orderToChangeTP.getInstrument() + ".Excpetion: " + e.getMessage()))
@@ -75,7 +75,7 @@ public class PositionSingleTask {
                 .doOnSubscribe(() -> logger.debug("Starting to merge with label " + mergeOrderLabel
                         + " for " + instrument + " position."))
                 .flatMap(order -> orderCreateUtil.mergeOrders(mergeOrderLabel, toMergeOrders))
-                .retryWhen(RxUtil::positionTaskRetry)
+                .retryWhen(StreamUtil::positionTaskRetry)
                 .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel
                         + " for " + instrument + " failed! Exception: " + e.getMessage()))
                 .doOnCompleted(() -> logger.debug("Merging with label " + mergeOrderLabel
@@ -88,7 +88,7 @@ public class PositionSingleTask {
                 .doOnSubscribe(() -> logger.debug("Starting to close order " + orderToClose.getLabel()
                         + " for " + orderToClose.getInstrument() + " position."))
                 .flatMap(orderChangeUtil::close)
-                .retryWhen(RxUtil::positionTaskRetry)
+                .retryWhen(StreamUtil::positionTaskRetry)
                 .doOnError(e -> logger.error("Closing position " + orderToClose.getInstrument()
                         + " failed! Exception: " + e.getMessage()))
                 .doOnNext(order -> logger.debug("Closing position "

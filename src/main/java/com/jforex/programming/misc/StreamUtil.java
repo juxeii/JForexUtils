@@ -15,14 +15,14 @@ import com.jforex.programming.settings.PlatformSettings;
 import rx.Completable;
 import rx.Observable;
 
-public final class RxUtil {
+public final class StreamUtil {
 
     private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private static final long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
     private static final int maxRetriesOnOrderFail = platformSettings.maxRetriesOnOrderFail();
-    private static final Logger logger = LogManager.getLogger(RxUtil.class);
+    private static final Logger logger = LogManager.getLogger(StreamUtil.class);
 
-    private RxUtil() {
+    private StreamUtil() {
     }
 
     public final static Observable<Long> retryWithDelay(final Observable<? extends Throwable> errors,
@@ -36,7 +36,7 @@ public final class RxUtil {
                                                         final TimeUnit timeUnit,
                                                         final int maxRetries) {
         return errors
-                .zipWith(retryCounter(maxRetries), Pair::of)
+                .zipWith(retryCounterObservable(maxRetries), Pair::of)
                 .flatMap(retryPair -> evaluateRetryPair(retryPair,
                                                         delay,
                                                         timeUnit,
@@ -45,15 +45,15 @@ public final class RxUtil {
 
     public final static Observable<Long> positionTaskRetry(final Observable<? extends Throwable> errors) {
         return errors
-                .flatMap(RxUtil::filterErrorType)
-                .zipWith(retryCounter(maxRetriesOnOrderFail), Pair::of)
+                .flatMap(StreamUtil::filterErrorType)
+                .zipWith(retryCounterObservable(maxRetriesOnOrderFail), Pair::of)
                 .flatMap(retryPair -> evaluateRetryPair(retryPair,
                                                         delayOnOrderFailRetry,
                                                         TimeUnit.MILLISECONDS,
                                                         maxRetriesOnOrderFail));
     }
 
-    public final static Observable<Integer> retryCounter(final int maxRetries) {
+    public final static Observable<Integer> retryCounterObservable(final int maxRetries) {
         return Observable.range(1, maxRetries + 1);
     }
 
@@ -75,25 +75,27 @@ public final class RxUtil {
 
     public static Observable<Long> retryWait(final long delay,
                                              final TimeUnit timeUnit) {
-        return Observable.interval(delay, timeUnit).take(1);
+        return Observable
+                .interval(delay, timeUnit)
+                .take(1);
     }
 
-    public static <T> Stream<T> streamOpt(final Optional<T> opt) {
-        return opt.isPresent()
-                ? Stream.of(opt.get())
+    public static <T> Stream<T> streamOptional(final Optional<T> optional) {
+        return optional.isPresent()
+                ? Stream.of(optional.get())
                 : Stream.empty();
     }
 
     private final static Observable<? extends Throwable> filterErrorType(final Throwable error) {
         if (error instanceof OrderCallRejectException) {
-            logRetry((OrderCallRejectException) error);
+            logPositionTaskRetry((OrderCallRejectException) error);
             return Observable.just(error);
         }
         logger.error("Retry logic received unexpected error " + error.getClass().getName() + "!");
         return Observable.error(error);
     }
 
-    private final static void logRetry(final OrderCallRejectException rejectException) {
+    private final static void logPositionTaskRetry(final OrderCallRejectException rejectException) {
         logger.warn("Received reject type " + rejectException.orderEvent().type() +
                 " for order " + rejectException.orderEvent().order().getLabel() + "!"
                 + " Will retry task in " + delayOnOrderFailRetry + " milliseconds...");

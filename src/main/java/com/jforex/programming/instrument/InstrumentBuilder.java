@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.jforex.programming.math.MathUtil;
-import com.jforex.programming.misc.RxUtil;
+import com.jforex.programming.misc.StreamUtil;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
@@ -39,7 +39,7 @@ public final class InstrumentBuilder {
                 .stream()
                 .map(ArrayList<ICurrency>::new)
                 .map(pair -> fromCurrencies(pair.get(0), pair.get(1)))
-                .flatMap(RxUtil::streamOpt)
+                .flatMap(StreamUtil::streamOptional)
                 .collect(toSet());
     }
 
@@ -48,7 +48,7 @@ public final class InstrumentBuilder {
         return partnerCurrencies
                 .stream()
                 .map(partnerCurrency -> fromCurrencies(anchorCurrency, partnerCurrency))
-                .flatMap(RxUtil::streamOpt)
+                .flatMap(StreamUtil::streamOptional)
                 .collect(toSet());
     }
 }

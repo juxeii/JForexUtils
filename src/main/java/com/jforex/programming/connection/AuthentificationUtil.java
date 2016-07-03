@@ -5,7 +5,7 @@ import java.util.Optional;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.misc.JFHotSubject;
-import com.jforex.programming.misc.RxUtil;
+import com.jforex.programming.misc.StreamUtil;
 
 import com.dukascopy.api.system.IClient;
 
@@ -71,11 +71,11 @@ public class AuthentificationUtil {
         final Optional<String> maybePin = loginCredentials.maybePin();
 
         return maybePin.isPresent()
-                ? RxUtil.CompletableFromJFRunnable(() -> client.connect(jnlpAddress,
+                ? StreamUtil.CompletableFromJFRunnable(() -> client.connect(jnlpAddress,
                                                                         username,
                                                                         password,
                                                                         maybePin.get()))
-                : RxUtil.CompletableFromJFRunnable(() -> client.connect(jnlpAddress,
+                : StreamUtil.CompletableFromJFRunnable(() -> client.connect(jnlpAddress,
                                                                         username,
                                                                         password));
     }
