@@ -3,17 +3,6 @@ package com.jforex.programming.misc;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
 
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IDataService;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.mm.RiskPercentMM;
@@ -30,8 +19,8 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionMultiTask;
 import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteFilter;
 import com.jforex.programming.quote.BarQuoteHandler;
+import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.quote.TickQuote;
@@ -40,6 +29,18 @@ import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
+
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IDataService;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.Period;
 
 import rx.Subscription;
 
@@ -222,18 +223,19 @@ public class JForexUtil {
                                 final OfferSide offerside,
                                 final IBar askBar) {
         if (shouldForwardQuote(askBar.getTime())) {
-            final BarQuote askBarQuote = new BarQuote(instrument,
-                                                      period,
-                                                      offerside,
-                                                      askBar);
+            final BarQuoteParams quoteParams = BarQuoteParams
+                    .forInstrument(instrument)
+                    .period(period)
+                    .offerSide(offerside);
+            final BarQuote askBarQuote = new BarQuote(quoteParams, askBar);
             barQuotePublisher.onNext(askBarQuote);
         }
     }
 
-    public void subscribeToBarsFeed(final BarQuoteFilter barQuoteFilter) {
-        context.subscribeToBarsFeed(barQuoteFilter.instrument(),
-                                    barQuoteFilter.period(),
-                                    barQuoteFilter.offerSide(),
+    public void subscribeToBarsFeed(final BarQuoteParams barQuoteParams) {
+        context.subscribeToBarsFeed(barQuoteParams.instrument(),
+                                    barQuoteParams.period(),
+                                    barQuoteParams.offerSide(),
                                     this::onOfferSidedBar);
     }
 

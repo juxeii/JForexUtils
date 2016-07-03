@@ -24,29 +24,29 @@ public class BarQuoteHandler implements BarQuoteProvider {
     }
 
     @Override
-    public IBar quote(final BarQuoteFilter barQuoteFilter) {
-        return barQuoteRepository.get(barQuoteFilter).bar();
+    public IBar quote(final BarQuoteParams barQuoteParams) {
+        return barQuoteRepository.get(barQuoteParams).bar();
     }
 
     @Override
-    public Observable<BarQuote> observableForFilters(final List<BarQuoteFilter> filters) {
-        final List<Observable<BarQuote>> filterObservables = filters
+    public Observable<BarQuote> observableForFilters(final List<BarQuoteParams> barQuoteParams) {
+        final List<Observable<BarQuote>> paramsObservables = barQuoteParams
                 .stream()
-                .map(filter -> {
-                    if (filter.period().name() == null)
-                        jforexUtil.subscribeToBarsFeed(filter);
-                    return observableForFilter(filter);
+                .map(params -> {
+                    if (params.period().name() == null)
+                        jforexUtil.subscribeToBarsFeed(params);
+                    return observableForFilter(params);
                 })
                 .collect(Collectors.toList());
 
-        return Observable.merge(filterObservables);
+        return Observable.merge(paramsObservables);
     }
 
-    private Observable<BarQuote> observableForFilter(final BarQuoteFilter barQuoteFilter) {
+    private Observable<BarQuote> observableForFilter(final BarQuoteParams barQuoteParams) {
         return barQuoteObservable
-                .filter(barQuote -> barQuote.instrument() == barQuoteFilter.instrument())
-                .filter(barQuote -> barQuoteFilter.period().compareTo(barQuote.period()) == 0)
-                .filter(barQuote -> barQuote.offerSide() == barQuoteFilter.offerSide());
+                .filter(barQuote -> barQuote.instrument() == barQuoteParams.instrument())
+                .filter(barQuote -> barQuoteParams.period().compareTo(barQuote.period()) == 0)
+                .filter(barQuote -> barQuote.offerSide() == barQuoteParams.offerSide());
     }
 
     @Override

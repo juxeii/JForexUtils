@@ -8,7 +8,7 @@ import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.currency.CurrencyUtil;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.quote.BarQuoteFilter;
+import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.TickQuoteHandler;
 
@@ -49,7 +49,7 @@ public final class InstrumentUtil {
         return tickQuoteProvider.bid(instrument);
     }
 
-    public final IBar barQuote(final BarQuoteFilter barQuoteFilter) {
+    public final IBar barQuote(final BarQuoteParams barQuoteFilter) {
         return barQuoteProvider.quote(barQuoteFilter);
     }
 

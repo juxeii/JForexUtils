@@ -30,7 +30,7 @@ public class BarQuoteRepository {
         barQuotes.put(quoteKey, barQuote);
     }
 
-    public BarQuote get(final BarQuoteFilter barQuoteFilter) {
+    public BarQuote get(final BarQuoteParams barQuoteFilter) {
         final MultiKey<Object> quoteKey = new MultiKey<Object>(barQuoteFilter.instrument(),
                                                                barQuoteFilter.period(),
                                                                barQuoteFilter.offerSide());
@@ -39,12 +39,9 @@ public class BarQuoteRepository {
                 : quoteFromHistory(barQuoteFilter);
     }
 
-    private BarQuote quoteFromHistory(final BarQuoteFilter barQuoteFilter) {
-        final IBar historyBar = historyUtil.latestBar(barQuoteFilter);
-        final BarQuote barQuote = new BarQuote(barQuoteFilter.instrument(),
-                                               barQuoteFilter.period(),
-                                               barQuoteFilter.offerSide(),
-                                               historyBar);
+    private BarQuote quoteFromHistory(final BarQuoteParams barQuoteParams) {
+        final IBar historyBar = historyUtil.latestBar(barQuoteParams);
+        final BarQuote barQuote = new BarQuote(barQuoteParams, historyBar);
 
         onBarQuote(barQuote);
 

@@ -7,35 +7,28 @@ import com.dukascopy.api.Period;
 
 public final class BarQuote {
 
-    private final Instrument instrument;
-    private final Period period;
-    private final OfferSide offerSide;
+    private final BarQuoteParams barQuoteParams;
     private final IBar bar;
 
-    public BarQuote(final Instrument instrument,
-                    final Period period,
-                    final OfferSide offerSide,
+    public BarQuote(final BarQuoteParams barQuoteParams,
                     final IBar bar) {
-        this.instrument = instrument;
-        this.period = period;
-        this.offerSide = offerSide;
+        this.barQuoteParams = barQuoteParams;
         this.bar = bar;
     }
 
     public final Instrument instrument() {
-        return instrument;
+        return barQuoteParams.instrument();
     }
 
     public final Period period() {
-        return period;
+        return barQuoteParams.period();
     }
 
     public final OfferSide offerSide() {
-        return offerSide;
+        return barQuoteParams.offerSide();
     }
 
     public final IBar bar() {
         return bar;
     }
-
 }

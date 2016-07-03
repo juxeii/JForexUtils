@@ -8,19 +8,19 @@ import org.junit.Test;
 
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
-import com.jforex.programming.quote.BarQuoteFilter;
+import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class BarQuoteFilterTest extends InstrumentUtilForTest {
 
-    private BarQuoteFilter barQuoteFilter;
+    private BarQuoteParams barQuoteFilter;
 
     private final Period period = Period.FIVE_MINS;
     private final OfferSide offerSide = OfferSide.ASK;
 
     @Before
     public void setUp() {
-        barQuoteFilter = BarQuoteFilter
+        barQuoteFilter = BarQuoteParams
                 .forInstrument(instrumentEURUSD)
                 .period(period)
                 .offerSide(offerSide);

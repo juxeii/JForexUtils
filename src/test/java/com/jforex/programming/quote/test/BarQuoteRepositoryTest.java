@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteFilter;
+import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 import com.jforex.programming.test.fakes.IBarForTest;
@@ -46,64 +46,49 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
     public class BeforeBarsReceived {
 
         private final Period testPeriod = Period.ONE_MIN;
-        private final BarQuote askQuoteEURUSD = new BarQuote(instrumentEURUSD,
-                                                             testPeriod,
-                                                             OfferSide.ASK,
+        private final BarQuoteParams quoteEURUSDParams = BarQuoteParams
+                .forInstrument(instrumentEURUSD)
+                .period(testPeriod)
+                .offerSide(OfferSide.ASK);
+        private final BarQuoteParams quoteAUDUSDParams = BarQuoteParams
+                .forInstrument(instrumentAUDUSD)
+                .period(testPeriod)
+                .offerSide(OfferSide.BID);
+        private final BarQuote askQuoteEURUSD = new BarQuote(quoteEURUSDParams,
                                                              askBarEURUSD);
-        private final BarQuote askQuoteAUDUSD = new BarQuote(instrumentAUDUSD,
-                                                             testPeriod,
-                                                             OfferSide.BID,
+        private final BarQuote askQuoteAUDUSD = new BarQuote(quoteAUDUSDParams,
                                                              bidBarAUDUSD);
-        private BarQuoteFilter quoteEURUSDFilter;
-        private BarQuoteFilter quoteAUDUSDFilter;
-
-        @Before
-        public void setUp() {
-            quoteEURUSDFilter = BarQuoteFilter
-                    .forInstrument(instrumentEURUSD)
-                    .period(testPeriod)
-                    .offerSide(OfferSide.ASK);
-
-            quoteAUDUSDFilter = BarQuoteFilter
-                    .forInstrument(instrumentAUDUSD)
-                    .period(testPeriod)
-                    .offerSide(OfferSide.BID);
-        }
 
         @Test
         public void askQuoteForEURUSDComesFromHistory() {
-            when(historyUtilMock.latestBar(quoteEURUSDFilter))
+            when(historyUtilMock.latestBar(quoteEURUSDParams))
                     .thenReturn(askBarEURUSD);
 
-            final BarQuote receivedQuoteEURUSD = barQuoteRepository.get(quoteEURUSDFilter);
+            final BarQuote receivedQuoteEURUSD = barQuoteRepository.get(quoteEURUSDParams);
 
             assertQuote(receivedQuoteEURUSD, askQuoteEURUSD);
-            verify(historyUtilMock).latestBar(quoteEURUSDFilter);
+            verify(historyUtilMock).latestBar(quoteEURUSDParams);
         }
 
         @Test
         public void bidQuoteForAUDUSDComesFromHistory() {
-            when(historyUtilMock.latestBar(quoteAUDUSDFilter))
+            when(historyUtilMock.latestBar(quoteAUDUSDParams))
                     .thenReturn(bidBarAUDUSD);
 
-            final BarQuote receivedQuoteAUDUSD = barQuoteRepository.get(quoteAUDUSDFilter);
+            final BarQuote receivedQuoteAUDUSD = barQuoteRepository.get(quoteAUDUSDParams);
 
             assertQuote(receivedQuoteAUDUSD, askQuoteAUDUSD);
-            verify(historyUtilMock).latestBar(quoteAUDUSDFilter);
+            verify(historyUtilMock).latestBar(quoteAUDUSDParams);
         }
 
         public class AfterReceivedBars {
 
             private final IBar newEURUSDBar = new IBarForTest();
-            private final BarQuote newEURUSDQuote = new BarQuote(instrumentEURUSD,
-                                                                 testPeriod,
-                                                                 OfferSide.ASK,
+            private final BarQuote newEURUSDQuote = new BarQuote(quoteEURUSDParams,
                                                                  newEURUSDBar);
 
             private final IBar newAUDUSDBar = new IBarForTest();
-            private final BarQuote newAUDUSDQuote = new BarQuote(instrumentAUDUSD,
-                                                                 testPeriod,
-                                                                 OfferSide.BID,
+            private final BarQuote newAUDUSDQuote = new BarQuote(quoteAUDUSDParams,
                                                                  newAUDUSDBar);
 
             @Before
@@ -114,7 +99,7 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
 
             @Test
             public void quoteForEURUSDComesFromObservable() {
-                final BarQuote receivedQuoteEURUSD = barQuoteRepository.get(quoteEURUSDFilter);
+                final BarQuote receivedQuoteEURUSD = barQuoteRepository.get(quoteEURUSDParams);
 
                 assertQuote(receivedQuoteEURUSD, newEURUSDQuote);
                 verifyNoMoreInteractions(historyMock);
@@ -122,7 +107,7 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
 
             @Test
             public void quoteForAUDUSDComesFromObservable() {
-                final BarQuote receivedQuoteAUDUSD = barQuoteRepository.get(quoteAUDUSDFilter);
+                final BarQuote receivedQuoteAUDUSD = barQuoteRepository.get(quoteAUDUSDParams);
 
                 assertQuote(receivedQuoteAUDUSD, newAUDUSDQuote);
                 verifyNoMoreInteractions(historyMock);

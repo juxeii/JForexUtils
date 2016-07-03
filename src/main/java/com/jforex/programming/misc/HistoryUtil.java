@@ -15,7 +15,7 @@ import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
-import com.jforex.programming.quote.BarQuoteFilter;
+import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.quote.TickQuote;
 
@@ -56,7 +56,7 @@ public class HistoryUtil {
                 : Observable.just(tick);
     }
 
-    public IBar latestBar(final BarQuoteFilter barQuoteFilter) {
+    public IBar latestBar(final BarQuoteParams barQuoteFilter) {
         final Instrument instrument = barQuoteFilter.instrument();
         final Period period = barQuoteFilter.period();
         final OfferSide offerSide = barQuoteFilter.offerSide();

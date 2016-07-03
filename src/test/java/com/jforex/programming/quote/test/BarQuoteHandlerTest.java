@@ -11,8 +11,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteFilter;
 import com.jforex.programming.quote.BarQuoteHandler;
+import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
@@ -31,26 +31,24 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     private BarQuoteRepository barQuoteRepositoryMock;
     private final Period testPeriod = Period.ONE_MIN;
     private final Period custom3MinutePeriod = Period.createCustomPeriod(Unit.Minute, 3);
-    private final BarQuote askQuoteEURUSD = new BarQuote(instrumentEURUSD, testPeriod, OfferSide.ASK, askBarEURUSD);
-    private final BarQuote askQuoteAUDUSD = new BarQuote(instrumentAUDUSD, testPeriod, OfferSide.ASK, askBarAUDUSD);
-    private final BarQuote askQuote5MinAUDUSD =
-            new BarQuote(instrumentAUDUSD, Period.FIVE_MINS, OfferSide.ASK, askBarAUDUSD);
-    private final Observable<BarQuote> quoteObservable =
-            Observable.just(askQuoteEURUSD, askQuoteAUDUSD, askQuote5MinAUDUSD);
     private final TestSubscriber<BarQuote> quoteSubscriber = new TestSubscriber<>();
-    private final BarQuoteFilter quoteEURUSDFilter = BarQuoteFilter
+    private final BarQuoteParams quoteEURUSDParams = BarQuoteParams
             .forInstrument(instrumentEURUSD)
             .period(testPeriod)
             .offerSide(OfferSide.ASK);
-    private final BarQuoteFilter quoteAUDUSDFilter = BarQuoteFilter
+    private final BarQuoteParams quoteAUDUSDParams = BarQuoteParams
             .forInstrument(instrumentAUDUSD)
             .period(testPeriod)
             .offerSide(OfferSide.ASK);
-    private final BarQuoteFilter filterEURUSDCustomPeriod = BarQuoteFilter
+    private final BarQuoteParams quoteEURUSDCustomPeriodParams = BarQuoteParams
             .forInstrument(instrumentEURUSD)
             .period(custom3MinutePeriod)
             .offerSide(OfferSide.ASK);
-    private final List<BarQuoteFilter> quoteFilters = new ArrayList<>();
+    private final BarQuote askQuoteEURUSD = new BarQuote(quoteEURUSDParams, askBarEURUSD);
+    private final BarQuote askQuoteAUDUSD = new BarQuote(quoteAUDUSDParams, askBarAUDUSD);
+    private final Observable<BarQuote> quoteObservable =
+            Observable.just(askQuoteEURUSD, askQuoteAUDUSD);
+    private final List<BarQuoteParams> quoteFilters = new ArrayList<>();
 
     @Before
     public void setUp() {
@@ -60,28 +58,28 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
                                               quoteObservable,
                                               barQuoteRepositoryMock);
 
-        quoteFilters.add(quoteEURUSDFilter);
-        quoteFilters.add(quoteAUDUSDFilter);
-        quoteFilters.add(filterEURUSDCustomPeriod);
+        quoteFilters.add(quoteEURUSDParams);
+        quoteFilters.add(quoteAUDUSDParams);
+        quoteFilters.add(quoteEURUSDCustomPeriodParams);
 
         barQuoteHandler.observableForFilters(quoteFilters).subscribe(quoteSubscriber);
     }
 
     @Test
     public void returnedEURUSDBarIsCorrect() {
-        when(barQuoteRepositoryMock.get(quoteEURUSDFilter))
+        when(barQuoteRepositoryMock.get(quoteEURUSDParams))
                 .thenReturn(askQuoteEURUSD);
 
-        assertThat(barQuoteHandler.quote(quoteEURUSDFilter),
+        assertThat(barQuoteHandler.quote(quoteEURUSDParams),
                    equalTo(askBarEURUSD));
     }
 
     @Test
     public void returnedAUDUSDBarIsCorrect() {
-        when(barQuoteRepositoryMock.get(quoteAUDUSDFilter))
+        when(barQuoteRepositoryMock.get(quoteAUDUSDParams))
                 .thenReturn(askQuoteAUDUSD);
 
-        assertThat(barQuoteHandler.quote(quoteAUDUSDFilter),
+        assertThat(barQuoteHandler.quote(quoteAUDUSDParams),
                    equalTo(askBarAUDUSD));
     }
 
@@ -105,6 +103,6 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     @Test
     public void onCustomPeriodSubscriptionJForexUtilIsCalled() {
-        verify(jforexUtilMock).subscribeToBarsFeed(filterEURUSDCustomPeriod);
+        verify(jforexUtilMock).subscribeToBarsFeed(quoteEURUSDCustomPeriodParams);
     }
 }
