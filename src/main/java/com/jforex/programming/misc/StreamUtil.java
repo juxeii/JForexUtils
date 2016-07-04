@@ -27,12 +27,6 @@ public final class StreamUtil {
 
     public final static Observable<Long> retryWithDelay(final Observable<? extends Throwable> errors,
                                                         final long delay,
-                                                        final TimeUnit timeUnit) {
-        return errors.flatMap(retryPair -> retryWait(delay, timeUnit));
-    }
-
-    public final static Observable<Long> retryWithDelay(final Observable<? extends Throwable> errors,
-                                                        final long delay,
                                                         final TimeUnit timeUnit,
                                                         final int maxRetries) {
         return errors
@@ -70,20 +64,14 @@ public final class StreamUtil {
                                                             final int maxRetries) {
         return retryPair.getRight() > maxRetries
                 ? Observable.error(retryPair.getLeft())
-                : retryWait(delay, timeUnit);
+                : waitObservable(delay, timeUnit);
     }
 
-    public static Observable<Long> retryWait(final long delay,
-                                             final TimeUnit timeUnit) {
+    public static Observable<Long> waitObservable(final long delay,
+                                                  final TimeUnit timeUnit) {
         return Observable
                 .interval(delay, timeUnit)
                 .take(1);
-    }
-
-    public static <T> Stream<T> streamOptional(final Optional<T> optional) {
-        return optional.isPresent()
-                ? Stream.of(optional.get())
-                : Stream.empty();
     }
 
     private final static Observable<? extends Throwable> filterErrorType(final Throwable error) {
@@ -99,5 +87,11 @@ public final class StreamUtil {
         logger.warn("Received reject type " + rejectException.orderEvent().type() +
                 " for order " + rejectException.orderEvent().order().getLabel() + "!"
                 + " Will retry task in " + delayOnOrderFailRetry + " milliseconds...");
+    }
+
+    public static <T> Stream<T> streamOptional(final Optional<T> optional) {
+        return optional.isPresent()
+                ? Stream.of(optional.get())
+                : Stream.empty();
     }
 }

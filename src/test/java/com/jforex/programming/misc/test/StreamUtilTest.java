@@ -2,11 +2,10 @@ package com.jforex.programming.misc.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -14,10 +13,11 @@ import org.junit.Test;
 
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.StreamUtil;
+import com.jforex.programming.test.common.CommonUtilForTest;
 
 import rx.observers.TestSubscriber;
 
-public class StreamUtilTest {
+public class StreamUtilTest extends CommonUtilForTest {
 
     @Test
     public void retryCounterObservableCountsCorrect() {
@@ -34,6 +34,18 @@ public class StreamUtilTest {
         assertThat(subscriber.getOnNextEvents().get(1), equalTo(2));
         assertThat(subscriber.getOnNextEvents().get(2), equalTo(3));
         assertThat(subscriber.getOnNextEvents().get(3), equalTo(4));
+    }
+
+    @Test
+    public void waitObservableIsCorrect() {
+        final TestSubscriber<Long> subscriber = new TestSubscriber<Long>();
+
+        StreamUtil.waitObservable(1000L, TimeUnit.MILLISECONDS).subscribe(subscriber);
+
+        rxTestUtil.advanceTimeBy(900L, TimeUnit.MILLISECONDS);
+        subscriber.assertNotCompleted();
+        rxTestUtil.advanceTimeBy(100L, TimeUnit.MILLISECONDS);
+        subscriber.assertCompleted();
     }
 
     @Test
