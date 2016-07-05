@@ -10,7 +10,7 @@ import com.dukascopy.api.system.TesterFactory;
 
 import rx.Observable;
 
-public class ClientCreator {
+public final class ClientCreator {
 
     private interface IClientSupplier {
 

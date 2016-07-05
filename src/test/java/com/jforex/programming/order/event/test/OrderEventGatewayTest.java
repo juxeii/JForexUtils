@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
@@ -22,6 +21,8 @@ import com.jforex.programming.test.fakes.IOrderForTest;
 import com.dukascopy.api.IMessage;
 
 import rx.observers.TestSubscriber;
+import rx.subjects.PublishSubject;
+import rx.subjects.Subject;
 
 public class OrderEventGatewayTest extends CommonUtilForTest {
 
@@ -31,16 +32,16 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
     private OrderEventMapper orderEventMapperMock;
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
+    private final Subject<IMessage, IMessage> messageSubject = PublishSubject.create();
     private final IMessage message = new IMessageForTest(orderUnderTest,
                                                          IMessage.Type.ORDER_CHANGED_REJECTED,
                                                          Sets.newHashSet());
-    private final OrderMessageData orderMessageData = new OrderMessageData(message);
 
     @Before
     public void setUp() {
         initCommonTestFramework();
 
-        orderEventGateway = new OrderEventGateway(orderEventMapperMock);
+        orderEventGateway = new OrderEventGateway(messageSubject, orderEventMapperMock);
     }
 
     @Test
@@ -55,11 +56,11 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Test
     public void subscriberIsNotifiedOnOrderMessageData() {
-        when(orderEventMapperMock.get(orderMessageData))
+        when(orderEventMapperMock.get(any()))
                 .thenReturn(OrderEventType.CHANGED_REJECTED);
 
         orderEventGateway.observable().subscribe(subscriber);
-        orderEventGateway.onOrderMessageData(orderMessageData);
+        messageSubject.onNext(message);
 
         subscriber.assertNoErrors();
         subscriber.assertValueCount(1);
