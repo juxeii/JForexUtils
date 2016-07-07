@@ -5,9 +5,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections4.keyvalue.MultiKey;
 
-import com.jforex.programming.misc.HistoryUtil;
-
 import com.dukascopy.api.IBar;
+import com.jforex.programming.misc.HistoryUtil;
 
 import rx.Observable;
 
@@ -30,13 +29,13 @@ public class BarQuoteRepository {
         barQuotes.put(quoteKey, barQuote);
     }
 
-    public BarQuote get(final BarQuoteParams barQuoteFilter) {
-        final MultiKey<Object> quoteKey = new MultiKey<Object>(barQuoteFilter.instrument(),
-                                                               barQuoteFilter.period(),
-                                                               barQuoteFilter.offerSide());
+    public BarQuote get(final BarQuoteParams barQuoteParams) {
+        final MultiKey<Object> quoteKey = new MultiKey<Object>(barQuoteParams.instrument(),
+                                                               barQuoteParams.period(),
+                                                               barQuoteParams.offerSide());
         return barQuotes.containsKey(quoteKey)
                 ? barQuotes.get(quoteKey)
-                : quoteFromHistory(barQuoteFilter);
+                : quoteFromHistory(barQuoteParams);
     }
 
     private BarQuote quoteFromHistory(final BarQuoteParams barQuoteParams) {
