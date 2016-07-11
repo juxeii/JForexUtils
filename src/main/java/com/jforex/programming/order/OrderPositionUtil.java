@@ -94,8 +94,7 @@ public class OrderPositionUtil {
                 .doOnNext(toMergeOrders -> logger.debug("Starting merge task for " + instrument
                         + " position with label " + mergeOrderLabel))
                 .flatMap(positionMultiTask::removeTPSLObservable)
-                .concatWith(mergeAndRestoreObs)
-                .cast(OrderEvent.class);
+                .concatWith(mergeAndRestoreObs);
     }
 
     public Completable closePosition(final Instrument instrument) {
