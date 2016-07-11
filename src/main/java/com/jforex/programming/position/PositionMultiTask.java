@@ -40,8 +40,8 @@ public class PositionMultiTask {
         final Observable<OrderEvent> restoreSLObs =
                 positionSingleTask.setSLObservable(mergeOrder, restoreSLTPData.sl());
         final Observable<OrderEvent> restoreTPObs =
-                Observable.defer(() -> positionSingleTask.setTPObservable(mergeOrder,
-                                                                          restoreSLTPData.tp()));
+                positionSingleTask.setTPObservable(mergeOrder, restoreSLTPData.tp());
+
         return restoreSLObs.concatWith(restoreTPObs);
     }
 
@@ -59,8 +59,8 @@ public class PositionMultiTask {
         final Observable<OrderEvent> removeTPObs =
                 positionSingleTask.setTPObservable(orderToRemoveSLTP, platformSettings.noTPPrice());
         final Observable<OrderEvent> removeSLObs =
-                Observable.defer(() -> positionSingleTask.setSLObservable(orderToRemoveSLTP,
-                                                                          platformSettings.noSLPrice()));
+                positionSingleTask.setSLObservable(orderToRemoveSLTP, platformSettings.noSLPrice());
+
         return removeTPObs.concatWith(removeSLObs);
     }
 }

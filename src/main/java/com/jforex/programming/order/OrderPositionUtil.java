@@ -82,7 +82,8 @@ public class OrderPositionUtil {
         final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSLTPPolicy.restoreSL(filledOrders),
                                                                     restoreSLTPPolicy.restoreTP(filledOrders));
         final Observable<OrderEvent> mergeAndRestoreObs =
-                Observable.defer(() -> positionSingleTask.mergeObservable(mergeOrderLabel, filledOrders))
+                positionSingleTask
+                        .mergeObservable(mergeOrderLabel, filledOrders)
                         .map(OrderEvent::order)
                         .doOnNext(position::addOrder)
                         .flatMap(order -> positionMultiTask.restoreSLTPObservable(order, restoreSLTPData))
