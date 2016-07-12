@@ -98,7 +98,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         private final Callable<IOrder> orderCall = () -> engineMock.mergeOrders(mergeOrderLabel, mergeOrders);
         private final TestSubscriber<OrderEvent> callSubscriber = new TestSubscriber<>();
         private final Supplier<Observable<OrderEvent>> runCall =
-                () -> orderUtilHandler.createObservable(orderCall, OrderEventTypeData.mergeData);
+                () -> orderUtilHandler.submitObservable(orderCall, OrderEventTypeData.mergeData);
 
         @Before
         public void setUp() {

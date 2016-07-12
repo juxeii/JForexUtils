@@ -4,7 +4,6 @@ import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEv
 
 import java.util.concurrent.Callable;
 
-import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -14,6 +13,8 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
+
+import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -36,15 +37,15 @@ public class OrderUtilHandler {
             orderRunnable.run();
             return orderToChange;
         };
-        return createObservable(orderCallable, orderEventTypeData);
+        return submitObservable(orderCallable, orderEventTypeData);
     }
 
-    public Observable<OrderEvent> createObservable(final Callable<IOrder> orderCallable,
+    public Observable<OrderEvent> submitObservable(final Callable<IOrder> orderCallable,
                                                    final OrderEventTypeData orderEventTypeData) {
         return orderCallExecutor
                 .callObservable(orderCallable)
                 .doOnNext(order -> registerOrder(order, orderEventTypeData.callReason()))
-                .flatMap(order -> createObs(order, orderEventTypeData));
+                .flatMap(order -> createObservable(order, orderEventTypeData));
     }
 
     private void registerOrder(final IOrder order,
@@ -53,8 +54,8 @@ public class OrderUtilHandler {
         orderEventGateway.registerOrderCallRequest(orderCallRequest);
     }
 
-    private final Observable<OrderEvent> createObs(final IOrder order,
-                                                   final OrderEventTypeData orderEventTypeData) {
+    private final Observable<OrderEvent> createObservable(final IOrder order,
+                                                          final OrderEventTypeData orderEventTypeData) {
         return Observable.create(subscriber -> {
             orderEventGateway.observable()
                     .filter(orderEvent -> orderEvent.order() == order)

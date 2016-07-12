@@ -50,7 +50,7 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
     }
 
     private void captureAndRunOrderCall(final OrderEventTypeData orderEventTypeData) throws Exception {
-        verify(orderUtilHandlerMock).createObservable(orderCallCaptor.capture(),
+        verify(orderUtilHandlerMock).submitObservable(orderCallCaptor.capture(),
                                                       argLambda(td -> td == orderEventTypeData));
         orderCallCaptor.getValue().call();
     }
@@ -67,7 +67,7 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() throws Exception {
                 when(orderUtilHandlerMock
-                        .createObservable(orderCallCaptor.capture(), eq(submitTypeData)))
+                        .submitObservable(orderCallCaptor.capture(), eq(submitTypeData)))
                                 .thenReturn(submitObservable);
 
                 orderCreateUtil.submitOrder(orderParamsBUY).subscribe(submitSubscriber);
@@ -103,7 +103,7 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() throws Exception {
                 when(orderUtilHandlerMock
-                        .createObservable(orderCallCaptor.capture(), eq(mergeTypeData)))
+                        .submitObservable(orderCallCaptor.capture(), eq(mergeTypeData)))
                                 .thenReturn(mergeObservable);
 
                 orderCreateUtil.mergeOrders(mergeOrderLabel, mergeOrders).subscribe(mergeSubscriber);

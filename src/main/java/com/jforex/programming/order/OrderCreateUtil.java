@@ -43,7 +43,7 @@ public class OrderCreateUtil {
                                                                      orderParams.comment());
 
         return orderUtilHandler
-                .createObservable(submitCall, OrderEventTypeData.submitData)
+                .submitObservable(submitCall, OrderEventTypeData.submitData)
                 .doOnSubscribe(() -> logger.debug("Start submit task with label "
                         + orderLabel + " for " + instrument))
                 .doOnError(e -> logger.error("Submit task with label " + orderLabel + " for "
@@ -58,7 +58,7 @@ public class OrderCreateUtil {
         final Instrument instrument = toMergeOrders.iterator().next().getInstrument();
 
         return orderUtilHandler
-                .createObservable(mergeCall, OrderEventTypeData.mergeData)
+                .submitObservable(mergeCall, OrderEventTypeData.mergeData)
                 .doOnSubscribe(() -> logger.debug("Starting to merge with label " + mergeOrderLabel
                         + " for position " + instrument + "."))
                 .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel
