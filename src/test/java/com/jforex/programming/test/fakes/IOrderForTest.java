@@ -11,11 +11,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.settings.PlatformSettings;
-import com.jforex.programming.settings.UserSettings;
-import com.jforex.programming.test.common.OrderParamsForTest;
-
 import com.dukascopy.api.ICloseOrder;
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IFillOrder;
@@ -24,6 +19,10 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.settings.UserSettings;
+import com.jforex.programming.test.common.OrderParamsForTest;
 
 public class IOrderForTest implements IOrder {
 
@@ -41,8 +40,10 @@ public class IOrderForTest implements IOrder {
     private IOrder.State orderState = IOrder.State.CREATED;
     private String id;
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    private static final PlatformSettings platformSettings =
+            ConfigFactory.create(PlatformSettings.class);
+    private static final UserSettings userSettings =
+            ConfigFactory.create(UserSettings.class);
 
     private IOrderForTest(final Builder builder) {
         label = builder.label;
@@ -84,11 +85,6 @@ public class IOrderForTest implements IOrder {
     public void close(final double arg0,
                       final double arg1,
                       final double arg2) throws JFException {
-    }
-
-    @Override
-    public boolean compare(final IOrder arg0) {
-        return false;
     }
 
     @Override
@@ -410,7 +406,8 @@ public class IOrderForTest implements IOrder {
         return new IOrderForTest.Builder(orderParams.label(),
                                          orderParams.instrument(),
                                          orderParams.orderCommand(),
-                                         orderParams.amount()).stopLossPrice(orderParams.stopLossPrice())
+                                         orderParams.amount())
+                                                 .stopLossPrice(orderParams.stopLossPrice())
                                                  .takeProfitPrice(orderParams.takeProfitPrice())
                                                  .goodTillTime(orderParams.goodTillTime())
                                                  .comment(orderParams.comment())
@@ -443,7 +440,6 @@ public class IOrderForTest implements IOrder {
 
     @Override
     public boolean equals(final Object o) {
-        System.out.println("ZEEEEEEEEEEEEEEEEEEE");
         if (o == null)
             return false;
         if (!(o instanceof IOrder))
@@ -462,10 +458,13 @@ public class IOrderForTest implements IOrder {
 
     @Override
     public int hashCode() {
-        final int ibne = (int) (orderState.ordinal() *
-                amount *
-                id.hashCode());
-        System.out.println("HASH for " + label + " is " + ibne + " with state " + orderState);
-        return ibne;
+        final int hash = (int) (orderState.ordinal() * amount * id.hashCode());
+        return hash;
+    }
+
+    @Override
+    @Deprecated
+    public boolean compare(final IOrder order) {
+        return false;
     }
 }

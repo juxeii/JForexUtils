@@ -1,10 +1,13 @@
 package com.jforex.programming.test.fakes;
 
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import com.dukascopy.api.system.IClient;
 import com.jforex.programming.connection.LoginCredentials;
-import com.jforex.programming.test.common.CommonUtilForTest;
 
-public class IClientForTest extends CommonUtilForTest {
+public class IClientForTest {
 
     private final IClient clientMock;
 
@@ -39,8 +42,6 @@ public class IClientForTest extends CommonUtilForTest {
                 doThrow(exceptionType).when(clientMock).connect(loginCredentials.jnlpAddress(),
                                                                 loginCredentials.username(),
                                                                 loginCredentials.password());
-        } catch (final Exception e) {
-            logger.error(e.getMessage());
-        }
+        } catch (final Exception e) {}
     }
 }

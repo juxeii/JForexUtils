@@ -7,24 +7,22 @@ import java.util.Optional;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Test;
 import org.mockito.BDDMockito;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IContext;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.system.IClient;
-import com.google.common.collect.Sets;
+import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.test.fakes.IClientForTest;
 import com.jforex.programming.test.fakes.IEngineForTest;
-import com.jforex.programming.test.fakes.IMessageForTest;
 
 public class CommonUtilForTest extends BDDMockito {
 
@@ -47,7 +45,8 @@ public class CommonUtilForTest extends BDDMockito {
     protected Optional<Exception> emptyJFExceptionOpt = Optional.empty();
     protected final RxTestUtil rxTestUtil = RxTestUtil.get();
 
-    protected final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    protected final static PlatformSettings platformSettings =
+            ConfigFactory.create(PlatformSettings.class);
     protected final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
     protected final static Logger logger = LogManager.getLogger(CommonUtilForTest.class);
 
@@ -62,12 +61,6 @@ public class CommonUtilForTest extends BDDMockito {
         when(jforexUtilMock.historyUtil()).thenReturn(historyUtilMock);
     }
 
-    protected IMessage someOrderMessage(final IOrder order) {
-        return new IMessageForTest(order,
-                                   IMessage.Type.ORDER_CHANGED_OK,
-                                   Sets.newHashSet(IMessage.Reason.ORDER_CHANGED_AMOUNT));
-    }
-
     public static void setStrategyThread() {
         setThreadName(platformSettings.strategyThreadPrefix());
     }
@@ -78,5 +71,10 @@ public class CommonUtilForTest extends BDDMockito {
 
     public static void setThreadName(final String threadName) {
         Thread.currentThread().setName(threadName);
+    }
+
+    @Test
+    public void coverageOnEnumsCorrection() {
+        StrategyRunState.valueOf(StrategyRunState.STARTED.toString());
     }
 }
