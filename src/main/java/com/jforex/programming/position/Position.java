@@ -4,7 +4,6 @@ import static com.jforex.programming.order.OrderStaticUtil.isCanceled;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
-import static com.jforex.programming.order.OrderStaticUtil.ofInstrument;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.Map.Entry;
@@ -52,14 +51,10 @@ public class Position implements PositionOrders {
     }
 
     public synchronized void addOrder(final IOrder order) {
-        if (!ofInstrument(instrument).test(order))
-            logger.error("Tried to add instrument " + order.getInstrument() + " from order " +
-                    order.getLabel() + " to position " + instrument + ". Will be ignored!");
-        else {
-            orderRepository.put(order, OrderProcessState.IDLE);
-            logger.debug("Added order " + order.getLabel() + " to position " + instrument + " Orderstate: "
-                    + order.getState() + " repo size " + orderRepository.size());
-        }
+        orderRepository.put(order, OrderProcessState.IDLE);
+        logger.debug("Added order " + order.getLabel() + " to position " + instrument
+                + " Orderstate: "
+                + order.getState() + " repo size " + orderRepository.size());
     }
 
     public synchronized void markAllOrdersActive() {
@@ -68,7 +63,8 @@ public class Position implements PositionOrders {
 
     private synchronized void removeOrder(final IOrder order) {
         orderRepository.remove(order);
-        logger.debug("Removed order " + order.getLabel() + " from position " + instrument + " Orderstate: "
+        logger.debug("Removed order " + order.getLabel() + " from position " + instrument
+                + " Orderstate: "
                 + order.getState() + " repo size " + orderRepository.size());
     }
 
