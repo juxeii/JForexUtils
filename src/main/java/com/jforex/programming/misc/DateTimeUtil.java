@@ -11,9 +11,13 @@ import java.util.concurrent.TimeUnit;
 public final class DateTimeUtil {
 
     public static final String defaultDateFormat = "yyyy-MM-dd HH:mm:ss.SSS";
-    public static final DateTimeFormatter defaultformatter = DateTimeFormatter.ofPattern(defaultDateFormat);
+    public static final DateTimeFormatter defaultformatter =
+            DateTimeFormatter.ofPattern(defaultDateFormat);
     public static final ZoneId localZoneId = ZoneId.systemDefault();
     public static final ZoneId dukascopyZoneId = ZoneId.ofOffset("UTC", ZoneOffset.UTC);
+
+    private DateTimeUtil() {
+    }
 
     public static final Instant instantFromMillis(final long millis) {
         return Instant.ofEpochMilli(millis);
@@ -34,7 +38,8 @@ public final class DateTimeUtil {
 
     public static final LocalDateTime toDukascopyDateTime(final LocalDateTime dateTime) {
         final ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.systemDefault());
-        final ZonedDateTime zonedDateTimeWithInstant = zonedDateTime.withZoneSameInstant(DateTimeUtil.dukascopyZoneId);
+        final ZonedDateTime zonedDateTimeWithInstant =
+                zonedDateTime.withZoneSameInstant(DateTimeUtil.dukascopyZoneId);
         return zonedDateTimeWithInstant.toLocalDateTime();
     }
 

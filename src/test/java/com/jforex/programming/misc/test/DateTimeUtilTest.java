@@ -11,9 +11,8 @@ import java.time.format.DateTimeFormatter;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.jforex.programming.misc.DateTimeUtil;
-
 import com.dukascopy.api.JFException;
+import com.jforex.programming.misc.DateTimeUtil;
 
 public class DateTimeUtilTest {
 
@@ -43,5 +42,32 @@ public class DateTimeUtilTest {
         assertThat(dateTimeOfMillis.getMinute(), equalTo(12));
         assertThat(dateTimeOfMillis.getSecond(), equalTo(42));
         assertThat(dateTimeOfMillis.getDayOfWeek(), equalTo(DayOfWeek.TUESDAY));
+    }
+
+    @Test
+    public void dateTimeToStringIsCorrect() {
+        final LocalDateTime localDateTime = LocalDateTime.of(2016,
+                                                             Month.APRIL,
+                                                             26,
+                                                             8,
+                                                             12);
+
+        final String dateTimeString = DateTimeUtil.dateTimeToString(localDateTime);
+
+        assertThat(dateTimeString, equalTo("2016-04-26 08:12:00.000"));
+    }
+
+    @Test
+    public void millisToStringIsCorrect() {
+        final long millis =
+                DateTimeUtil.localMillisFromDateTime(LocalDateTime.of(2016,
+                                                                      Month.APRIL,
+                                                                      26,
+                                                                      8,
+                                                                      12));
+
+        final String dateTimeString = DateTimeUtil.millisToString(millis);
+
+        assertThat(dateTimeString, equalTo("2016-04-26 08:12:00.000"));
     }
 }
