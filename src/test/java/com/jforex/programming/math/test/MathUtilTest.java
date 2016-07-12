@@ -75,6 +75,7 @@ public class MathUtilTest extends CurrencyUtilForTest {
                    equalTo(expectedkPowerset));
     }
 
+    @Test
     public void testRateOfReturnIsCorrect() {
         assertThat(MathUtil.rateOfReturn(1.3245, 1.3248), closeTo(-0.022644, 0.000001));
         assertThat(MathUtil.rateOfReturn(99.345, 99.341), closeTo(0.004026, 0.000001));

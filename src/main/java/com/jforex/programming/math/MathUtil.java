@@ -14,7 +14,8 @@ import com.jforex.programming.settings.PlatformSettings;
 
 public final class MathUtil {
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings =
+            ConfigFactory.create(PlatformSettings.class);
 
     private MathUtil() {
     }

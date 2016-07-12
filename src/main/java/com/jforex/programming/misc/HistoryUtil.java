@@ -3,7 +3,6 @@ package com.jforex.programming.misc;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -41,13 +40,14 @@ public class HistoryUtil {
     }
 
     public ITick latestTick(final Instrument instrument) {
-        final Observable<ITick> tickObservable = Observable
+        return Observable
                 .fromCallable(() -> history.getLastTick(instrument))
-                .flatMap(tick -> tickObservableForHistoryTick(tick))
-                .doOnError(e -> logger.warn("Last tick for " + instrument +
-                        " from history returned null! Retrying..."));
-
-        return observableValue(tickObservable);
+                .doOnError(e -> logger.warn("Get last tick for " + instrument +
+                        " from history failed! Will retry now..."))
+                .retry()
+                .flatMap(this::tickObservableForHistoryTick)
+                .toBlocking()
+                .single();
     }
 
     private Observable<ITick> tickObservableForHistoryTick(final ITick tick) {
@@ -56,26 +56,20 @@ public class HistoryUtil {
                 : Observable.just(tick);
     }
 
-    public IBar latestBar(final BarQuoteParams barQuoteFilter) {
-        final Instrument instrument = barQuoteFilter.instrument();
-        final Period period = barQuoteFilter.period();
-        final OfferSide offerSide = barQuoteFilter.offerSide();
+    public IBar latestBar(final BarQuoteParams barQuoteParams) {
+        final Instrument instrument = barQuoteParams.instrument();
+        final Period period = barQuoteParams.period();
+        final OfferSide offerSide = barQuoteParams.offerSide();
 
-        final Observable<IBar> barObservable = Observable
+        return Observable
                 .fromCallable(() -> history.getBar(instrument, period, offerSide, 1))
-                .flatMap(bar -> barObservableForHistoryBar(bar))
-                .doOnError(e -> logger.error("Last bar for " + instrument + " and period " + period
-                        + " and offerside " + offerSide + " from history returned null!"));
-
-        return observableValue(barObservable);
-    }
-
-    private <T> T observableValue(final Observable<T> observable) {
-        return observable
-                .retryWhen(errors -> StreamUtil.retryWithDelay(errors, 500L, TimeUnit.MILLISECONDS, 10))
-                .first()
+                .doOnError(e -> logger.error("Last bar for " + instrument
+                        + " and period " + period + " and offerside " + offerSide
+                        + " from history failed! Will retry now..."))
+                .retry()
+                .flatMap(this::barObservableForHistoryBar)
                 .toBlocking()
-                .first();
+                .single();
     }
 
     private Observable<IBar> barObservableForHistoryBar(final IBar bar) {

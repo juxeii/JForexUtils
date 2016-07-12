@@ -4,9 +4,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.jforex.programming.order.event.OrderEvent;
-
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.event.OrderEvent;
 
 import rx.Observable;
 
