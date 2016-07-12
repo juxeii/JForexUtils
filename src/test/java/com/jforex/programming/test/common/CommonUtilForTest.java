@@ -27,6 +27,7 @@ import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.test.fakes.IClientForTest;
 import com.jforex.programming.test.fakes.IEngineForTest;
 
+import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IContext;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
@@ -47,6 +48,8 @@ public class CommonUtilForTest extends BDDMockito {
     @Mock
     protected IHistory historyMock;
     @Mock
+    protected IAccount accountMock;
+    @Mock
     protected HistoryUtil historyUtilMock;
     protected IClientForTest clientForTest;
     protected IEngineForTest engineForTest;
@@ -66,7 +69,13 @@ public class CommonUtilForTest extends BDDMockito {
         clientForTest = new IClientForTest(clientMock);
         engineForTest = new IEngineForTest(engineMock, jfException);
 
+        when(contextMock.getEngine()).thenReturn(engineMock);
+        when(contextMock.getAccount()).thenReturn(accountMock);
+        when(contextMock.getHistory()).thenReturn(historyMock);
+
         when(jforexUtilMock.context()).thenReturn(contextMock);
+        when(jforexUtilMock.engine()).thenReturn(engineMock);
+        when(jforexUtilMock.account()).thenReturn(accountMock);
         when(jforexUtilMock.history()).thenReturn(historyMock);
         when(jforexUtilMock.historyUtil()).thenReturn(historyUtilMock);
 
