@@ -20,6 +20,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
+import com.jforex.programming.test.fakes.IOrderForTest;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
@@ -90,7 +91,8 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
 
     public class MergeSetup {
 
-        private final Set<IOrder> mergeOrders = Sets.newHashSet();
+        private final Set<IOrder> mergeOrders = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
+                                                                IOrderForTest.sellOrderEURUSD());
         private final String mergeOrderLabel = "MergeLabel";
         private final TestSubscriber<OrderEvent> mergeSubscriber = new TestSubscriber<>();
         private final Observable<OrderEvent> mergeObservable = Observable.empty();

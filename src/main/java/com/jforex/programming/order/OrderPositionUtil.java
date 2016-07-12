@@ -6,8 +6,6 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.Position;
@@ -17,6 +15,9 @@ import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
+
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -50,14 +51,10 @@ public class OrderPositionUtil {
 
         return orderCreateUtil
                 .submitOrder(orderParams)
-                .doOnSubscribe(() -> logger.debug("Start submit task with label " + orderParams.label()
-                        + " for " + instrument + " position."))
                 .doOnNext(submitEvent -> {
                     if (OrderEventTypeData.submitData.isDoneType(submitEvent.type()))
                         position.addOrder(submitEvent.order());
-                })
-                .doOnError(e -> logger.error("Submit " + orderParams.label() + " for position "
-                        + instrument + " failed! Exception: " + e.getMessage()));
+                });
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
