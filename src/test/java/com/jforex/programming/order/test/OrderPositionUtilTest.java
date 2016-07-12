@@ -299,10 +299,8 @@ public class OrderPositionUtilTest extends PositionCommonTest {
                                                                   IOrderForTest.sellOrderEURUSD());
         private final double restoreSL = 1.10234;
         private final double restoreTP = 1.11234;
-        private final OrderEvent mergeEvent =
-                new OrderEvent(orderUnderTest, OrderEventType.MERGE_OK);
-        private final OrderEvent rejectEvent =
-                new OrderEvent(orderUnderTest, OrderEventType.MERGE_REJECTED);
+        private final OrderEvent mergeEvent = new OrderEvent(orderUnderTest, OrderEventType.MERGE_OK);
+        private final OrderEvent rejectEvent = new OrderEvent(orderUnderTest, OrderEventType.MERGE_REJECTED);
         private final Runnable mergePositionCall =
                 () -> orderPositionUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock)
                         .subscribe(taskSubscriber);
@@ -325,6 +323,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
         @Before
         public void setUp() {
             final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSL, restoreTP);
+
             when(restoreSLTPPolicyMock.restoreSL(toMergeOrders))
                     .thenReturn(restoreSLTPData.sl());
             when(restoreSLTPPolicyMock.restoreTP(toMergeOrders))
@@ -335,8 +334,9 @@ public class OrderPositionUtilTest extends PositionCommonTest {
         }
 
         @Test
-        public void testMergePositionIsCalledAlsoWhenNotSubscribed() {
+        public void testMergePositionIsNotCalledWhenNotSubscribed() {
             setRemoveTPSLMockResult(doneEventObservable(mergeEvent));
+            setMergeMockResult(doneEventObservable(mergeEvent));
 
             orderPositionUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock);
 
@@ -347,6 +347,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
         @Test
         public void testSubscriberNotYetCompletedWhenBatchUtilIsBusy() {
             setRemoveTPSLMockResult(busyObservable());
+            setMergeMockResult(doneEventObservable(mergeEvent));
 
             mergePositionCall.run();
 
@@ -367,6 +368,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
         @Test
         public void testAllPositionOrdersAreMarkedActiveWhenEnoughOrdersToMerge() {
             setRemoveTPSLMockResult(busyObservable());
+            setMergeMockResult(doneEventObservable(mergeEvent));
 
             mergePositionCall.run();
 
@@ -378,6 +380,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
             @Before
             public void setUp() {
                 setRemoveTPSLMockResult(exceptionObservable());
+                setMergeMockResult(doneEventObservable(mergeEvent));
 
                 mergePositionCall.run();
             }
@@ -398,6 +401,7 @@ public class OrderPositionUtilTest extends PositionCommonTest {
             @Before
             public void setUp() {
                 setRemoveTPSLMockResult(rejectObservable(rejectEvent));
+                setMergeMockResult(doneEventObservable(mergeEvent));
 
                 mergePositionCall.run();
             }

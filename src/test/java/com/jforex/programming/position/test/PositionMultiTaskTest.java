@@ -115,11 +115,6 @@ public class PositionMultiTaskTest extends PositionCommonTest {
             }
 
             @Test
-            public void testSetTPOnOrderHasNeverBeenCalled() {
-                verify(positionSingleTaskMock, never()).setTPObservable(orderUnderTest, restoreTP);
-            }
-
-            @Test
             public void testSubscriberGetsJFExceptionNotification() {
                 assertJFException(taskSubscriber);
             }
