@@ -1,21 +1,23 @@
 package com.jforex.programming.position;
 
-import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
-
 import java.util.Map;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.Instrument;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.google.common.collect.ImmutableMap;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
+import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.settings.UserSettings;
+
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.Instrument;
+
+import rx.Observable;
 
 public final class PositionSwitcher {
 
@@ -113,14 +115,15 @@ public final class PositionSwitcher {
     }
 
     private final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
-        final OrderCommand newOrderCommand = directionToCommand(desiredDirection);
+        final OrderCommand newOrderCommand = OrderStaticUtil.directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         final String mergeLabel = defaultMergePrefix + adaptedOrderParams.label();
 
-        orderUtil.submitOrder(adaptedOrderParams)
-                .concatWith(orderUtil.mergePositionOrders(mergeLabel,
-                                                          instrument,
-                                                          noRestoreSLTPPolicy))
+        orderUtil
+                .submitOrder(adaptedOrderParams)
+                .concatWith(Observable.defer(() -> orderUtil.mergePositionOrders(mergeLabel,
+                                                                                 instrument,
+                                                                                 noRestoreSLTPPolicy)))
                 .doOnTerminate(() -> fsm.fire(FSMTrigger.MERGE_DONE))
                 .subscribe();
     }
