@@ -18,22 +18,22 @@ public final class InstrumentBuilder {
     private InstrumentBuilder() {
     }
 
-    public final static Optional<Instrument> fromName(final String instrumentName) {
+    public static final Optional<Instrument> fromName(final String instrumentName) {
         return fromString(instrumentName.toUpperCase());
     }
 
-    private final static Optional<Instrument> fromString(final String instrumentName) {
+    private static final Optional<Instrument> fromString(final String instrumentName) {
         return Instrument.isInverted(instrumentName)
                 ? Optional.of(Instrument.fromInvertedString(instrumentName))
                 : Optional.ofNullable(Instrument.fromString(instrumentName));
     }
 
-    public final static Optional<Instrument> fromCurrencies(final ICurrency firstCurrency,
+    public static final Optional<Instrument> fromCurrencies(final ICurrency firstCurrency,
                                                             final ICurrency secondCurrency) {
         return fromString(InstrumentUtil.nameFromCurrencies(firstCurrency, secondCurrency));
     }
 
-    public final static Set<Instrument> combineAllFromCurrencySet(final Set<ICurrency> currencies) {
+    public static final Set<Instrument> combineAllFromCurrencySet(final Set<ICurrency> currencies) {
         return MathUtil
                 .kPowerSet(currencies, 2)
                 .stream()
@@ -43,7 +43,7 @@ public final class InstrumentBuilder {
                 .collect(toSet());
     }
 
-    public final static Set<Instrument> combineAllWithAnchorCurrency(final ICurrency anchorCurrency,
+    public static final Set<Instrument> combineAllWithAnchorCurrency(final ICurrency anchorCurrency,
                                                                      final Collection<ICurrency> partnerCurrencies) {
         return partnerCurrencies
                 .stream()

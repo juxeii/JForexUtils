@@ -21,7 +21,7 @@ public final class CalculationUtil {
 
     private final TickQuoteHandler tickQuoteProvider;
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
     public CalculationUtil(final TickQuoteHandler tickQuoteProvider) {
         this.tickQuoteProvider = tickQuoteProvider;
@@ -73,33 +73,33 @@ public final class CalculationUtil {
         return roundAmount(pipValueAmount);
     }
 
-    public final static double scalePipsToInstrument(final double pips,
+    public static final double scalePipsToInstrument(final double pips,
                                                      final Instrument instrument) {
         return roundPrice(instrument.getPipValue() * pips, instrument);
     }
 
-    public final static double addPips(final Instrument instrument,
+    public static final double addPips(final Instrument instrument,
                                        final double price,
                                        final double pipsToAdd) {
         return roundPrice(price + scalePipsToInstrument(pipsToAdd, instrument), instrument);
     }
 
-    public final static To pipDistanceFrom(final double priceFrom) {
+    public static final To pipDistanceFrom(final double priceFrom) {
         return new PipDistanceBuilder(CalculationUtil::pipDistance).pipDistanceFrom(priceFrom);
     }
 
-    private final static double pipDistance(final PipDistanceBuilder pipDistanceBuilder) {
+    private static final double pipDistance(final PipDistanceBuilder pipDistanceBuilder) {
         final double pipDistance = (pipDistanceBuilder.priceFrom() - pipDistanceBuilder.priceTo())
                 / pipDistanceBuilder.instrument().getPipValue();
         return roundPips(pipDistance);
     }
 
-    public final static boolean isPricePipDivisible(final Instrument instrument,
+    public static final boolean isPricePipDivisible(final Instrument instrument,
                                                     final double price) {
         return isValueDivisibleByX(price, instrument.getPipValue() / 10);
     }
 
-    public final static double scaleToPlatformAmount(final double amount) {
+    public static final double scaleToPlatformAmount(final double amount) {
         return roundAmount(amount / platformSettings.baseAmount());
     }
 }

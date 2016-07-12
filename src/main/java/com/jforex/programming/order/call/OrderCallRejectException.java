@@ -6,7 +6,7 @@ public final class OrderCallRejectException extends Exception {
 
     private final OrderEvent orderEvent;
 
-    private final static long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     public OrderCallRejectException(final String message,
                                     final OrderEvent orderEvent) {

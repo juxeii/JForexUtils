@@ -11,7 +11,7 @@ import rx.plugins.RxJavaObservableExecutionHook;
 
 public class RxObservableExecutionHookForTest extends RxJavaObservableExecutionHook {
 
-    private final static Logger logger = LogManager.getLogger(RxObservableExecutionHookForTest.class);
+    private static final Logger logger = LogManager.getLogger(RxObservableExecutionHookForTest.class);
 
     @Override
     public <T> OnSubscribe<T> onCreate(final OnSubscribe<T> onSubscribe) {

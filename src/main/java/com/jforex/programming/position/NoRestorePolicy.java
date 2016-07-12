@@ -9,7 +9,7 @@ import com.jforex.programming.settings.PlatformSettings;
 
 public final class NoRestorePolicy implements RestoreSLTPPolicy {
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
     @Override
     public final double restoreSL(final Set<IOrder> ordersForMerge) {

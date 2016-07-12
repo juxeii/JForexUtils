@@ -19,17 +19,17 @@ public final class ClientCreator {
                              InstantiationException;
     }
 
-    private final static Logger logger = LogManager.getLogger(ClientFactory.class);
+    private static final Logger logger = LogManager.getLogger(ClientFactory.class);
 
-    public final static IClient client() {
+    public static final IClient client() {
         return getInstance(ClientFactory::getDefaultInstance);
     }
 
-    public final static ITesterClient testerClient() {
+    public static final ITesterClient testerClient() {
         return (ITesterClient) getInstance(TesterFactory::getDefaultInstance);
     }
 
-    private final static IClient getInstance(final IClientSupplier clientSupplier) {
+    private static final IClient getInstance(final IClientSupplier clientSupplier) {
         return Observable.fromCallable(() -> clientSupplier.get())
                 .doOnError(e -> {
                     logger.error("Exception occured on client retreival!" + e.getMessage());

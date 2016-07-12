@@ -75,8 +75,8 @@ public class JForexUtil {
     private final JFHotSubject<BarQuote> barQuoteSubject = new JFHotSubject<>();
     private final JFHotSubject<IMessage> messageSubject = new JFHotSubject<>();
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
     public JForexUtil(final IContext context) {
         this.context = context;

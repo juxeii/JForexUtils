@@ -22,7 +22,7 @@ public final class InstrumentUtil {
     private final int numberOfDigits;
     private final String toStringNoSeparator;
 
-    private final static String pairsSeparator = Instrument.getPairsSeparator();
+    private static final String pairsSeparator = Instrument.getPairsSeparator();
 
     public InstrumentUtil(final Instrument instrument,
                           final TickQuoteHandler tickQuoteProvider,
@@ -84,30 +84,30 @@ public final class InstrumentUtil {
         return CurrencyUtil.isInInstrument(currencyCode, instrument);
     }
 
-    public final static int numberOfDigits(final Instrument instrument) {
+    public static final int numberOfDigits(final Instrument instrument) {
         return instrument.getPipScale() + 1;
     }
 
-    public final static String toStringNoSeparator(final Instrument instrument) {
+    public static final String toStringNoSeparator(final Instrument instrument) {
         return instrument
                 .getPrimaryJFCurrency()
                 .toString()
                 .concat(instrument.getSecondaryJFCurrency().toString());
     }
 
-    public final static Currency baseJavaCurrency(final Instrument instrument) {
+    public static final Currency baseJavaCurrency(final Instrument instrument) {
         return instrument
                 .getPrimaryJFCurrency()
                 .getJavaCurrency();
     }
 
-    public final static Currency quoteJavaCurrency(final Instrument instrument) {
+    public static final Currency quoteJavaCurrency(final Instrument instrument) {
         return instrument
                 .getSecondaryJFCurrency()
                 .getJavaCurrency();
     }
 
-    public final static String nameFromCurrencies(final ICurrency baseCurrency,
+    public static final String nameFromCurrencies(final ICurrency baseCurrency,
                                                   final ICurrency quoteCurrency) {
         return baseCurrency
                 .toString()

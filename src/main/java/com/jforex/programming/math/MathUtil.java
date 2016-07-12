@@ -14,12 +14,12 @@ import com.jforex.programming.settings.PlatformSettings;
 
 public final class MathUtil {
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
     private MathUtil() {
     }
 
-    public final static <T> Set<Set<T>> kPowerSet(final Set<T> sourceSet,
+    public static final <T> Set<Set<T>> kPowerSet(final Set<T> sourceSet,
                                                   final int setSize) {
         final Set<Set<T>> kPowerSet = Sets.newHashSet();
         final Generator<T> generator =
@@ -28,32 +28,32 @@ public final class MathUtil {
         return kPowerSet;
     }
 
-    public final static double rateOfReturn(final double currentValue,
+    public static final double rateOfReturn(final double currentValue,
                                             final double previousValue) {
         return 100.0 * (currentValue - previousValue) / previousValue;
     }
 
-    public final static double roundDouble(final double rawValue,
+    public static final double roundDouble(final double rawValue,
                                            final int digitPrecision) {
         return BigDecimal.valueOf(rawValue)
                 .setScale(digitPrecision, BigDecimal.ROUND_HALF_UP)
                 .doubleValue();
     }
 
-    public final static double roundAmount(final double rawAmount) {
+    public static final double roundAmount(final double rawAmount) {
         return roundDouble(rawAmount, platformSettings.amountPrecision());
     }
 
-    public final static double roundPips(final double rawPips) {
+    public static final double roundPips(final double rawPips) {
         return roundDouble(rawPips, platformSettings.pipPrecision());
     }
 
-    public final static double roundPrice(final double rawPrice,
+    public static final double roundPrice(final double rawPrice,
                                           final Instrument instrument) {
         return roundDouble(rawPrice, InstrumentUtil.numberOfDigits(instrument));
     }
 
-    public final static boolean isValueDivisibleByX(final double value,
+    public static final boolean isValueDivisibleByX(final double value,
                                                     final double divisor) {
         return BigDecimal.valueOf(value)
                 .remainder(BigDecimal.valueOf(divisor))

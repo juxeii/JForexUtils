@@ -21,9 +21,9 @@ public interface PositionOrders {
 
     public Set<IOrder> get();
 
-    public Set<IOrder> filter(final Predicate<IOrder> orderPredicate);
-
     public Set<IOrder> filled();
 
     public Set<IOrder> filledOrOpened();
+
+    public Set<IOrder> filter(final Predicate<IOrder> orderPredicate);
 }

@@ -15,10 +15,7 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.UserSettings;
-
-import rx.Observable;
 
 public final class PositionSwitcher {
 
@@ -27,9 +24,9 @@ public final class PositionSwitcher {
     private final Instrument instrument;
     private final OrderParamsSupplier orderParamsSupplier;
     private final RestoreSLTPPolicy noRestoreSLTPPolicy = new NoRestorePolicy();
-    private Map<OrderDirection, FSMState> nextStatesByDirection;
     private final StateMachineConfig<FSMState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
     private final StateMachine<FSMState, FSMTrigger> fsm = new StateMachine<>(FSMState.FLAT, fsmConfig);
+    private Map<OrderDirection, FSMState> nextStatesByDirection;
 
     private enum FSMState {
         FLAT,
@@ -46,8 +43,8 @@ public final class PositionSwitcher {
         CLOSE_DONE
     }
 
-    private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
-    private final static String defaultMergePrefix = userSettings.defaultMergePrefix();
+    private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    private static final String defaultMergePrefix = userSettings.defaultMergePrefix();
 
     public PositionSwitcher(final Instrument instrument,
                             final OrderUtil orderUtil,
@@ -55,8 +52,8 @@ public final class PositionSwitcher {
         this.instrument = instrument;
         this.orderUtil = orderUtil;
         this.orderParamsSupplier = orderParamsSupplier;
-        positionOrders = orderUtil.positionOrders(instrument);
 
+        positionOrders = orderUtil.positionOrders(instrument);
         configureFSM();
     }
 
@@ -117,19 +114,16 @@ public final class PositionSwitcher {
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
         final String mergeLabel = defaultMergePrefix + adaptedOrderParams.label();
 
-        final Observable<OrderEvent> mergeObs =
-                orderUtil.mergePositionOrders(mergeLabel, instrument, noRestoreSLTPPolicy);
-
         orderUtil.submitOrder(adaptedOrderParams)
-                .concatWith(mergeObs)
-                .toCompletable()
-                .subscribe(error -> fsm.fire(FSMTrigger.MERGE_DONE),
-                           () -> fsm.fire(FSMTrigger.MERGE_DONE));
+                .concatWith(orderUtil.mergePositionOrders(mergeLabel, instrument, noRestoreSLTPPolicy))
+                .doOnTerminate(() -> fsm.fire(FSMTrigger.MERGE_DONE))
+                .subscribe();
     }
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {
         final double absPositionExposure = Math.abs(positionOrders.signedExposure());
         final OrderParams orderParams = orderParamsSupplier.forCommand(newOrderCommand);
+
         return orderParams
                 .clone()
                 .withOrderCommand(newOrderCommand)

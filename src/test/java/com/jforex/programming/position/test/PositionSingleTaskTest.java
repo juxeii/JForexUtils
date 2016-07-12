@@ -91,7 +91,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                     new OrderEvent(orderUnderTest, OrderEventType.CHANGED_SL);
             private final OrderEvent rejectEvent =
                     new OrderEvent(orderUnderTest, OrderEventType.CHANGE_SL_REJECTED);
-            private final static double newSL = 1.10123;
+            private static final double newSL = 1.10123;
             private final Runnable setSLObservableCall =
                     () -> positionSingleTask.setSLObservable(orderUnderTest, newSL).subscribe(taskSubscriber);
 
@@ -238,7 +238,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                     new OrderEvent(orderUnderTest, OrderEventType.CHANGED_TP);
             private final OrderEvent rejectEvent =
                     new OrderEvent(orderUnderTest, OrderEventType.CHANGE_TP_REJECTED);
-            private final static double newTP = 1.12123;
+            private static final double newTP = 1.12123;
             private final Runnable setTPObservableCall =
                     () -> positionSingleTask.setTPObservable(orderUnderTest, newTP).subscribe(taskSubscriber);
 

@@ -17,8 +17,8 @@ public class PositionMultiTask {
 
     private final PositionSingleTask positionSingleTask;
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    private final static Logger logger = LogManager.getLogger(PositionMultiTask.class);
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final Logger logger = LogManager.getLogger(PositionMultiTask.class);
 
     public PositionMultiTask(final PositionSingleTask positionSetSLTPTask) {
         this.positionSingleTask = positionSetSLTPTask;
@@ -52,7 +52,7 @@ public class PositionMultiTask {
                 .from(filledOrders)
                 .doOnSubscribe(() -> logger.debug("Starting remove TPSL task for position " + instrument))
                 .flatMap(this::removeSingleTPSLObservable)
-                .doOnCompleted(() -> logger.debug("Removing TPSL from " + instrument + " was successful."))
+                .doOnCompleted(() -> logger.debug("Removing TPSL task from " + instrument + " was successful."))
                 .doOnError(e -> logger.error("Removing TPSL from " + instrument
                         + " failed! Exception: " + e.getMessage()));
     }

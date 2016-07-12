@@ -9,7 +9,7 @@ import com.dukascopy.api.IMessage;
 
 public final class ReasonEventMapper {
 
-    private final static Map<IMessage.Reason, OrderEventType> orderEventByReason =
+    private static final Map<IMessage.Reason, OrderEventType> orderEventByReason =
             Maps.immutableEnumMap(ImmutableMap.<IMessage.Reason, OrderEventType> builder()
                     .put(IMessage.Reason.ORDER_FULLY_FILLED, OrderEventType.FULLY_FILLED)
                     .put(IMessage.Reason.ORDER_CLOSED_BY_MERGE, OrderEventType.CLOSED_BY_MERGE)
@@ -23,7 +23,7 @@ public final class ReasonEventMapper {
                     .put(IMessage.Reason.ORDER_CHANGED_LABEL, OrderEventType.CHANGED_LABEL)
                     .build());
 
-    public final static OrderEventType map(final IMessage.Reason reason) {
+    public static final OrderEventType map(final IMessage.Reason reason) {
         return orderEventByReason.get(reason);
     }
 }

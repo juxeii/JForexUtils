@@ -38,31 +38,31 @@ public final class OrderEventTypeSets {
     private OrderEventTypeSets() {
     }
 
-    public final static ImmutableSet<OrderEventType> allEventTypes =
+    public static final ImmutableSet<OrderEventType> allEventTypes =
             Sets.immutableEnumSet(EnumSet.allOf(OrderEventType.class));
 
-    public final static ImmutableSet<OrderEventType> intermediateEventTypes =
+    public static final ImmutableSet<OrderEventType> intermediateEventTypes =
             Sets.immutableEnumSet(SUBMIT_OK,
                                   PARTIAL_FILL_OK,
                                   PARTIAL_CLOSE_OK);
 
-    public final static ImmutableSet<OrderEventType> closeEventTypes =
+    public static final ImmutableSet<OrderEventType> closeEventTypes =
             Sets.immutableEnumSet(CLOSE_OK,
                                   CLOSED_BY_MERGE,
                                   CLOSED_BY_SL,
                                   CLOSED_BY_TP,
                                   MERGE_CLOSE_OK);
 
-    public final static ImmutableSet<OrderEventType> endOfOrderEventTypes =
+    public static final ImmutableSet<OrderEventType> endOfOrderEventTypes =
             Sets.immutableEnumSet(Sets.union(closeEventTypes,
                                              EnumSet.of(SUBMIT_REJECTED,
                                                         FILL_REJECTED,
                                                         MERGE_REJECTED)));
 
-    public final static ImmutableSet<OrderEventType> notEndOfOrderEventTypes =
+    public static final ImmutableSet<OrderEventType> notEndOfOrderEventTypes =
             Sets.immutableEnumSet(Sets.complementOf(endOfOrderEventTypes));
 
-    public final static Set<OrderEventType> finishEventTypes =
+    public static final Set<OrderEventType> finishEventTypes =
             Sets.immutableEnumSet(Sets.union(endOfOrderEventTypes,
                                              EnumSet.of(FULLY_FILLED,
                                                         CHANGED_AMOUNT,

@@ -154,8 +154,8 @@ public final class OrderParams implements Cloneable {
         private long goodTillTime;
         private String comment;
 
-        private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-        private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+        private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+        private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
         private Builder(final Instrument instrument) {
             this.instrument = instrument;

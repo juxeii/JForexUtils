@@ -33,7 +33,8 @@ public class Position implements PositionOrders {
             new MapMaker().weakKeys().makeMap();
 
     private enum OrderProcessState {
-        IDLE, ACTIVE
+        IDLE,
+        ACTIVE
     }
 
     private static final Logger logger = LogManager.getLogger(Position.class);

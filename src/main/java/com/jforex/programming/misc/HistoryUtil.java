@@ -25,7 +25,7 @@ public class HistoryUtil {
 
     private final IHistory history;
 
-    private final static Logger logger = LogManager.getLogger(HistoryUtil.class);
+    private static final Logger logger = LogManager.getLogger(HistoryUtil.class);
 
     public HistoryUtil(final IHistory history) {
         this.history = history;

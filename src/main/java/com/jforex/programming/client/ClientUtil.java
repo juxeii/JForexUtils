@@ -26,7 +26,7 @@ public final class ClientUtil {
     private JFSystemListener jfSystemListener;
     private AuthentificationUtil authentificationUtil;
 
-    private final static Logger logger = LogManager.getLogger(ClientUtil.class);
+    private static final Logger logger = LogManager.getLogger(ClientUtil.class);
 
     public ClientUtil(final IClient client,
                       final String cacheDirectory) {

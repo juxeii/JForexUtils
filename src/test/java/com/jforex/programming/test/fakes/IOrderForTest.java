@@ -41,8 +41,8 @@ public class IOrderForTest implements IOrder {
     private IOrder.State orderState = IOrder.State.CREATED;
     private String id;
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    private final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
     private IOrderForTest(final Builder builder) {
         label = builder.label;

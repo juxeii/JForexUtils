@@ -11,11 +11,11 @@ import com.jforex.programming.order.call.OrderCallReason;
 
 public final class ChangeEventMapper {
 
-    public final static Set<IMessage.Type> changeEventTypes =
+    public static final Set<IMessage.Type> changeEventTypes =
             Sets.immutableEnumSet(IMessage.Type.ORDER_CHANGED_OK,
                                   IMessage.Type.ORDER_CHANGED_REJECTED);
 
-    public final static Set<OrderCallReason> changeReasons =
+    public static final Set<OrderCallReason> changeReasons =
             Sets.immutableEnumSet(OrderCallReason.CHANGE_GTT,
                                   OrderCallReason.CHANGE_LABEL,
                                   OrderCallReason.CHANGE_PRICE,
@@ -23,7 +23,7 @@ public final class ChangeEventMapper {
                                   OrderCallReason.CHANGE_SL,
                                   OrderCallReason.CHANGE_TP);
 
-    private final static Map<OrderCallReason, OrderEventType> changeRejectEventByRequest =
+    private static final Map<OrderCallReason, OrderEventType> changeRejectEventByRequest =
             Maps.immutableEnumMap(ImmutableMap.<OrderCallReason, OrderEventType> builder()
                     .put(OrderCallReason.CHANGE_AMOUNT, OrderEventType.CHANGE_AMOUNT_REJECTED)
                     .put(OrderCallReason.CHANGE_LABEL, OrderEventType.CHANGE_LABEL_REJECTED)
@@ -33,7 +33,7 @@ public final class ChangeEventMapper {
                     .put(OrderCallReason.CHANGE_TP, OrderEventType.CHANGE_TP_REJECTED)
                     .build());
 
-    public final static OrderEventType map(final OrderCallReason orderCallReason) {
+    public static final OrderEventType map(final OrderCallReason orderCallReason) {
         return changeRejectEventByRequest.get(orderCallReason);
     }
 }

@@ -15,27 +15,27 @@ import com.dukascopy.api.IOrder;
 
 public final class TypeEventMapper {
 
-    private final static Function<IOrder, OrderEventType> submitEvaluator =
+    private static final Function<IOrder, OrderEventType> submitEvaluator =
             order -> isConditional.test(order)
                     ? OrderEventType.SUBMIT_CONDITIONAL_OK
                     : OrderEventType.SUBMIT_OK;
 
-    private final static Function<IOrder, OrderEventType> closeEvaluator =
+    private static final Function<IOrder, OrderEventType> closeEvaluator =
             order -> isFilled.test(order)
                     ? OrderEventType.PARTIAL_CLOSE_OK
                     : OrderEventType.CLOSE_OK;
 
-    private final static Function<IOrder, OrderEventType> mergeEvaluator =
+    private static final Function<IOrder, OrderEventType> mergeEvaluator =
             order -> isClosed.test(order)
                     ? OrderEventType.MERGE_CLOSE_OK
                     : OrderEventType.MERGE_OK;
 
-    private final static Function<IOrder, OrderEventType> fillEvaluator =
+    private static final Function<IOrder, OrderEventType> fillEvaluator =
             order -> order.getAmount() < order.getRequestedAmount()
                     ? OrderEventType.PARTIAL_FILL_OK
                     : OrderEventType.FULLY_FILLED;
 
-    private final static Map<IMessage.Type, Function<IOrder, OrderEventType>> orderEventByType =
+    private static final Map<IMessage.Type, Function<IOrder, OrderEventType>> orderEventByType =
             Maps.immutableEnumMap(ImmutableMap.<IMessage.Type, Function<IOrder, OrderEventType>> builder()
                     .put(IMessage.Type.NOTIFICATION,
                          order -> OrderEventType.NOTIFICATION)
@@ -61,7 +61,7 @@ public final class TypeEventMapper {
                          order -> OrderEventType.MERGE_REJECTED)
                     .build());
 
-    public final static OrderEventType map(final IOrder order,
+    public static final OrderEventType map(final IOrder order,
                                            final IMessage.Type type) {
         return orderEventByType.get(type).apply(order);
     }

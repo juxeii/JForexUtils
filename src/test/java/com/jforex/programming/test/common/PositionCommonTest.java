@@ -15,8 +15,8 @@ import rx.observers.TestSubscriber;
 public class PositionCommonTest extends InstrumentUtilForTest {
 
     public static int retryExceedCount = platformSettings.maxRetriesOnOrderFail() + 1;
-    public final static double noSL = platformSettings.noSLPrice();
-    public final static double noTP = platformSettings.noTPPrice();
+    public static final double noSL = platformSettings.noSLPrice();
+    public static final double noTP = platformSettings.noTPPrice();
 
     public Observable<OrderEvent>[] retryRejectErrorObservableArray(final OrderEvent orderEvent,
                                                                     final int times) {

@@ -31,10 +31,10 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
     private final TestSubscriber<LoginState> loginStateSubscriber = new TestSubscriber<>();
-    private final static String jnlpAddress = "http://jnlp.test.address";
-    private final static String userName = "username";
-    private final static String password = "password";
-    private final static String pin = "1234";
+    private static final String jnlpAddress = "http://jnlp.test.address";
+    private static final String userName = "username";
+    private static final String password = "password";
+    private static final String pin = "1234";
     private LoginCredentials loginCredentials;
     private LoginCredentials loginCredentialsWithPin;
 

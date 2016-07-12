@@ -13,11 +13,11 @@ import rx.schedulers.TestScheduler;
 
 public final class RxTestUtil {
 
-    private final static RxTestUtil instance = new RxTestUtil();
-    private final static TestScheduler testScheduler = new TestScheduler();
+    private static final RxTestUtil instance = new RxTestUtil();
+    private static final TestScheduler testScheduler = new TestScheduler();
 
-    private final static PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    private final static long timeDelayForAllRetries =
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final long timeDelayForAllRetries =
             platformSettings.maxRetriesOnOrderFail() * platformSettings.delayOnOrderFailRetry();
 
     static {
@@ -44,7 +44,7 @@ public final class RxTestUtil {
         }
     }
 
-    public final static RxTestUtil get() {
+    public static final RxTestUtil get() {
         return instance;
     }
 
