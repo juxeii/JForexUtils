@@ -9,12 +9,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.quote.BarQuoteParams;
@@ -22,6 +16,13 @@ import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 import com.jforex.programming.test.fakes.IBarForTest;
+
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.Period;
 
 public class HistoryUtilTest extends QuoteProviderForTest {
 
@@ -67,7 +68,7 @@ public class HistoryUtilTest extends QuoteProviderForTest {
     public void latestTickThrowsWhenHistoryReturnsNullTick() throws JFException {
         when(historyMock.getLastTick(instrumentEURUSD)).thenReturn(null);
 
-        final ITick latestTick = historyUtil.latestTick(instrumentEURUSD);
+        historyUtil.latestTick(instrumentEURUSD);
     }
 
     @Test
@@ -121,6 +122,6 @@ public class HistoryUtilTest extends QuoteProviderForTest {
         when(historyMock.getBar(instrumentEURUSD, Period.THIRTY_MINS, OfferSide.ASK, 1))
                 .thenReturn(null);
 
-        final IBar latestBar = historyUtil.latestBar(barQuoteParams);
+        historyUtil.latestBar(barQuoteParams);
     }
 }

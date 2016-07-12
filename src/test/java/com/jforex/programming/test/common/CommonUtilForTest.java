@@ -13,12 +13,6 @@ import org.apache.logging.log4j.Logger;
 import org.mockito.BDDMockito;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.system.IClient;
-import com.dukascopy.dds3.transport.msg.types.OrderDirection;
 import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
@@ -32,6 +26,13 @@ import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.test.fakes.IClientForTest;
 import com.jforex.programming.test.fakes.IEngineForTest;
+
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.system.IClient;
+import com.dukascopy.dds3.transport.msg.types.OrderDirection;
 
 public class CommonUtilForTest extends BDDMockito {
 
@@ -97,7 +98,7 @@ public class CommonUtilForTest extends BDDMockito {
     }
 
     protected void assertPrivateConstructor(final Class<?> clazz) throws Exception {
-        final Constructor constructor = clazz.getDeclaredConstructor();
+        final Constructor<?> constructor = clazz.getDeclaredConstructor();
         assertTrue(Modifier.isPrivate(constructor.getModifiers()));
         constructor.setAccessible(true);
         constructor.newInstance();
