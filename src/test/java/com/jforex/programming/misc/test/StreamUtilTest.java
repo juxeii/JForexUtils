@@ -20,6 +20,11 @@ import rx.observers.TestSubscriber;
 public class StreamUtilTest extends CommonUtilForTest {
 
     @Test
+    public void testConstructorIsPrivate() throws Exception {
+        assertPrivateConstructor(StreamUtil.class);
+    }
+
+    @Test
     public void retryCounterObservableCountsCorrect() {
         final int maxRetries = 3;
         final TestSubscriber<Integer> subscriber = new TestSubscriber<Integer>();

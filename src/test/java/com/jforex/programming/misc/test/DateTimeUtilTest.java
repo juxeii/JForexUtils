@@ -13,8 +13,9 @@ import org.junit.Test;
 
 import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.DateTimeUtil;
+import com.jforex.programming.test.common.CommonUtilForTest;
 
-public class DateTimeUtilTest {
+public class DateTimeUtilTest extends CommonUtilForTest {
 
     private final DateTimeFormatter formatter = DateTimeUtil.defaultformatter;
     private final String testDateTimeString = "2016-04-26 08:12:42.123";
@@ -26,6 +27,11 @@ public class DateTimeUtilTest {
     public void setUp() throws JFException {
         testMillis = DateTimeUtil.localMillisFromDateTime(testDateTime);
         dateTimeOfMillis = DateTimeUtil.dateTimeFromMillis(testMillis);
+    }
+
+    @Test
+    public void testConstructorIsPrivate() throws Exception {
+        assertPrivateConstructor(DateTimeUtil.class);
     }
 
     @Test

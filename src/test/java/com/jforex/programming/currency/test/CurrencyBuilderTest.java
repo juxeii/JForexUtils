@@ -18,6 +18,7 @@ import org.junit.Test;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
+import com.jforex.programming.currency.CurrencyBuilder;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 public class CurrencyBuilderTest extends CurrencyUtilForTest {
@@ -30,8 +31,10 @@ public class CurrencyBuilderTest extends CurrencyUtilForTest {
     private final Set<Instrument> instrumentsAsSet = Sets.newHashSet(instrumentEURUSD,
                                                                      instrumentUSDJPY);
 
-    private final String currencyNamesAsArray[] = currencyNamesAsSet.stream().toArray(String[]::new);
-    private final Instrument instrumentsAsArray[] = instrumentsAsSet.stream().toArray(Instrument[]::new);
+    private final String currencyNamesAsArray[] =
+            currencyNamesAsSet.stream().toArray(String[]::new);
+    private final Instrument instrumentsAsArray[] =
+            instrumentsAsSet.stream().toArray(Instrument[]::new);
 
     private ICurrency currencyForValidCurrencyName(final String currencyName) {
         return fromName(currencyName).get();
@@ -48,6 +51,11 @@ public class CurrencyBuilderTest extends CurrencyUtilForTest {
         assertTrue(currencies.contains(currencyEUR));
         assertTrue(currencies.contains(currencyUSD));
         assertTrue(currencies.contains(currencyJPY));
+    }
+
+    @Test
+    public void testConstructorIsPrivate() throws Exception {
+        assertPrivateConstructor(CurrencyBuilder.class);
     }
 
     @Test

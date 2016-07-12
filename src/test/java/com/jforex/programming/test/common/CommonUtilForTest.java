@@ -1,7 +1,10 @@
 package com.jforex.programming.test.common;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.Optional;
 
 import org.aeonbits.owner.ConfigFactory;
@@ -82,5 +85,12 @@ public class CommonUtilForTest extends BDDMockito {
         OrderCallReason.valueOf(OrderCallReason.CHANGE_AMOUNT.toString());
         ConnectionState.valueOf(ConnectionState.CONNECTED.toString());
         LoginState.valueOf(LoginState.LOGGED_IN.toString());
+    }
+
+    protected void assertPrivateConstructor(final Class<?> clazz) throws Exception {
+        final Constructor constructor = clazz.getDeclaredConstructor();
+        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 }

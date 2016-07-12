@@ -16,6 +16,7 @@ import org.junit.Test;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
+import com.jforex.programming.instrument.InstrumentBuilder;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 public class InstrumentBuilderTest extends CurrencyUtilForTest {
@@ -42,6 +43,11 @@ public class InstrumentBuilderTest extends CurrencyUtilForTest {
                                          final Set<Instrument> instruments) {
         assertThat(combineAllWithAnchorCurrency(currencyEUR, partnerCurrencies),
                    equalTo(instruments));
+    }
+
+    @Test
+    public void testConstructorIsPrivate() throws Exception {
+        assertPrivateConstructor(InstrumentBuilder.class);
     }
 
     @Test
@@ -108,7 +114,8 @@ public class InstrumentBuilderTest extends CurrencyUtilForTest {
     }
 
     @Test
-    public void testCombineAllFromCurrencySetReturnsCorrectInstrumentsForEqualCurrenciesInCollection() {
+    public void
+           testCombineAllFromCurrencySetReturnsCorrectInstrumentsForEqualCurrenciesInCollection() {
         final Set<ICurrency> currencies = Sets.newHashSet(currencyEUR,
                                                           currencyEUR,
                                                           currencyUSD,
@@ -142,7 +149,8 @@ public class InstrumentBuilderTest extends CurrencyUtilForTest {
     }
 
     @Test
-    public void testCombineAllWithAnchorCurrencyReturnsCorrectInstrumentsForEqualCurrenciesInCollection() {
+    public void
+           testCombineAllWithAnchorCurrencyReturnsCorrectInstrumentsForEqualCurrenciesInCollection() {
         final Set<ICurrency> partnerCurrencies = Sets.newHashSet(currencyEUR,
                                                                  currencyUSD,
                                                                  currencyUSD,

@@ -15,12 +15,18 @@ import org.junit.Test;
 
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
+import com.jforex.programming.currency.CurrencyUtil;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 public class CurrencyUtilTest extends CurrencyUtilForTest {
 
     private final Set<Instrument> instrumentsTestSet = Sets.newHashSet(instrumentEURUSD,
                                                                        instrumentUSDJPY);
+
+    @Test
+    public void testConstructorIsPrivate() throws Exception {
+        assertPrivateConstructor(CurrencyUtil.class);
+    }
 
     @Test
     public void testEmptyCurrencyNameIsNotValid() {
