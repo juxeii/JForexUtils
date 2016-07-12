@@ -46,7 +46,7 @@ public class PositionSingleTask {
                 .doOnError(e -> logger.debug("Failed to change SL from " + currentSL + " to " + newSL +
                         " for order " + orderToChangeSL.getLabel() + " and position "
                         + orderToChangeSL.getInstrument() + ".Excpetion: " + e.getMessage()))
-                .doOnNext(orderEvent -> logger.debug("Changed SL from " + currentSL + " to " + newSL +
+                .doOnCompleted(() -> logger.debug("Changed SL from " + currentSL + " to " + newSL +
                         " for order " + orderToChangeSL.getLabel() + " and position "
                         + orderToChangeSL.getInstrument()));
     }
@@ -66,7 +66,7 @@ public class PositionSingleTask {
                 .doOnError(e -> logger.debug("Failed to change TP from " + currentTP + " to " + newTP +
                         " for order " + orderToChangeTP.getLabel() + " and position "
                         + orderToChangeTP.getInstrument() + ".Excpetion: " + e.getMessage()))
-                .doOnNext(orderEvent -> logger.debug("Changed TP from " + currentTP + " to " + newTP +
+                .doOnCompleted(() -> logger.debug("Changed TP from " + currentTP + " to " + newTP +
                         " for order " + orderToChangeTP.getLabel() + " and position "
                         + orderToChangeTP.getInstrument()));
     }
@@ -97,7 +97,7 @@ public class PositionSingleTask {
                 .retryWhen(StreamUtil::positionTaskRetry)
                 .doOnError(e -> logger.error("Closing position " + orderToClose.getInstrument()
                         + " failed! Exception: " + e.getMessage()))
-                .doOnNext(orderEvent -> logger.debug("Closing position "
+                .doOnCompleted(() -> logger.debug("Closing position "
                         + orderToClose.getInstrument() + " was successful."));
     }
 }

@@ -139,22 +139,6 @@ public class PositionSwitcherTest extends PositionCommonTest {
             }
         }
 
-        public class WhenSubmitHasError {
-
-            @Before
-            public void setUp() {
-                when(orderUtilMock.submitOrder(any())).thenReturn(exceptionObservable());
-            }
-
-            @Test
-            public void testNoMergeCallHasBeenDone() {
-                positionSwitcher.sendBuySignal();
-
-                verify(orderUtilMock).submitOrder(any());
-                verify(orderUtilMock, never()).mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD), any());
-            }
-        }
-
         public class WhenSubmitCompleted {
 
             @Before
