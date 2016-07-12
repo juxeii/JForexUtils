@@ -2,12 +2,14 @@ package com.jforex.programming.order.event;
 
 import java.util.Map;
 
+import com.dukascopy.api.IMessage;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import com.dukascopy.api.IMessage;
+public class ReasonEventMapper {
 
-public final class ReasonEventMapper {
+    private ReasonEventMapper() {
+    }
 
     private static final Map<IMessage.Reason, OrderEventType> orderEventByReason =
             Maps.immutableEnumMap(ImmutableMap.<IMessage.Reason, OrderEventType> builder()

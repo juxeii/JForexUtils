@@ -25,7 +25,8 @@ public final class PositionSwitcher {
     private final OrderParamsSupplier orderParamsSupplier;
     private final RestoreSLTPPolicy noRestoreSLTPPolicy = new NoRestorePolicy();
     private final StateMachineConfig<FSMState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
-    private final StateMachine<FSMState, FSMTrigger> fsm = new StateMachine<>(FSMState.FLAT, fsmConfig);
+    private final StateMachine<FSMState, FSMTrigger> fsm =
+            new StateMachine<>(FSMState.FLAT, fsmConfig);
     private Map<OrderDirection, FSMState> nextStatesByDirection;
 
     private enum FSMState {
@@ -89,8 +90,10 @@ public final class PositionSwitcher {
                 .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG))
                 .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT))
                 .onEntryFrom(FSMTrigger.FLAT,
-                             () -> orderUtil.closePosition(instrument).subscribe(() -> fsm.fire(FSMTrigger.CLOSE_DONE)))
-                .permitDynamic(FSMTrigger.MERGE_DONE, () -> nextStatesByDirection.get(positionOrders.direction()))
+                             () -> orderUtil.closePosition(instrument)
+                                     .subscribe(() -> fsm.fire(FSMTrigger.CLOSE_DONE)))
+                .permitDynamic(FSMTrigger.MERGE_DONE,
+                               () -> nextStatesByDirection.get(positionOrders.direction()))
                 .permit(FSMTrigger.CLOSE_DONE, FSMState.FLAT)
                 .ignore(FSMTrigger.FLAT)
                 .ignore(FSMTrigger.BUY)
@@ -115,7 +118,9 @@ public final class PositionSwitcher {
         final String mergeLabel = defaultMergePrefix + adaptedOrderParams.label();
 
         orderUtil.submitOrder(adaptedOrderParams)
-                .concatWith(orderUtil.mergePositionOrders(mergeLabel, instrument, noRestoreSLTPPolicy))
+                .concatWith(orderUtil.mergePositionOrders(mergeLabel,
+                                                          instrument,
+                                                          noRestoreSLTPPolicy))
                 .doOnTerminate(() -> fsm.fire(FSMTrigger.MERGE_DONE))
                 .subscribe();
     }

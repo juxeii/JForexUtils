@@ -5,10 +5,9 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.math.ConversionBuilder;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
-
-import com.dukascopy.api.OfferSide;
 
 public class ConversionBuilderTest extends CurrencyUtilForTest {
 
@@ -24,11 +23,20 @@ public class ConversionBuilderTest extends CurrencyUtilForTest {
     }
 
     @Test
-    public void assertValues() {
+    public void assertValuesWhenBuildWithCurrencies() {
         new ConversionBuilder(this::convert)
                 .convertAmount(amount)
                 .fromCurrency(currencyEUR)
                 .toCurrency(currencyAUD)
+                .forOfferSide(OfferSide.ASK);
+    }
+
+    @Test
+    public void assertValuesWhenBuildWithInstruments() {
+        new ConversionBuilder(this::convert)
+                .convertAmount(amount)
+                .fromInstrument(instrumentEURUSD)
+                .toInstrument(instrumentAUDUSD)
                 .forOfferSide(OfferSide.ASK);
     }
 }

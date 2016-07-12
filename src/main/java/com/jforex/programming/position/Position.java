@@ -31,11 +31,6 @@ public class Position implements PositionOrders {
     private final ConcurrentMap<IOrder, OrderProcessState> orderRepository =
             new MapMaker().weakKeys().makeMap();
 
-    private enum OrderProcessState {
-        IDLE,
-        ACTIVE
-    }
-
     private static final Logger logger = LogManager.getLogger(Position.class);
 
     public Position(final Instrument instrument,

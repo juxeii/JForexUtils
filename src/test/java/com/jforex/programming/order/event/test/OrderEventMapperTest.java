@@ -7,18 +7,21 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
+import com.jforex.programming.order.event.ChangeEventMapper;
 import com.jforex.programming.order.event.OrderEventMapper;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.event.OrderEventTypeSets;
+import com.jforex.programming.order.event.ReasonEventMapper;
+import com.jforex.programming.order.event.TypeEventMapper;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 
@@ -54,14 +57,25 @@ public class OrderEventMapperTest extends CommonUtilForTest {
         assertThat(actualType, equalTo(expectedType));
     }
 
-    private void assertCorrectMappingForChangeRejectRefinement(final OrderCallReason orderCallReason,
-                                                               final OrderEventType expectedType) {
-        orderEventMapper.registerOrderCallRequest(new OrderCallRequest(orderUnderTest, orderCallReason));
+    private void
+            assertCorrectMappingForChangeRejectRefinement(final OrderCallReason orderCallReason,
+                                                          final OrderEventType expectedType) {
+        orderEventMapper
+                .registerOrderCallRequest(new OrderCallRequest(orderUnderTest, orderCallReason));
         assertCorrectMapping(expectedType, IMessage.Type.ORDER_CHANGED_REJECTED);
     }
 
     private void registerCallRequest(final OrderCallReason orderCallReason) {
-        orderEventMapper.registerOrderCallRequest(new OrderCallRequest(orderUnderTest, orderCallReason));
+        orderEventMapper
+                .registerOrderCallRequest(new OrderCallRequest(orderUnderTest, orderCallReason));
+    }
+
+    @Test
+    public void helperMapperClassesHavePrivateConstructors() throws Exception {
+        assertPrivateConstructor(OrderEventTypeSets.class);
+        assertPrivateConstructor(ReasonEventMapper.class);
+        assertPrivateConstructor(ChangeEventMapper.class);
+        assertPrivateConstructor(TypeEventMapper.class);
     }
 
     @Test
@@ -300,7 +314,8 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
                     @Test
                     public void eventTypeIsOpenPriceRejected() {
-                        assertThat(changeOpenPriceType, equalTo(OrderEventType.CHANGE_PRICE_REJECTED));
+                        assertThat(changeOpenPriceType,
+                                   equalTo(OrderEventType.CHANGE_PRICE_REJECTED));
                     }
 
                     public class OnChangeSL {

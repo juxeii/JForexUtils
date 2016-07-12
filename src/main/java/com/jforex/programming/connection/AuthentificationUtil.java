@@ -2,12 +2,11 @@ package com.jforex.programming.connection;
 
 import java.util.Optional;
 
+import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.misc.JFHotSubject;
 import com.jforex.programming.misc.StreamUtil;
-
-import com.dukascopy.api.system.IClient;
 
 import rx.Completable;
 import rx.Observable;
@@ -17,9 +16,10 @@ public class AuthentificationUtil {
     private final IClient client;
     private final JFHotSubject<LoginState> loginStateSubject = new JFHotSubject<>();
     private final StateMachineConfig<LoginState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
-    private final StateMachine<LoginState, FSMTrigger> fsm = new StateMachine<>(LoginState.LOGGED_OUT, fsmConfig);
+    private final StateMachine<LoginState, FSMTrigger> fsm =
+            new StateMachine<>(LoginState.LOGGED_OUT, fsmConfig);
 
-    private enum FSMTrigger {
+    public enum FSMTrigger {
         CONNECTED,
         DISCONNECTED,
         LOGOUT
@@ -33,7 +33,8 @@ public class AuthentificationUtil {
         configureFSM();
     }
 
-    private final void initConnectionStateObs(final Observable<ConnectionState> connectionStateObs) {
+    private final void
+            initConnectionStateObs(final Observable<ConnectionState> connectionStateObs) {
         connectionStateObs.subscribe(connectionState -> {
             if (connectionState == ConnectionState.CONNECTED)
                 fsm.fire(FSMTrigger.CONNECTED);
@@ -72,12 +73,12 @@ public class AuthentificationUtil {
 
         return maybePin.isPresent()
                 ? StreamUtil.CompletableFromJFRunnable(() -> client.connect(jnlpAddress,
-                                                                        username,
-                                                                        password,
-                                                                        maybePin.get()))
+                                                                            username,
+                                                                            password,
+                                                                            maybePin.get()))
                 : StreamUtil.CompletableFromJFRunnable(() -> client.connect(jnlpAddress,
-                                                                        username,
-                                                                        password));
+                                                                            username,
+                                                                            password));
     }
 
     public final void logout() {

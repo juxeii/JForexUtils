@@ -18,12 +18,16 @@ import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.system.IClient;
+import com.dukascopy.dds3.transport.msg.types.OrderDirection;
 import com.jforex.programming.client.StrategyRunState;
+import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.position.OrderProcessState;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.test.fakes.IClientForTest;
@@ -85,6 +89,11 @@ public class CommonUtilForTest extends BDDMockito {
         OrderCallReason.valueOf(OrderCallReason.CHANGE_AMOUNT.toString());
         ConnectionState.valueOf(ConnectionState.CONNECTED.toString());
         LoginState.valueOf(LoginState.LOGGED_IN.toString());
+        OrderProcessState.valueOf(OrderProcessState.ACTIVE.toString());
+        OrderEventType.valueOf(OrderEventType.SUBMIT_OK.toString());
+        OrderDirection.valueOf(OrderDirection.CLOSE.toString());
+        AuthentificationUtil.FSMTrigger
+                .valueOf(AuthentificationUtil.FSMTrigger.CONNECTED.toString());
     }
 
     protected void assertPrivateConstructor(final Class<?> clazz) throws Exception {

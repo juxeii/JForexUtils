@@ -11,6 +11,9 @@ import com.jforex.programming.order.call.OrderCallReason;
 
 public final class ChangeEventMapper {
 
+    private ChangeEventMapper() {
+    }
+
     public static final Set<IMessage.Type> changeEventTypes =
             Sets.immutableEnumSet(IMessage.Type.ORDER_CHANGED_OK,
                                   IMessage.Type.ORDER_CHANGED_REJECTED);

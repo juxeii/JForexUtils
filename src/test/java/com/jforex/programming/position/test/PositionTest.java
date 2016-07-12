@@ -12,6 +12,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
@@ -20,9 +22,6 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -48,6 +47,11 @@ public class PositionTest extends InstrumentUtilForTest {
                                 final OrderEventType orderEventType) {
         final OrderEvent orderEvent = new OrderEvent(order, orderEventType);
         orderEventSubject.onNext(orderEvent);
+    }
+
+    @Test
+    public void positionInstrumentIsCorrect() {
+        assertThat(position.instrument(), equalTo(instrumentEURUSD));
     }
 
     @Test

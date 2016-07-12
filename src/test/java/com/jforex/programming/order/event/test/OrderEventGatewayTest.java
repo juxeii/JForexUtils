@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IMessage;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -17,8 +18,6 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IMessage;
 
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
@@ -52,6 +51,19 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
         orderEventGateway.registerOrderCallRequest(orderCallRequest);
 
         verify(orderEventMapperMock).registerOrderCallRequest(orderCallRequest);
+    }
+
+    @Test
+    public void subscriberIsNotNotifiedWhenNotAnOrderRelatedMessage() {
+        final IMessage calendarMessage = new IMessageForTest(null,
+                                                             IMessage.Type.CALENDAR,
+                                                             Sets.newHashSet());
+
+        orderEventGateway.observable().subscribe(subscriber);
+        messageSubject.onNext(calendarMessage);
+
+        subscriber.assertNoErrors();
+        subscriber.assertValueCount(0);
     }
 
     @Test

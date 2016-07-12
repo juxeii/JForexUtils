@@ -7,13 +7,15 @@ import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import java.util.Map;
 import java.util.function.Function;
 
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
-
 public final class TypeEventMapper {
+
+    private TypeEventMapper() {
+    }
 
     private static final Function<IOrder, OrderEventType> submitEvaluator =
             order -> isConditional.test(order)
