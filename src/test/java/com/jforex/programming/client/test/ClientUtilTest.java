@@ -18,7 +18,6 @@ import com.jforex.programming.client.ClientUtil;
 import com.jforex.programming.client.JFSystemListener;
 import com.jforex.programming.client.StrategyRunData;
 import com.jforex.programming.connection.ConnectionState;
-import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -39,7 +38,6 @@ public class ClientUtilTest extends CommonUtilForTest {
             new TestSubscriber<>();
     private final String cacheDirectory = "cacheDirectory";
     private final BufferedImage bufferedImage = new BufferedImage(2, 2, 2);
-    private static final String jnlpAddress = "http://jnlp.test.address";
 
     @Before
     public void setUp() {
@@ -69,12 +67,6 @@ public class ClientUtilTest extends CommonUtilForTest {
 
     @Test
     public void loginCompletableIsValid() {
-        final String userName = "username";
-        final String password = "password";
-        final LoginCredentials loginCredentials = new LoginCredentials(jnlpAddress,
-                                                                       userName,
-                                                                       password);
-
         assertThat(clientUtil.loginCompletable(loginCredentials), instanceOf(Completable.class));
     }
 

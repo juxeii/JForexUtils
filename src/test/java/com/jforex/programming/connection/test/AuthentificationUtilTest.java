@@ -9,13 +9,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.dukascopy.api.system.JFAuthenticationException;
-import com.dukascopy.api.system.JFVersionException;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.test.common.CommonUtilForTest;
+
+import com.dukascopy.api.system.JFAuthenticationException;
+import com.dukascopy.api.system.JFVersionException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
@@ -31,23 +32,10 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     private final Subject<ConnectionState, ConnectionState> connectionStateObs =
             PublishSubject.create();
     private final TestSubscriber<LoginState> loginStateSubscriber = new TestSubscriber<>();
-    private static final String jnlpAddress = "http://jnlp.test.address";
-    private static final String userName = "username";
-    private static final String password = "password";
-    private static final String pin = "1234";
-    private LoginCredentials loginCredentials;
-    private LoginCredentials loginCredentialsWithPin;
 
     @Before
     public void setUp() {
         initCommonTestFramework();
-        loginCredentials = new LoginCredentials(jnlpAddress,
-                                                userName,
-                                                password);
-        loginCredentialsWithPin = new LoginCredentials(jnlpAddress,
-                                                       userName,
-                                                       password,
-                                                       pin);
 
         authentificationUtil = new AuthentificationUtil(clientMock, connectionStateObs);
         authentificationUtil.loginStateObs().subscribe(loginStateSubscriber);

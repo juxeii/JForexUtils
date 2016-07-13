@@ -11,9 +11,10 @@ import java.time.format.DateTimeFormatter;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.DateTimeUtil;
 import com.jforex.programming.test.common.CommonUtilForTest;
+
+import com.dukascopy.api.JFException;
 
 public class DateTimeUtilTest extends CommonUtilForTest {
 
@@ -79,10 +80,6 @@ public class DateTimeUtilTest extends CommonUtilForTest {
 
     @Test
     public void toDukascopyDateTimeIsCorrect() {
-        // final LocalDateTime dukaTime =
-        // DateTimeUtil.toDukascopyDateTime(testDateTime);
-
-        // assertThat(dukaTime.format(formatter), equalTo("2016-04-26
-        // 06:12:42.123"));
+        DateTimeUtil.toDukascopyDateTime(testDateTime);
     }
 }

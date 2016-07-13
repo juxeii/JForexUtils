@@ -11,10 +11,11 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.dukascopy.api.system.ClientFactory;
-import com.dukascopy.api.system.TesterFactory;
 import com.jforex.programming.client.ClientCreator;
 import com.jforex.programming.test.common.CommonUtilForTest;
+
+import com.dukascopy.api.system.ClientFactory;
+import com.dukascopy.api.system.TesterFactory;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ClientFactory.class, TesterFactory.class })
@@ -42,7 +43,7 @@ public class ClientCreatorTest extends CommonUtilForTest {
 
     @Test(expected = RuntimeException.class)
     public void exceptionIsThrownWhenClientCreationFails() throws Exception {
-        Mockito.when(ClientFactory.getDefaultInstance()).thenThrow(jfException);
+        Mockito.when(ClientFactory.getDefaultInstance()).thenThrow(new ClassNotFoundException());
 
         ClientCreator.client();
     }
@@ -56,7 +57,7 @@ public class ClientCreatorTest extends CommonUtilForTest {
 
     @Test(expected = RuntimeException.class)
     public void exceptionIsThrownWhenTesterClientCreationFails() throws Exception {
-        Mockito.when(TesterFactory.getDefaultInstance()).thenThrow(jfException);
+        Mockito.when(TesterFactory.getDefaultInstance()).thenThrow(new ClassNotFoundException());
 
         ClientCreator.testerClient();
     }
