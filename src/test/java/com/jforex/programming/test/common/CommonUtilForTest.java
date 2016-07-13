@@ -74,7 +74,7 @@ public class CommonUtilForTest extends BDDMockito {
         initMocks(this);
 
         clientForTest = new IClientForTest(clientMock);
-        engineForTest = new IEngineForTest(engineMock, jfException);
+        engineForTest = new IEngineForTest(engineMock);
 
         when(contextMock.getEngine()).thenReturn(engineMock);
         when(contextMock.getAccount()).thenReturn(accountMock);

@@ -9,14 +9,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.dukascopy.api.system.JFAuthenticationException;
+import com.dukascopy.api.system.JFVersionException;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.test.common.CommonUtilForTest;
-
-import com.dukascopy.api.system.JFAuthenticationException;
-import com.dukascopy.api.system.JFVersionException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
@@ -29,7 +28,8 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     private AuthentificationUtil authentificationUtil;
 
-    private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
+    private final Subject<ConnectionState, ConnectionState> connectionStateObs =
+            PublishSubject.create();
     private final TestSubscriber<LoginState> loginStateSubscriber = new TestSubscriber<>();
     private static final String jnlpAddress = "http://jnlp.test.address";
     private static final String userName = "username";
@@ -61,14 +61,16 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         return authentificationUtil.loginCompletable(loginCredentialsWithPin);
     }
 
-    private void assertLoginException(final Class<? extends Exception> exceptionType) {
+    private void
+            assertLoginException(final Class<? extends Exception> exceptionType) throws Exception {
         assertLoginExceptionForLoginType(this::login, exceptionType, loginCredentials);
-        assertLoginExceptionForLoginType(this::loginWithPin, exceptionType, loginCredentialsWithPin);
+        assertLoginExceptionForLoginType(this::loginWithPin, exceptionType,
+                                         loginCredentialsWithPin);
     }
 
     private void assertLoginExceptionForLoginType(final Supplier<Completable> loginCall,
                                                   final Class<? extends Exception> exceptionType,
-                                                  final LoginCredentials loginCredentials) {
+                                                  final LoginCredentials loginCredentials) throws Exception {
         clientForTest.setExceptionOnConnect(loginCredentials, exceptionType);
 
         final TestSubscriber<?> loginSubscriber = new TestSubscriber<>();
@@ -99,22 +101,22 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void testCorrectExceptionForInvalidCredentials() {
+    public void testCorrectExceptionForInvalidCredentials() throws Exception {
         assertLoginException(JFAuthenticationException.class);
     }
 
     @Test
-    public void testCorrectExceptionForInvalidVersion() {
+    public void testCorrectExceptionForInvalidVersion() throws Exception {
         assertLoginException(JFVersionException.class);
     }
 
     @Test
-    public void testCorrectExceptionForException() {
+    public void testCorrectExceptionForException() throws Exception {
         assertLoginException(Exception.class);
     }
 
     @Test
-    public void testLoginWithPinCallsClientWithPin() {
+    public void testLoginWithPinCallsClientWithPin() throws Exception {
         loginWithPin().subscribe();
 
         clientForTest.verifyConnectCall(loginCredentialsWithPin, 1);
@@ -132,7 +134,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         }
 
         @Test
-        public void testLoginCallsClient() {
+        public void testLoginCallsClient() throws Exception {
             clientForTest.verifyConnectCall(loginCredentials, 1);
         }
 

@@ -1,6 +1,5 @@
 package com.jforex.programming.test.fakes;
 
-import java.util.Collections;
 import java.util.Set;
 
 import com.dukascopy.api.IMessage;
@@ -10,16 +9,8 @@ public class IMessageForTest implements IMessage {
 
     private final IMessage.Type type;
     private final Set<Reason> reasons;
-    private IOrder order;
+    private final IOrder order;
     private String content;
-
-    public IMessageForTest(final IMessage.Type type,
-                           final String content) {
-        this.type = type;
-        this.content = content;
-        reasons = Collections.emptySet();
-        order = null;
-    }
 
     public IMessageForTest(final IOrder order,
                            final IMessage.Type type,
@@ -28,10 +19,6 @@ public class IMessageForTest implements IMessage {
         this.reasons = reasons;
         this.order = order;
         content = "";
-    }
-
-    public void setOrder(final IOrder order) {
-        this.order = order;
     }
 
     @Override

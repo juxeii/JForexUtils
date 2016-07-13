@@ -16,32 +16,28 @@ public class IClientForTest {
     }
 
     public void verifyConnectCall(final LoginCredentials loginCredentials,
-                                  final int times) {
-        try {
-            if (loginCredentials.maybePin().isPresent())
-                verify(clientMock, times(times)).connect(loginCredentials.jnlpAddress(),
-                                                         loginCredentials.username(),
-                                                         loginCredentials.password(),
-                                                         loginCredentials.maybePin().get());
-            else
-                verify(clientMock, times(times)).connect(loginCredentials.jnlpAddress(),
-                                                         loginCredentials.username(),
-                                                         loginCredentials.password());
-        } catch (final Exception e) {}
+                                  final int times) throws Exception {
+        if (loginCredentials.maybePin().isPresent())
+            verify(clientMock, times(times)).connect(loginCredentials.jnlpAddress(),
+                                                     loginCredentials.username(),
+                                                     loginCredentials.password(),
+                                                     loginCredentials.maybePin().get());
+        else
+            verify(clientMock, times(times)).connect(loginCredentials.jnlpAddress(),
+                                                     loginCredentials.username(),
+                                                     loginCredentials.password());
     }
 
     public void setExceptionOnConnect(final LoginCredentials loginCredentials,
-                                      final Class<? extends Exception> exceptionType) {
-        try {
-            if (loginCredentials.maybePin().isPresent())
-                doThrow(exceptionType).when(clientMock).connect(loginCredentials.jnlpAddress(),
-                                                                loginCredentials.username(),
-                                                                loginCredentials.password(),
-                                                                loginCredentials.maybePin().get());
-            else
-                doThrow(exceptionType).when(clientMock).connect(loginCredentials.jnlpAddress(),
-                                                                loginCredentials.username(),
-                                                                loginCredentials.password());
-        } catch (final Exception e) {}
+                                      final Class<? extends Exception> exceptionType) throws Exception {
+        if (loginCredentials.maybePin().isPresent())
+            doThrow(exceptionType).when(clientMock).connect(loginCredentials.jnlpAddress(),
+                                                            loginCredentials.username(),
+                                                            loginCredentials.password(),
+                                                            loginCredentials.maybePin().get());
+        else
+            doThrow(exceptionType).when(clientMock).connect(loginCredentials.jnlpAddress(),
+                                                            loginCredentials.username(),
+                                                            loginCredentials.password());
     }
 }

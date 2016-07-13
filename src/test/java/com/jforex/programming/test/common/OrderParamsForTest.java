@@ -1,8 +1,8 @@
 package com.jforex.programming.test.common;
 
 import com.dukascopy.api.IEngine.OrderCommand;
-import com.jforex.programming.order.OrderParams;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.OrderParams;
 
 public class OrderParamsForTest extends CommonUtilForTest {
 
@@ -31,20 +31,6 @@ public class OrderParamsForTest extends CommonUtilForTest {
                 .takeProfitPrice(1.32556)
                 .goodTillTime(userSettings.defaultGTT())
                 .comment("Test comment for sell EURUSD")
-                .build();
-    }
-
-    public static OrderParams paramsUSDJPY() {
-        return OrderParams.forInstrument(Instrument.USDJPY)
-                .withOrderCommand(OrderCommand.SELL)
-                .withAmount(0.1)
-                .withLabel("TestLabelUSDJPY")
-                .price(userSettings.defaultOpenPrice())
-                .slippage(userSettings.defaultSlippage())
-                .stopLossPrice(132.456)
-                .takeProfitPrice(132.556)
-                .goodTillTime(userSettings.defaultGTT())
-                .comment("Test comment for USDJPY")
                 .build();
     }
 }

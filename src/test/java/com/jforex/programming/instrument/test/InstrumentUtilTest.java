@@ -25,7 +25,6 @@ import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-import com.jforex.programming.test.fakes.IBarForTest;
 import com.jforex.programming.test.fakes.ITickForTest;
 
 public class InstrumentUtilTest extends CurrencyUtilForTest {
@@ -80,7 +79,7 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
                         .forInstrument(instrumentEURUSD)
                         .period(Period.THIRTY_MINS)
                         .offerSide(OfferSide.ASK);
-        final IBar testBar = new IBarForTest();
+        final IBar testBar = mock(IBar.class);
 
         when(barQuoteProviderMock.quote(quoteParams)).thenReturn(testBar);
 

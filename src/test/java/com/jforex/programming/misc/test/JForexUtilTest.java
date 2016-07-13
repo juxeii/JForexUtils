@@ -26,7 +26,6 @@ import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-import com.jforex.programming.test.fakes.IBarForTest;
 import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
@@ -178,8 +177,8 @@ public class JForexUtilTest extends QuoteProviderForTest {
         private BarQuoteProvider barQuoteProvider;
         private InstrumentUtil instrumentUtil;
         private final TestSubscriber<BarQuote> subscriber = new TestSubscriber<>();
-        private final IBarForTest askBar = new IBarForTest();
-        private final IBarForTest bidBar = new IBarForTest();
+        private final IBar askBar = mock(IBar.class);
+        private final IBar bidBar = mock(IBar.class);
         private final BarQuoteParams askBarQuoteParams = BarQuoteParams
                 .forInstrument(instrumentEURUSD)
                 .period(Period.ONE_MIN)

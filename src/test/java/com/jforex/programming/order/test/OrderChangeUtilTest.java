@@ -1,7 +1,5 @@
 package com.jforex.programming.order.test;
 
-import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,7 +46,7 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
     private void captureAndRunOrderCall(final OrderEventTypeData typeData) throws Exception {
         verify(orderUtilHandlerMock).changeObservable(orderCallCaptor.capture(),
                                                       eq(orderUnterTest),
-                                                      argLambda(td -> td == typeData));
+                                                      eq(typeData));
         orderCallCaptor.getValue().run();
     }
 

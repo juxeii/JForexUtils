@@ -1,8 +1,5 @@
 package com.jforex.programming.test.common;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import java.util.function.Supplier;
 
 import com.dukascopy.api.JFException;
@@ -28,7 +25,8 @@ public class PositionCommonTest extends InstrumentUtilForTest {
     }
 
     public Observable<OrderEvent>[] rejectObservablesForFullRetries(final OrderEvent orderEvent) {
-        return retryRejectErrorObservableArray(orderEvent, platformSettings.maxRetriesOnOrderFail());
+        return retryRejectErrorObservableArray(orderEvent,
+                                               platformSettings.maxRetriesOnOrderFail());
     }
 
     public OrderCallRejectException createRejectException(final OrderEvent orderEvent) {
@@ -57,14 +55,17 @@ public class PositionCommonTest extends InstrumentUtilForTest {
 
     public void setRetryExceededMock(final Supplier<Observable<OrderEvent>> call,
                                      final OrderEvent orderEvent) {
-        when(call.get()).thenReturn(rejectObservable(orderEvent), rejectObservablesForFullRetries(orderEvent));
+        when(call.get()).thenReturn(rejectObservable(orderEvent),
+                                    rejectObservablesForFullRetries(orderEvent));
     }
 
     public void setFullRetryMock(final Supplier<Observable<OrderEvent>> call,
                                  final OrderEvent orderEvent) {
         when(call.get())
                 .thenReturn(rejectObservable(orderEvent),
-                            retryRejectErrorObservableArray(orderEvent, platformSettings.maxRetriesOnOrderFail() - 1))
+                            retryRejectErrorObservableArray(orderEvent,
+                                                            platformSettings.maxRetriesOnOrderFail()
+                                                                    - 1))
                 .thenReturn(Observable.empty());
     }
 
@@ -76,14 +77,5 @@ public class PositionCommonTest extends InstrumentUtilForTest {
     public void assertRejectException(final TestSubscriber<?> subscriber) {
         subscriber.assertValueCount(0);
         subscriber.assertError(OrderCallRejectException.class);
-    }
-
-    public void assertOrderEventNotify(final TestSubscriber<OrderEvent> subscriber,
-                                       final OrderEvent orderEvent) {
-        subscriber.assertValueCount(1);
-        final OrderEvent receivedOrderEvent = subscriber.getOnNextEvents().get(0);
-
-        assertThat(orderEvent.order(), equalTo(receivedOrderEvent.order()));
-        assertThat(orderEvent.type(), equalTo(receivedOrderEvent.type()));
     }
 }

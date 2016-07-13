@@ -7,15 +7,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.Period;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-import com.jforex.programming.test.fakes.IBarForTest;
-
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -83,11 +81,11 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
 
         public class AfterReceivedBars {
 
-            private final IBar newEURUSDBar = new IBarForTest();
+            private final IBar newEURUSDBar = mock(IBar.class);
             private final BarQuote newEURUSDQuote = new BarQuote(quoteEURUSDParams,
                                                                  newEURUSDBar);
 
-            private final IBar newAUDUSDBar = new IBarForTest();
+            private final IBar newAUDUSDBar = mock(IBar.class);
             private final BarQuote newAUDUSDQuote = new BarQuote(quoteAUDUSDParams,
                                                                  newAUDUSDBar);
 

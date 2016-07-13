@@ -62,10 +62,6 @@ public class IOrderForTest implements IOrder {
         this.orderState = orderState;
     }
 
-    public void setID(final String id) {
-        this.id = id;
-    }
-
     @Override
     public void close() {
         amount = 0;
@@ -114,7 +110,6 @@ public class IOrderForTest implements IOrder {
 
     @Override
     public double getCommission() {
-
         return 0;
     }
 
@@ -125,7 +120,6 @@ public class IOrderForTest implements IOrder {
 
     @Override
     public long getCreationTime() {
-
         return 0;
     }
 
@@ -136,7 +130,6 @@ public class IOrderForTest implements IOrder {
 
     @Override
     public long getFillTime() {
-
         return 0;
     }
 

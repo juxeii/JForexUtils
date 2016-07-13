@@ -35,7 +35,6 @@ public class ITickForTest implements ITick {
 
     @Override
     public double[] getAsks() {
-
         return null;
     }
 

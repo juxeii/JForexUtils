@@ -1,7 +1,5 @@
 package com.jforex.programming.order.test;
 
-import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
-
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -48,10 +46,9 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
         orderCreateUtil = new OrderCreateUtil(engineMock, orderUtilHandlerMock);
     }
 
-    private void
-            captureAndRunOrderCall(final OrderEventTypeData orderEventTypeData) throws Exception {
+    private void captureAndRunOrderCall(final OrderEventTypeData typeData) throws Exception {
         verify(orderUtilHandlerMock).submitObservable(orderCallCaptor.capture(),
-                                                      argLambda(td -> td == orderEventTypeData));
+                                                      eq(typeData));
         orderCallCaptor.getValue().call();
     }
 

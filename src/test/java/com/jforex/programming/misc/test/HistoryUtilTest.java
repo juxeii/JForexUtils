@@ -9,20 +9,18 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.Sets;
-import com.jforex.programming.misc.HistoryUtil;
-import com.jforex.programming.quote.BarQuoteParams;
-import com.jforex.programming.quote.QuoteProviderException;
-import com.jforex.programming.quote.TickQuote;
-import com.jforex.programming.test.common.QuoteProviderForTest;
-import com.jforex.programming.test.fakes.IBarForTest;
-
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.google.common.collect.Sets;
+import com.jforex.programming.misc.HistoryUtil;
+import com.jforex.programming.quote.BarQuoteParams;
+import com.jforex.programming.quote.QuoteProviderException;
+import com.jforex.programming.quote.TickQuote;
+import com.jforex.programming.test.common.QuoteProviderForTest;
 
 public class HistoryUtilTest extends QuoteProviderForTest {
 
@@ -90,7 +88,7 @@ public class HistoryUtilTest extends QuoteProviderForTest {
 
     @Test
     public void latestBarIsCorrect() throws JFException {
-        final IBar testBar = new IBarForTest();
+        final IBar testBar = mock(IBar.class);
         when(historyMock.getBar(instrumentEURUSD, Period.THIRTY_MINS, OfferSide.ASK, 1))
                 .thenReturn(testBar);
 
@@ -101,7 +99,7 @@ public class HistoryUtilTest extends QuoteProviderForTest {
 
     @Test
     public void latestBarWithRetriesIsCorrect() throws JFException {
-        final IBar testBar = new IBarForTest();
+        final IBar testBar = mock(IBar.class);
         when(historyMock.getBar(instrumentEURUSD, Period.THIRTY_MINS, OfferSide.ASK, 1))
                 .thenThrow(jfException)
                 .thenThrow(jfException)
