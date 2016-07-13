@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
@@ -36,18 +35,11 @@ public final class DateTimeUtil {
         return localMillisFromDateTime(LocalDateTime.now());
     }
 
-    public static final LocalDateTime toDukascopyDateTime(final LocalDateTime dateTime) {
-        final ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.systemDefault());
-        final ZonedDateTime zonedDateTimeWithInstant =
-                zonedDateTime.withZoneSameInstant(dukascopyZoneId);
-        return zonedDateTimeWithInstant.toLocalDateTime();
-    }
-
     public static final long millisFromNano(final long nanos) {
         return TimeUnit.NANOSECONDS.toMillis(nanos);
     }
 
-    public static final String dateTimeToString(final LocalDateTime localDateTime) {
+    public static final String format(final LocalDateTime localDateTime) {
         return localDateTime.format(defaultformatter);
     }
 
