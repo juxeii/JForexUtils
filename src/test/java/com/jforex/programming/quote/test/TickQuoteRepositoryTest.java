@@ -15,9 +15,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-import com.jforex.programming.test.fakes.ITickForTest;
 
-import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -70,16 +68,10 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
 
         public class AfterReceivedQuotes {
 
-            private final ITick newEURUSDTick = new ITickForTest(bidEURUSD, askEURUSD);
-            private final TickQuote newEURUSDQuote = new TickQuote(instrumentEURUSD, newEURUSDTick);
-
-            private final ITick newAUDUSDDTick = new ITickForTest(bidAUDUSD, askAUDUSD);
-            private final TickQuote newAUDUSDQuote = new TickQuote(instrumentAUDUSD, newAUDUSDDTick);
-
             @Before
             public void setUp() {
-                quoteObservable.onNext(newEURUSDQuote);
-                quoteObservable.onNext(newAUDUSDQuote);
+                quoteObservable.onNext(tickQuoteEURUSD);
+                quoteObservable.onNext(tickQuoteAUDUSD);
             }
 
             @Test
@@ -87,7 +79,7 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
                 verifyNoMoreInteractions(historyMock);
 
                 assertThat(tickQuoteRepository.get(instrumentEURUSD),
-                           equalTo(newEURUSDQuote));
+                           equalTo(tickQuoteEURUSD));
             }
 
             @Test
@@ -95,7 +87,7 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
                 verifyNoMoreInteractions(historyMock);
 
                 assertThat(tickQuoteRepository.get(instrumentAUDUSD),
-                           equalTo(newAUDUSDQuote));
+                           equalTo(tickQuoteAUDUSD));
             }
         }
     }

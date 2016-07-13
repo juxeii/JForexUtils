@@ -9,28 +9,21 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Sets;
+import com.jforex.programming.misc.HistoryUtil;
+import com.jforex.programming.quote.QuoteProviderException;
+import com.jforex.programming.quote.TickQuote;
+import com.jforex.programming.test.common.QuoteProviderForTest;
+
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
-import com.google.common.collect.Sets;
-import com.jforex.programming.misc.HistoryUtil;
-import com.jforex.programming.quote.BarQuoteParams;
-import com.jforex.programming.quote.QuoteProviderException;
-import com.jforex.programming.quote.TickQuote;
-import com.jforex.programming.test.common.QuoteProviderForTest;
 
 public class HistoryUtilTest extends QuoteProviderForTest {
 
     private HistoryUtil historyUtil;
-
-    private final BarQuoteParams barQuoteParams =
-            BarQuoteParams
-                    .forInstrument(instrumentEURUSD)
-                    .period(Period.THIRTY_MINS)
-                    .offerSide(OfferSide.ASK);
 
     @Before
     public void setUp() {
@@ -89,10 +82,10 @@ public class HistoryUtilTest extends QuoteProviderForTest {
     @Test
     public void latestBarIsCorrect() throws JFException {
         final IBar testBar = mock(IBar.class);
-        when(historyMock.getBar(instrumentEURUSD, Period.THIRTY_MINS, OfferSide.ASK, 1))
+        when(historyMock.getBar(instrumentEURUSD, barQuotePeriod, OfferSide.ASK, 1))
                 .thenReturn(testBar);
 
-        final IBar latestBar = historyUtil.latestBar(barQuoteParams);
+        final IBar latestBar = historyUtil.latestBar(askBarEURUSDParams);
 
         assertThat(latestBar, equalTo(testBar));
     }
@@ -100,26 +93,26 @@ public class HistoryUtilTest extends QuoteProviderForTest {
     @Test
     public void latestBarWithRetriesIsCorrect() throws JFException {
         final IBar testBar = mock(IBar.class);
-        when(historyMock.getBar(instrumentEURUSD, Period.THIRTY_MINS, OfferSide.ASK, 1))
+        when(historyMock.getBar(instrumentEURUSD, barQuotePeriod, OfferSide.ASK, 1))
                 .thenThrow(jfException)
                 .thenThrow(jfException)
                 .thenThrow(jfException)
                 .thenReturn(testBar);
 
-        final IBar latestBar = historyUtil.latestBar(barQuoteParams);
+        final IBar latestBar = historyUtil.latestBar(askBarEURUSDParams);
 
         assertThat(latestBar, equalTo(testBar));
         verify(historyMock, times(4)).getBar(instrumentEURUSD,
-                                             Period.THIRTY_MINS,
+                                             barQuotePeriod,
                                              OfferSide.ASK,
                                              1);
     }
 
     @Test(expected = QuoteProviderException.class)
     public void latestBarThrowsWhenHistoryReturnsNullBar() throws JFException {
-        when(historyMock.getBar(instrumentEURUSD, Period.THIRTY_MINS, OfferSide.ASK, 1))
+        when(historyMock.getBar(instrumentEURUSD, barQuotePeriod, OfferSide.ASK, 1))
                 .thenReturn(null);
 
-        historyUtil.latestBar(barQuoteParams);
+        historyUtil.latestBar(askBarEURUSDParams);
     }
 }

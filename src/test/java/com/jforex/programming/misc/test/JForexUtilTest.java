@@ -10,24 +10,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
-import com.dukascopy.api.Unit;
-import com.google.common.collect.Sets;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-import com.jforex.programming.test.fakes.IMessageForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.OfferSide;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
@@ -81,11 +76,7 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
     @Test
     public void onMessageRouting() {
-        final IMessage message = new IMessageForTest(IOrderForTest.buyOrderEURUSD(),
-                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                     Sets.newHashSet());
-
-        jForexUtil.onMessage(message);
+        jForexUtil.onMessage(mock(IMessage.class));
     }
 
     @Test
@@ -136,13 +127,7 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
     @Test
     public void subscriptionToBarsFeedCallContext() {
-        final Period custom3MinutePeriod = Period.createCustomPeriod(Unit.Minute, 3);
-        final BarQuoteParams barQuoteParams = BarQuoteParams
-                .forInstrument(instrumentEURUSD)
-                .period(custom3MinutePeriod)
-                .offerSide(OfferSide.ASK);
-
-        jForexUtil.subscribeToBarsFeed(barQuoteParams);
+        jForexUtil.subscribeToBarsFeed(askBarEURUSDCustomPeriodParams);
 
         verify(contextMock).subscribeToBarsFeed(eq(instrumentEURUSD),
                                                 eq(custom3MinutePeriod),
@@ -177,27 +162,18 @@ public class JForexUtilTest extends QuoteProviderForTest {
         private BarQuoteProvider barQuoteProvider;
         private InstrumentUtil instrumentUtil;
         private final TestSubscriber<BarQuote> subscriber = new TestSubscriber<>();
-        private final IBar askBar = mock(IBar.class);
-        private final IBar bidBar = mock(IBar.class);
-        private final BarQuoteParams askBarQuoteParams = BarQuoteParams
-                .forInstrument(instrumentEURUSD)
-                .period(Period.ONE_MIN)
-                .offerSide(OfferSide.ASK);
-        private final BarQuoteParams bidBarQuoteParams = BarQuoteParams
-                .forInstrument(instrumentEURUSD)
-                .period(Period.ONE_MIN)
-                .offerSide(OfferSide.BID);
+        private Runnable pushBar;
 
         @Before
         public void setUp() {
             barQuoteProvider = jForexUtil.barQuoteProvider();
             barQuoteProvider.observable().subscribe(subscriber);
             instrumentUtil = jForexUtil.instrumentUtil(instrumentEURUSD);
-
-            jForexUtil.onBar(instrumentEURUSD,
-                             Period.ONE_MIN,
-                             askBar,
-                             bidBar);
+            pushBar = () -> jForexUtil.onBar(instrumentEURUSD,
+                                             barQuotePeriod,
+                                             askBarEURUSD,
+                                             bidBarEURUSD);
+            pushBar.run();
         }
 
         @Test
@@ -205,39 +181,29 @@ public class JForexUtilTest extends QuoteProviderForTest {
             subscriber.assertNoErrors();
             subscriber.assertValueCount(2);
 
-            final BarQuote askBarQuote = subscriber.getOnNextEvents().get(0);
-            assertThat(askBarQuote.instrument(), equalTo(instrumentEURUSD));
-            assertThat(askBarQuote.period(), equalTo(Period.ONE_MIN));
-            assertThat(askBarQuote.offerSide(), equalTo(OfferSide.ASK));
-            assertThat(askBarQuote.bar(), equalTo(askBar));
-
-            final BarQuote bidBarQuote = subscriber.getOnNextEvents().get(1);
-            assertThat(bidBarQuote.instrument(), equalTo(instrumentEURUSD));
-            assertThat(bidBarQuote.period(), equalTo(Period.ONE_MIN));
-            assertThat(bidBarQuote.offerSide(), equalTo(OfferSide.BID));
-            assertThat(bidBarQuote.bar(), equalTo(bidBar));
+            assertEqualBarQuotes(subscriber.getOnNextEvents().get(0),
+                                 askBarQuoteEURUSD);
+            assertEqualBarQuotes(subscriber.getOnNextEvents().get(1),
+                                 bidBarQuoteEURUSD);
         }
 
         @Test
         public void instrumentUtilHasAskBar() {
-            final IBar bar = instrumentUtil.bar(askBarQuoteParams);
+            final IBar bar = instrumentUtil.bar(askBarEURUSDParams);
 
-            assertThat(bar, equalTo(askBar));
+            assertThat(bar, equalTo(askBarEURUSD));
         }
 
         @Test
         public void instrumentUtilHasBidBar() {
-            assertThat(instrumentUtil.bar(bidBarQuoteParams), equalTo(bidBar));
+            assertThat(instrumentUtil.bar(bidBarEURUSDParams), equalTo(bidBarEURUSD));
         }
 
         @Test
         public void onStopUnsubscribesFromBars() {
             jForexUtil.onStop();
 
-            jForexUtil.onBar(instrumentEURUSD,
-                             Period.ONE_MIN,
-                             askBar,
-                             bidBar);
+            pushBar.run();
 
             subscriber.assertValueCount(2);
         }
@@ -246,10 +212,7 @@ public class JForexUtilTest extends QuoteProviderForTest {
         public void barIsNotPushedWhenMarketIsClosed() {
             when(dataServiceMock.isOfflineTime(anyLong())).thenReturn(true);
 
-            jForexUtil.onBar(instrumentEURUSD,
-                             Period.ONE_MIN,
-                             askBar,
-                             bidBar);
+            pushBar.run();
 
             subscriber.assertValueCount(2);
         }
@@ -275,9 +238,8 @@ public class JForexUtilTest extends QuoteProviderForTest {
             subscriber.assertNoErrors();
             subscriber.assertValueCount(1);
 
-            final TickQuote tickQuote = subscriber.getOnNextEvents().get(0);
-            assertThat(tickQuote.instrument(), equalTo(instrumentEURUSD));
-            assertThat(tickQuote.tick(), equalTo(tickEURUSD));
+            assertEqualTickQuotes(subscriber.getOnNextEvents().get(0),
+                                  tickQuoteEURUSD);
         }
 
         @Test

@@ -7,12 +7,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
+
+import com.dukascopy.api.OfferSide;
 
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -47,9 +48,9 @@ public class TickQuoteHandlerTest extends QuoteProviderForTest {
 
     private void setUpMocks() {
         when(tickQuoteRepositoryMock.get(instrumentEURUSD))
-                .thenReturn(new TickQuote(instrumentEURUSD, tickEURUSD));
+                .thenReturn(tickQuoteEURUSD);
         when(tickQuoteRepositoryMock.get(instrumentAUDUSD))
-                .thenReturn(new TickQuote(instrumentAUDUSD, tickAUDUSD));
+                .thenReturn(tickQuoteAUDUSD);
     }
 
     private void assertCommonEmittedTicks(final TestSubscriber<TickQuote> subscriber) {

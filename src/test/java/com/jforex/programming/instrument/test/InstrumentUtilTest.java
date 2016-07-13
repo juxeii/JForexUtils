@@ -14,20 +14,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.quote.BarQuoteHandler;
-import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.quote.TickQuoteHandler;
-import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 import com.jforex.programming.test.fakes.ITickForTest;
 
-public class InstrumentUtilTest extends CurrencyUtilForTest {
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.ITick;
+
+public class InstrumentUtilTest extends QuoteProviderForTest {
 
     private InstrumentUtil instrumentUtil;
 
@@ -46,13 +43,16 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
         initCommonTestFramework();
         setUpMocks();
 
-        instrumentUtil =
-                new InstrumentUtil(instrumentEURUSD, tickQuoteProviderMock, barQuoteProviderMock);
+        instrumentUtil = new InstrumentUtil(instrumentEURUSD,
+                                            tickQuoteProviderMock,
+                                            barQuoteProviderMock);
     }
 
     private void setUpMocks() {
-        QuoteProviderForTest.setQuoteExpectations(tickQuoteProviderMock, instrumentEURUSD,
-                                                  bidEURUSD, askEURUSD);
+        QuoteProviderForTest.setQuoteExpectations(tickQuoteProviderMock,
+                                                  instrumentEURUSD,
+                                                  bidEURUSD,
+                                                  askEURUSD);
     }
 
     @Test
@@ -74,16 +74,11 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
 
     @Test
     public void barQuoteReturnsQuoteFromQuoteProvider() {
-        final BarQuoteParams quoteParams =
-                BarQuoteParams
-                        .forInstrument(instrumentEURUSD)
-                        .period(Period.THIRTY_MINS)
-                        .offerSide(OfferSide.ASK);
         final IBar testBar = mock(IBar.class);
 
-        when(barQuoteProviderMock.quote(quoteParams)).thenReturn(testBar);
+        when(barQuoteProviderMock.quote(askBarEURUSDParams)).thenReturn(testBar);
 
-        assertThat(instrumentUtil.bar(quoteParams), equalTo(testBar));
+        assertThat(instrumentUtil.bar(askBarEURUSDParams), equalTo(testBar));
     }
 
     @Test

@@ -7,13 +7,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.OfferSide;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;
+
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.OfferSide;
 
 public class RiskPercentMMTest extends CurrencyUtilForTest {
 
