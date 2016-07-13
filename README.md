@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/juxeii/JForexUtils.svg?branch=master)](https://travis-ci.org/juxeii/JForexUtils)
-[![Coverage Status](https://coveralls.io/repos/juxeii/JForexUtils/badge.svg?branch=master)](https://coveralls.io/r/juxeii/JForexUtils?branch=master) 
+[![Coverage Status](https://coveralls.io/repos/github/juxeii/JForexUtils/badge.svg?branch=master)](https://coveralls.io/github/juxeii/JForexUtils?branch=master)
 
 JForexUtils 
 ===========
