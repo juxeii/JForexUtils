@@ -125,9 +125,8 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        @SuppressWarnings("unchecked")
         public void onErrorExceptionIsEmitted() throws InterruptedException, ExecutionException {
-            when(futureMock.get()).thenThrow(InterruptedException.class);
+            when(futureMock.get()).thenThrow(new InterruptedException(""));
 
             executorCall.run();
 

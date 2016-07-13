@@ -65,7 +65,7 @@ public class PositionCommonTest extends InstrumentUtilForTest {
                 .thenReturn(rejectObservable(orderEvent),
                             retryRejectErrorObservableArray(orderEvent,
                                                             platformSettings.maxRetriesOnOrderFail()
-                                                                    - 1))
+                                                                        - 1))
                 .thenReturn(Observable.empty());
     }
 

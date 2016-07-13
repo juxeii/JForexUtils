@@ -71,7 +71,6 @@ public class ClientUtilTest extends CommonUtilForTest {
     public void loginCompletableIsValid() {
         final String userName = "username";
         final String password = "password";
-        final String pin = "1234";
         final LoginCredentials loginCredentials = new LoginCredentials(jnlpAddress,
                                                                        userName,
                                                                        password);

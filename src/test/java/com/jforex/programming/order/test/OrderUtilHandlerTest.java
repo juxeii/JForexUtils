@@ -13,6 +13,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -25,9 +27,6 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -155,7 +154,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             public void testMergeOrderRegisteredAtGateway() {
                 verify(orderEventGatewayMock)
                         .registerOrderCallRequest(argLambda(req -> req.order() == mergeOrder
-                                && req.reason() == OrderCallReason.MERGE));
+                                                                   && req.reason() == OrderCallReason.MERGE));
             }
 
             @Test
@@ -196,10 +195,9 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         private final Supplier<Observable<OrderEvent>> runCall =
                 () -> orderUtilHandler.changeObservable(orderCall, orderToChange, OrderEventTypeData.closeData);
 
-        @SuppressWarnings("unchecked")
         @Before
         public void setUp() {
-            when(orderCallExecutorMock.callObservable(any(Callable.class)))
+            when(orderCallExecutorMock.callObservable(any()))
                     .thenReturn(Observable.just(orderToChange));
         }
 
@@ -253,7 +251,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             public void testMergeOrderRegisteredAtGateway() {
                 verify(orderEventGatewayMock)
                         .registerOrderCallRequest(argLambda(req -> req.order() == orderToChange
-                                && req.reason() == OrderCallReason.CLOSE));
+                                                                   && req.reason() == OrderCallReason.CLOSE));
             }
 
             @Test

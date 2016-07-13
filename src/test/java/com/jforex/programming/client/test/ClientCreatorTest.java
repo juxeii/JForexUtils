@@ -42,7 +42,7 @@ public class ClientCreatorTest extends CommonUtilForTest {
 
     @Test(expected = RuntimeException.class)
     public void exceptionIsThrownWhenClientCreationFails() throws Exception {
-        Mockito.when(ClientFactory.getDefaultInstance()).thenThrow(ClassNotFoundException.class);
+        Mockito.when(ClientFactory.getDefaultInstance()).thenThrow(jfException);
 
         ClientCreator.client();
     }
@@ -56,7 +56,7 @@ public class ClientCreatorTest extends CommonUtilForTest {
 
     @Test(expected = RuntimeException.class)
     public void exceptionIsThrownWhenTesterClientCreationFails() throws Exception {
-        Mockito.when(TesterFactory.getDefaultInstance()).thenThrow(ClassNotFoundException.class);
+        Mockito.when(TesterFactory.getDefaultInstance()).thenThrow(jfException);
 
         ClientCreator.testerClient();
     }

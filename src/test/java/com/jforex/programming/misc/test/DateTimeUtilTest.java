@@ -79,8 +79,10 @@ public class DateTimeUtilTest extends CommonUtilForTest {
 
     @Test
     public void toDukascopyDateTimeIsCorrect() {
-        final LocalDateTime dukaTime = DateTimeUtil.toDukascopyDateTime(testDateTime);
+        // final LocalDateTime dukaTime =
+        // DateTimeUtil.toDukascopyDateTime(testDateTime);
 
-        // assertThat(dukaTime.format(formatter), equalTo("2016-04-26 06:12:42.123"));
+        // assertThat(dukaTime.format(formatter), equalTo("2016-04-26
+        // 06:12:42.123"));
     }
 }
