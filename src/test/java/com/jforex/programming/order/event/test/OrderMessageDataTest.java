@@ -11,7 +11,6 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.test.common.CommonUtilForTest;
-import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
 import com.dukascopy.api.IMessage;
@@ -19,47 +18,41 @@ import com.dukascopy.api.IOrder;
 
 public class OrderMessageDataTest extends CommonUtilForTest {
 
-    private OrderMessageData orderEventDataByDedicatedParams;
-    private OrderMessageData orderEventDataByMessage;
+    private OrderMessageData orderMessageData;
 
-    private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
-    private IMessageForTest message;
+    private final IOrderForTest testOrder = IOrderForTest.buyOrderEURUSD();
     private final IOrder.State orderState = IOrder.State.FILLED;
     private final IMessage.Type messageType = IMessage.Type.ORDER_CHANGED_OK;
     private final Set<IMessage.Reason> messageReasons = Sets.newHashSet();
+    private final IMessage message = mockForIMessage(testOrder,
+                                                     messageType,
+                                                     messageReasons);
 
     @Before
     public void setUp() {
         initCommonTestFramework();
+        testOrder.setState(IOrder.State.FILLED);
 
-        orderUnderTest.setState(IOrder.State.FILLED);
-        message = new IMessageForTest(orderUnderTest, messageType, messageReasons);
-
-        orderEventDataByDedicatedParams = new OrderMessageData(message);
-        orderEventDataByMessage = new OrderMessageData(message);
+        orderMessageData = new OrderMessageData(message);
     }
 
     @Test
     public void testOrderReturnsCorrectOrderInstance() {
-        assertThat(orderEventDataByDedicatedParams.order(), equalTo(orderUnderTest));
-        assertThat(orderEventDataByMessage.order(), equalTo(orderUnderTest));
+        assertThat(orderMessageData.order(), equalTo(testOrder));
     }
 
     @Test
     public void testOrderStateReturnsCorrectState() {
-        assertThat(orderEventDataByDedicatedParams.orderState(), equalTo(orderState));
-        assertThat(orderEventDataByMessage.orderState(), equalTo(orderState));
+        assertThat(orderMessageData.orderState(), equalTo(orderState));
     }
 
     @Test
     public void testMessageTypeReturnsCorrectType() {
-        assertThat(orderEventDataByDedicatedParams.messageType(), equalTo(messageType));
-        assertThat(orderEventDataByMessage.messageType(), equalTo(messageType));
+        assertThat(orderMessageData.messageType(), equalTo(messageType));
     }
 
     @Test
     public void testMessageReasonsReturnsCorrectReasons() {
-        assertThat(orderEventDataByDedicatedParams.messageReasons(), equalTo(messageReasons));
-        assertThat(orderEventDataByMessage.messageReasons(), equalTo(messageReasons));
+        assertThat(orderMessageData.messageReasons(), equalTo(messageReasons));
     }
 }

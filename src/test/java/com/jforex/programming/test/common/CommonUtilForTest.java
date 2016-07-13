@@ -6,6 +6,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Optional;
+import java.util.Set;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
@@ -35,6 +36,9 @@ import com.dukascopy.api.IContext;
 import com.dukascopy.api.IDataService;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IMessage.Reason;
+import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.system.IClient;
 import com.dukascopy.api.system.ITesterClient;
@@ -120,6 +124,24 @@ public class CommonUtilForTest extends BDDMockito {
         Thread.currentThread().setName(threadName);
     }
 
+    protected void assertPrivateConstructor(final Class<?> clazz) throws Exception {
+        final Constructor<?> constructor = clazz.getDeclaredConstructor();
+        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        constructor.newInstance();
+    }
+
+    protected IMessage mockForIMessage(final IOrder order,
+                                       final IMessage.Type type,
+                                       final Set<Reason> reasons) {
+        final IMessage messageMock = spy(IMessage.class);
+        when(messageMock.getOrder()).thenReturn(order);
+        when(messageMock.getType()).thenReturn(type);
+        when(messageMock.getReasons()).thenReturn(reasons);
+
+        return messageMock;
+    }
+
     private void coverageOnEnumsCorrection() {
         StrategyRunState.valueOf(StrategyRunState.STARTED.toString());
         OrderCallReason.valueOf(OrderCallReason.CHANGE_AMOUNT.toString());
@@ -134,12 +156,5 @@ public class CommonUtilForTest extends BDDMockito {
                 .valueOf(PositionSwitcher.FSMTrigger.FLAT.toString());
         PositionSwitcher.FSMState
                 .valueOf(PositionSwitcher.FSMState.FLAT.toString());
-    }
-
-    protected void assertPrivateConstructor(final Class<?> clazz) throws Exception {
-        final Constructor<?> constructor = clazz.getDeclaredConstructor();
-        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
-        constructor.setAccessible(true);
-        constructor.newInstance();
     }
 }

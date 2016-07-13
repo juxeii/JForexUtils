@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IMessage;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -16,8 +15,9 @@ import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventMapper;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
-import com.jforex.programming.test.fakes.IMessageForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IMessage;
 
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
@@ -32,9 +32,9 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
     private final Subject<IMessage, IMessage> messageSubject = PublishSubject.create();
-    private final IMessage message = new IMessageForTest(orderUnderTest,
-                                                         IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                         Sets.newHashSet());
+    private final IMessage message = mockForIMessage(orderUnderTest,
+                                                     IMessage.Type.ORDER_CHANGED_REJECTED,
+                                                     Sets.newHashSet());
 
     @Before
     public void setUp() {
@@ -55,9 +55,9 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Test
     public void subscriberIsNotNotifiedWhenNotAnOrderRelatedMessage() {
-        final IMessage calendarMessage = new IMessageForTest(null,
-                                                             IMessage.Type.CALENDAR,
-                                                             Sets.newHashSet());
+        final IMessage calendarMessage = mockForIMessage(null,
+                                                         IMessage.Type.CALENDAR,
+                                                         Sets.newHashSet());
 
         orderEventGateway.observable().subscribe(subscriber);
         messageSubject.onNext(calendarMessage);
