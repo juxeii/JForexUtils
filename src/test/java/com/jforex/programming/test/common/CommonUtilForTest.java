@@ -88,6 +88,9 @@ public class CommonUtilForTest extends BDDMockito {
         when(jforexUtilMock.historyUtil()).thenReturn(historyUtilMock);
 
         coverageOnEnumsCorrection();
+        try {
+            assertPrivateConstructor(OrderParamsForTest.class);
+        } catch (final Exception e) {}
     }
 
     public static void setStrategyThread() {

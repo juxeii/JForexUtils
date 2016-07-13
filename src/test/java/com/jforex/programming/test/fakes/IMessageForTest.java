@@ -10,7 +10,7 @@ public class IMessageForTest implements IMessage {
     private final IMessage.Type type;
     private final Set<Reason> reasons;
     private final IOrder order;
-    private String content;
+    private final String content;
 
     public IMessageForTest(final IOrder order,
                            final IMessage.Type type,
@@ -34,10 +34,6 @@ public class IMessageForTest implements IMessage {
     @Override
     public String getContent() {
         return content;
-    }
-
-    public void setContent(final String content) {
-        this.content = content;
     }
 
     @Override

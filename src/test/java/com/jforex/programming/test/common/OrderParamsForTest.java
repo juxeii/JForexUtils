@@ -6,6 +6,9 @@ import com.jforex.programming.order.OrderParams;
 
 public class OrderParamsForTest extends CommonUtilForTest {
 
+    private OrderParamsForTest() {
+    }
+
     public static OrderParams paramsBuyEURUSD() {
         return OrderParams.forInstrument(Instrument.EURUSD)
                 .withOrderCommand(OrderCommand.BUY)

@@ -304,8 +304,8 @@ public class IOrderForTest implements IOrder {
 
         private double stopLossPrice;
         private double takeProfitPrice;
-        private double openPrice;
-        private double requestedAmount;
+        private final double openPrice;
+        private final double requestedAmount;
         private long goodTillTime;
         private String comment;
 
@@ -333,16 +333,6 @@ public class IOrderForTest implements IOrder {
 
         public Builder takeProfitPrice(final double takeProfitPrice) {
             this.takeProfitPrice = takeProfitPrice;
-            return this;
-        }
-
-        public Builder openPrice(final double openPrice) {
-            this.openPrice = openPrice;
-            return this;
-        }
-
-        public Builder requestedAmount(final double requestedAmount) {
-            this.requestedAmount = requestedAmount;
             return this;
         }
 
@@ -420,14 +410,6 @@ public class IOrderForTest implements IOrder {
                                          Instrument.AUDUSD,
                                          OrderCommand.SELL,
                                          0.12)
-                                                 .build();
-    }
-
-    public static IOrderForTest orderUSDJPY() {
-        return new IOrderForTest.Builder("TestLabelUSDJPY",
-                                         Instrument.USDJPY,
-                                         OrderCommand.SELL,
-                                         0.25)
                                                  .build();
     }
 
