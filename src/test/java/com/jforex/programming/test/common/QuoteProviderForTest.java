@@ -7,7 +7,6 @@ import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteHandler;
-import com.jforex.programming.test.fakes.ITickForTest;
 
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ITick;
@@ -18,8 +17,8 @@ import com.dukascopy.api.Unit;
 
 public class QuoteProviderForTest extends CurrencyUtilForTest {
 
-    public final ITick tickEURUSD = new ITickForTest(bidEURUSD, askEURUSD);
-    public final ITick tickAUDUSD = new ITickForTest(bidAUDUSD, askAUDUSD);
+    public final ITick tickEURUSD = mockForITick(bidEURUSD, askEURUSD);
+    public final ITick tickAUDUSD = mockForITick(bidAUDUSD, askAUDUSD);
 
     public final TickQuote tickQuoteEURUSD = new TickQuote(instrumentEURUSD, tickEURUSD);
     public final TickQuote tickQuoteAUDUSD = new TickQuote(instrumentAUDUSD, tickAUDUSD);
@@ -83,11 +82,20 @@ public class QuoteProviderForTest extends CurrencyUtilForTest {
                                             final Instrument instrument,
                                             final double bid,
                                             final double ask) {
-        final ITick tick = new ITickForTest(bid, ask);
+        final ITick tick = mock(ITick.class);
         when(quoteProviderMock.tick(instrument)).thenReturn(tick);
         when(quoteProviderMock.ask(instrument)).thenReturn(ask);
         when(quoteProviderMock.bid(instrument)).thenReturn(bid);
         when(quoteProviderMock.forOfferSide(instrument, OfferSide.ASK)).thenReturn(ask);
         when(quoteProviderMock.forOfferSide(instrument, OfferSide.BID)).thenReturn(bid);
+    }
+
+    protected ITick mockForITick(final double bid,
+                                 final double ask) {
+        final ITick tickMock = mock(ITick.class);
+        when(tickMock.getBid()).thenReturn(bid);
+        when(tickMock.getAsk()).thenReturn(ask);
+
+        return tickMock;
     }
 }

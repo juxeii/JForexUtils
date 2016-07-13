@@ -19,10 +19,8 @@ import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-import com.jforex.programming.test.fakes.ITickForTest;
 
 import com.dukascopy.api.IBar;
-import com.dukascopy.api.ITick;
 
 public class InstrumentUtilTest extends QuoteProviderForTest {
 
@@ -36,7 +34,6 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
     private IBar askBar;
     @Mock
     private IBar bidBar;
-    private final ITick tickEURUSD = new ITickForTest(bidEURUSD, askEURUSD);
 
     @Before
     public void setUp() {

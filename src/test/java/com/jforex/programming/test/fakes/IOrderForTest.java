@@ -11,6 +11,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.settings.UserSettings;
+import com.jforex.programming.test.common.OrderParamsForTest;
+
 import com.dukascopy.api.ICloseOrder;
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IFillOrder;
@@ -19,10 +24,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.settings.PlatformSettings;
-import com.jforex.programming.settings.UserSettings;
-import com.jforex.programming.test.common.OrderParamsForTest;
 
 public class IOrderForTest implements IOrder {
 
@@ -411,30 +412,6 @@ public class IOrderForTest implements IOrder {
                                          OrderCommand.SELL,
                                          0.12)
                                                  .build();
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (o == null)
-            return false;
-        if (!(o instanceof IOrder))
-            return false;
-
-        final IOrder other = (IOrder) o;
-        if (this.orderState != other.getState())
-            return false;
-        if (this.amount != other.getAmount())
-            return false;
-        if (!this.id.equals(other.getId()))
-            return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        final int hash = (int) (orderState.ordinal() * amount * id.hashCode());
-        return hash;
     }
 
     @Override
