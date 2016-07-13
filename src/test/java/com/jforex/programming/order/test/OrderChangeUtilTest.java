@@ -9,6 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderChangeUtil;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -53,8 +54,9 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
 
     private void setUpHanderMock(final OrderEventTypeData orderEventTypeData) {
         when(orderUtilHandlerMock
-                .changeObservable(orderCallCaptor.capture(), eq(orderUnterTest), eq(orderEventTypeData)))
-                        .thenReturn(changeObservable);
+                .changeObservable(orderCallCaptor.capture(), eq(orderUnterTest),
+                                  eq(orderEventTypeData)))
+                                          .thenReturn(changeObservable);
     }
 
     private void assertNotification() {
@@ -81,6 +83,19 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         public void testCallIsDoneOnOrder() {
             verify(orderUnterTest).close();
         }
+
+        @Test
+        public void jfExceptionOnCloseGetsPushed() {
+            when(orderUtilHandlerMock
+                    .changeObservable(any(),
+                                      eq(orderUnterTest),
+                                      eq(typeData)))
+                                              .thenReturn(Observable.error(jfException));
+
+            orderChangeUtil.close(orderUnterTest).subscribe(changeSubscriber);
+
+            changeSubscriber.assertError(JFException.class);
+        }
     }
 
     public class SetLabelCall {
@@ -101,6 +116,19 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         @Test
         public void testCallIsDoneOnOrder() {
             verify(orderUnterTest).setLabel(newLabel);
+        }
+
+        @Test
+        public void jfExceptionOnSetLabelGetsPushed() {
+            when(orderUtilHandlerMock
+                    .changeObservable(any(),
+                                      eq(orderUnterTest),
+                                      eq(typeData)))
+                                              .thenReturn(Observable.error(jfException));
+
+            orderChangeUtil.setLabel(orderUnterTest, newLabel).subscribe(changeSubscriber);
+
+            changeSubscriber.assertError(JFException.class);
         }
     }
 
@@ -155,7 +183,8 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
-            orderChangeUtil.setRequestedAmount(orderUnterTest, newRequestedAmount).subscribe(changeSubscriber);
+            orderChangeUtil.setRequestedAmount(orderUnterTest, newRequestedAmount)
+                    .subscribe(changeSubscriber);
 
             captureAndRunOrderCall(typeData);
             assertNotification();

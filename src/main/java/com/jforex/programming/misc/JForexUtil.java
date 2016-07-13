@@ -3,6 +3,17 @@ package com.jforex.programming.misc;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
 
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IDataService;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.ITick;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.mm.RiskPercentMM;
@@ -28,18 +39,6 @@ import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
-
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IDataService;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.ITick;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
-import com.dukascopy.api.Period;
 
 public class JForexUtil {
 
@@ -75,8 +74,10 @@ public class JForexUtil {
     private final JFHotSubject<BarQuote> barQuoteSubject = new JFHotSubject<>();
     private final JFHotSubject<IMessage> messageSubject = new JFHotSubject<>();
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    private static final PlatformSettings platformSettings =
+            ConfigFactory.create(PlatformSettings.class);
+    private static final UserSettings userSettings =
+            ConfigFactory.create(UserSettings.class);
 
     public JForexUtil(final IContext context) {
         this.context = context;
@@ -182,6 +183,9 @@ public class JForexUtil {
     }
 
     public void onStop() {
+        tickQuoteSubject.unsubscribe();
+        barQuoteSubject.unsubscribe();
+        messageSubject.unsubscribe();
     }
 
     public void onMessage(final IMessage message) {
@@ -200,18 +204,27 @@ public class JForexUtil {
         return !userSettings.enableWeekendQuoteFilter() || !isMarketClosed(time);
     }
 
+    public boolean isMarketClosed() {
+        return isMarketClosed(DateTimeUtil.localMillisNow());
+    }
+
+    public boolean isMarketClosed(final long time) {
+        return dataService.isOfflineTime(time);
+    }
+
     public void onBar(final Instrument instrument,
                       final Period period,
                       final IBar askBar,
                       final IBar bidBar) {
+        System.out.println("VAAAAAAAAALLLL " + userSettings.enableWeekendQuoteFilter());
         onOfferSidedBar(instrument, period, OfferSide.ASK, askBar);
         onOfferSidedBar(instrument, period, OfferSide.BID, bidBar);
     }
 
-    public void onOfferSidedBar(final Instrument instrument,
-                                final Period period,
-                                final OfferSide offerside,
-                                final IBar askBar) {
+    private final void onOfferSidedBar(final Instrument instrument,
+                                       final Period period,
+                                       final OfferSide offerside,
+                                       final IBar askBar) {
         if (shouldForwardQuote(askBar.getTime())) {
             final BarQuoteParams quoteParams = BarQuoteParams
                     .forInstrument(instrument)
@@ -229,19 +242,11 @@ public class JForexUtil {
                                     this::onOfferSidedBar);
     }
 
-    public boolean isMarketClosed() {
-        return isMarketClosed(DateTimeUtil.localMillisNow());
-    }
-
-    public boolean isMarketClosed(final long time) {
-        return dataService.isOfflineTime(time);
-    }
-
-    public static boolean isStrategyThread() {
+    public static final boolean isStrategyThread() {
         return StringUtils.startsWith(threadName(), platformSettings.strategyThreadPrefix());
     }
 
-    public static String threadName() {
+    public static final String threadName() {
         return Thread.currentThread().getName();
     }
 }

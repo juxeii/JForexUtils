@@ -17,7 +17,8 @@ import rx.Observable;
 
 public final class StreamUtil {
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings =
+            ConfigFactory.create(PlatformSettings.class);
     private static final long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
     private static final int maxRetriesOnOrderFail = platformSettings.maxRetriesOnOrderFail();
     private static final Logger logger = LogManager.getLogger(StreamUtil.class);
@@ -25,19 +26,8 @@ public final class StreamUtil {
     private StreamUtil() {
     }
 
-    public static final Observable<Long> retryWithDelay(final Observable<? extends Throwable> errors,
-                                                        final long delay,
-                                                        final TimeUnit timeUnit,
-                                                        final int maxRetries) {
-        return errors
-                .zipWith(retryCounterObservable(maxRetries), Pair::of)
-                .flatMap(retryPair -> evaluateRetryPair(retryPair,
-                                                        delay,
-                                                        timeUnit,
-                                                        maxRetries));
-    }
-
-    public static final Observable<Long> positionTaskRetry(final Observable<? extends Throwable> errors) {
+    public static final Observable<Long>
+           positionTaskRetry(final Observable<? extends Throwable> errors) {
         return errors
                 .flatMap(StreamUtil::filterErrorType)
                 .zipWith(retryCounterObservable(maxRetriesOnOrderFail), Pair::of)
@@ -58,10 +48,11 @@ public final class StreamUtil {
         });
     }
 
-    private static final Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair,
-                                                            final long delay,
-                                                            final TimeUnit timeUnit,
-                                                            final int maxRetries) {
+    private static final Observable<Long>
+            evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair,
+                              final long delay,
+                              final TimeUnit timeUnit,
+                              final int maxRetries) {
         return retryPair.getRight() > maxRetries
                 ? Observable.error(retryPair.getLeft())
                 : waitObservable(delay, timeUnit);

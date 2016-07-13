@@ -12,11 +12,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
@@ -126,6 +125,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
         }
 
         @Test
+        @SuppressWarnings("unchecked")
         public void onErrorExceptionIsEmitted() throws InterruptedException, ExecutionException {
             when(futureMock.get()).thenThrow(InterruptedException.class);
 
@@ -142,7 +142,8 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
             }
 
             @Test
-            public void executionWithConcurrentUtil() throws InterruptedException, ExecutionException {
+            public void executionWithConcurrentUtil() throws InterruptedException,
+                                                      ExecutionException {
                 verify(contextMock).executeTask(orderCallMock);
                 verify(futureMock).get();
             }

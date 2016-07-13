@@ -12,6 +12,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderParams;
@@ -21,9 +23,6 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -49,7 +48,8 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
         orderCreateUtil = new OrderCreateUtil(engineMock, orderUtilHandlerMock);
     }
 
-    private void captureAndRunOrderCall(final OrderEventTypeData orderEventTypeData) throws Exception {
+    private void
+            captureAndRunOrderCall(final OrderEventTypeData orderEventTypeData) throws Exception {
         verify(orderUtilHandlerMock).submitObservable(orderCallCaptor.capture(),
                                                       argLambda(td -> td == orderEventTypeData));
         orderCallCaptor.getValue().call();
@@ -86,6 +86,17 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
 
                 submitSubscriber.assertCompleted();
             }
+
+            @Test
+            public void jfExceptionOnSubmitGetsPushed() {
+                when(orderUtilHandlerMock
+                        .submitObservable(orderCallCaptor.capture(), eq(submitTypeData)))
+                                .thenReturn(Observable.error(jfException));
+
+                orderCreateUtil.submitOrder(orderParamsBUY).subscribe(submitSubscriber);
+
+                submitSubscriber.assertError(JFException.class);
+            }
         }
     }
 
@@ -106,7 +117,8 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
                         .submitObservable(orderCallCaptor.capture(), eq(mergeTypeData)))
                                 .thenReturn(mergeObservable);
 
-                orderCreateUtil.mergeOrders(mergeOrderLabel, mergeOrders).subscribe(mergeSubscriber);
+                orderCreateUtil.mergeOrders(mergeOrderLabel, mergeOrders)
+                        .subscribe(mergeSubscriber);
 
                 captureAndRunOrderCall(mergeTypeData);
             }
@@ -121,6 +133,18 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
                 orderEventSubject.onCompleted();
 
                 mergeSubscriber.assertCompleted();
+            }
+
+            @Test
+            public void jfExceptionOnMergeGetsPushed() {
+                when(orderUtilHandlerMock
+                        .submitObservable(orderCallCaptor.capture(), eq(mergeTypeData)))
+                                .thenReturn(Observable.error(jfException));
+
+                orderCreateUtil.mergeOrders(mergeOrderLabel, mergeOrders)
+                        .subscribe(mergeSubscriber);
+
+                mergeSubscriber.assertError(JFException.class);
             }
         }
     }

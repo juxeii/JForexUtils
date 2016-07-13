@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
@@ -81,8 +82,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
     @Test
     public void testFullFillIsMappedCorrect() {
         assertCorrectMapping(OrderEventType.FULLY_FILLED,
-                             IMessage.Type.ORDER_FILL_OK,
-                             IMessage.Reason.ORDER_FULLY_FILLED);
+                             IMessage.Type.ORDER_FILL_OK);
     }
 
     @Test
@@ -167,6 +167,14 @@ public class OrderEventMapperTest extends CommonUtilForTest {
     }
 
     @Test
+    public void testConditionalSubmitOKIsMappedCorrect() {
+        orderUnderTest.setOrderCommand(OrderCommand.BUYLIMIT);
+
+        assertCorrectMapping(OrderEventType.SUBMIT_CONDITIONAL_OK,
+                             IMessage.Type.ORDER_SUBMIT_OK);
+    }
+
+    @Test
     public void testFillRejectedIsMappedCorrect() {
         assertCorrectMapping(OrderEventType.FILL_REJECTED,
                              IMessage.Type.ORDER_FILL_REJECTED);
@@ -203,6 +211,14 @@ public class OrderEventMapperTest extends CommonUtilForTest {
     @Test
     public void testMergeOKIsMappedCorrect() {
         assertCorrectMapping(OrderEventType.MERGE_OK,
+                             IMessage.Type.ORDERS_MERGE_OK);
+    }
+
+    @Test
+    public void testMergeCloseOKIsMappedCorrect() {
+        orderUnderTest.setState(IOrder.State.CLOSED);
+
+        assertCorrectMapping(OrderEventType.MERGE_CLOSE_OK,
                              IMessage.Type.ORDERS_MERGE_OK);
     }
 

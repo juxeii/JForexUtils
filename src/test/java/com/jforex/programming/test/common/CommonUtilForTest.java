@@ -13,27 +13,29 @@ import org.apache.logging.log4j.Logger;
 import org.mockito.BDDMockito;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IDataService;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.system.IClient;
+import com.dukascopy.api.system.ITesterClient;
 import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.OrderProcessState;
+import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.test.fakes.IClientForTest;
 import com.jforex.programming.test.fakes.IEngineForTest;
-
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.system.IClient;
-import com.dukascopy.dds3.transport.msg.types.OrderDirection;
 
 public class CommonUtilForTest extends BDDMockito {
 
@@ -41,6 +43,8 @@ public class CommonUtilForTest extends BDDMockito {
     protected JForexUtil jforexUtilMock;
     @Mock
     protected IClient clientMock;
+    @Mock
+    protected ITesterClient testerClientMock;
     @Mock
     protected IContext contextMock;
     @Mock
@@ -50,6 +54,8 @@ public class CommonUtilForTest extends BDDMockito {
     @Mock
     protected IAccount accountMock;
     @Mock
+    protected IDataService dataServiceMock;
+    @Mock
     protected HistoryUtil historyUtilMock;
     protected IClientForTest clientForTest;
     protected IEngineForTest engineForTest;
@@ -58,10 +64,11 @@ public class CommonUtilForTest extends BDDMockito {
     protected Optional<Exception> emptyJFExceptionOpt = Optional.empty();
     protected final RxTestUtil rxTestUtil = RxTestUtil.get();
 
-    protected final static PlatformSettings platformSettings =
+    protected static final PlatformSettings platformSettings =
             ConfigFactory.create(PlatformSettings.class);
-    protected final static UserSettings userSettings = ConfigFactory.create(UserSettings.class);
-    protected final static Logger logger = LogManager.getLogger(CommonUtilForTest.class);
+    protected static final UserSettings userSettings =
+            ConfigFactory.create(UserSettings.class);
+    protected static final Logger logger = LogManager.getLogger(CommonUtilForTest.class);
 
     protected void initCommonTestFramework() {
         initMocks(this);
@@ -72,6 +79,7 @@ public class CommonUtilForTest extends BDDMockito {
         when(contextMock.getEngine()).thenReturn(engineMock);
         when(contextMock.getAccount()).thenReturn(accountMock);
         when(contextMock.getHistory()).thenReturn(historyMock);
+        when(contextMock.getDataService()).thenReturn(dataServiceMock);
 
         when(jforexUtilMock.context()).thenReturn(contextMock);
         when(jforexUtilMock.engine()).thenReturn(engineMock);
@@ -101,9 +109,13 @@ public class CommonUtilForTest extends BDDMockito {
         LoginState.valueOf(LoginState.LOGGED_IN.toString());
         OrderProcessState.valueOf(OrderProcessState.ACTIVE.toString());
         OrderEventType.valueOf(OrderEventType.SUBMIT_OK.toString());
-        OrderDirection.valueOf(OrderDirection.CLOSE.toString());
+        OrderDirection.valueOf(OrderDirection.FLAT.toString());
         AuthentificationUtil.FSMTrigger
                 .valueOf(AuthentificationUtil.FSMTrigger.CONNECTED.toString());
+        PositionSwitcher.FSMTrigger
+                .valueOf(PositionSwitcher.FSMTrigger.FLAT.toString());
+        PositionSwitcher.FSMState
+                .valueOf(PositionSwitcher.FSMState.FLAT.toString());
     }
 
     protected void assertPrivateConstructor(final Class<?> clazz) throws Exception {

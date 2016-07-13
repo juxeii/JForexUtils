@@ -84,7 +84,7 @@ public class InstrumentUtilTest extends CurrencyUtilForTest {
 
         when(barQuoteProviderMock.quote(quoteParams)).thenReturn(testBar);
 
-        assertThat(instrumentUtil.barQuote(quoteParams), equalTo(testBar));
+        assertThat(instrumentUtil.bar(quoteParams), equalTo(testBar));
     }
 
     @Test

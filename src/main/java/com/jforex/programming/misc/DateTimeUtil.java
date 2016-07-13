@@ -39,7 +39,7 @@ public final class DateTimeUtil {
     public static final LocalDateTime toDukascopyDateTime(final LocalDateTime dateTime) {
         final ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.systemDefault());
         final ZonedDateTime zonedDateTimeWithInstant =
-                zonedDateTime.withZoneSameInstant(DateTimeUtil.dukascopyZoneId);
+                zonedDateTime.withZoneSameInstant(dukascopyZoneId);
         return zonedDateTimeWithInstant.toLocalDateTime();
     }
 

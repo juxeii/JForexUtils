@@ -27,4 +27,8 @@ public final class JFHotSubject<T> {
     public final void onNext(final T observableInstance) {
         subscribers.forEach(subscriber -> subscriber.onNext(observableInstance));
     }
+
+    public final void unsubscribe() {
+        subscribers.forEach(Subscriber::unsubscribe);
+    }
 }

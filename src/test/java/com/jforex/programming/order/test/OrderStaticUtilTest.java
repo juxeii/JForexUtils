@@ -44,6 +44,7 @@ import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderDirection;
+import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
@@ -71,6 +72,11 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
                                                              currentPriceForSLTP,
                                                              factor * pipsToSLTP);
         assertThat(calculatedPrice, equalTo(expectedPrice));
+    }
+
+    @Test
+    public void testConstructorIsPrivate() throws Exception {
+        assertPrivateConstructor(OrderStaticUtil.class);
     }
 
     @Test
@@ -398,8 +404,10 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         assertThat(switchCommand(OrderCommand.BUYLIMIT), equalTo(OrderCommand.SELLLIMIT));
         assertThat(switchCommand(OrderCommand.SELLLIMIT), equalTo(OrderCommand.BUYLIMIT));
 
-        assertThat(switchCommand(OrderCommand.BUYLIMIT_BYBID), equalTo(OrderCommand.SELLLIMIT_BYASK));
-        assertThat(switchCommand(OrderCommand.SELLLIMIT_BYASK), equalTo(OrderCommand.BUYLIMIT_BYBID));
+        assertThat(switchCommand(OrderCommand.BUYLIMIT_BYBID),
+                   equalTo(OrderCommand.SELLLIMIT_BYASK));
+        assertThat(switchCommand(OrderCommand.SELLLIMIT_BYASK),
+                   equalTo(OrderCommand.BUYLIMIT_BYBID));
 
         assertThat(switchCommand(OrderCommand.BUYSTOP), equalTo(OrderCommand.SELLSTOP));
         assertThat(switchCommand(OrderCommand.SELLSTOP), equalTo(OrderCommand.BUYSTOP));

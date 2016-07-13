@@ -4,6 +4,8 @@ import java.util.Map;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.Instrument;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.google.common.collect.ImmutableMap;
@@ -13,9 +15,6 @@ import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.settings.UserSettings;
-
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -31,14 +30,14 @@ public final class PositionSwitcher {
             new StateMachine<>(FSMState.FLAT, fsmConfig);
     private Map<OrderDirection, FSMState> nextStatesByDirection;
 
-    private enum FSMState {
+    public enum FSMState {
         FLAT,
         LONG,
         SHORT,
         BUSY
     }
 
-    private enum FSMTrigger {
+    public enum FSMTrigger {
         FLAT,
         BUY,
         SELL,

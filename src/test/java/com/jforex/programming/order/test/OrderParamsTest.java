@@ -104,9 +104,15 @@ public class OrderParamsTest extends InstrumentUtilForTest {
     @Test
     public void testCloneGivesCorrectValues() {
         fillOrderParamsWithOptionalValues();
-        orderParamsClone = orderParams.clone().build();
+        orderParamsClone = orderParams
+                .clone()
+                .forInstrument(instrumentAUDUSD)
+                .build();
 
-        assertMandatoryValues(orderParamsClone);
+        assertThat(orderParamsClone.label(), equalTo(label));
+        assertThat(orderParamsClone.instrument(), equalTo(instrumentAUDUSD));
+        assertThat(orderParamsClone.orderCommand(), equalTo(orderCommand));
+        assertThat(orderParamsClone.amount(), equalTo(amount));
         assertThat(orderParamsClone.price(), equalTo(price));
         assertThat(orderParamsClone.slippage(), equalTo(slippage));
         assertThat(orderParamsClone.stopLossPrice(), equalTo(stopLossPrice));

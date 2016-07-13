@@ -3,10 +3,9 @@ package com.jforex.programming.order;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
-
-import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 
@@ -21,15 +20,17 @@ public class OrderChangeUtil {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        final String commonLog = "order " + orderToClose.getLabel() + " for instrument " + orderToClose.getInstrument();
+        final String commonLog = "order " + orderToClose.getLabel() + " for instrument "
+                + orderToClose.getInstrument();
 
         return orderUtilHandler
                 .changeObservable(() -> orderToClose.close(),
                                   orderToClose,
                                   OrderEventTypeData.closeData)
-                .doOnSubscribe(() -> logger.debug("Starting to close " + commonLog))
-                .doOnError(e -> logger.error("Failed to close " + commonLog + "!Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.debug("Closed " + commonLog));
+                .doOnSubscribe(() -> logger.info("Starting to close " + commonLog))
+                .doOnError(e -> logger
+                        .error("Failed to close " + commonLog + "!Exception: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Closed " + commonLog));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
@@ -63,9 +64,10 @@ public class OrderChangeUtil {
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
         final Observable<OrderEvent> observable =
-                orderUtilHandler.changeObservable(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
-                                                  orderToChangeOpenPrice,
-                                                  OrderEventTypeData.changeOpenPriceData);
+                orderUtilHandler
+                        .changeObservable(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
+                                          orderToChangeOpenPrice,
+                                          OrderEventTypeData.changeOpenPriceData);
 
         return appendLogsToObsverable(orderToChangeOpenPrice,
                                       observable,
@@ -77,9 +79,10 @@ public class OrderChangeUtil {
     public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
                                                      final double newAmount) {
         final Observable<OrderEvent> observable =
-                orderUtilHandler.changeObservable(() -> orderToChangeAmount.setRequestedAmount(newAmount),
-                                                  orderToChangeAmount,
-                                                  OrderEventTypeData.changeAmountData);
+                orderUtilHandler
+                        .changeObservable(() -> orderToChangeAmount.setRequestedAmount(newAmount),
+                                          orderToChangeAmount,
+                                          OrderEventTypeData.changeAmountData);
 
         return appendLogsToObsverable(orderToChangeAmount,
                                       observable,
@@ -121,12 +124,15 @@ public class OrderChangeUtil {
                                                               final String valueName,
                                                               final T currentValue,
                                                               final T newValue) {
-        final String commonLog = valueName + " from " + currentValue + " to " + newValue + " for order "
-                + orderToChange.getLabel() + " and instrument " + orderToChange.getInstrument();
+        final String commonLog =
+                valueName + " from " + currentValue + " to " + newValue + " for order "
+                        + orderToChange.getLabel() + " and instrument "
+                        + orderToChange.getInstrument();
 
         return observable
-                .doOnSubscribe(() -> logger.debug("Start to change " + commonLog))
-                .doOnError(e -> logger.debug("Failed to change " + commonLog + "!Excpetion: " + e.getMessage()))
-                .doOnCompleted(() -> logger.debug("Changed " + commonLog));
+                .doOnSubscribe(() -> logger.info("Start to change " + commonLog))
+                .doOnError(e -> logger.debug("Failed to change " + commonLog
+                        + "!Excpetion: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Changed " + commonLog));
     }
 }

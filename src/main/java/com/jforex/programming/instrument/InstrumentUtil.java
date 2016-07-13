@@ -49,7 +49,7 @@ public final class InstrumentUtil {
         return tickQuoteProvider.bid(instrument);
     }
 
-    public final IBar barQuote(final BarQuoteParams barQuoteParams) {
+    public final IBar bar(final BarQuoteParams barQuoteParams) {
         return barQuoteProvider.quote(barQuoteParams);
     }
 

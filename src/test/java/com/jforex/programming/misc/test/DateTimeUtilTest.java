@@ -76,4 +76,11 @@ public class DateTimeUtilTest extends CommonUtilForTest {
 
         assertThat(dateTimeString, equalTo("2016-04-26 08:12:00.000"));
     }
+
+    @Test
+    public void toDukascopyDateTimeIsCorrect() {
+        final LocalDateTime dukaTime = DateTimeUtil.toDukascopyDateTime(testDateTime);
+
+        assertThat(dukaTime.format(formatter), equalTo("2016-04-26 06:12:42.123"));
+    }
 }
