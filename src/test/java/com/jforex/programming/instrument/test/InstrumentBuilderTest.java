@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
-import java.util.Collections;
 import java.util.Set;
 
 import org.junit.Test;
@@ -86,21 +85,21 @@ public class InstrumentBuilderTest extends CurrencyUtilForTest {
 
     @Test
     public void testCombineAllFromCurrencySetReturnsEmptySetForZeorCurrencies() {
-        final Set<ICurrency> currencies = Collections.emptySet();
+        final Set<ICurrency> currencies = Sets.newHashSet();
 
-        assertCombineCurrencySet(currencies, Collections.emptySet());
+        assertCombineCurrencySet(currencies, Sets.newHashSet());
     }
 
     @Test
     public void testCombineAllFromCurrencySetReturnsEmptySetForOneCurrency() {
-        assertCombineCurrencySet(Sets.newHashSet(currencyEUR), Collections.emptySet());
+        assertCombineCurrencySet(Sets.newHashSet(currencyEUR), Sets.newHashSet());
     }
 
     @Test
     public void testCombineAllFromCurrencySetReturnsEmptySetForOnlyEqualCurrencies() {
         final Set<ICurrency> currencies = Sets.newHashSet(currencyEUR, currencyEUR);
 
-        assertCombineCurrencySet(currencies, Collections.emptySet());
+        assertCombineCurrencySet(currencies, Sets.newHashSet());
     }
 
     @Test
@@ -128,14 +127,14 @@ public class InstrumentBuilderTest extends CurrencyUtilForTest {
 
     @Test
     public void testCombineAllWithAnchorCurrencyReturnsEmptySetForZeorPartnerCurrencies() {
-        final Set<ICurrency> partnerCurrencies = Collections.emptySet();
+        final Set<ICurrency> partnerCurrencies = Sets.newHashSet();
 
-        assertAnchorCurrencySet(partnerCurrencies, Collections.emptySet());
+        assertAnchorCurrencySet(partnerCurrencies, Sets.newHashSet());
     }
 
     @Test
     public void testCombineAllWithAnchorCurrencyReturnsEmptySetForEqualPartnerCurrency() {
-        assertAnchorCurrencySet(Sets.newHashSet(currencyEUR), Collections.emptySet());
+        assertAnchorCurrencySet(Sets.newHashSet(currencyEUR), Sets.newHashSet());
     }
 
     @Test

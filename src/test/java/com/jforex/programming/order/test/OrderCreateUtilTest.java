@@ -8,14 +8,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderCreateUtil;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -33,8 +31,6 @@ public class OrderCreateUtilTest extends InstrumentUtilForTest {
 
     private OrderCreateUtil orderCreateUtil;
 
-    @Mock
-    private OrderUtilHandler orderUtilHandlerMock;
     @Captor
     private ArgumentCaptor<Callable<IOrder>> orderCallCaptor;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();

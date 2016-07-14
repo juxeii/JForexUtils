@@ -59,17 +59,20 @@ public class MathUtilTest extends CurrencyUtilForTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void testkPowerSetRetunsCorrectPowerSet() {
-        final Set<Set<ICurrency>> expectedkPowerset =
-                Sets.newHashSet(CurrencyBuilder.fromNames(currencyNameEUR, currencyNameJPY,
-                                                          currencyNameUSD),
-                                CurrencyBuilder.fromNames(currencyNameJPY, currencyNameUSD,
-                                                          currencyNameAUD),
-                                CurrencyBuilder.fromNames(currencyNameEUR, currencyNameUSD,
-                                                          currencyNameAUD),
-                                CurrencyBuilder.fromNames(currencyNameEUR, currencyNameJPY,
-                                                          currencyNameAUD));
+        final Set<Set<ICurrency>> expectedkPowerset = Sets.newHashSet();
+        expectedkPowerset.add(CurrencyBuilder.fromNames(currencyNameEUR,
+                                                        currencyNameJPY,
+                                                        currencyNameUSD));
+        expectedkPowerset.add(CurrencyBuilder.fromNames(currencyNameJPY,
+                                                        currencyNameUSD,
+                                                        currencyNameAUD));
+        expectedkPowerset.add(CurrencyBuilder.fromNames(currencyNameEUR,
+                                                        currencyNameUSD,
+                                                        currencyNameAUD));
+        expectedkPowerset.add(CurrencyBuilder.fromNames(currencyNameEUR,
+                                                        currencyNameJPY,
+                                                        currencyNameAUD));
 
         assertThat(MathUtil.kPowerSet(currenciesForkPowerSetTests, 3),
                    equalTo(expectedkPowerset));

@@ -32,7 +32,8 @@ public final class ClientCreator {
     }
 
     private static final IClient getInstance(final IClientSupplier clientSupplier) {
-        return Observable.fromCallable(() -> clientSupplier.get())
+        return Observable
+                .fromCallable(clientSupplier::get)
                 .doOnError(e -> logger.error("IClient retreival exception!" + e.getMessage()))
                 .toBlocking()
                 .first();

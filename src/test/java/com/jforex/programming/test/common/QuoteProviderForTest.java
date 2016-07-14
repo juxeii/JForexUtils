@@ -82,9 +82,9 @@ public class QuoteProviderForTest extends CurrencyUtilForTest {
 
     public void setTickExpectations(final TickQuote tickQuote) {
         final ITick tick = tickQuote.tick();
-        final Instrument instrument = tickQuote.instrument();
         final double ask = tick.getAsk();
         final double bid = tick.getBid();
+        final Instrument instrument = tickQuote.instrument();
 
         when(tickQuoteHandlerMock.tick(instrument)).thenReturn(tick);
         when(tickQuoteHandlerMock.ask(instrument)).thenReturn(ask);

@@ -79,7 +79,8 @@ public class CalculationUtilTest extends QuoteProviderForTest {
                 .toCurrency(currencyEUR)
                 .forOfferSide(OfferSide.BID);
 
-        assertThat(convertedAmount, equalTo(convertedAmountForInvertedQuote(amount, bidEURUSD)));
+        assertThat(convertedAmount,
+                   equalTo(convertedAmountForInvertedQuote(amount, bidEURUSD)));
     }
 
     @Test
@@ -91,7 +92,8 @@ public class CalculationUtilTest extends QuoteProviderForTest {
                 .toCurrency(currencyJPY)
                 .forOfferSide(OfferSide.BID);
 
-        assertThat(convertedAmount, equalTo(convertedAmountForQuote(amount, bidUSDJPY)));
+        assertThat(convertedAmount,
+                   equalTo(convertedAmountForQuote(amount, bidUSDJPY)));
     }
 
     @Test
@@ -103,8 +105,8 @@ public class CalculationUtilTest extends QuoteProviderForTest {
                 .withAmount(amount)
                 .andOfferSide(OfferSide.ASK);
 
-        assertThat(pipValue,
-                   equalTo(MathUtil.roundAmount(amount * instrumentEURUSD.getPipValue())));
+        assertThat(pipValue, equalTo(MathUtil
+                .roundAmount(amount * instrumentEURUSD.getPipValue())));
     }
 
     @Test
@@ -135,14 +137,18 @@ public class CalculationUtilTest extends QuoteProviderForTest {
 
     @Test
     public void testScalePipsToInstrumentIsCorrectForNonJPYInstruments() {
-        assertThat(CalculationUtil.scalePipsToInstrument(20.5, instrumentEURUSD), equalTo(0.00205));
-        assertThat(CalculationUtil.scalePipsToInstrument(7.9, instrumentGBPAUD), equalTo(0.00079));
+        assertThat(CalculationUtil.scalePipsToInstrument(20.5, instrumentEURUSD),
+                   equalTo(0.00205));
+        assertThat(CalculationUtil.scalePipsToInstrument(7.9, instrumentGBPAUD),
+                   equalTo(0.00079));
     }
 
     @Test
     public void testScalePipsToInstrumentIsCorrectForJPYInstruments() {
-        assertThat(CalculationUtil.scalePipsToInstrument(13.45, instrumentEURJPY), equalTo(0.135));
-        assertThat(CalculationUtil.scalePipsToInstrument(4.78, instrumentUSDJPY), equalTo(0.048));
+        assertThat(CalculationUtil.scalePipsToInstrument(13.45, instrumentEURJPY),
+                   equalTo(0.135));
+        assertThat(CalculationUtil.scalePipsToInstrument(4.78, instrumentUSDJPY),
+                   equalTo(0.048));
     }
 
     @Test

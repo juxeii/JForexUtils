@@ -46,8 +46,10 @@ public class RiskPercentMMTest extends QuoteProviderForTest {
         when(accountMock.getAccountCurrency()).thenReturn(currencyUSD);
         when(accountMock.getEquity()).thenReturn(12345.67);
 
-        final double amount =
-                riskPercentMM.amountForRisk(instrumentEURUSD, OfferSide.ASK, 10.0, 22.4);
+        final double amount = riskPercentMM.amountForRisk(instrumentEURUSD,
+                                                          OfferSide.ASK,
+                                                          10.0,
+                                                          22.4);
 
         assertThat(amount, equalTo(0.551146));
     }
@@ -56,8 +58,10 @@ public class RiskPercentMMTest extends QuoteProviderForTest {
     public void testAmountForRiskIsCorrectForAccountCurrencyDifferentToQuoteCurrency() {
         when(accountMock.getEquity()).thenReturn(12345.67);
 
-        final double amount =
-                riskPercentMM.amountForRisk(instrumentEURUSD, OfferSide.ASK, 10.0, 22.4);
+        final double amount = riskPercentMM.amountForRisk(instrumentEURUSD,
+                                                          OfferSide.ASK,
+                                                          10.0,
+                                                          22.4);
 
         assertThat(amount, equalTo(0.6117));
     }
@@ -66,16 +70,20 @@ public class RiskPercentMMTest extends QuoteProviderForTest {
     public void testAmountForFixMarginIsCorrectForAccountCurrencyEqualToQuoteCurrency() {
         when(accountMock.getAccountCurrency()).thenReturn(currencyUSD);
 
-        final double amount =
-                riskPercentMM.amountForFixMargin(instrumentEURUSD, OfferSide.BID, 12.3, 10.0);
+        final double amount = riskPercentMM.amountForFixMargin(instrumentEURUSD,
+                                                               OfferSide.BID,
+                                                               12.3,
+                                                               10.0);
 
         assertThat(amount, equalTo(0.0123));
     }
 
     @Test
     public void testAmountForFixMarginIsCorrectForAccountCurrencyDifferentToQuoteCurrency() {
-        final double amount =
-                riskPercentMM.amountForFixMargin(instrumentEURUSD, OfferSide.BID, 12.3, 10.0);
+        final double amount = riskPercentMM.amountForFixMargin(instrumentEURUSD,
+                                                               OfferSide.BID,
+                                                               12.3,
+                                                               10.0);
 
         assertThat(amount, equalTo(0.01365));
     }

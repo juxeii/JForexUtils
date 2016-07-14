@@ -7,19 +7,13 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 import com.jforex.programming.connection.LoginCredentials;
+import com.jforex.programming.test.common.CommonUtilForTest;
 
-public class LoginCredentialsTest {
-
-    private LoginCredentials loginCredentials;
-
-    private final String jnlpAddres = "http://test";
-    private final String userName = "john";
-    private final String password = "doe";
+public class LoginCredentialsTest extends CommonUtilForTest {
 
     @Test
     public void testPinIsSet() {
-        final String pin = "1234";
-        loginCredentials = new LoginCredentials(jnlpAddres,
+        loginCredentials = new LoginCredentials(jnlpAddress,
                                                 userName,
                                                 password,
                                                 pin);
@@ -29,7 +23,7 @@ public class LoginCredentialsTest {
 
     @Test
     public void testPinIsEmptyWhenNotSet() {
-        loginCredentials = new LoginCredentials(jnlpAddres,
+        loginCredentials = new LoginCredentials(jnlpAddress,
                                                 userName,
                                                 password);
 

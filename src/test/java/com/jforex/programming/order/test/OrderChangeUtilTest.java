@@ -5,12 +5,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
 
 import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderChangeUtil;
-import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -27,8 +25,6 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
 
     private OrderChangeUtil orderChangeUtil;
 
-    @Mock
-    private OrderUtilHandler orderUtilHandlerMock;
     @Captor
     private ArgumentCaptor<JFRunnable> orderCallCaptor;
     private final IOrderForTest orderUnterTest = IOrderForTest.buyOrderEURUSD();
@@ -52,9 +48,9 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
 
     private void setUpHanderMock(final OrderEventTypeData orderEventTypeData) {
         when(orderUtilHandlerMock
-                .changeObservable(orderCallCaptor.capture(), eq(orderUnterTest),
-                                  eq(orderEventTypeData)))
-                                          .thenReturn(changeObservable);
+                .changeObservable(orderCallCaptor.capture(),
+                                  eq(orderUnterTest),
+                                  eq(orderEventTypeData))).thenReturn(changeObservable);
     }
 
     private void assertNotification() {
@@ -71,7 +67,9 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
-            orderChangeUtil.close(orderUnterTest).subscribe(changeSubscriber);
+            orderChangeUtil
+                    .close(orderUnterTest)
+                    .subscribe(changeSubscriber);
 
             captureAndRunOrderCall(typeData);
             assertNotification();
@@ -87,10 +85,11 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
             when(orderUtilHandlerMock
                     .changeObservable(any(),
                                       eq(orderUnterTest),
-                                      eq(typeData)))
-                                              .thenReturn(Observable.error(jfException));
+                                      eq(typeData))).thenReturn(Observable.error(jfException));
 
-            orderChangeUtil.close(orderUnterTest).subscribe(changeSubscriber);
+            orderChangeUtil
+                    .close(orderUnterTest)
+                    .subscribe(changeSubscriber);
 
             changeSubscriber.assertError(JFException.class);
         }
@@ -105,7 +104,9 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
-            orderChangeUtil.setLabel(orderUnterTest, newLabel).subscribe(changeSubscriber);
+            orderChangeUtil
+                    .setLabel(orderUnterTest, newLabel)
+                    .subscribe(changeSubscriber);
 
             captureAndRunOrderCall(typeData);
             assertNotification();
@@ -121,10 +122,11 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
             when(orderUtilHandlerMock
                     .changeObservable(any(),
                                       eq(orderUnterTest),
-                                      eq(typeData)))
-                                              .thenReturn(Observable.error(jfException));
+                                      eq(typeData))).thenReturn(Observable.error(jfException));
 
-            orderChangeUtil.setLabel(orderUnterTest, newLabel).subscribe(changeSubscriber);
+            orderChangeUtil
+                    .setLabel(orderUnterTest, newLabel)
+                    .subscribe(changeSubscriber);
 
             changeSubscriber.assertError(JFException.class);
         }
@@ -139,7 +141,9 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
-            orderChangeUtil.setGoodTillTime(orderUnterTest, newGTT).subscribe(changeSubscriber);
+            orderChangeUtil
+                    .setGoodTillTime(orderUnterTest, newGTT)
+                    .subscribe(changeSubscriber);
 
             captureAndRunOrderCall(typeData);
             assertNotification();
@@ -160,7 +164,9 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
-            orderChangeUtil.setOpenPrice(orderUnterTest, newOpenPrice).subscribe(changeSubscriber);
+            orderChangeUtil
+                    .setOpenPrice(orderUnterTest, newOpenPrice)
+                    .subscribe(changeSubscriber);
 
             captureAndRunOrderCall(typeData);
             assertNotification();
@@ -181,7 +187,8 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
-            orderChangeUtil.setRequestedAmount(orderUnterTest, newRequestedAmount)
+            orderChangeUtil
+                    .setRequestedAmount(orderUnterTest, newRequestedAmount)
                     .subscribe(changeSubscriber);
 
             captureAndRunOrderCall(typeData);
@@ -203,7 +210,9 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
-            orderChangeUtil.setStopLossPrice(orderUnterTest, newSL).subscribe(changeSubscriber);
+            orderChangeUtil
+                    .setStopLossPrice(orderUnterTest, newSL)
+                    .subscribe(changeSubscriber);
 
             captureAndRunOrderCall(typeData);
             assertNotification();
@@ -224,7 +233,9 @@ public class OrderChangeUtilTest extends InstrumentUtilForTest {
         public void setUp() throws Exception {
             setUpHanderMock(typeData);
 
-            orderChangeUtil.setTakeProfitPrice(orderUnterTest, newTP).subscribe(changeSubscriber);
+            orderChangeUtil
+                    .setTakeProfitPrice(orderUnterTest, newTP)
+                    .subscribe(changeSubscriber);
 
             captureAndRunOrderCall(typeData);
             assertNotification();

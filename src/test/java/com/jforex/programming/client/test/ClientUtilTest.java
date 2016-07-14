@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import com.jforex.programming.client.ClientUtil;
 import com.jforex.programming.client.JFSystemListener;
 import com.jforex.programming.client.StrategyRunData;
+import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
@@ -44,6 +45,7 @@ public class ClientUtilTest extends CommonUtilForTest {
         initCommonTestFramework();
 
         clientUtil = new ClientUtil(clientMock, cacheDirectory);
+
         jfSystemListener = clientUtil.systemListener();
         clientUtil.connectionStateObservable().subscribe(connectionStateSubscriber);
         clientUtil.strategyInfoObservable().subscribe(runDataSubscriber);
@@ -52,7 +54,7 @@ public class ClientUtilTest extends CommonUtilForTest {
     @Test
     public void cacheDirectoryIsInitialized() {
         verify(clientMock)
-                .setCacheDirectory(argLambda(v -> v.getName().equals(cacheDirectory)));
+                .setCacheDirectory(argLambda(file -> file.getName().equals(cacheDirectory)));
     }
 
     @Test
@@ -120,7 +122,6 @@ public class ClientUtilTest extends CommonUtilForTest {
         @Before
         public void setUp() {
             jfSystemListener.onConnect();
-            jfSystemListener.onStart(42L);
         }
 
         @Test
@@ -130,15 +131,6 @@ public class ClientUtilTest extends CommonUtilForTest {
 
             assertThat(connectionStateSubscriber.getOnNextEvents().get(0),
                        equalTo(ConnectionState.CONNECTED));
-        }
-
-        @Test
-        public void strategyStartIsPublished() {
-            runDataSubscriber.assertNoErrors();
-            runDataSubscriber.assertValueCount(1);
-
-            assertThat(runDataSubscriber.getOnNextEvents().get(0).processID(),
-                       equalTo(42L));
         }
 
         public class AfterDisConnectMessage {
@@ -160,6 +152,48 @@ public class ClientUtilTest extends CommonUtilForTest {
             @Test
             public void reconnectOnClientIsDone() {
                 verify(clientMock).reconnect();
+            }
+        }
+    }
+
+    public class AfterStrategyStart {
+
+        private final long processID = 42L;
+
+        private void assertRunData(final StrategyRunState strategyRunState,
+                                   final int index) {
+            assertThat(runDataSubscriber.getOnNextEvents().get(index).state(),
+                       equalTo(strategyRunState));
+            assertThat(runDataSubscriber.getOnNextEvents().get(index).processID(),
+                       equalTo(processID));
+        }
+
+        @Before
+        public void setUp() {
+            jfSystemListener.onStart(processID);
+        }
+
+        @Test
+        public void strategyStartIsPublished() {
+            runDataSubscriber.assertNoErrors();
+            runDataSubscriber.assertValueCount(1);
+
+            assertRunData(StrategyRunState.STARTED, 0);
+        }
+
+        public class AfterStrategyStop {
+
+            @Before
+            public void setUp() {
+                jfSystemListener.onStop(42L);
+            }
+
+            @Test
+            public void strategyStopIsPublished() {
+                runDataSubscriber.assertNoErrors();
+                runDataSubscriber.assertValueCount(2);
+
+                assertRunData(StrategyRunState.STOPPED, 1);
             }
         }
     }

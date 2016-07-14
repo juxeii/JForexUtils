@@ -38,7 +38,8 @@ public class PipDistanceBuilder {
         return this.builder.instrument;
     }
 
-    private class Builder implements To,
+    private class Builder implements
+            To,
             ForInstrument {
 
         private final double fromPrice;

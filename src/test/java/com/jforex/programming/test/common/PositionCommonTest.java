@@ -61,11 +61,12 @@ public class PositionCommonTest extends InstrumentUtilForTest {
 
     public void setFullRetryMock(final Supplier<Observable<OrderEvent>> call,
                                  final OrderEvent orderEvent) {
+        final Observable<OrderEvent>[] retryObservables =
+                retryRejectErrorObservableArray(orderEvent,
+                                                platformSettings.maxRetriesOnOrderFail() - 1);
         when(call.get())
                 .thenReturn(rejectObservable(orderEvent),
-                            retryRejectErrorObservableArray(orderEvent,
-                                                            platformSettings.maxRetriesOnOrderFail()
-                                                                        - 1))
+                            retryObservables)
                 .thenReturn(Observable.empty());
     }
 

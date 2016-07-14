@@ -52,17 +52,15 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
     private final IOrderForTest buyOrderEURUSD = IOrderForTest.buyOrderEURUSD();
     private final IOrderForTest sellOrderEURUSD = IOrderForTest.sellOrderEURUSD();
-    private Set<IOrder> orders;
     private final double currentPriceForSLTP = 1.32165;
     private final double pipsToSLTP = 17.4;
+    private final Set<IOrder> orders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Before
     public void setUp() throws JFException {
         buyOrderEURUSD.setState(IOrder.State.FILLED);
         sellOrderEURUSD.setState(IOrder.State.FILLED);
         sellOrderEURUSD.setLabel("SecondOrderLabel");
-
-        orders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     }
 
     private void assertSLTPCalculation(final IOrder order,

@@ -48,9 +48,10 @@ public class PipValueBuilder {
         return this.builder.offerSide;
     }
 
-    private class Builder implements OfInstrument,
-                          WithAmount,
-                          AndOfferSide {
+    private class Builder implements
+            OfInstrument,
+            WithAmount,
+            AndOfferSide {
 
         private final ICurrency targetCurrency;
         private double amount;

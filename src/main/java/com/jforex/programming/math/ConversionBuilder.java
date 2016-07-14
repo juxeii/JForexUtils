@@ -54,10 +54,11 @@ public class ConversionBuilder {
         return this.builder.offerSide;
     }
 
-    private class Builder implements FromSource,
-                          ToInstrument,
-                          ToCurrency,
-                          ForOfferSide {
+    private class Builder implements
+            FromSource,
+            ToInstrument,
+            ToCurrency,
+            ForOfferSide {
 
         private final double amount;
         private ICurrency sourceCurrency;
