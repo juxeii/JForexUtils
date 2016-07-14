@@ -3,25 +3,27 @@ package com.jforex.programming.test.common;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteParams;
-import com.jforex.programming.quote.TickQuote;
-import com.jforex.programming.quote.TickQuoteHandler;
-
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.dukascopy.api.Unit;
+import com.jforex.programming.quote.BarQuote;
+import com.jforex.programming.quote.BarQuoteParams;
+import com.jforex.programming.quote.TickQuote;
 
 public class QuoteProviderForTest extends CurrencyUtilForTest {
 
     public final ITick tickEURUSD = mockForITick(bidEURUSD, askEURUSD);
     public final ITick tickAUDUSD = mockForITick(bidAUDUSD, askAUDUSD);
+    public final ITick tickUSDJPY = mockForITick(bidUSDJPY, askUSDJPY);
+    public final ITick tickEURJPY = mockForITick(bidEURJPY, askEURJPY);
 
     public final TickQuote tickQuoteEURUSD = new TickQuote(instrumentEURUSD, tickEURUSD);
     public final TickQuote tickQuoteAUDUSD = new TickQuote(instrumentAUDUSD, tickAUDUSD);
+    public final TickQuote tickQuoteUSDJPY = new TickQuote(instrumentUSDJPY, tickUSDJPY);
+    public final TickQuote tickQuoteEURJPY = new TickQuote(instrumentEURJPY, tickEURJPY);
 
     public final IBar askBarEURUSD = mock(IBar.class);
     public final IBar bidBarEURUSD = mock(IBar.class);
@@ -78,16 +80,19 @@ public class QuoteProviderForTest extends CurrencyUtilForTest {
                    equalTo(expectedTickQuote.tick()));
     }
 
-    public static void setQuoteExpectations(final TickQuoteHandler quoteProviderMock,
-                                            final Instrument instrument,
-                                            final double bid,
-                                            final double ask) {
-        final ITick tick = mock(ITick.class);
-        when(quoteProviderMock.tick(instrument)).thenReturn(tick);
-        when(quoteProviderMock.ask(instrument)).thenReturn(ask);
-        when(quoteProviderMock.bid(instrument)).thenReturn(bid);
-        when(quoteProviderMock.forOfferSide(instrument, OfferSide.ASK)).thenReturn(ask);
-        when(quoteProviderMock.forOfferSide(instrument, OfferSide.BID)).thenReturn(bid);
+    public void setTickExpectations(final TickQuote tickQuote) {
+        final ITick tick = tickQuote.tick();
+        final Instrument instrument = tickQuote.instrument();
+        final double ask = tick.getAsk();
+        final double bid = tick.getBid();
+
+        when(tickQuoteHandlerMock.tick(instrument)).thenReturn(tick);
+        when(tickQuoteHandlerMock.ask(instrument)).thenReturn(ask);
+        when(tickQuoteHandlerMock.bid(instrument)).thenReturn(bid);
+        when(tickQuoteHandlerMock.forOfferSide(instrument, OfferSide.ASK))
+                .thenReturn(ask);
+        when(tickQuoteHandlerMock.forOfferSide(instrument, OfferSide.BID))
+                .thenReturn(bid);
     }
 
     protected ITick mockForITick(final double bid,

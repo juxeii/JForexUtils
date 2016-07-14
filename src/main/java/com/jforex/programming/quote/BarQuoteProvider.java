@@ -8,7 +8,7 @@ import rx.Observable;
 
 public interface BarQuoteProvider {
 
-    public IBar quote(BarQuoteParams barQuoteParams);
+    public IBar bar(BarQuoteParams barQuoteParams);
 
     public Observable<BarQuote> observableForFilters(final List<BarQuoteParams> filters);
 

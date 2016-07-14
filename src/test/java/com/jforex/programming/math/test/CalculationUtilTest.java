@@ -1,5 +1,6 @@
 package com.jforex.programming.math.test;
 
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -7,35 +8,29 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.math.MathUtil;
-import com.jforex.programming.quote.TickQuoteHandler;
-import com.jforex.programming.test.common.CurrencyUtilForTest;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
-public class CalculationUtilTest extends CurrencyUtilForTest {
+public class CalculationUtilTest extends QuoteProviderForTest {
 
     private CalculationUtil calculationUtil;
-
-    @Mock
-    public TickQuoteHandler tickQuoteProviderMock;
 
     @Before
     public void setUp() {
         initCommonTestFramework();
         setUpMocks();
 
-        calculationUtil = new CalculationUtil(tickQuoteProviderMock);
+        calculationUtil = new CalculationUtil(tickQuoteHandlerMock);
     }
 
     private void setUpMocks() {
-        QuoteProviderForTest.setQuoteExpectations(tickQuoteProviderMock, instrumentEURUSD, bidEURUSD, askEURUSD);
-        QuoteProviderForTest.setQuoteExpectations(tickQuoteProviderMock, instrumentUSDJPY, bidUSDJPY, askUSDJPY);
-        QuoteProviderForTest.setQuoteExpectations(tickQuoteProviderMock, instrumentEURJPY, bidEURJPY, askEURJPY);
+        setTickExpectations(tickQuoteEURUSD);
+        setTickExpectations(tickQuoteUSDJPY);
+        setTickExpectations(tickQuoteEURJPY);
     }
 
     private void assertPipDistance(final Instrument instrument,
@@ -108,7 +103,8 @@ public class CalculationUtilTest extends CurrencyUtilForTest {
                 .withAmount(amount)
                 .andOfferSide(OfferSide.ASK);
 
-        assertThat(pipValue, equalTo(MathUtil.roundAmount(amount * instrumentEURUSD.getPipValue())));
+        assertThat(pipValue,
+                   equalTo(MathUtil.roundAmount(amount * instrumentEURUSD.getPipValue())));
     }
 
     @Test
@@ -120,7 +116,8 @@ public class CalculationUtilTest extends CurrencyUtilForTest {
                 .withAmount(amount)
                 .andOfferSide(OfferSide.ASK);
 
-        assertThat(pipValue, equalTo(MathUtil.roundAmount(amount * instrumentEURUSD.getPipValue() / askEURUSD)));
+        assertThat(pipValue, equalTo(MathUtil
+                .roundAmount(amount * instrumentEURUSD.getPipValue() / askEURUSD)));
     }
 
     @Test
@@ -132,7 +129,8 @@ public class CalculationUtilTest extends CurrencyUtilForTest {
                 .withAmount(amount)
                 .andOfferSide(OfferSide.BID);
 
-        assertThat(pipValue, equalTo(MathUtil.roundAmount(amount * instrumentEURUSD.getPipValue() * bidUSDJPY)));
+        assertThat(pipValue, equalTo(MathUtil
+                .roundAmount(amount * instrumentEURUSD.getPipValue() * bidUSDJPY)));
     }
 
     @Test
@@ -149,14 +147,18 @@ public class CalculationUtilTest extends CurrencyUtilForTest {
 
     @Test
     public void testAddPipsIsCorrectForNonJPYInstruments() {
-        assertThat(CalculationUtil.addPips(instrumentEURUSD, askEURUSD, 20.55), equalTo(askEURUSD + 0.00206));
-        assertThat(CalculationUtil.addPips(instrumentGBPAUD, askGBPAUD, -7.41), equalTo(askGBPAUD - 0.00074));
+        assertThat(CalculationUtil.addPips(instrumentEURUSD, askEURUSD, 20.55),
+                   closeTo(askEURUSD + 0.00206, 0.001));
+        assertThat(CalculationUtil.addPips(instrumentGBPAUD, askGBPAUD, -7.41),
+                   closeTo(askGBPAUD - 0.00074, 0.001));
     }
 
     @Test
     public void testAddPipsIsCorrectForJPYInstruments() {
-        assertThat(CalculationUtil.addPips(instrumentEURJPY, askEURJPY, 13.25), equalTo(askEURJPY + 0.133));
-        assertThat(CalculationUtil.addPips(instrumentUSDJPY, askUSDJPY, -12.54), equalTo(askUSDJPY - 0.125));
+        assertThat(CalculationUtil.addPips(instrumentEURJPY, askEURJPY, 13.25),
+                   equalTo(askEURJPY + 0.133));
+        assertThat(CalculationUtil.addPips(instrumentUSDJPY, askUSDJPY, -12.54),
+                   equalTo(askUSDJPY - 0.125));
     }
 
     @Test

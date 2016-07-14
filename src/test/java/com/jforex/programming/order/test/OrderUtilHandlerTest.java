@@ -89,19 +89,21 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         subscriber.assertCompleted();
     }
 
-    public class OrderCreateCallSetup {
+    public class OrderMergeCallSetup {
 
         private final IOrderForTest mergeOrder = IOrderForTest.buyOrderEURUSD();
         private final Set<IOrder> mergeOrders = Sets.newHashSet();
         private final String mergeOrderLabel = "MergeLabel";
-        private final Callable<IOrder> orderCall = () -> engineMock.mergeOrders(mergeOrderLabel, mergeOrders);
+        private final Callable<IOrder> orderCall =
+                () -> engineMock.mergeOrders(mergeOrderLabel, mergeOrders);
         private final TestSubscriber<OrderEvent> callSubscriber = new TestSubscriber<>();
         private final Supplier<Observable<OrderEvent>> runCall =
                 () -> orderUtilHandler.submitObservable(orderCall, OrderEventTypeData.mergeData);
 
         @Before
         public void setUp() {
-            when(orderCallExecutorMock.callObservable(any())).thenReturn(Observable.just(mergeOrder));
+            when(orderCallExecutorMock.callObservable(any()))
+                    .thenReturn(Observable.just(mergeOrder));
         }
 
         public class ExecutesWithJFException {
@@ -154,7 +156,14 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             public void testMergeOrderRegisteredAtGateway() {
                 verify(orderEventGatewayMock)
                         .registerOrderCallRequest(argLambda(req -> req.order() == mergeOrder
-                                                                   && req.reason() == OrderCallReason.MERGE));
+                                && req.reason() == OrderCallReason.MERGE));
+            }
+
+            @Test
+            public void testSubscriberNotCompletedWhenNotDoneType() {
+                sendOrderEvent(mergeOrder, OrderEventType.SUBMIT_OK);
+
+                callSubscriber.assertNotCompleted();
             }
 
             @Test
@@ -193,7 +202,8 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         private final JFRunnable orderCall = () -> orderToChange.close();
         private final TestSubscriber<OrderEvent> callSubscriber = new TestSubscriber<>();
         private final Supplier<Observable<OrderEvent>> runCall =
-                () -> orderUtilHandler.changeObservable(orderCall, orderToChange, OrderEventTypeData.closeData);
+                () -> orderUtilHandler.changeObservable(orderCall, orderToChange,
+                                                        OrderEventTypeData.closeData);
 
         @Before
         public void setUp() {
@@ -251,7 +261,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             public void testMergeOrderRegisteredAtGateway() {
                 verify(orderEventGatewayMock)
                         .registerOrderCallRequest(argLambda(req -> req.order() == orderToChange
-                                                                   && req.reason() == OrderCallReason.CLOSE));
+                                && req.reason() == OrderCallReason.CLOSE));
             }
 
             @Test

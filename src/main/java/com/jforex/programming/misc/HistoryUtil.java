@@ -8,22 +8,22 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.quote.BarQuoteParams;
-import com.jforex.programming.quote.QuoteProviderException;
-import com.jforex.programming.quote.TickQuote;
-
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.jforex.programming.quote.BarQuoteParams;
+import com.jforex.programming.quote.QuoteProviderException;
+import com.jforex.programming.quote.TickQuote;
 
 import rx.Observable;
 
 public class HistoryUtil {
 
     private final IHistory history;
+    private final int maxBarTickRetries = 10;
 
     private static final Logger logger = LogManager.getLogger(HistoryUtil.class);
 
@@ -44,9 +44,10 @@ public class HistoryUtil {
         return Observable
                 .fromCallable(() -> history.getLastTick(instrument))
                 .doOnError(e -> logger.warn("Get last tick for " + instrument +
-                        " from history failed! Will retry now..."))
-                .retry()
+                        " from history failed with exception " + e.getMessage()
+                        + "! Will retry now..."))
                 .flatMap(tick -> observableForHistory(tick, "tick"))
+                .retry(maxBarTickRetries)
                 .toBlocking()
                 .single();
     }
@@ -60,9 +61,10 @@ public class HistoryUtil {
                 .fromCallable(() -> history.getBar(instrument, period, offerSide, 1))
                 .doOnError(e -> logger.error("Last bar for " + instrument
                         + " and period " + period + " and offerside " + offerSide
-                        + " from history failed! Will retry now..."))
-                .retry()
+                        + " from history failed with exception " + e.getMessage()
+                        + "! Will retry now..."))
                 .flatMap(bar -> observableForHistory(bar, "bar"))
+                .retry(maxBarTickRetries)
                 .toBlocking()
                 .single();
     }

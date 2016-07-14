@@ -15,8 +15,8 @@ public class InstrumentUtilForTest extends CommonUtilForTest {
     public final Instrument instrumentAUDUSD = Instrument.AUDUSD;
     public final Instrument instrumentAUDJPY = Instrument.AUDJPY;
 
-    public final double askEURUSD = 1.32456;
-    public final double bidEURUSD = 1.32431;
+    public final double askEURUSD = 1.10987;
+    public final double bidEURUSD = 1.10975;
 
     public final double askUSDJPY = 124.345;
     public final double bidUSDJPY = 124.341;

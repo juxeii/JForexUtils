@@ -24,7 +24,7 @@ public class BarQuoteHandler implements BarQuoteProvider {
     }
 
     @Override
-    public IBar quote(final BarQuoteParams barQuoteParams) {
+    public IBar bar(final BarQuoteParams barQuoteParams) {
         return barQuoteRepository.get(barQuoteParams).bar();
     }
 

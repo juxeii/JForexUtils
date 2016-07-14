@@ -72,7 +72,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         when(barQuoteRepositoryMock.get(askBarEURUSDParams))
                 .thenReturn(askBarQuoteEURUSD);
 
-        assertThat(barQuoteHandler.quote(askBarEURUSDParams),
+        assertThat(barQuoteHandler.bar(askBarEURUSDParams),
                    equalTo(askBarEURUSD));
     }
 
@@ -81,7 +81,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         when(barQuoteRepositoryMock.get(askBarAUDUSDParams))
                 .thenReturn(askBarQuoteAUDUSD);
 
-        assertThat(barQuoteHandler.quote(askBarAUDUSDParams),
+        assertThat(barQuoteHandler.bar(askBarAUDUSDParams),
                    equalTo(askBarAUDUSD));
     }
 

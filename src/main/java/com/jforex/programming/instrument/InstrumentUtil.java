@@ -50,7 +50,7 @@ public final class InstrumentUtil {
     }
 
     public final IBar bar(final BarQuoteParams barQuoteParams) {
-        return barQuoteProvider.quote(barQuoteParams);
+        return barQuoteProvider.bar(barQuoteParams);
     }
 
     public final double spread() {
