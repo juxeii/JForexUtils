@@ -6,9 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.mm.RiskPercentMM;
-import com.jforex.programming.order.OrderChangeUtil;
-import com.jforex.programming.order.OrderCreateUtil;
-import com.jforex.programming.order.OrderPositionUtil;
+import com.jforex.programming.order.OrderPositionHandler;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
@@ -59,14 +57,12 @@ public class JForexUtil {
     private OrderEventGateway orderEventGateway;
     private OrderCallExecutor orderCallExecutor;
     private OrderUtilHandler orderUtilHandler;
-    private OrderCreateUtil orderCreateUtil;
-    private OrderChangeUtil orderChangeUtil;
     private OrderUtil orderUtil;
     private final OrderEventMapper orderEventMapper = new OrderEventMapper();
 
     private PositionSingleTask positionSingleTask;
     private PositionMultiTask positionMultiTask;
-    private OrderPositionUtil orderPositionUtil;
+    private OrderPositionHandler orderPositionUtil;
 
     private final CalculationUtil calculationUtil;
     private final RiskPercentMM riskPercentMM;
@@ -122,15 +118,13 @@ public class JForexUtil {
         orderCallExecutor = new OrderCallExecutor(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
-        orderCreateUtil = new OrderCreateUtil(context.getEngine(), orderUtilHandler);
-        orderChangeUtil = new OrderChangeUtil(orderUtilHandler);
-        positionSingleTask = new PositionSingleTask(orderCreateUtil, orderChangeUtil);
+        positionSingleTask = new PositionSingleTask(orderUtilHandler);
         positionMultiTask = new PositionMultiTask(positionSingleTask);
-        orderPositionUtil = new OrderPositionUtil(orderCreateUtil,
-                                                  positionSingleTask,
-                                                  positionMultiTask,
-                                                  positionFactory);
-        orderUtil = new OrderUtil(orderChangeUtil, orderPositionUtil);
+        orderPositionUtil = new OrderPositionHandler(orderUtilHandler,
+                                                     positionSingleTask,
+                                                     positionMultiTask,
+                                                     positionFactory);
+        orderUtil = new OrderUtil(engine, orderPositionUtil, orderUtilHandler);
     }
 
     public IContext context() {

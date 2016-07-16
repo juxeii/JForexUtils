@@ -4,11 +4,9 @@ import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
-import java.util.Collection;
-
 import com.jforex.programming.misc.StreamUtil;
-import com.jforex.programming.order.OrderChangeUtil;
-import com.jforex.programming.order.OrderCreateUtil;
+import com.jforex.programming.order.OrderUtilHandler;
+import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.event.OrderEvent;
 
 import com.dukascopy.api.IOrder;
@@ -17,13 +15,10 @@ import rx.Observable;
 
 public class PositionSingleTask {
 
-    private final OrderCreateUtil orderCreateUtil;
-    private final OrderChangeUtil orderChangeUtil;
+    private final OrderUtilHandler orderUtilHandler;
 
-    public PositionSingleTask(final OrderCreateUtil orderCreateUtil,
-                              final OrderChangeUtil orderChangeUtil) {
-        this.orderCreateUtil = orderCreateUtil;
-        this.orderChangeUtil = orderChangeUtil;
+    public PositionSingleTask(final OrderUtilHandler orderUtilHandler) {
+        this.orderUtilHandler = orderUtilHandler;
     }
 
     public Observable<OrderEvent> setSLObservable(final IOrder orderToChangeSL,
@@ -31,7 +26,8 @@ public class PositionSingleTask {
         return Observable
                 .just(orderToChangeSL)
                 .filter(order -> !isSLSetTo(newSL).test(order))
-                .flatMap(order -> orderChangeUtil.setStopLossPrice(order, newSL))
+                .flatMap(order -> orderUtilHandler
+                        .observable(OrderCallCommand.setSLCommand(orderToChangeSL, newSL)))
                 .retryWhen(StreamUtil::positionTaskRetry);
     }
 
@@ -40,15 +36,8 @@ public class PositionSingleTask {
         return Observable
                 .just(orderToChangeTP)
                 .filter(order -> !isTPSetTo(newTP).test(order))
-                .flatMap(order -> orderChangeUtil.setTakeProfitPrice(order, newTP))
-                .retryWhen(StreamUtil::positionTaskRetry);
-    }
-
-    public Observable<OrderEvent> mergeObservable(final String mergeOrderLabel,
-                                                  final Collection<IOrder> toMergeOrders) {
-        return Observable
-                .just(mergeOrderLabel)
-                .flatMap(order -> orderCreateUtil.mergeOrders(mergeOrderLabel, toMergeOrders))
+                .flatMap(order -> orderUtilHandler
+                        .observable(OrderCallCommand.setTPCommand(orderToChangeTP, newTP)))
                 .retryWhen(StreamUtil::positionTaskRetry);
     }
 
@@ -56,7 +45,8 @@ public class PositionSingleTask {
         return Observable
                 .just(orderToClose)
                 .filter(order -> !isClosed.test(order))
-                .flatMap(orderChangeUtil::close)
+                .flatMap(order -> orderUtilHandler
+                        .observable(OrderCallCommand.closeCommand(orderToClose)))
                 .retryWhen(StreamUtil::positionTaskRetry);
     }
 }

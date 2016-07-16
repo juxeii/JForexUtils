@@ -1,6 +1,7 @@
 package com.jforex.programming.order;
 
 import java.util.Collection;
+import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -10,6 +11,7 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.settings.PlatformSettings;
 
 import com.dukascopy.api.IEngine.OrderCommand;
@@ -145,5 +147,13 @@ public final class OrderStaticUtil {
                                                final double price,
                                                final double pips) {
         return slPriceWithPips(order, price, -pips);
+    }
+
+    public static Callable<IOrder> runnableToCallable(final JFRunnable runnable,
+                                                      final IOrder order) {
+        return () -> {
+            runnable.run();
+            return order;
+        };
     }
 }

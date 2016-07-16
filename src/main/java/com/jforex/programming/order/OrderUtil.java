@@ -1,11 +1,18 @@
 package com.jforex.programming.order;
 
 import java.util.Collection;
+import java.util.Set;
 
+import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.MergePositionCommand;
+import com.jforex.programming.order.command.OrderCallCommand;
+import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
+import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 
+import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 
@@ -14,71 +21,88 @@ import rx.Observable;
 
 public class OrderUtil {
 
-    private final OrderChangeUtil orderChangeUtil;
-    private final OrderPositionUtil orderPositionUtil;
+    private final IEngine engine;
+    private final OrderPositionHandler orderPositionHandler;
+    private final OrderUtilHandler orderUtilHandler;
 
-    public OrderUtil(final OrderChangeUtil orderChangeUtil,
-                     final OrderPositionUtil orderPositionUtil) {
-        this.orderChangeUtil = orderChangeUtil;
-        this.orderPositionUtil = orderPositionUtil;
+    public OrderUtil(final IEngine engine,
+                     final OrderPositionHandler orderPositionHandler,
+                     final OrderUtilHandler orderUtilHandler) {
+        this.engine = engine;
+        this.orderPositionHandler = orderPositionHandler;
+        this.orderUtilHandler = orderUtilHandler;
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
-        return orderPositionUtil.positionOrders(instrument);
+        return orderPositionHandler.positionOrders(instrument);
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
-        return orderPositionUtil.submitOrder(orderParams);
+        return orderPositionHandler.submitOrder(new SubmitCommand(orderParams, engine));
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
-        return orderPositionUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
+        return orderPositionHandler
+                .mergeOrders(new MergeCommand(mergeOrderLabel, toMergeOrders, engine));
     }
 
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
                                                       final Instrument instrument,
                                                       final RestoreSLTPPolicy restoreSLTPPolicy) {
-        return orderPositionUtil.mergePositionOrders(mergeOrderLabel,
-                                                     instrument,
-                                                     restoreSLTPPolicy);
+        final Set<IOrder> toMergeOrders = positionOrders(instrument).filled();
+        if (toMergeOrders.size() < 2)
+            return Observable.empty();
+
+        final RestoreSLTPData restoreSLTPData =
+                new RestoreSLTPData(restoreSLTPPolicy.restoreSL(toMergeOrders),
+                                    restoreSLTPPolicy.restoreTP(toMergeOrders));
+        final MergePositionCommand command = new MergePositionCommand(toMergeOrders,
+                                                                      mergeOrderLabel,
+                                                                      instrument,
+                                                                      restoreSLTPData,
+                                                                      engine);
+        return orderPositionHandler.mergePositionOrders(command);
     }
 
     public Completable closePosition(final Instrument instrument) {
-        return orderPositionUtil.closePosition(instrument);
+        return orderPositionHandler.closePosition(instrument);
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        return orderChangeUtil.close(orderToClose);
+        return orderUtilHandler.observable(OrderCallCommand.closeCommand(orderToClose));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
                                            final String newLabel) {
-        return orderChangeUtil.setLabel(orderToChangeLabel, newLabel);
+        return orderUtilHandler
+                .observable(OrderCallCommand.setLabelCommand(orderToChangeLabel, newLabel));
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
                                                   final long newGTT) {
-        return orderChangeUtil.setGoodTillTime(orderToChangeGTT, newGTT);
+        return orderUtilHandler.observable(OrderCallCommand.setGTTCommand(orderToChangeGTT, newGTT));
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
-        return orderChangeUtil.setOpenPrice(orderToChangeOpenPrice, newOpenPrice);
+        return orderUtilHandler
+                .observable(OrderCallCommand.setOpenPriceCommand(orderToChangeOpenPrice, newOpenPrice));
     }
 
-    public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeRequestedAmount,
+    public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
                                                      final double newRequestedAmount) {
-        return orderChangeUtil.setRequestedAmount(orderToChangeRequestedAmount, newRequestedAmount);
+        return orderUtilHandler
+                .observable(OrderCallCommand.setAmountCommand(orderToChangeAmount, newRequestedAmount));
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
                                                    final double newSL) {
-        return orderChangeUtil.setStopLossPrice(orderToChangeSL, newSL);
+        return orderUtilHandler.observable(OrderCallCommand.setSLCommand(orderToChangeSL, newSL));
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
                                                      final double newTP) {
-        return orderChangeUtil.setTakeProfitPrice(orderToChangeTP, newTP);
+        return orderUtilHandler.observable(OrderCallCommand.setTPCommand(orderToChangeTP, newTP));
     }
 }
