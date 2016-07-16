@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.jforex.programming.misc.StreamUtil;
+import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergePositionCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.event.OrderEvent;
@@ -59,7 +60,7 @@ public class OrderPositionHandler {
                 });
     }
 
-    public Observable<OrderEvent> mergeOrders(final OrderCallCommand command) {
+    public Observable<OrderEvent> mergeOrders(final MergeCommand command) {
         return orderUtilHandler
                 .observable(command)
                 .doOnNext(mergeEvent -> {

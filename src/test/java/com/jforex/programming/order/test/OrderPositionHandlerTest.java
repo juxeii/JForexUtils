@@ -340,8 +340,8 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
 
             when(positionMock.filled()).thenReturn(toMergeOrders);
 
-            command = new MergePositionCommand(toMergeOrders,
-                                               mergeOrderLabel,
+            command = new MergePositionCommand(mergeOrderLabel,
+                                               toMergeOrders,
                                                instrumentEURUSD,
                                                restoreSLTPData,
                                                engineMock);

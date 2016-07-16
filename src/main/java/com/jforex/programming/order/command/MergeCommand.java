@@ -10,8 +10,8 @@ import com.dukascopy.api.Instrument;
 
 public class MergeCommand extends OrderCallCommand {
 
-    private final String mergeOrderLabel;
-    private final Instrument instrument;
+    protected final String mergeOrderLabel;
+    protected final Instrument instrument;
 
     public MergeCommand(final String mergeOrderLabel,
                         final Collection<IOrder> toMergeOrders,

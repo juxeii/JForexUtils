@@ -57,8 +57,8 @@ public class OrderUtil {
         final RestoreSLTPData restoreSLTPData =
                 new RestoreSLTPData(restoreSLTPPolicy.restoreSL(toMergeOrders),
                                     restoreSLTPPolicy.restoreTP(toMergeOrders));
-        final MergePositionCommand command = new MergePositionCommand(toMergeOrders,
-                                                                      mergeOrderLabel,
+        final MergePositionCommand command = new MergePositionCommand(mergeOrderLabel,
+                                                                      toMergeOrders,
                                                                       instrument,
                                                                       restoreSLTPData,
                                                                       engine);

@@ -2,31 +2,25 @@ package com.jforex.programming.order.command;
 
 import java.util.Set;
 
-import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.RestoreSLTPData;
 
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 
-public class MergePositionCommand extends OrderCallCommand {
+public class MergePositionCommand extends MergeCommand {
 
     private final Set<IOrder> toMergeOrders;
-    private final String mergeOrderLabel;
-    private final Instrument instrument;
     private final RestoreSLTPData restoreSLTPData;
 
-    public MergePositionCommand(final Set<IOrder> toMergeOrders,
-                                final String mergeOrderLabel,
+    public MergePositionCommand(final String mergeOrderLabel,
+                                final Set<IOrder> toMergeOrders,
                                 final Instrument instrument,
                                 final RestoreSLTPData restoreSLTPData,
                                 final IEngine engine) {
-        super(() -> engine.mergeOrders(mergeOrderLabel, toMergeOrders),
-              OrderEventTypeData.mergeData);
+        super(mergeOrderLabel, toMergeOrders, engine);
 
         this.toMergeOrders = toMergeOrders;
-        this.mergeOrderLabel = mergeOrderLabel;
-        this.instrument = instrument;
         this.restoreSLTPData = restoreSLTPData;
     }
 
