@@ -5,6 +5,7 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.command.MergePositionCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.event.OrderEvent;
@@ -44,14 +45,17 @@ public class OrderPositionHandler {
         return positionFactory.forInstrument(instrument);
     }
 
+    private Position position(final Instrument instrument) {
+        return (Position) positionOrders(instrument);
+    }
+
     public Observable<OrderEvent> submitOrder(final OrderCallCommand command) {
         return orderUtilHandler
                 .observable(command)
                 .doOnNext(submitEvent -> {
                     final Instrument instrument = submitEvent.order().getInstrument();
-                    final Position position = positionFactory.forInstrument(instrument);
                     if (OrderEventTypeData.submitData.isDoneType(submitEvent.type()))
-                        position.addOrder(submitEvent.order());
+                        position(instrument).addOrder(submitEvent.order());
                 });
     }
 
@@ -59,9 +63,8 @@ public class OrderPositionHandler {
         return orderUtilHandler
                 .observable(command)
                 .doOnNext(mergeEvent -> {
-                    final Instrument instrument = mergeEvent.order().getInstrument();
-                    final Position position = positionFactory.forInstrument(instrument);
-                    position.addOrder(mergeEvent.order());
+                    final IOrder order = mergeEvent.order();
+                    position(order.getInstrument()).addOrder(order);
                 });
     }
 
@@ -74,10 +77,11 @@ public class OrderPositionHandler {
                 .just(filledOrders)
                 .doOnSubscribe(() -> {
                     logger.debug("Starting position merge for " + instrument + " with label " + mergeOrderLabel);
-                    positionFactory.forInstrument(instrument).markAllOrdersActive();
+                    position(instrument).markAllOrdersActive();
                 })
                 .flatMap(positionMultiTask::removeTPSLObservable)
                 .concatWith(mergeOrders(command)
+                        .retryWhen(StreamUtil::positionTaskRetry)
                         .map(OrderEvent::order)
                         .flatMap(order -> positionMultiTask.restoreSLTPObservable(order, command.restoreSLTPData())))
                 .doOnCompleted(() -> logger.debug("Position merge for " + instrument + "  with label "
@@ -85,7 +89,7 @@ public class OrderPositionHandler {
     }
 
     public Completable closePosition(final Instrument instrument) {
-        final Position position = positionFactory.forInstrument(instrument);
+        final Position position = position(instrument);
 
         return Observable.from(position.filledOrOpened())
                 .doOnSubscribe(() -> {
