@@ -3,9 +3,15 @@ package com.jforex.programming.order;
 import java.util.Collection;
 import java.util.Set;
 
+import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergePositionCommand;
-import com.jforex.programming.order.command.OrderCallCommand;
+import com.jforex.programming.order.command.SetAmountCommand;
+import com.jforex.programming.order.command.SetGTTCommand;
+import com.jforex.programming.order.command.SetLabelCommand;
+import com.jforex.programming.order.command.SetOpenPriceCommand;
+import com.jforex.programming.order.command.SetSLCommand;
+import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
@@ -70,39 +76,39 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        return orderUtilHandler.observable(OrderCallCommand.closeCommand(orderToClose));
+        return orderUtilHandler.observable(new CloseCommand(orderToClose));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
                                            final String newLabel) {
         return orderUtilHandler
-                .observable(OrderCallCommand.setLabelCommand(orderToChangeLabel, newLabel));
+                .observable(new SetLabelCommand(orderToChangeLabel, newLabel));
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
                                                   final long newGTT) {
-        return orderUtilHandler.observable(OrderCallCommand.setGTTCommand(orderToChangeGTT, newGTT));
+        return orderUtilHandler.observable(new SetGTTCommand(orderToChangeGTT, newGTT));
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
         return orderUtilHandler
-                .observable(OrderCallCommand.setOpenPriceCommand(orderToChangeOpenPrice, newOpenPrice));
+                .observable(new SetOpenPriceCommand(orderToChangeOpenPrice, newOpenPrice));
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
                                                      final double newRequestedAmount) {
         return orderUtilHandler
-                .observable(OrderCallCommand.setAmountCommand(orderToChangeAmount, newRequestedAmount));
+                .observable(new SetAmountCommand(orderToChangeAmount, newRequestedAmount));
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
                                                    final double newSL) {
-        return orderUtilHandler.observable(OrderCallCommand.setSLCommand(orderToChangeSL, newSL));
+        return orderUtilHandler.observable(new SetSLCommand(orderToChangeSL, newSL));
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
                                                      final double newTP) {
-        return orderUtilHandler.observable(OrderCallCommand.setTPCommand(orderToChangeTP, newTP));
+        return orderUtilHandler.observable(new SetTPCommand(orderToChangeTP, newTP));
     }
 }

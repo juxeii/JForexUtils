@@ -39,22 +39,4 @@ public class MergePositionCommand extends MergeCommand {
     public RestoreSLTPData restoreSLTPData() {
         return restoreSLTPData;
     }
-
-    @Override
-    protected String subscribeLog() {
-        return "Starting to merge with label " + mergeOrderLabel
-                + " for position " + instrument + ".";
-    }
-
-    @Override
-    protected String errorLog(final Throwable e) {
-        return "Merging with label " + mergeOrderLabel
-                + " for position " + instrument + " failed! Exception: " + e.getMessage();
-    }
-
-    @Override
-    protected String completedLog() {
-        return "Merging with label " + mergeOrderLabel
-                + " for position " + instrument + " was successful.";
-    }
 }

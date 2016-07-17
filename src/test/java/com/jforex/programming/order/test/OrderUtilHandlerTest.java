@@ -18,6 +18,7 @@ import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
+import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.event.OrderEvent;
@@ -201,7 +202,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
         private final IOrderForTest orderToChange = IOrderForTest.buyOrderEURUSD();
         private final TestSubscriber<OrderEvent> callSubscriber = new TestSubscriber<>();
-        private final OrderCallCommand command = OrderCallCommand.closeCommand(orderToChange);
+        private final OrderCallCommand command = new CloseCommand(orderToChange);
         private final Supplier<Observable<OrderEvent>> runCall =
                 () -> orderUtilHandler.observable(command);
 

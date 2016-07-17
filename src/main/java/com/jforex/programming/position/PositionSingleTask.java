@@ -6,7 +6,9 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
 import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.command.OrderCallCommand;
+import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.SetSLCommand;
+import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.event.OrderEvent;
 
 import com.dukascopy.api.IOrder;
@@ -27,7 +29,7 @@ public class PositionSingleTask {
                 .just(orderToChangeSL)
                 .filter(order -> !isSLSetTo(newSL).test(order))
                 .flatMap(order -> orderUtilHandler
-                        .observable(OrderCallCommand.setSLCommand(orderToChangeSL, newSL)))
+                        .observable(new SetSLCommand(orderToChangeSL, newSL)))
                 .retryWhen(StreamUtil::positionTaskRetry);
     }
 
@@ -37,7 +39,7 @@ public class PositionSingleTask {
                 .just(orderToChangeTP)
                 .filter(order -> !isTPSetTo(newTP).test(order))
                 .flatMap(order -> orderUtilHandler
-                        .observable(OrderCallCommand.setTPCommand(orderToChangeTP, newTP)))
+                        .observable(new SetTPCommand(orderToChangeTP, newTP)))
                 .retryWhen(StreamUtil::positionTaskRetry);
     }
 
@@ -46,7 +48,7 @@ public class PositionSingleTask {
                 .just(orderToClose)
                 .filter(order -> !isClosed.test(order))
                 .flatMap(order -> orderUtilHandler
-                        .observable(OrderCallCommand.closeCommand(orderToClose)))
+                        .observable(new CloseCommand(orderToClose)))
                 .retryWhen(StreamUtil::positionTaskRetry);
     }
 }

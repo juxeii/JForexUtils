@@ -19,6 +19,7 @@ import static com.jforex.programming.order.OrderStaticUtil.ofInstrument;
 import static com.jforex.programming.order.OrderStaticUtil.offerSideForOrderCommand;
 import static com.jforex.programming.order.OrderStaticUtil.orderSLPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.orderTPPredicate;
+import static com.jforex.programming.order.OrderStaticUtil.runnableToCallable;
 import static com.jforex.programming.order.OrderStaticUtil.sellOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.signedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.slPriceWithPips;
@@ -32,21 +33,24 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.OfferSide;
 
 public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
@@ -447,5 +451,16 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         final double tpPrice = tpPriceWithPips(sellOrderEURUSD, currentPriceForSLTP, pipsToSLTP);
 
         assertSLTPCalculation(sellOrderEURUSD, tpPrice, -1);
+    }
+
+    @Test
+    public void runnableToCallableIsCorrect() throws Exception {
+        final JFRunnable runnable = () -> buyOrderEURUSD.getLabel();
+
+        final Callable<IOrder> callable = runnableToCallable(runnable, buyOrderEURUSD);
+        final IOrder order = callable.call();
+
+        assertThat(order, equalTo(buyOrderEURUSD));
+        verify(buyOrderEURUSD).getLabel();
     }
 }

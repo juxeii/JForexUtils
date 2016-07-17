@@ -2,13 +2,13 @@ package com.jforex.programming.test.fakes;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import java.util.Collection;
+import com.jforex.programming.order.OrderParams;
 
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
-import com.jforex.programming.order.OrderParams;
 
 public class IEngineForTest {
 
@@ -16,6 +16,20 @@ public class IEngineForTest {
 
     public IEngineForTest(final IEngine engineMock) {
         this.engineMock = engineMock;
+    }
+
+    public void setSubmitExpectation(final OrderParams orderParams,
+                                     final IOrder order) throws JFException {
+        when(engineMock.submitOrder(orderParams.label(),
+                                    orderParams.instrument(),
+                                    orderParams.orderCommand(),
+                                    orderParams.amount(),
+                                    orderParams.price(),
+                                    orderParams.slippage(),
+                                    orderParams.stopLossPrice(),
+                                    orderParams.takeProfitPrice(),
+                                    orderParams.goodTillTime(),
+                                    orderParams.comment())).thenReturn(order);
     }
 
     public void verifySubmit(final OrderParams orderParams,
@@ -30,11 +44,5 @@ public class IEngineForTest {
                                                      orderParams.takeProfitPrice(),
                                                      orderParams.goodTillTime(),
                                                      orderParams.comment());
-    }
-
-    public void verifyMerge(final String mergeLabel,
-                            final Collection<IOrder> toMergeOrders,
-                            final int times) throws JFException {
-        verify(engineMock, times(times)).mergeOrders(mergeLabel, toMergeOrders);
     }
 }

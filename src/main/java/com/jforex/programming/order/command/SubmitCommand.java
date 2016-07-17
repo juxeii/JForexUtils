@@ -13,18 +13,17 @@ public class SubmitCommand extends OrderCallCommand {
 
     public SubmitCommand(final OrderParams orderParams,
                          final IEngine engine) {
-        super(() -> engine.submitOrder(orderParams.label(),
-                                       orderParams.instrument(),
-                                       orderParams.orderCommand(),
-                                       orderParams.amount(),
-                                       orderParams.price(),
-                                       orderParams.slippage(),
-                                       orderParams.stopLossPrice(),
-                                       orderParams.takeProfitPrice(),
-                                       orderParams.goodTillTime(),
-                                       orderParams.comment()),
-              OrderEventTypeData.submitData);
-
+        callable = () -> engine.submitOrder(orderParams.label(),
+                                            orderParams.instrument(),
+                                            orderParams.orderCommand(),
+                                            orderParams.amount(),
+                                            orderParams.price(),
+                                            orderParams.slippage(),
+                                            orderParams.stopLossPrice(),
+                                            orderParams.takeProfitPrice(),
+                                            orderParams.goodTillTime(),
+                                            orderParams.comment());
+        orderEventTypeData = OrderEventTypeData.submitData;
         orderLabel = orderParams.label();
         instrument = orderParams.instrument();
     }

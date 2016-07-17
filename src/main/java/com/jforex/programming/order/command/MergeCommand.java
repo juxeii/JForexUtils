@@ -16,10 +16,9 @@ public class MergeCommand extends OrderCallCommand {
     public MergeCommand(final String mergeOrderLabel,
                         final Collection<IOrder> toMergeOrders,
                         final IEngine engine) {
-        super(() -> engine.mergeOrders(mergeOrderLabel, toMergeOrders),
-              OrderEventTypeData.mergeData);
-
         this.mergeOrderLabel = mergeOrderLabel;
+        callable = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
+        orderEventTypeData = OrderEventTypeData.mergeData;
         instrument = toMergeOrders.iterator().next().getInstrument();
     }
 

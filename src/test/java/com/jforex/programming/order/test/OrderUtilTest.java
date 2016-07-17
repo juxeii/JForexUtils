@@ -112,6 +112,20 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
+    public void testMergePositionReturnsEmptyObservale() {
+        when(orderPositionHandlerMock.positionOrders(instrumentEURUSD))
+                .thenReturn(positionOrdersMock);
+        when(positionOrdersMock.filled())
+                .thenReturn(Sets.newHashSet());
+
+        orderUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock)
+                .subscribe(orderEventSubscriber);
+
+        orderEventSubscriber.assertValueCount(0);
+        orderEventSubscriber.assertCompleted();
+    }
+
+    @Test
     public void testClosePositionCallsOnPositionUtil() {
         when(orderPositionHandlerMock.closePosition(instrumentEURUSD))
                 .thenReturn(Observable.empty().toCompletable());
