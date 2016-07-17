@@ -14,9 +14,15 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderPositionHandler;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
+import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergePositionCommand;
-import com.jforex.programming.order.command.OrderChangeCommand;
+import com.jforex.programming.order.command.SetAmountCommand;
+import com.jforex.programming.order.command.SetGTTCommand;
+import com.jforex.programming.order.command.SetLabelCommand;
+import com.jforex.programming.order.command.SetOpenPriceCommand;
+import com.jforex.programming.order.command.SetSLCommand;
+import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
@@ -140,96 +146,96 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void testCloseCallsOnChangeUtil() {
-        when(orderUtilHandlerMock.observable(any(OrderChangeCommand.class)))
+        when(orderUtilHandlerMock.observable(any(CloseCommand.class)))
                 .thenReturn(Observable.empty());
 
         orderUtil.close(orderToChange)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderUtilHandlerMock).observable(any(OrderChangeCommand.class));
+        verify(orderUtilHandlerMock).observable(any(CloseCommand.class));
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
     public void testSetLabelCallsOnChangeUtil() {
         final String newLabel = "NewLabel";
-        when(orderUtilHandlerMock.observable(any(OrderChangeCommand.class)))
+        when(orderUtilHandlerMock.observable(any(SetLabelCommand.class)))
                 .thenReturn(Observable.empty());
 
         orderUtil.setLabel(orderToChange, newLabel)
                 .subscribe(orderEventSubscriber);
 
         verify(orderUtilHandlerMock)
-                .observable(any(OrderChangeCommand.class));
+                .observable(any(SetLabelCommand.class));
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
     public void testSetGTTCallsOnChangeUtil() {
         final long newGTT = 123456L;
-        when(orderUtilHandlerMock.observable(any(OrderChangeCommand.class)))
+        when(orderUtilHandlerMock.observable(any(SetGTTCommand.class)))
                 .thenReturn(Observable.empty());
 
         orderUtil.setGoodTillTime(orderToChange, newGTT)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderUtilHandlerMock).observable(any(OrderChangeCommand.class));
+        verify(orderUtilHandlerMock).observable(any(SetGTTCommand.class));
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
     public void testSetOpenPriceCallsOnChangeUtil() {
         final double newOpenPrice = 1.12122;
-        when(orderUtilHandlerMock.observable(any(OrderChangeCommand.class)))
+        when(orderUtilHandlerMock.observable(any(SetOpenPriceCommand.class)))
                 .thenReturn(Observable.empty());
 
         orderUtil.setOpenPrice(orderToChange, newOpenPrice)
                 .subscribe(orderEventSubscriber);
 
         verify(orderUtilHandlerMock)
-                .observable(any(OrderChangeCommand.class));
+                .observable(any(SetOpenPriceCommand.class));
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
     public void testSetRequestedAmountCallsOnChangeUtil() {
         final double newRequestedAmount = 0.12;
-        when(orderUtilHandlerMock.observable(any(OrderChangeCommand.class)))
+        when(orderUtilHandlerMock.observable(any(SetAmountCommand.class)))
                 .thenReturn(Observable.empty());
 
         orderUtil.setRequestedAmount(orderToChange, newRequestedAmount)
                 .subscribe(orderEventSubscriber);
 
         verify(orderUtilHandlerMock)
-                .observable(any(OrderChangeCommand.class));
+                .observable(any(SetAmountCommand.class));
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
     public void testSetStopLossPriceCallsOnChangeUtil() {
         final double newSL = 1.10987;
-        when(orderUtilHandlerMock.observable(any(OrderChangeCommand.class)))
+        when(orderUtilHandlerMock.observable(any(SetSLCommand.class)))
                 .thenReturn(Observable.empty());
 
         orderUtil.setStopLossPrice(orderToChange, newSL)
                 .subscribe(orderEventSubscriber);
 
         verify(orderUtilHandlerMock)
-                .observable(any(OrderChangeCommand.class));
+                .observable(any(SetSLCommand.class));
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
     public void testSetTakeProfitPriceCallsOnChangeUtil() {
         final double newTP = 1.11001;
-        when(orderUtilHandlerMock.observable(any(OrderChangeCommand.class)))
+        when(orderUtilHandlerMock.observable(any(SetTPCommand.class)))
                 .thenReturn(Observable.empty());
 
         orderUtil.setTakeProfitPrice(orderToChange, newTP)
                 .subscribe(orderEventSubscriber);
 
         verify(orderUtilHandlerMock)
-                .observable(any(OrderChangeCommand.class));
+                .observable(any(SetTPCommand.class));
         orderEventSubscriber.assertCompleted();
     }
 }
