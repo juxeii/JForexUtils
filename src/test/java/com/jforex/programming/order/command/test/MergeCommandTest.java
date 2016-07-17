@@ -32,6 +32,9 @@ public class MergeCommandTest extends CommonUtilForTest {
         initCommonTestFramework();
 
         command = new MergeCommand(mergeOrderLabel, toMergeOrders, engineMock);
+        command.logOnSubscribe();
+        command.logOnError(jfException);
+        command.logOnCompleted();
     }
 
     @Test

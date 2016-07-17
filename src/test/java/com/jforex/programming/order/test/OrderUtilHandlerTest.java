@@ -2,7 +2,6 @@ package com.jforex.programming.order.test;
 
 import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
@@ -13,13 +12,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.command.CloseCommand;
-import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
@@ -89,113 +86,6 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private void assertSubscriberCompleted(final TestSubscriber<?> subscriber) {
         subscriber.assertNoErrors();
         subscriber.assertCompleted();
-    }
-
-    public class OrderMergeCallSetup {
-
-        private final IOrderForTest mergeOrder = IOrderForTest.buyOrderEURUSD();
-        private final Set<IOrder> mergeOrders = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
-                                                                IOrderForTest.sellOrderEURUSD());
-        private final String mergeOrderLabel = "MergeLabel";
-        private final TestSubscriber<OrderEvent> callSubscriber = new TestSubscriber<>();
-        private final MergeCommand command = new MergeCommand(mergeOrderLabel, mergeOrders, engineMock);
-        private final Supplier<Observable<OrderEvent>> runCall =
-                () -> orderUtilHandler.observable(command);
-
-        @Before
-        public void setUp() {
-            when(orderCallExecutorMock.callObservable(any()))
-                    .thenReturn(Observable.just(mergeOrder));
-        }
-
-        public class ExecutesWithJFException {
-
-            @Before
-            public void setUp() {
-                prepareJFException();
-
-                runCall.get().subscribe(callSubscriber);
-            }
-
-            @Test
-            public void testCorrectCallIsExecuted() throws Exception {
-//                captureAndRunOrderCall();
-//
-//                verify(engineMock).mergeOrders(mergeOrderLabel, mergeOrders);
-            }
-
-            @Test
-            public void testSubscriberCompletesWithJFError() {
-                assertSubscriberJFError(callSubscriber);
-            }
-
-            @Test
-            public void testMergeOrderIsNotRegisteredAtGateway() {
-                verify(orderEventGatewayMock, never()).registerOrderCallRequest(any());
-            }
-        }
-
-        public class ExecutesOK {
-
-            @Before
-            public void setUp() {
-                runCall.get().subscribe(callSubscriber);
-            }
-
-            @Test
-            public void testCorrectCallIsExecuted() throws Exception {
-//                captureAndRunOrderCall();
-//
-//                verify(engineMock).mergeOrders(mergeOrderLabel, mergeOrders);
-            }
-
-            @Test
-            public void testSubscriberNotYetCompletedWhenNoEventWasSent() {
-                callSubscriber.assertNotCompleted();
-            }
-
-            @Test
-            public void testMergeOrderRegisteredAtGateway() {
-                verify(orderEventGatewayMock)
-                        .registerOrderCallRequest(argLambda(req -> req.order() == mergeOrder
-                                && req.reason() == OrderCallReason.MERGE));
-            }
-
-            @Test
-            public void testSubscriberNotCompletedWhenNotDoneType() {
-                sendOrderEvent(mergeOrder, OrderEventType.SUBMIT_OK);
-
-                callSubscriber.assertNotCompleted();
-            }
-
-            @Test
-            public void testSubscriberCompletesOnDoneEvent() {
-                sendOrderEvent(mergeOrder, OrderEventType.MERGE_OK);
-
-                assertSubscriberCompleted(callSubscriber);
-            }
-
-            @Test
-            public void testSubscriberCompletesWithRejectError() {
-                sendOrderEvent(mergeOrder, OrderEventType.MERGE_REJECTED);
-
-                assertSubscriberRejectError(callSubscriber);
-            }
-
-            @Test
-            public void testOtherOrderEventIsIgnored() {
-                sendOrderEvent(externalOrder, OrderEventType.MERGE_OK);
-
-                callSubscriber.assertNotCompleted();
-            }
-
-            @Test
-            public void testNotCallRelatedEventIsIgnored() {
-                sendOrderEvent(mergeOrder, OrderEventType.CHANGED_GTT);
-
-                callSubscriber.assertNotCompleted();
-            }
-        }
     }
 
     public class OrderChangeCallSetup {
