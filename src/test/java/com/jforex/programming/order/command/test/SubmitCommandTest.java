@@ -8,6 +8,7 @@ import java.util.concurrent.Callable;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.command.SubmitCommand;
@@ -16,8 +17,6 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
-import com.dukascopy.api.IOrder;
-
 public class SubmitCommandTest extends CommonUtilForTest {
 
     private OrderCallCommand command;
@@ -25,8 +24,6 @@ public class SubmitCommandTest extends CommonUtilForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         command = new SubmitCommand(orderParams, engineMock);
         command.logOnSubscribe();
         command.logOnError(jfException);

@@ -38,8 +38,6 @@ public class PositionTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() throws JFException {
-        initCommonTestFramework();
-
         position = new Position(instrumentEURUSD, orderEventSubject);
     }
 

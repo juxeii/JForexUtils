@@ -10,13 +10,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.BarQuoteParams;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-
-import com.dukascopy.api.OfferSide;
 
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -38,8 +37,6 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         barQuoteHandler = new BarQuoteHandler(jforexUtilMock,
                                               quoteObservable,
                                               barQuoteRepositoryMock);

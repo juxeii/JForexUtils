@@ -7,13 +7,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-
-import com.dukascopy.api.OfferSide;
 
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -32,7 +31,6 @@ public class TickQuoteHandlerTest extends QuoteProviderForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
         setUpMocks();
 
         tickQuoteHandler = new TickQuoteHandler(quoteObservable, tickQuoteRepositoryMock);

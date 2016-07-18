@@ -23,7 +23,6 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
         setUpMocks();
 
         instrumentUtil = new InstrumentUtil(instrumentEURUSD,

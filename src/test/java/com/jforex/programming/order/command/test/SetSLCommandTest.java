@@ -12,8 +12,6 @@ public class SetSLCommandTest extends CommonCommandForTest {
 
     @Before
     public void setUp() {
-        setUpCommon();
-
         command = new SetSLCommand(orderUnderTest, newSL);
     }
 

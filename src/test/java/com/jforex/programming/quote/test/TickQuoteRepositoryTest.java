@@ -11,12 +11,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-
-import com.dukascopy.api.Instrument;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -29,11 +28,11 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
 
     private final Map<Instrument, TickQuote> historyQuotes = new HashMap<>();
     private final Subject<TickQuote, TickQuote> quoteObservable = PublishSubject.create();
-    private final Set<Instrument> subscribedInstruments = Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD);
+    private final Set<Instrument> subscribedInstruments =
+            Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD);
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
         setUpMocks();
         historyQuotes.put(instrumentEURUSD, tickQuoteEURUSD);
         historyQuotes.put(instrumentAUDUSD, tickQuoteAUDUSD);

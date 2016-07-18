@@ -14,6 +14,17 @@ import org.apache.logging.log4j.Logger;
 import org.mockito.BDDMockito;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IAccount;
+import com.dukascopy.api.IContext;
+import com.dukascopy.api.IDataService;
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IHistory;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IMessage.Reason;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.system.IClient;
+import com.dukascopy.api.system.ITesterClient;
 import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
@@ -33,18 +44,6 @@ import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.test.fakes.IClientForTest;
 import com.jforex.programming.test.fakes.IEngineForTest;
-
-import com.dukascopy.api.IAccount;
-import com.dukascopy.api.IContext;
-import com.dukascopy.api.IDataService;
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IHistory;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IMessage.Reason;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.system.IClient;
-import com.dukascopy.api.system.ITesterClient;
 
 public class CommonUtilForTest extends BDDMockito {
 
@@ -98,7 +97,7 @@ public class CommonUtilForTest extends BDDMockito {
             ConfigFactory.create(UserSettings.class);
     protected static final Logger logger = LogManager.getLogger(CommonUtilForTest.class);
 
-    protected void initCommonTestFramework() {
+    public CommonUtilForTest() {
         initMocks(this);
 
         clientForTest = new IClientForTest(clientMock);

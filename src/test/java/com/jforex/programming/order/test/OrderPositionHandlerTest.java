@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderPositionHandler;
@@ -30,8 +31,6 @@ import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.common.PositionCommonTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -70,7 +69,6 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
         setUpMocks();
 
         orderPositionHandler = new OrderPositionHandler(orderUtilHandlerMock,
@@ -309,8 +307,10 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
                                                                   IOrderForTest.sellOrderEURUSD());
         private final double restoreSL = 1.10234;
         private final double restoreTP = 1.11234;
-        private final OrderEvent mergeEvent = new OrderEvent(orderUnderTest, OrderEventType.MERGE_OK);
-        private final OrderEvent rejectEvent = new OrderEvent(orderUnderTest, OrderEventType.MERGE_REJECTED);
+        private final OrderEvent mergeEvent =
+                new OrderEvent(orderUnderTest, OrderEventType.MERGE_OK);
+        private final OrderEvent rejectEvent =
+                new OrderEvent(orderUnderTest, OrderEventType.MERGE_REJECTED);
         private MergePositionCommand command;
         private Runnable mergePositionCall;
 
@@ -325,8 +325,9 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
         }
 
         private void setRestoreMockResult(final Observable<OrderEvent> observable) {
-            when(positionMultiTaskMock.restoreSLTPObservable(eq(orderUnderTest), restoreSLTPCaptor.capture()))
-                    .thenReturn(observable);
+            when(positionMultiTaskMock.restoreSLTPObservable(eq(orderUnderTest),
+                                                             restoreSLTPCaptor.capture()))
+                                                                     .thenReturn(observable);
         }
 
         @Before
@@ -347,7 +348,8 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
                                                engineMock);
 
             mergePositionCall =
-                    () -> orderPositionHandler.mergePositionOrders(command).subscribe(taskSubscriber);
+                    () -> orderPositionHandler.mergePositionOrders(command)
+                            .subscribe(taskSubscriber);
         }
 
         @Test
@@ -513,7 +515,8 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
                     @Test
                     public void testRestoreSLTPOnMultiUtilHasBeenCalledWithoutRetry() {
                         verify(positionMultiTaskMock).restoreSLTPObservable(eq(orderUnderTest),
-                                                                            restoreSLTPCaptor.capture());
+                                                                            restoreSLTPCaptor
+                                                                                    .capture());
                     }
 
                     @Test
@@ -535,7 +538,8 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
                     @Test
                     public void testRestoreSLTPOnMultiUtilHasBeenCalledWithoutRetry() {
                         verify(positionMultiTaskMock).restoreSLTPObservable(eq(orderUnderTest),
-                                                                            restoreSLTPCaptor.capture());
+                                                                            restoreSLTPCaptor
+                                                                                    .capture());
                     }
 
                     @Test
@@ -578,7 +582,8 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
         private final Set<IOrder> ordersToClose = Sets.newHashSet(buyOrder, sellOrder);
 
         private final Runnable closeCompletableCall =
-                () -> orderPositionHandler.closePosition(instrumentEURUSD).subscribe(taskSubscriber);
+                () -> orderPositionHandler.closePosition(instrumentEURUSD)
+                        .subscribe(taskSubscriber);
 
         private void setSingleMockResult(final IOrder orderToClose,
                                          final Observable<OrderEvent> observable) {

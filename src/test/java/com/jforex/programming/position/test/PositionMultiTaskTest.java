@@ -32,8 +32,6 @@ public class PositionMultiTaskTest extends PositionCommonTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         positionMultiTask = new PositionMultiTask(positionSingleTaskMock);
     }
 
@@ -129,7 +127,8 @@ public class PositionMultiTaskTest extends PositionCommonTest {
         private final Set<IOrder> filledOrders = Sets.newHashSet(buyOrder, sellOrder);
 
         private final Runnable removeTPSLCompletableCall =
-                () -> positionMultiTask.removeTPSLObservable(filledOrders).subscribe(taskSubscriber);
+                () -> positionMultiTask.removeTPSLObservable(filledOrders)
+                        .subscribe(taskSubscriber);
 
         private void setSLTaskMockResult(final IOrder order,
                                          final double newSL,

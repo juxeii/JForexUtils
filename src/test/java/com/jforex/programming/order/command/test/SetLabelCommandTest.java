@@ -12,8 +12,6 @@ public class SetLabelCommandTest extends CommonCommandForTest {
 
     @Before
     public void setUp() {
-        setUpCommon();
-
         command = new SetLabelCommand(orderUnderTest, newLabel);
     }
 

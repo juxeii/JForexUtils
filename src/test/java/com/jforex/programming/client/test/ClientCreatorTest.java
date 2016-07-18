@@ -10,11 +10,10 @@ import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.jforex.programming.client.ClientCreator;
-import com.jforex.programming.test.common.CommonUtilForTest;
-
 import com.dukascopy.api.system.ClientFactory;
 import com.dukascopy.api.system.TesterFactory;
+import com.jforex.programming.client.ClientCreator;
+import com.jforex.programming.test.common.CommonUtilForTest;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ClientFactory.class, TesterFactory.class })
@@ -22,8 +21,6 @@ public class ClientCreatorTest extends CommonUtilForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         mockStatic(ClientFactory.class);
         mockStatic(TesterFactory.class);
     }

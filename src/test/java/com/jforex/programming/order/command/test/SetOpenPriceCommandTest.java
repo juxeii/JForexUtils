@@ -12,8 +12,6 @@ public class SetOpenPriceCommandTest extends CommonCommandForTest {
 
     @Before
     public void setUp() {
-        setUpCommon();
-
         command = new SetOpenPriceCommand(orderUnderTest, newOpenPrice);
     }
 

@@ -10,6 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.dukascopy.api.IBar;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.OrderUtil;
@@ -19,10 +22,6 @@ import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-
-import com.dukascopy.api.IBar;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.OfferSide;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
@@ -34,8 +33,6 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         jForexUtil = new JForexUtil(contextMock);
     }
 

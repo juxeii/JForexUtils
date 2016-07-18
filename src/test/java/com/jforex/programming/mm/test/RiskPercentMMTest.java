@@ -27,8 +27,6 @@ public class RiskPercentMMTest extends QuoteProviderForTest {
     }
 
     private void setUpMocks() {
-        initCommonTestFramework();
-
         when(accountMock.getAccountCurrency()).thenReturn(currencyEUR);
         when(accountMock.getEquity()).thenReturn(equity);
         setTickExpectations(tickQuoteEURUSD);

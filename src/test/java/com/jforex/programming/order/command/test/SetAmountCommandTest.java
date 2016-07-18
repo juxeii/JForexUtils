@@ -12,8 +12,6 @@ public class SetAmountCommandTest extends CommonCommandForTest {
 
     @Before
     public void setUp() {
-        setUpCommon();
-
         command = new SetAmountCommand(orderUnderTest, newAmount);
     }
 

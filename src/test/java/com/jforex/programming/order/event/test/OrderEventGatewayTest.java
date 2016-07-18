@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IMessage;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -16,8 +17,6 @@ import com.jforex.programming.order.event.OrderEventMapper;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IMessage;
 
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
@@ -38,8 +37,6 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         orderEventGateway = new OrderEventGateway(messageSubject, orderEventMapperMock);
     }
 

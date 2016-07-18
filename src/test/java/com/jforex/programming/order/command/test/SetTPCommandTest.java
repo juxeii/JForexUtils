@@ -12,8 +12,6 @@ public class SetTPCommandTest extends CommonCommandForTest {
 
     @Before
     public void setUp() {
-        setUpCommon();
-
         command = new SetTPCommand(orderUnderTest, newTP);
     }
 

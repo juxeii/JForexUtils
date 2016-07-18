@@ -9,14 +9,13 @@ import java.util.concurrent.Callable;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
 
 public class MergeCommandTest extends CommonUtilForTest {
 
@@ -29,8 +28,6 @@ public class MergeCommandTest extends CommonUtilForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         command = new MergeCommand(mergeOrderLabel, toMergeOrders, engineMock);
         command.logOnSubscribe();
         command.logOnError(jfException);

@@ -26,8 +26,6 @@ public class HistoryUtilTest extends QuoteProviderForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         historyUtil = new HistoryUtil(historyMock);
     }
 

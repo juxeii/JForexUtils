@@ -36,7 +36,6 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
 
     @Before
     public void setUp() throws Exception {
-        initCommonTestFramework();
         setUpMocks();
 
         orderCallExecutor = new OrderCallExecutor(contextMock);

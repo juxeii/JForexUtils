@@ -7,6 +7,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -20,10 +23,6 @@ import com.jforex.programming.order.event.TypeEventMapper;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
-
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -35,8 +34,6 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         orderEventMapper = new OrderEventMapper();
     }
 

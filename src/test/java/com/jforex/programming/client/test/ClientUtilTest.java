@@ -42,8 +42,6 @@ public class ClientUtilTest extends CommonUtilForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         clientUtil = new ClientUtil(clientMock, cacheDirectory);
 
         jfSystemListener = clientUtil.systemListener();

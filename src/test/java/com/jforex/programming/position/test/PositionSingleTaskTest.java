@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.command.OrderChangeCommand;
 import com.jforex.programming.order.event.OrderEvent;
@@ -19,8 +20,6 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.test.common.PositionCommonTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -49,8 +48,6 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         positionSingleTask = new PositionSingleTask(orderUtilHandlerMock);
     }
 
@@ -90,7 +87,8 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                     new OrderEvent(orderUnderTest, OrderEventType.CHANGE_SL_REJECTED);
             private static final double newSL = 1.10123;
             private final Runnable setSLObservableCall =
-                    () -> positionSingleTask.setSLObservable(orderUnderTest, newSL).subscribe(taskSubscriber);
+                    () -> positionSingleTask.setSLObservable(orderUnderTest, newSL)
+                            .subscribe(taskSubscriber);
 
             private void setSLChangeMockResult(final Observable<OrderEvent> observable) {
                 when(orderUtilHandlerMock.observable(any()))
@@ -130,7 +128,8 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    setRetryExceededMock(() -> orderUtilHandlerMock.observable(any(OrderChangeCommand.class)),
+                    setRetryExceededMock(() -> orderUtilHandlerMock
+                            .observable(any(OrderChangeCommand.class)),
                                          rejectEvent);
 
                     setSLObservableCall.run();
@@ -154,7 +153,8 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    setFullRetryMock(() -> orderUtilHandlerMock.observable(any(OrderChangeCommand.class)),
+                    setFullRetryMock(() -> orderUtilHandlerMock
+                            .observable(any(OrderChangeCommand.class)),
                                      rejectEvent);
 
                     setSLObservableCall.run();
@@ -237,7 +237,8 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                     new OrderEvent(orderUnderTest, OrderEventType.CHANGE_TP_REJECTED);
             private static final double newTP = 1.12123;
             private final Runnable setTPObservableCall =
-                    () -> positionSingleTask.setTPObservable(orderUnderTest, newTP).subscribe(taskSubscriber);
+                    () -> positionSingleTask.setTPObservable(orderUnderTest, newTP)
+                            .subscribe(taskSubscriber);
 
             private void setTPChangeMockResult(final Observable<OrderEvent> observable) {
                 when(orderUtilHandlerMock.observable(any(OrderChangeCommand.class)))
@@ -277,7 +278,8 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    setRetryExceededMock(() -> orderUtilHandlerMock.observable(any(OrderChangeCommand.class)),
+                    setRetryExceededMock(() -> orderUtilHandlerMock
+                            .observable(any(OrderChangeCommand.class)),
                                          rejectEvent);
 
                     setTPObservableCall.run();
@@ -301,7 +303,8 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    setFullRetryMock(() -> orderUtilHandlerMock.observable(any(OrderChangeCommand.class)),
+                    setFullRetryMock(() -> orderUtilHandlerMock
+                            .observable(any(OrderChangeCommand.class)),
                                      rejectEvent);
 
                     setTPObservableCall.run();
@@ -378,7 +381,8 @@ public class PositionSingleTaskTest extends PositionCommonTest {
             private final OrderEvent rejectEvent =
                     new OrderEvent(orderUnderTest, OrderEventType.CLOSE_REJECTED);
             private final Runnable closeCall =
-                    () -> positionSingleTask.closeObservable(orderUnderTest).subscribe(taskSubscriber);
+                    () -> positionSingleTask.closeObservable(orderUnderTest)
+                            .subscribe(taskSubscriber);
 
             private void setCloseMockResult(final Observable<OrderEvent> observable) {
                 when(orderUtilHandlerMock.observable(any(OrderChangeCommand.class)))
@@ -423,7 +427,8 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    setRetryExceededMock(() -> orderUtilHandlerMock.observable(any(OrderChangeCommand.class)),
+                    setRetryExceededMock(() -> orderUtilHandlerMock
+                            .observable(any(OrderChangeCommand.class)),
                                          rejectEvent);
 
                     closeCall.run();
@@ -447,7 +452,8 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    setFullRetryMock(() -> orderUtilHandlerMock.observable(any(OrderChangeCommand.class)),
+                    setFullRetryMock(() -> orderUtilHandlerMock
+                            .observable(any(OrderChangeCommand.class)),
                                      rejectEvent);
 
                     closeCall.run();

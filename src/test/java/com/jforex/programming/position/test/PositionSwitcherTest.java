@@ -40,7 +40,6 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
         setUpMocks();
         setPositionOrderDirection(OrderDirection.FLAT);
 
@@ -64,7 +63,8 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
     private double expectedAmount(final double signedExposure,
                                   final OrderParams orderParams) {
-        final double expectedAmount = MathUtil.roundAmount(orderParams.amount() + Math.abs(signedExposure));
+        final double expectedAmount =
+                MathUtil.roundAmount(orderParams.amount() + Math.abs(signedExposure));
         when(positionOrdersMock.signedExposure()).thenReturn(signedExposure);
         return expectedAmount;
     }
@@ -85,7 +85,8 @@ public class PositionSwitcherTest extends PositionCommonTest {
                     .withOrderCommand(OrderCommand.SELL)
                     .build();
 
-            when(orderParamsSupplierMock.forCommand(OrderCommand.BUY)).thenReturn(paramsWithWrongCommand);
+            when(orderParamsSupplierMock.forCommand(OrderCommand.BUY))
+                    .thenReturn(paramsWithWrongCommand);
 
             setPositionOrderDirection(OrderDirection.FLAT);
 
@@ -152,8 +153,9 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    when(orderUtilMock.mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD), any()))
-                            .thenReturn(Observable.never());
+                    when(orderUtilMock.mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD),
+                                                           any()))
+                                                                   .thenReturn(Observable.never());
                 }
 
                 @Test
@@ -166,8 +168,9 @@ public class PositionSwitcherTest extends PositionCommonTest {
                 @Test
                 public void testSellSingalIsBlockedSincePositionIsBusy() {
                     final String sellMergeLabel = userSettings.defaultMergePrefix() + sellLabel;
-                    when(orderUtilMock.mergePositionOrders(eq(sellMergeLabel), eq(instrumentEURUSD), any()))
-                            .thenReturn(Observable.empty());
+                    when(orderUtilMock.mergePositionOrders(eq(sellMergeLabel), eq(instrumentEURUSD),
+                                                           any()))
+                                                                   .thenReturn(Observable.empty());
 
                     positionSwitcher.sendSellSignal();
 
@@ -186,8 +189,9 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    when(orderUtilMock.mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD), any()))
-                            .thenReturn(Observable.empty());
+                    when(orderUtilMock.mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD),
+                                                           any()))
+                                                                   .thenReturn(Observable.empty());
 
                     positionSwitcher.sendBuySignal();
                 }
@@ -199,7 +203,8 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
                 @Test
                 public void testMergeWasCalledOnOrderUtil() {
-                    verify(orderUtilMock).mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD), any());
+                    verify(orderUtilMock).mergePositionOrders(eq(buyMergeLabel),
+                                                              eq(instrumentEURUSD), any());
                 }
 
                 @Test
@@ -212,22 +217,25 @@ public class PositionSwitcherTest extends PositionCommonTest {
                 @Test
                 public void testSendSellSignalCallsSubmitWithCorrectAmountAndCommand() {
                     final String sellMergeLabel = userSettings.defaultMergePrefix() + sellLabel;
-                    when(orderUtilMock.mergePositionOrders(eq(sellMergeLabel), eq(instrumentEURUSD), any()))
-                            .thenReturn(Observable.empty());
+                    when(orderUtilMock.mergePositionOrders(eq(sellMergeLabel), eq(instrumentEURUSD),
+                                                           any()))
+                                                                   .thenReturn(Observable.empty());
                     final double expectedAmount = expectedAmount(0.03, orderParamsSELL);
 
                     positionSwitcher.sendSellSignal();
 
-                    verify(orderUtilMock).submitOrder(argLambda(params -> params.label().equals(sellLabel)
-                            && params.orderCommand() == OrderCommand.SELL
-                            && params.amount() == expectedAmount));
+                    verify(orderUtilMock)
+                            .submitOrder(argLambda(params -> params.label().equals(sellLabel)
+                                    && params.orderCommand() == OrderCommand.SELL
+                                    && params.amount() == expectedAmount));
                 }
 
                 public class WhenCloseIsBusy {
 
                     @Before
                     public void setUp() {
-                        when(orderUtilMock.closePosition(instrumentEURUSD)).thenReturn(Completable.never());
+                        when(orderUtilMock.closePosition(instrumentEURUSD))
+                                .thenReturn(Completable.never());
 
                         positionSwitcher.sendFlatSignal();
                     }
@@ -260,7 +268,8 @@ public class PositionSwitcherTest extends PositionCommonTest {
                     public void setUp() {
                         setPositionOrderDirection(OrderDirection.FLAT);
 
-                        when(orderUtilMock.closePosition(instrumentEURUSD)).thenReturn(Completable.complete());
+                        when(orderUtilMock.closePosition(instrumentEURUSD))
+                                .thenReturn(Completable.complete());
 
                         positionSwitcher.sendFlatSignal();
                     }
@@ -275,8 +284,10 @@ public class PositionSwitcherTest extends PositionCommonTest {
                     @Test
                     public void testSellSignalIsNoLonerBlocked() {
                         final String sellMergeLabel = userSettings.defaultMergePrefix() + sellLabel;
-                        when(orderUtilMock.mergePositionOrders(eq(sellMergeLabel), eq(instrumentEURUSD), any()))
-                                .thenReturn(Observable.empty());
+                        when(orderUtilMock.mergePositionOrders(eq(sellMergeLabel),
+                                                               eq(instrumentEURUSD), any()))
+                                                                       .thenReturn(Observable
+                                                                               .empty());
 
                         positionSwitcher.sendSellSignal();
 
@@ -349,15 +360,17 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    when(orderUtilMock.mergePositionOrders(eq(sellMergeLabel), eq(instrumentEURUSD), any()))
-                            .thenReturn(Observable.never());
+                    when(orderUtilMock.mergePositionOrders(eq(sellMergeLabel), eq(instrumentEURUSD),
+                                                           any()))
+                                                                   .thenReturn(Observable.never());
                 }
 
                 @Test
                 public void testBuySingalIsBlockedSincePositionIsBusy() {
                     final String buyMergeLabel = userSettings.defaultMergePrefix() + buyLabel;
-                    when(orderUtilMock.mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD), any()))
-                            .thenReturn(Observable.empty());
+                    when(orderUtilMock.mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD),
+                                                           any()))
+                                                                   .thenReturn(Observable.empty());
 
                     positionSwitcher.sendBuySignal();
 
@@ -376,8 +389,9 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
                 @Before
                 public void setUp() {
-                    when(orderUtilMock.mergePositionOrders(eq(sellMergeLabel), eq(instrumentEURUSD), any()))
-                            .thenReturn(Observable.empty());
+                    when(orderUtilMock.mergePositionOrders(eq(sellMergeLabel), eq(instrumentEURUSD),
+                                                           any()))
+                                                                   .thenReturn(Observable.empty());
 
                     positionSwitcher.sendSellSignal();
                 }
@@ -389,7 +403,8 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
                 @Test
                 public void testMergeWasCalledOnOrderUtil() {
-                    verify(orderUtilMock).mergePositionOrders(eq(sellMergeLabel), eq(instrumentEURUSD), any());
+                    verify(orderUtilMock).mergePositionOrders(eq(sellMergeLabel),
+                                                              eq(instrumentEURUSD), any());
                 }
 
                 @Test
@@ -402,8 +417,9 @@ public class PositionSwitcherTest extends PositionCommonTest {
                 @Test
                 public void testSendBuySignalCallsSubmitWithCorrectAmountAndCommand() {
                     final String buyMergeLabel = userSettings.defaultMergePrefix() + buyLabel;
-                    when(orderUtilMock.mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD), any()))
-                            .thenReturn(Observable.empty());
+                    when(orderUtilMock.mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD),
+                                                           any()))
+                                                                   .thenReturn(Observable.empty());
                     final double expectedAmount = expectedAmount(-0.12, orderParamsBUY);
 
                     positionSwitcher.sendBuySignal();
@@ -415,7 +431,8 @@ public class PositionSwitcherTest extends PositionCommonTest {
 
                     @Before
                     public void setUp() {
-                        when(orderUtilMock.closePosition(instrumentEURUSD)).thenReturn(Completable.never());
+                        when(orderUtilMock.closePosition(instrumentEURUSD))
+                                .thenReturn(Completable.never());
 
                         positionSwitcher.sendFlatSignal();
                     }
@@ -448,7 +465,8 @@ public class PositionSwitcherTest extends PositionCommonTest {
                     public void setUp() {
                         setPositionOrderDirection(OrderDirection.FLAT);
 
-                        when(orderUtilMock.closePosition(instrumentEURUSD)).thenReturn(Completable.complete());
+                        when(orderUtilMock.closePosition(instrumentEURUSD))
+                                .thenReturn(Completable.complete());
 
                         positionSwitcher.sendFlatSignal();
                     }
@@ -456,8 +474,10 @@ public class PositionSwitcherTest extends PositionCommonTest {
                     @Test
                     public void testBuySignalIsNoLonerBlocked() {
                         final String buyMergeLabel = userSettings.defaultMergePrefix() + buyLabel;
-                        when(orderUtilMock.mergePositionOrders(eq(buyMergeLabel), eq(instrumentEURUSD), any()))
-                                .thenReturn(Observable.empty());
+                        when(orderUtilMock.mergePositionOrders(eq(buyMergeLabel),
+                                                               eq(instrumentEURUSD), any()))
+                                                                       .thenReturn(Observable
+                                                                               .empty());
 
                         positionSwitcher.sendBuySignal();
 

@@ -21,7 +21,6 @@ public class CalculationUtilTest extends QuoteProviderForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
         setUpMocks();
 
         calculationUtil = new CalculationUtil(tickQuoteHandlerMock);

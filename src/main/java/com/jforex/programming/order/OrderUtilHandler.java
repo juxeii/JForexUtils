@@ -2,6 +2,7 @@ package com.jforex.programming.order;
 
 import static com.jforex.programming.order.event.OrderEventTypeSets.endOfOrderEventTypes;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -11,8 +12,6 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-
-import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -52,7 +51,8 @@ public class OrderUtilHandler {
                     .filter(orderEvent -> orderEvent.order() == order)
                     .filter(orderEvent -> orderEventTypeData.all().contains(orderEvent.type()))
                     .takeUntil(orderEvent -> endOfOrderEventTypes.contains(orderEvent.type()))
-                    .subscribe(orderEvent -> evaluateOrderEvent(orderEvent, orderEventTypeData, subscriber));
+                    .subscribe(orderEvent -> evaluateOrderEvent(orderEvent, orderEventTypeData,
+                                                                subscriber));
         });
     }
 
@@ -65,8 +65,7 @@ public class OrderUtilHandler {
                 subscriber.onError(new OrderCallRejectException("", orderEvent));
             else {
                 subscriber.onNext(orderEvent);
-                if (orderEventTypeData.isDoneType(orderEventType))
-                    subscriber.onCompleted();
+                subscriber.onCompleted();
             }
     }
 }

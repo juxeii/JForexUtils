@@ -12,8 +12,6 @@ public class SetGTTCommandTest extends CommonCommandForTest {
 
     @Before
     public void setUp() {
-        setUpCommon();
-
         command = new SetGTTCommand(orderUnderTest, newGTT);
     }
 

@@ -4,11 +4,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.dukascopy.api.IBar;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
-
-import com.dukascopy.api.IBar;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -23,8 +22,6 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         barQuoteRepository = new BarQuoteRepository(quoteObservable, historyUtilMock);
     }
 

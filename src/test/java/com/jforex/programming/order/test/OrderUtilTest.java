@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderPositionHandler;
@@ -30,8 +31,6 @@ import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
 
 import rx.Observable;
 import rx.observers.TestSubscriber;
@@ -56,8 +55,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
-        initCommonTestFramework();
-
         orderUtil = new OrderUtil(engineMock,
                                   orderPositionHandlerMock,
                                   orderUtilHandlerMock);
