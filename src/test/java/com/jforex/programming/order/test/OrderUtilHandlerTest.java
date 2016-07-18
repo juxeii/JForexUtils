@@ -18,6 +18,7 @@ import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
@@ -56,6 +57,33 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private void sendOrderEvent(final IOrder order,
                                 final OrderEventType orderEventType) {
         orderEventSubject.onNext(new OrderEvent(order, orderEventType));
+    }
+
+    @Test
+    public void rejectEventIsTreatedAsError() {
+        final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
+        final OrderEvent rejectEvent = new OrderEvent(IOrderForTest.buyOrderEURUSD(),
+                                                      OrderEventType.CHANGE_AMOUNT_REJECTED);
+
+        orderUtilHandler
+                .rejectAsErrorObservable(rejectEvent)
+                .subscribe(subscriber);
+
+        subscriber.assertError(OrderCallRejectException.class);
+    }
+
+    @Test
+    public void nonRejectEventIsTreatedAsNonError() {
+        final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
+        final OrderEvent nonRejectEvent = new OrderEvent(IOrderForTest.buyOrderEURUSD(),
+                                                         OrderEventType.CHANGED_AMOUNT);
+
+        orderUtilHandler
+                .rejectAsErrorObservable(nonRejectEvent)
+                .subscribe(subscriber);
+
+        subscriber.assertNoErrors();
+        subscriber.assertCompleted();
     }
 
     public class CloseCallSetup {
@@ -128,6 +156,14 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 sendOrderEvent(orderToClose, OrderEventType.CLOSE_OK);
 
                 subscriber.assertValueCount(0);
+            }
+
+            @Test
+            public void onPartialCloseSubscriberIsNotCompleted() {
+                sendOrderEvent(orderToClose, OrderEventType.PARTIAL_CLOSE_OK);
+
+                subscriber.assertValueCount(1);
+                subscriber.assertNotCompleted();
             }
 
             @Test

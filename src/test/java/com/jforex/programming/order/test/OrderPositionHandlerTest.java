@@ -347,6 +347,9 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
         private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
             when(orderUtilHandlerMock.callObservable(command))
                     .thenReturn(observable);
+
+            when(orderUtilHandlerMock.rejectAsErrorObservable(any()))
+                    .thenReturn(observable);
         }
 
         private void setRemoveTPSLMockResult(final Observable<OrderEvent> observable) {
@@ -378,7 +381,8 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
                                                engineMock);
 
             mergePositionCall =
-                    () -> orderPositionHandler.mergePositionOrders(command)
+                    () -> orderPositionHandler
+                            .mergePositionOrders(command)
                             .subscribe(taskSubscriber);
         }
 

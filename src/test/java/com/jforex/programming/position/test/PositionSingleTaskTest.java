@@ -37,6 +37,11 @@ public class PositionSingleTaskTest extends PositionCommonTest {
     private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
     private final TestSubscriber<OrderEvent> taskSubscriber = new TestSubscriber<>();
 
+    @Before
+    public void setUp() {
+        positionSingleTask = new PositionSingleTask(orderUtilHandlerMock);
+    }
+
     private void assertOrderEventNotification(final OrderEvent expectedEvent) {
         taskSubscriber.assertValueCount(1);
 
@@ -44,11 +49,6 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
         assertThat(orderEvent.order(), equalTo(expectedEvent.order()));
         assertThat(orderEvent.type(), equalTo(expectedEvent.type()));
-    }
-
-    @Before
-    public void setUp() {
-        positionSingleTask = new PositionSingleTask(orderUtilHandlerMock);
     }
 
     public class SetSLSetup {
@@ -93,6 +93,9 @@ public class PositionSingleTaskTest extends PositionCommonTest {
             private void setSLChangeMockResult(final Observable<OrderEvent> observable) {
                 when(orderUtilHandlerMock.callObservable(any()))
                         .thenReturn(observable);
+
+                when(orderUtilHandlerMock.rejectAsErrorObservable(changedSLEvent))
+                        .thenReturn(doneEventObservable(changedSLEvent));
             }
 
             @Test
@@ -243,6 +246,9 @@ public class PositionSingleTaskTest extends PositionCommonTest {
             private void setTPChangeMockResult(final Observable<OrderEvent> observable) {
                 when(orderUtilHandlerMock.callObservable(any(OrderChangeCommand.class)))
                         .thenReturn(observable);
+
+                when(orderUtilHandlerMock.rejectAsErrorObservable(changedTPEvent))
+                        .thenReturn(doneEventObservable(changedTPEvent));
             }
 
             @Test
@@ -381,12 +387,16 @@ public class PositionSingleTaskTest extends PositionCommonTest {
             private final OrderEvent rejectEvent =
                     new OrderEvent(orderUnderTest, OrderEventType.CLOSE_REJECTED);
             private final Runnable closeCall =
-                    () -> positionSingleTask.closeObservable(orderUnderTest)
+                    () -> positionSingleTask
+                            .closeObservable(orderUnderTest)
                             .subscribe(taskSubscriber);
 
             private void setCloseMockResult(final Observable<OrderEvent> observable) {
                 when(orderUtilHandlerMock.callObservable(any(OrderChangeCommand.class)))
                         .thenReturn(observable);
+
+                when(orderUtilHandlerMock.rejectAsErrorObservable(closeOKEvent))
+                        .thenReturn(doneEventObservable(closeOKEvent));
             }
 
             @Before
@@ -488,7 +498,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 }
 
                 @Test
-                public void testSubscriberHasBeenNotifiedWithOrderEvent() {
+                public void subscriberHasBeenNotifiedWithOrderEvent() {
                     assertOrderEventNotification(closeOKEvent);
                 }
 

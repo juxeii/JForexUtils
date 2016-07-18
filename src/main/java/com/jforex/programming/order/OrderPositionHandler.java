@@ -85,6 +85,7 @@ public class OrderPositionHandler {
                 })
                 .flatMap(positionMultiTask::removeTPSLObservable)
                 .concatWith(mergeOrders(command)
+                        .flatMap(orderUtilHandler::rejectAsErrorObservable)
                         .retryWhen(StreamUtil::positionTaskRetry)
                         .map(OrderEvent::order)
                         .flatMap(order -> positionMultiTask

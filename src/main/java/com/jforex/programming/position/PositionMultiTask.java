@@ -17,7 +17,8 @@ public class PositionMultiTask {
 
     private final PositionSingleTask positionSingleTask;
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings =
+            ConfigFactory.create(PlatformSettings.class);
     private static final Logger logger = LogManager.getLogger(PositionMultiTask.class);
 
     public PositionMultiTask(final PositionSingleTask positionSetSLTPTask) {
@@ -29,8 +30,10 @@ public class PositionMultiTask {
         final Instrument instrument = mergeOrder.getInstrument();
 
         return restoreSingleSLTPObservable(mergeOrder, restoreSLTPData)
-                .doOnSubscribe(() -> logger.debug("Starting restore SLTP task for position " + instrument))
-                .doOnCompleted(() -> logger.debug("Restoring SLTP for position " + instrument + " was successful."))
+                .doOnSubscribe(() -> logger.debug("Starting restore SLTP task for position "
+                        + instrument))
+                .doOnCompleted(() -> logger.debug("Restoring SLTP for position "
+                        + instrument + " was successful."))
                 .doOnError(e -> logger.error("Restoring SLTP for position " + instrument
                         + " failed! Exception: " + e.getMessage()));
     }
@@ -50,14 +53,17 @@ public class PositionMultiTask {
 
         return Observable
                 .from(filledOrders)
-                .doOnSubscribe(() -> logger.debug("Starting remove TPSL task for position " + instrument))
+                .doOnSubscribe(() -> logger.debug("Starting remove TPSL task for position "
+                        + instrument))
                 .flatMap(this::removeSingleTPSLObservable)
-                .doOnCompleted(() -> logger.debug("Removing TPSL task from " + instrument + " was successful."))
+                .doOnCompleted(() -> logger.debug("Removing TPSL task from "
+                        + instrument + " was successful."))
                 .doOnError(e -> logger.error("Removing TPSL from " + instrument
                         + " failed! Exception: " + e.getMessage()));
     }
 
-    private final Observable<OrderEvent> removeSingleTPSLObservable(final IOrder orderToRemoveSLTP) {
+    private final Observable<OrderEvent>
+            removeSingleTPSLObservable(final IOrder orderToRemoveSLTP) {
         final Observable<OrderEvent> removeTPObs =
                 positionSingleTask.setTPObservable(orderToRemoveSLTP, platformSettings.noTPPrice());
         final Observable<OrderEvent> removeSLObs =
