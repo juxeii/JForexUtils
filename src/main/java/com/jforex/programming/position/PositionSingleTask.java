@@ -29,7 +29,7 @@ public class PositionSingleTask {
                 .just(orderToChangeSL)
                 .filter(order -> !isSLSetTo(newSL).test(order))
                 .flatMap(order -> orderUtilHandler
-                        .observable(new SetSLCommand(orderToChangeSL, newSL)))
+                        .callObservable(new SetSLCommand(orderToChangeSL, newSL)))
                 .retryWhen(StreamUtil::positionTaskRetry);
     }
 
@@ -39,7 +39,7 @@ public class PositionSingleTask {
                 .just(orderToChangeTP)
                 .filter(order -> !isTPSetTo(newTP).test(order))
                 .flatMap(order -> orderUtilHandler
-                        .observable(new SetTPCommand(orderToChangeTP, newTP)))
+                        .callObservable(new SetTPCommand(orderToChangeTP, newTP)))
                 .retryWhen(StreamUtil::positionTaskRetry);
     }
 
@@ -48,7 +48,7 @@ public class PositionSingleTask {
                 .just(orderToClose)
                 .filter(order -> !isClosed.test(order))
                 .flatMap(order -> orderUtilHandler
-                        .observable(new CloseCommand(orderToClose)))
+                        .callObservable(new CloseCommand(orderToClose)))
                 .retryWhen(StreamUtil::positionTaskRetry);
     }
 }

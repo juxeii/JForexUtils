@@ -5,6 +5,8 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergePositionCommand;
@@ -16,9 +18,6 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionMultiTask;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionSingleTask;
-
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -52,21 +51,24 @@ public class OrderPositionHandler {
 
     public Observable<OrderEvent> submitOrder(final OrderCallCommand command) {
         return orderUtilHandler
-                .observable(command)
-                .doOnNext(submitEvent -> {
-                    final Instrument instrument = submitEvent.order().getInstrument();
-                    if (OrderEventTypeData.submitData.isDoneType(submitEvent.type()))
-                        position(instrument).addOrder(submitEvent.order());
-                });
+                .callObservable(command)
+                .doOnNext(submitEvent -> addOrderToPositionIfDone(submitEvent,
+                                                                  OrderEventTypeData.submitData));
     }
 
     public Observable<OrderEvent> mergeOrders(final MergeCommand command) {
         return orderUtilHandler
-                .observable(command)
-                .doOnNext(mergeEvent -> {
-                    final IOrder order = mergeEvent.order();
-                    position(order.getInstrument()).addOrder(order);
-                });
+                .callObservable(command)
+                .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
+                                                                 OrderEventTypeData.mergeData));
+    }
+
+    private void addOrderToPositionIfDone(final OrderEvent orderEvent,
+                                          final OrderEventTypeData orderEventTypeData) {
+        if (orderEventTypeData.isDoneType(orderEvent.type())) {
+            final IOrder order = orderEvent.order();
+            position(order.getInstrument()).addOrder(order);
+        }
     }
 
     public Observable<OrderEvent> mergePositionOrders(final MergePositionCommand command) {
@@ -77,16 +79,19 @@ public class OrderPositionHandler {
         return Observable
                 .just(filledOrders)
                 .doOnSubscribe(() -> {
-                    logger.debug("Starting position merge for " + instrument + " with label " + mergeOrderLabel);
+                    logger.debug("Starting position merge for " + instrument + " with label "
+                            + mergeOrderLabel);
                     position(instrument).markAllOrdersActive();
                 })
                 .flatMap(positionMultiTask::removeTPSLObservable)
                 .concatWith(mergeOrders(command)
                         .retryWhen(StreamUtil::positionTaskRetry)
                         .map(OrderEvent::order)
-                        .flatMap(order -> positionMultiTask.restoreSLTPObservable(order, command.restoreSLTPData())))
-                .doOnCompleted(() -> logger.debug("Position merge for " + instrument + "  with label "
-                        + mergeOrderLabel + " was successful."));
+                        .flatMap(order -> positionMultiTask
+                                .restoreSLTPObservable(order, command.restoreSLTPData())))
+                .doOnCompleted(() -> logger
+                        .debug("Position merge for " + instrument + "  with label "
+                                + mergeOrderLabel + " was successful."));
     }
 
     public Completable closePosition(final Instrument instrument) {
@@ -98,7 +103,8 @@ public class OrderPositionHandler {
                     position.markAllOrdersActive();
                 })
                 .flatMap(positionSingleTask::closeObservable)
-                .doOnCompleted(() -> logger.debug("Closing position " + instrument + " was successful."))
+                .doOnCompleted(() -> logger
+                        .debug("Closing position " + instrument + " was successful."))
                 .doOnError(e -> logger.error("Closing position " + instrument
                         + " failed! Exception: " + e.getMessage()))
                 .toCompletable();

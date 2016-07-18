@@ -96,18 +96,8 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
                         .subscribe(taskSubscriber);
 
         private void submitCreateMockResult(final Observable<OrderEvent> observable) {
-            when(orderUtilHandlerMock.observable(command))
+            when(orderUtilHandlerMock.callObservable(command))
                     .thenReturn(observable);
-        }
-
-        @Test
-        public void testSubmitIsCalledAlsoWhenNotSubscribed() {
-            submitCreateMockResult(doneEventObservable(submitEvent));
-
-            orderPositionHandler.submitOrder(command);
-
-            verify(orderUtilHandlerMock).observable(command);
-            taskSubscriber.assertNotCompleted();
         }
 
         @Test
@@ -130,7 +120,7 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
 
             @Test
             public void testSubmitCreateUtilHasBeenCalledWithoutRetry() {
-                verify(orderUtilHandlerMock).observable(command);
+                verify(orderUtilHandlerMock).callObservable(command);
             }
 
             @Test
@@ -139,7 +129,27 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
             }
         }
 
-        public class SubmitWithRejection {
+        public class SubmitWithRejectionEvent {
+
+            @Before
+            public void setUp() {
+                submitCreateMockResult(Observable.just(rejectEvent));
+
+                submitObservableCall.run();
+            }
+
+            @Test
+            public void testSubmitCreateUtilHasBeenCalledWithoutRetry() {
+                verify(orderUtilHandlerMock).callObservable(command);
+            }
+
+            @Test
+            public void subscriberHasBeenNotifiedWithRejectEvent() {
+                assertOrderEventNotification(rejectEvent);
+            }
+        }
+
+        public class SubmitWithRejectionError {
 
             @Before
             public void setUp() {
@@ -150,7 +160,7 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
 
             @Test
             public void testSubmitCreateUtilHasBeenCalledWithoutRetry() {
-                verify(orderUtilHandlerMock).observable(command);
+                verify(orderUtilHandlerMock).callObservable(command);
             }
 
             @Test
@@ -170,7 +180,7 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
 
             @Test
             public void testSubmitOnCreateUtilHasBeenCalledCorrect() {
-                verify(orderUtilHandlerMock).observable(command);
+                verify(orderUtilHandlerMock).callObservable(command);
             }
 
             @Test
@@ -206,7 +216,7 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
                 () -> orderPositionHandler.mergeOrders(command).subscribe(taskSubscriber);
 
         private void mergeCreateMockResult(final Observable<OrderEvent> observable) {
-            when(orderUtilHandlerMock.observable(command))
+            when(orderUtilHandlerMock.callObservable(command))
                     .thenReturn(observable);
         }
 
@@ -216,7 +226,7 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
 
             orderPositionHandler.mergeOrders(command);
 
-            verify(orderUtilHandlerMock).observable(command);
+            verify(orderUtilHandlerMock).callObservable(command);
             taskSubscriber.assertNotCompleted();
         }
 
@@ -240,7 +250,7 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
 
             @Test
             public void testMergeOnChangeUtilHasBeenCalledWithoutRetry() {
-                verify(orderUtilHandlerMock).observable(command);
+                verify(orderUtilHandlerMock).callObservable(command);
             }
 
             @Test
@@ -249,7 +259,27 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
             }
         }
 
-        public class MergeWithRejection {
+        public class MergeWithRejectionEvent {
+
+            @Before
+            public void setUp() {
+                mergeCreateMockResult(Observable.just(rejectEvent));
+
+                mergeObservableCall.run();
+            }
+
+            @Test
+            public void testMergeCreateUtilHasBeenCalledWithoutRetry() {
+                verify(orderUtilHandlerMock).callObservable(command);
+            }
+
+            @Test
+            public void subscriberHasBeenNotifiedWithRejectEvent() {
+                assertOrderEventNotification(rejectEvent);
+            }
+        }
+
+        public class MergeWithRejectionError {
 
             @Before
             public void setUp() {
@@ -260,7 +290,7 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
 
             @Test
             public void testMergeCreateUtilHasBeenCalledWithoutRetry() {
-                verify(orderUtilHandlerMock).observable(command);
+                verify(orderUtilHandlerMock).callObservable(command);
             }
 
             @Test
@@ -280,7 +310,7 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
 
             @Test
             public void testMergeOnChangeUtilHasBeenCalledCorrect() {
-                verify(orderUtilHandlerMock).observable(command);
+                verify(orderUtilHandlerMock).callObservable(command);
             }
 
             @Test
@@ -315,7 +345,7 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
         private Runnable mergePositionCall;
 
         private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
-            when(orderUtilHandlerMock.observable(command))
+            when(orderUtilHandlerMock.callObservable(command))
                     .thenReturn(observable);
         }
 

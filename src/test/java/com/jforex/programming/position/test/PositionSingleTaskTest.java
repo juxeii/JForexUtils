@@ -70,7 +70,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
             @Test
             public void testNoCallToChangeUtil() {
-                verify(orderUtilHandlerMock, never()).observable(any());
+                verify(orderUtilHandlerMock, never()).callObservable(any());
             }
 
             @Test
@@ -91,7 +91,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                             .subscribe(taskSubscriber);
 
             private void setSLChangeMockResult(final Observable<OrderEvent> observable) {
-                when(orderUtilHandlerMock.observable(any()))
+                when(orderUtilHandlerMock.callObservable(any()))
                         .thenReturn(observable);
             }
 
@@ -115,7 +115,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Test
                 public void testSetSLOnChangeUtilHasBeenCalledWithoutRetry() {
-                    verify(orderUtilHandlerMock).observable(any(OrderChangeCommand.class));
+                    verify(orderUtilHandlerMock).callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test
@@ -129,7 +129,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Before
                 public void setUp() {
                     setRetryExceededMock(() -> orderUtilHandlerMock
-                            .observable(any(OrderChangeCommand.class)),
+                            .callObservable(any(OrderChangeCommand.class)),
                                          rejectEvent);
 
                     setSLObservableCall.run();
@@ -140,7 +140,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Test
                 public void testSetSLCalledWithAllRetries() {
                     verify(orderUtilHandlerMock, times(retryExceedCount))
-                            .observable(any(OrderChangeCommand.class));
+                            .callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test
@@ -154,7 +154,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Before
                 public void setUp() {
                     setFullRetryMock(() -> orderUtilHandlerMock
-                            .observable(any(OrderChangeCommand.class)),
+                            .callObservable(any(OrderChangeCommand.class)),
                                      rejectEvent);
 
                     setSLObservableCall.run();
@@ -165,7 +165,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Test
                 public void testSetSLCalledWithAllRetries() {
                     verify(orderUtilHandlerMock, times(retryExceedCount))
-                            .observable(any(OrderChangeCommand.class));
+                            .callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test
@@ -185,7 +185,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Test
                 public void testSetSLOnChangeUtilHasBeenCalledCorrect() {
-                    verify(orderUtilHandlerMock).observable(any(OrderChangeCommand.class));
+                    verify(orderUtilHandlerMock).callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test
@@ -220,7 +220,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
             @Test
             public void testNoCallToChangeUtil() {
-                verify(orderUtilHandlerMock, never()).observable(any());
+                verify(orderUtilHandlerMock, never()).callObservable(any());
             }
 
             @Test
@@ -241,7 +241,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                             .subscribe(taskSubscriber);
 
             private void setTPChangeMockResult(final Observable<OrderEvent> observable) {
-                when(orderUtilHandlerMock.observable(any(OrderChangeCommand.class)))
+                when(orderUtilHandlerMock.callObservable(any(OrderChangeCommand.class)))
                         .thenReturn(observable);
             }
 
@@ -265,7 +265,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Test
                 public void testSetTPOnChangeUtilHasBeenCalledWithoutRetry() {
-                    verify(orderUtilHandlerMock).observable(any(OrderChangeCommand.class));
+                    verify(orderUtilHandlerMock).callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test
@@ -279,7 +279,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Before
                 public void setUp() {
                     setRetryExceededMock(() -> orderUtilHandlerMock
-                            .observable(any(OrderChangeCommand.class)),
+                            .callObservable(any(OrderChangeCommand.class)),
                                          rejectEvent);
 
                     setTPObservableCall.run();
@@ -290,7 +290,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Test
                 public void testSetSLCalledWithAllRetries() {
                     verify(orderUtilHandlerMock, times(retryExceedCount))
-                            .observable(any(OrderChangeCommand.class));
+                            .callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test
@@ -304,7 +304,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Before
                 public void setUp() {
                     setFullRetryMock(() -> orderUtilHandlerMock
-                            .observable(any(OrderChangeCommand.class)),
+                            .callObservable(any(OrderChangeCommand.class)),
                                      rejectEvent);
 
                     setTPObservableCall.run();
@@ -315,7 +315,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Test
                 public void testSetTPCalledWithAllRetries() {
                     verify(orderUtilHandlerMock, times(retryExceedCount))
-                            .observable(any(OrderChangeCommand.class));
+                            .callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test
@@ -335,7 +335,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Test
                 public void testSetTPOnChangeUtilHasBeenCalledCorrect() {
-                    verify(orderUtilHandlerMock).observable(any(OrderChangeCommand.class));
+                    verify(orderUtilHandlerMock).callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test
@@ -365,7 +365,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
             @Test
             public void testNoCallToChangeUtil() {
-                verify(orderUtilHandlerMock, never()).observable(any());
+                verify(orderUtilHandlerMock, never()).callObservable(any());
             }
 
             @Test
@@ -385,7 +385,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                             .subscribe(taskSubscriber);
 
             private void setCloseMockResult(final Observable<OrderEvent> observable) {
-                when(orderUtilHandlerMock.observable(any(OrderChangeCommand.class)))
+                when(orderUtilHandlerMock.callObservable(any(OrderChangeCommand.class)))
                         .thenReturn(observable);
             }
 
@@ -414,7 +414,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Test
                 public void testCloseOnChangeUtilHasBeenCalledWithoutRetry() {
-                    verify(orderUtilHandlerMock).observable(any(OrderChangeCommand.class));
+                    verify(orderUtilHandlerMock).callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test
@@ -428,7 +428,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Before
                 public void setUp() {
                     setRetryExceededMock(() -> orderUtilHandlerMock
-                            .observable(any(OrderChangeCommand.class)),
+                            .callObservable(any(OrderChangeCommand.class)),
                                          rejectEvent);
 
                     closeCall.run();
@@ -439,7 +439,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Test
                 public void testCloseCalledWithAllRetries() {
                     verify(orderUtilHandlerMock, times(retryExceedCount))
-                            .observable(any(OrderChangeCommand.class));
+                            .callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test
@@ -453,7 +453,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Before
                 public void setUp() {
                     setFullRetryMock(() -> orderUtilHandlerMock
-                            .observable(any(OrderChangeCommand.class)),
+                            .callObservable(any(OrderChangeCommand.class)),
                                      rejectEvent);
 
                     closeCall.run();
@@ -464,7 +464,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
                 @Test
                 public void testCloseCalledWithAllRetries() {
                     verify(orderUtilHandlerMock, times(retryExceedCount))
-                            .observable(any(OrderChangeCommand.class));
+                            .callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test
@@ -484,7 +484,7 @@ public class PositionSingleTaskTest extends PositionCommonTest {
 
                 @Test
                 public void testCloseOnChangeUtilHasBeenCalledCorrect() {
-                    verify(orderUtilHandlerMock).observable(any(OrderChangeCommand.class));
+                    verify(orderUtilHandlerMock).callObservable(any(OrderChangeCommand.class));
                 }
 
                 @Test

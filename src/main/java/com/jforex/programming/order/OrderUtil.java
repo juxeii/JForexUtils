@@ -76,39 +76,39 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        return orderUtilHandler.observable(new CloseCommand(orderToClose));
+        return orderUtilHandler.callObservable(new CloseCommand(orderToClose));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
                                            final String newLabel) {
         return orderUtilHandler
-                .observable(new SetLabelCommand(orderToChangeLabel, newLabel));
+                .callObservable(new SetLabelCommand(orderToChangeLabel, newLabel));
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
                                                   final long newGTT) {
-        return orderUtilHandler.observable(new SetGTTCommand(orderToChangeGTT, newGTT));
+        return orderUtilHandler.callObservable(new SetGTTCommand(orderToChangeGTT, newGTT));
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
         return orderUtilHandler
-                .observable(new SetOpenPriceCommand(orderToChangeOpenPrice, newOpenPrice));
+                .callObservable(new SetOpenPriceCommand(orderToChangeOpenPrice, newOpenPrice));
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
                                                      final double newRequestedAmount) {
         return orderUtilHandler
-                .observable(new SetAmountCommand(orderToChangeAmount, newRequestedAmount));
+                .callObservable(new SetAmountCommand(orderToChangeAmount, newRequestedAmount));
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
                                                    final double newSL) {
-        return orderUtilHandler.observable(new SetSLCommand(orderToChangeSL, newSL));
+        return orderUtilHandler.callObservable(new SetSLCommand(orderToChangeSL, newSL));
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
                                                      final double newTP) {
-        return orderUtilHandler.observable(new SetTPCommand(orderToChangeTP, newTP));
+        return orderUtilHandler.callObservable(new SetTPCommand(orderToChangeTP, newTP));
     }
 }
