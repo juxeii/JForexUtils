@@ -51,9 +51,9 @@ public final class OrderEventTypeData {
         this.callReason = callReason;
 
         final EnumSet<OrderEventType> tmpAllTypes = doneEventTypes;
+        tmpAllTypes.add(NOTIFICATION);
         tmpAllTypes.addAll(rejectEventTypes);
         tmpAllTypes.addAll(new ArrayList<OrderEventType>(Arrays.asList(intermediateTypes)));
-        tmpAllTypes.add(NOTIFICATION);
         allTypes = Sets.immutableEnumSet(tmpAllTypes);
     }
 
@@ -77,8 +77,8 @@ public final class OrderEventTypeData {
             new OrderEventTypeData(EnumSet.of(FULLY_FILLED, SUBMIT_CONDITIONAL_OK),
                                    EnumSet.of(FILL_REJECTED, SUBMIT_REJECTED),
                                    OrderCallReason.SUBMIT,
-                                   PARTIAL_FILL_OK,
-                                   SUBMIT_OK);
+                                   SUBMIT_OK,
+                                   PARTIAL_FILL_OK);
 
     public static final OrderEventTypeData mergeData =
             new OrderEventTypeData(EnumSet.of(MERGE_OK, MERGE_CLOSE_OK),

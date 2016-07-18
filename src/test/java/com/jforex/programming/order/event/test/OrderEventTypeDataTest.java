@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Test;
 
@@ -20,8 +19,8 @@ public class OrderEventTypeDataTest {
     private OrderEventTypeData orderEventTypeData;
 
     private void assertAllTypes(final OrderEventType... orderEventTypes) {
-        final List<OrderEventType> orderEventTypeList = Arrays.asList(orderEventTypes);
-        orderEventTypeList.forEach(type -> orderEventTypeData.all().contains(type));
+        assertTrue(orderEventTypeData.all().contains(OrderEventType.NOTIFICATION));
+        assertTypes(orderEventTypeData.all()::contains, orderEventTypes);
     }
 
     private void assertDoneTypes(final OrderEventType... orderEventTypes) {
@@ -34,9 +33,8 @@ public class OrderEventTypeDataTest {
 
     private void assertTypes(final Function<OrderEventType, Boolean> typeTestFunction,
                              final OrderEventType... orderEventTypes) {
-        final List<OrderEventType> orderEventTypeList =
-                new ArrayList<OrderEventType>(Arrays.asList(orderEventTypes));
-        orderEventTypeList.forEach(type -> assertTrue(typeTestFunction.apply(type)));
+        new ArrayList<OrderEventType>(Arrays.asList(orderEventTypes))
+                .forEach(type -> assertTrue(typeTestFunction.apply(type)));
     }
 
     private void assertCallReason(final OrderCallReason callReason) {
@@ -55,7 +53,6 @@ public class OrderEventTypeDataTest {
 
         assertAllTypes(OrderEventType.FULLY_FILLED,
                        OrderEventType.SUBMIT_CONDITIONAL_OK,
-                       OrderEventType.PARTIAL_FILL_OK,
                        OrderEventType.FILL_REJECTED,
                        OrderEventType.SUBMIT_REJECTED,
                        OrderEventType.SUBMIT_OK,
