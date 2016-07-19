@@ -40,7 +40,7 @@ public class PositionMultiTaskTest extends PositionCommonTest {
         private final double restoreSL = 1.10234;
         private final double restoreTP = 1.11234;
         private final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSL, restoreTP);
-        private final Runnable restoreSLTPCompletableCall =
+        private final Runnable restoreSLTPCall =
                 () -> positionMultiTask
                         .restoreSLTPObservable(orderUnderTest, restoreSLTPData)
                         .subscribe(taskSubscriber);
@@ -64,7 +64,7 @@ public class PositionMultiTaskTest extends PositionCommonTest {
         public void testSubscriberNotYetCompleted() {
             setSLMockResult(busyObservable());
 
-            restoreSLTPCompletableCall.run();
+            restoreSLTPCall.run();
 
             taskSubscriber.assertNotCompleted();
         }
@@ -82,7 +82,7 @@ public class PositionMultiTaskTest extends PositionCommonTest {
                 public void setUp() {
                     setTPMockResult(doneObservable());
 
-                    restoreSLTPCompletableCall.run();
+                    restoreSLTPCall.run();
                 }
 
                 @Test
@@ -104,7 +104,7 @@ public class PositionMultiTaskTest extends PositionCommonTest {
             public void setUp() {
                 setSLMockResult(exceptionObservable());
 
-                restoreSLTPCompletableCall.run();
+                restoreSLTPCall.run();
             }
 
             @Test
@@ -126,7 +126,7 @@ public class PositionMultiTaskTest extends PositionCommonTest {
         private final TestSubscriber<OrderEvent> taskSubscriber = new TestSubscriber<>();
         private final Set<IOrder> filledOrders = Sets.newHashSet(buyOrder, sellOrder);
 
-        private final Runnable removeTPSLCompletableCall =
+        private final Runnable removeTPSLCall =
                 () -> positionMultiTask.removeTPSLObservable(filledOrders)
                         .subscribe(taskSubscriber);
 
@@ -155,7 +155,7 @@ public class PositionMultiTaskTest extends PositionCommonTest {
             setTPTaskMockResult(buyOrder, noTP, busyObservable());
             setSLTaskMockResult(buyOrder, noSL, busyObservable());
 
-            removeTPSLCompletableCall.run();
+            removeTPSLCall.run();
 
             taskSubscriber.assertNotCompleted();
         }
@@ -175,7 +175,7 @@ public class PositionMultiTaskTest extends PositionCommonTest {
                     setTPTaskMockResult(sellOrder, noTP, doneObservable());
                     setSLTaskMockResult(sellOrder, noSL, doneObservable());
 
-                    removeTPSLCompletableCall.run();
+                    removeTPSLCall.run();
                 }
 
                 @Test
@@ -200,7 +200,7 @@ public class PositionMultiTaskTest extends PositionCommonTest {
                 setTPTaskMockResult(buyOrder, noTP, exceptionObservable());
                 setTPTaskMockResult(sellOrder, noTP, exceptionObservable());
 
-                removeTPSLCompletableCall.run();
+                removeTPSLCall.run();
             }
 
             @Test

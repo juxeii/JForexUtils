@@ -43,7 +43,8 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
     }
 
     private void setUpMocks() {
-        when(historyUtilMock.tickQuotes(subscribedInstruments)).thenReturn(historyQuotes);
+        when(historyUtilMock.tickQuotes(subscribedInstruments))
+                .thenReturn(historyQuotes);
     }
 
     public class BeforeTicksReceived {

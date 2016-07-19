@@ -19,7 +19,7 @@ public interface PositionOrders {
 
     public double signedExposure();
 
-    public Set<IOrder> get();
+    public Set<IOrder> all();
 
     public Set<IOrder> filled();
 

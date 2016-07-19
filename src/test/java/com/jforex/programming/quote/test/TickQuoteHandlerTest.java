@@ -35,10 +35,14 @@ public class TickQuoteHandlerTest extends QuoteProviderForTest {
 
         tickQuoteHandler = new TickQuoteHandler(quoteObservable, tickQuoteRepositoryMock);
 
-        tickQuoteHandler.observable().subscribe(unfilteredQuoteSubscriber);
+        tickQuoteHandler
+                .observable()
+                .subscribe(unfilteredQuoteSubscriber);
+
         tickQuoteHandler
                 .observableForInstruments(Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD))
                 .subscribe(quoteEURUSDAndAUDUSDSubscriber);
+
         tickQuoteHandler
                 .observableForInstruments(Sets.newHashSet(instrumentGBPAUD))
                 .subscribe(quoteGBPAUDSubscriber);

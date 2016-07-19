@@ -1,5 +1,30 @@
 package com.jforex.programming.order.event.test;
 
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_AMOUNT;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_GTT;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_LABEL;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_PRICE;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_SL;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_TP;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_AMOUNT_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_GTT_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_LABEL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_PRICE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_SL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_TP_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CLOSE_OK;
+import static com.jforex.programming.order.event.OrderEventType.CLOSE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.FILL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.FULLY_FILLED;
+import static com.jforex.programming.order.event.OrderEventType.MERGE_CLOSE_OK;
+import static com.jforex.programming.order.event.OrderEventType.MERGE_OK;
+import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+import static com.jforex.programming.order.event.OrderEventType.PARTIAL_CLOSE_OK;
+import static com.jforex.programming.order.event.OrderEventType.PARTIAL_FILL_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITIONAL_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -19,7 +44,7 @@ public class OrderEventTypeDataTest {
     private OrderEventTypeData orderEventTypeData;
 
     private void assertAllTypes(final OrderEventType... orderEventTypes) {
-        assertTrue(orderEventTypeData.all().contains(OrderEventType.NOTIFICATION));
+        assertTrue(orderEventTypeData.all().contains(NOTIFICATION));
         assertTypes(orderEventTypeData.all()::contains, orderEventTypes);
     }
 
@@ -45,18 +70,18 @@ public class OrderEventTypeDataTest {
     public void typeDataForSubmitIsCorrect() {
         orderEventTypeData = OrderEventTypeData.submitData;
 
-        assertDoneTypes(OrderEventType.FULLY_FILLED,
-                        OrderEventType.SUBMIT_CONDITIONAL_OK);
+        assertDoneTypes(FULLY_FILLED,
+                        SUBMIT_CONDITIONAL_OK);
 
-        assertRejectTypes(OrderEventType.FILL_REJECTED,
-                          OrderEventType.SUBMIT_REJECTED);
+        assertRejectTypes(FILL_REJECTED,
+                          SUBMIT_REJECTED);
 
-        assertAllTypes(OrderEventType.FULLY_FILLED,
-                       OrderEventType.SUBMIT_CONDITIONAL_OK,
-                       OrderEventType.FILL_REJECTED,
-                       OrderEventType.SUBMIT_REJECTED,
-                       OrderEventType.SUBMIT_OK,
-                       OrderEventType.PARTIAL_FILL_OK);
+        assertAllTypes(FULLY_FILLED,
+                       SUBMIT_CONDITIONAL_OK,
+                       FILL_REJECTED,
+                       SUBMIT_REJECTED,
+                       SUBMIT_OK,
+                       PARTIAL_FILL_OK);
 
         assertCallReason(OrderCallReason.SUBMIT);
     }
@@ -65,14 +90,14 @@ public class OrderEventTypeDataTest {
     public void typeDataForMergeIsCorrect() {
         orderEventTypeData = OrderEventTypeData.mergeData;
 
-        assertDoneTypes(OrderEventType.MERGE_OK,
-                        OrderEventType.MERGE_CLOSE_OK);
+        assertDoneTypes(MERGE_OK,
+                        MERGE_CLOSE_OK);
 
-        assertRejectTypes(OrderEventType.MERGE_REJECTED);
+        assertRejectTypes(MERGE_REJECTED);
 
-        assertAllTypes(OrderEventType.MERGE_OK,
-                       OrderEventType.MERGE_CLOSE_OK,
-                       OrderEventType.MERGE_REJECTED);
+        assertAllTypes(MERGE_OK,
+                       MERGE_CLOSE_OK,
+                       MERGE_REJECTED);
 
         assertCallReason(OrderCallReason.MERGE);
     }
@@ -81,13 +106,13 @@ public class OrderEventTypeDataTest {
     public void typeDataForCloseIsCorrect() {
         orderEventTypeData = OrderEventTypeData.closeData;
 
-        assertDoneTypes(OrderEventType.CLOSE_OK);
+        assertDoneTypes(CLOSE_OK);
 
-        assertRejectTypes(OrderEventType.CLOSE_REJECTED);
+        assertRejectTypes(CLOSE_REJECTED);
 
-        assertAllTypes(OrderEventType.CLOSE_OK,
-                       OrderEventType.CLOSE_REJECTED,
-                       OrderEventType.PARTIAL_CLOSE_OK);
+        assertAllTypes(CLOSE_OK,
+                       CLOSE_REJECTED,
+                       PARTIAL_CLOSE_OK);
 
         assertCallReason(OrderCallReason.CLOSE);
     }
@@ -96,12 +121,12 @@ public class OrderEventTypeDataTest {
     public void typeDataForChangeLabelIsCorrect() {
         orderEventTypeData = OrderEventTypeData.changeLabelData;
 
-        assertDoneTypes(OrderEventType.CHANGED_LABEL);
+        assertDoneTypes(CHANGED_LABEL);
 
-        assertRejectTypes(OrderEventType.CHANGE_LABEL_REJECTED);
+        assertRejectTypes(CHANGE_LABEL_REJECTED);
 
-        assertAllTypes(OrderEventType.CHANGED_LABEL,
-                       OrderEventType.CHANGE_LABEL_REJECTED);
+        assertAllTypes(CHANGED_LABEL,
+                       CHANGE_LABEL_REJECTED);
 
         assertCallReason(OrderCallReason.CHANGE_LABEL);
     }
@@ -110,12 +135,12 @@ public class OrderEventTypeDataTest {
     public void typeDataForChangeGTTIsCorrect() {
         orderEventTypeData = OrderEventTypeData.changeGTTData;
 
-        assertDoneTypes(OrderEventType.CHANGED_GTT);
+        assertDoneTypes(CHANGED_GTT);
 
-        assertRejectTypes(OrderEventType.CHANGE_GTT_REJECTED);
+        assertRejectTypes(CHANGE_GTT_REJECTED);
 
-        assertAllTypes(OrderEventType.CHANGED_GTT,
-                       OrderEventType.CHANGE_GTT_REJECTED);
+        assertAllTypes(CHANGED_GTT,
+                       CHANGE_GTT_REJECTED);
 
         assertCallReason(OrderCallReason.CHANGE_GTT);
     }
@@ -124,12 +149,12 @@ public class OrderEventTypeDataTest {
     public void typeDataForChangeOpenPriceIsCorrect() {
         orderEventTypeData = OrderEventTypeData.changeOpenPriceData;
 
-        assertDoneTypes(OrderEventType.CHANGED_PRICE);
+        assertDoneTypes(CHANGED_PRICE);
 
-        assertRejectTypes(OrderEventType.CHANGE_PRICE_REJECTED);
+        assertRejectTypes(CHANGE_PRICE_REJECTED);
 
-        assertAllTypes(OrderEventType.CHANGED_PRICE,
-                       OrderEventType.CHANGE_PRICE_REJECTED);
+        assertAllTypes(CHANGED_PRICE,
+                       CHANGE_PRICE_REJECTED);
 
         assertCallReason(OrderCallReason.CHANGE_PRICE);
     }
@@ -138,12 +163,12 @@ public class OrderEventTypeDataTest {
     public void typeDataForChangeAmountIsCorrect() {
         orderEventTypeData = OrderEventTypeData.changeAmountData;
 
-        assertDoneTypes(OrderEventType.CHANGED_AMOUNT);
+        assertDoneTypes(CHANGED_AMOUNT);
 
-        assertRejectTypes(OrderEventType.CHANGE_AMOUNT_REJECTED);
+        assertRejectTypes(CHANGE_AMOUNT_REJECTED);
 
-        assertAllTypes(OrderEventType.CHANGED_AMOUNT,
-                       OrderEventType.CHANGE_AMOUNT_REJECTED);
+        assertAllTypes(CHANGED_AMOUNT,
+                       CHANGE_AMOUNT_REJECTED);
 
         assertCallReason(OrderCallReason.CHANGE_AMOUNT);
     }
@@ -152,12 +177,12 @@ public class OrderEventTypeDataTest {
     public void typeDataForChangeSLIsCorrect() {
         orderEventTypeData = OrderEventTypeData.changeSLData;
 
-        assertDoneTypes(OrderEventType.CHANGED_SL);
+        assertDoneTypes(CHANGED_SL);
 
-        assertRejectTypes(OrderEventType.CHANGE_SL_REJECTED);
+        assertRejectTypes(CHANGE_SL_REJECTED);
 
-        assertAllTypes(OrderEventType.CHANGED_SL,
-                       OrderEventType.CHANGE_SL_REJECTED);
+        assertAllTypes(CHANGED_SL,
+                       CHANGE_SL_REJECTED);
 
         assertCallReason(OrderCallReason.CHANGE_SL);
     }
@@ -166,12 +191,12 @@ public class OrderEventTypeDataTest {
     public void typeDataForChangeTPIsCorrect() {
         orderEventTypeData = OrderEventTypeData.changeTPData;
 
-        assertDoneTypes(OrderEventType.CHANGED_TP);
+        assertDoneTypes(CHANGED_TP);
 
-        assertRejectTypes(OrderEventType.CHANGE_TP_REJECTED);
+        assertRejectTypes(CHANGE_TP_REJECTED);
 
-        assertAllTypes(OrderEventType.CHANGED_TP,
-                       OrderEventType.CHANGE_TP_REJECTED);
+        assertAllTypes(CHANGED_TP,
+                       CHANGE_TP_REJECTED);
 
         assertCallReason(OrderCallReason.CHANGE_TP);
     }

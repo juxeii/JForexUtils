@@ -92,7 +92,7 @@ public class Position implements PositionOrders {
     }
 
     @Override
-    public Set<IOrder> get() {
+    public Set<IOrder> all() {
         return ImmutableSet.copyOf(orderRepository.keySet());
     }
 

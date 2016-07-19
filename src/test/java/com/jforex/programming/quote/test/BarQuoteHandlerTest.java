@@ -44,8 +44,13 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         quoteFilters.add(askBarEURUSDParams);
         quoteFilters.add(askBarAUDUSDParams);
 
-        barQuoteHandler.observableForFilters(quoteFilters).subscribe(filteredQuoteSubscriber);
-        barQuoteHandler.observable().subscribe(unFilteredQuoteSubscriber);
+        barQuoteHandler
+                .observableForFilters(quoteFilters)
+                .subscribe(filteredQuoteSubscriber);
+
+        barQuoteHandler
+                .observable()
+                .subscribe(unFilteredQuoteSubscriber);
     }
 
     private void assertCommonEmittedBars(final TestSubscriber<BarQuote> subscriber) {
@@ -107,7 +112,9 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         quoteFilters.add(askBarAUDUSDParams);
         quoteFilters.add(askBarEURUSDCustomPeriodParams);
 
-        barQuoteHandler.observableForFilters(quoteFilters).subscribe(filteredQuoteSubscriber);
+        barQuoteHandler
+                .observableForFilters(quoteFilters)
+                .subscribe(filteredQuoteSubscriber);
 
         verify(jforexUtilMock).subscribeToBarsFeed(askBarEURUSDCustomPeriodParams);
     }

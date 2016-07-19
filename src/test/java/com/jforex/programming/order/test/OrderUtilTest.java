@@ -18,6 +18,7 @@ import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergePositionCommand;
+import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
 import com.jforex.programming.order.command.SetGTTCommand;
 import com.jforex.programming.order.command.SetLabelCommand;
@@ -60,8 +61,18 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                                   orderUtilHandlerMock);
     }
 
+    private void expectOnOrderUtilHadler(final Class<? extends OrderCallCommand> clazz) {
+        when(orderUtilHandlerMock.callObservable(any(clazz)))
+                .thenReturn(Observable.empty());
+    }
+
+    private void verifyOnOrderUtilHadler(final Class<? extends OrderCallCommand> clazz) {
+        verify(orderUtilHandlerMock).callObservable(any(clazz));
+        orderEventSubscriber.assertCompleted();
+    }
+
     @Test
-    public void testPositionOrdersReturnsCorrectInstance() {
+    public void positionOrdersReturnsCorrectInstance() {
         when(orderPositionHandlerMock.positionOrders(instrumentEURUSD))
                 .thenReturn(positionOrdersMock);
 
@@ -71,34 +82,34 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testSubmitCallsOnPositionUtil() {
+    public void submitCallsOnPositionHandler() {
         final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
         when(orderPositionHandlerMock.submitOrder(any(SubmitCommand.class)))
                 .thenReturn(Observable.empty());
 
-        orderUtil.submitOrder(orderParams)
+        orderUtil
+                .submitOrder(orderParams)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderPositionHandlerMock)
-                .submitOrder(any(SubmitCommand.class));
+        verify(orderPositionHandlerMock).submitOrder(any(SubmitCommand.class));
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
-    public void testMergeCallsOnPositionUtil() {
+    public void mergeCallsOnPositionHandler() {
         when(orderPositionHandlerMock.mergeOrders(any(MergeCommand.class)))
                 .thenReturn(Observable.empty());
 
-        orderUtil.mergeOrders(mergeOrderLabel, toMergeOrders)
+        orderUtil
+                .mergeOrders(mergeOrderLabel, toMergeOrders)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderPositionHandlerMock)
-                .mergeOrders(any(MergeCommand.class));
+        verify(orderPositionHandlerMock).mergeOrders(any(MergeCommand.class));
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
-    public void testMergePositionCallsOnPositionUtil() {
+    public void mergePositionCallsOnPositionHandler() {
         when(orderPositionHandlerMock.positionOrders(instrumentEURUSD))
                 .thenReturn(positionOrdersMock);
         when(positionOrdersMock.filled())
@@ -115,7 +126,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testMergePositionReturnsEmptyObservale() {
+    public void mergePositionReturnsEmptyObservale() {
         when(orderPositionHandlerMock.positionOrders(instrumentEURUSD))
                 .thenReturn(positionOrdersMock);
         when(positionOrdersMock.filled())
@@ -129,110 +140,98 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testClosePositionCallsOnPositionUtil() {
+    public void closePositionCallsOnPositionHandler() {
         when(orderPositionHandlerMock.closePosition(instrumentEURUSD))
                 .thenReturn(Observable.empty().toCompletable());
 
-        orderUtil.closePosition(instrumentEURUSD)
+        orderUtil
+                .closePosition(instrumentEURUSD)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderPositionHandlerMock)
-                .closePosition(instrumentEURUSD);
+        verify(orderPositionHandlerMock).closePosition(instrumentEURUSD);
         orderEventSubscriber.assertCompleted();
     }
 
     @Test
-    public void testCloseCallsOnChangeUtil() {
-        when(orderUtilHandlerMock.callObservable(any(CloseCommand.class)))
-                .thenReturn(Observable.empty());
+    public void closeCallsOnOrderUtilHandler() {
+        expectOnOrderUtilHadler(CloseCommand.class);
 
-        orderUtil.close(orderToChange)
+        orderUtil
+                .close(orderToChange)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderUtilHandlerMock).callObservable(any(CloseCommand.class));
-        orderEventSubscriber.assertCompleted();
+        verifyOnOrderUtilHadler(CloseCommand.class);
     }
 
     @Test
-    public void testSetLabelCallsOnChangeUtil() {
+    public void setLabelCallsOnOrderUtilHandler() {
         final String newLabel = "NewLabel";
-        when(orderUtilHandlerMock.callObservable(any(SetLabelCommand.class)))
-                .thenReturn(Observable.empty());
+        expectOnOrderUtilHadler(SetLabelCommand.class);
 
-        orderUtil.setLabel(orderToChange, newLabel)
+        orderUtil
+                .setLabel(orderToChange, newLabel)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderUtilHandlerMock)
-                .callObservable(any(SetLabelCommand.class));
-        orderEventSubscriber.assertCompleted();
+        verifyOnOrderUtilHadler(SetLabelCommand.class);
     }
 
     @Test
-    public void testSetGTTCallsOnChangeUtil() {
+    public void setGTTCallsOnOrderUtilHandler() {
         final long newGTT = 123456L;
-        when(orderUtilHandlerMock.callObservable(any(SetGTTCommand.class)))
-                .thenReturn(Observable.empty());
+        expectOnOrderUtilHadler(SetGTTCommand.class);
 
-        orderUtil.setGoodTillTime(orderToChange, newGTT)
+        orderUtil
+                .setGoodTillTime(orderToChange, newGTT)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderUtilHandlerMock).callObservable(any(SetGTTCommand.class));
-        orderEventSubscriber.assertCompleted();
+        verifyOnOrderUtilHadler(SetGTTCommand.class);
     }
 
     @Test
-    public void testSetOpenPriceCallsOnChangeUtil() {
+    public void setOpenPriceCallsOnOrderUtilHandler() {
         final double newOpenPrice = 1.12122;
-        when(orderUtilHandlerMock.callObservable(any(SetOpenPriceCommand.class)))
-                .thenReturn(Observable.empty());
+        expectOnOrderUtilHadler(SetOpenPriceCommand.class);
 
-        orderUtil.setOpenPrice(orderToChange, newOpenPrice)
+        orderUtil
+                .setOpenPrice(orderToChange, newOpenPrice)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderUtilHandlerMock)
-                .callObservable(any(SetOpenPriceCommand.class));
-        orderEventSubscriber.assertCompleted();
+        verifyOnOrderUtilHadler(SetOpenPriceCommand.class);
     }
 
     @Test
-    public void testSetRequestedAmountCallsOnChangeUtil() {
+    public void setRequestedAmountCallsOnOrderUtilHandler() {
         final double newRequestedAmount = 0.12;
-        when(orderUtilHandlerMock.callObservable(any(SetAmountCommand.class)))
-                .thenReturn(Observable.empty());
+        expectOnOrderUtilHadler(SetAmountCommand.class);
 
-        orderUtil.setRequestedAmount(orderToChange, newRequestedAmount)
+        orderUtil
+                .setRequestedAmount(orderToChange, newRequestedAmount)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderUtilHandlerMock)
-                .callObservable(any(SetAmountCommand.class));
-        orderEventSubscriber.assertCompleted();
+        verifyOnOrderUtilHadler(SetAmountCommand.class);
     }
 
     @Test
-    public void testSetStopLossPriceCallsOnChangeUtil() {
+    public void setStopLossPriceCallsOnOrderUtilHandler() {
         final double newSL = 1.10987;
-        when(orderUtilHandlerMock.callObservable(any(SetSLCommand.class)))
-                .thenReturn(Observable.empty());
+        expectOnOrderUtilHadler(SetSLCommand.class);
 
-        orderUtil.setStopLossPrice(orderToChange, newSL)
+        orderUtil
+                .setStopLossPrice(orderToChange, newSL)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderUtilHandlerMock)
-                .callObservable(any(SetSLCommand.class));
-        orderEventSubscriber.assertCompleted();
+        verifyOnOrderUtilHadler(SetSLCommand.class);
     }
 
     @Test
-    public void testSetTakeProfitPriceCallsOnChangeUtil() {
+    public void setTakeProfitPriceCallsOnOrderUtilHandler() {
         final double newTP = 1.11001;
-        when(orderUtilHandlerMock.callObservable(any(SetTPCommand.class)))
-                .thenReturn(Observable.empty());
+        expectOnOrderUtilHadler(SetTPCommand.class);
 
-        orderUtil.setTakeProfitPrice(orderToChange, newTP)
+        orderUtil
+                .setTakeProfitPrice(orderToChange, newTP)
                 .subscribe(orderEventSubscriber);
 
-        verify(orderUtilHandlerMock)
-                .callObservable(any(SetTPCommand.class));
-        orderEventSubscriber.assertCompleted();
+        verifyOnOrderUtilHadler(SetTPCommand.class);
     }
 }

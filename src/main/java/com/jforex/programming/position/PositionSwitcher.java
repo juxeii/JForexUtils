@@ -25,7 +25,8 @@ public final class PositionSwitcher {
     private final Instrument instrument;
     private final OrderParamsSupplier orderParamsSupplier;
     private final RestoreSLTPPolicy noRestoreSLTPPolicy = new NoRestorePolicy();
-    private final StateMachineConfig<FSMState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
+    private final StateMachineConfig<FSMState, FSMTrigger> fsmConfig =
+            new StateMachineConfig<>();
     private final StateMachine<FSMState, FSMTrigger> fsm =
             new StateMachine<>(FSMState.FLAT, fsmConfig);
     private Map<OrderDirection, FSMState> nextStatesByDirection;
@@ -91,7 +92,8 @@ public final class PositionSwitcher {
                 .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG))
                 .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT))
                 .onEntryFrom(FSMTrigger.FLAT,
-                             () -> orderUtil.closePosition(instrument)
+                             () -> orderUtil
+                                     .closePosition(instrument)
                                      .subscribe(() -> fsm.fire(FSMTrigger.CLOSE_DONE)))
                 .permitDynamic(FSMTrigger.MERGE_DONE,
                                () -> nextStatesByDirection.get(positionOrders.direction()))

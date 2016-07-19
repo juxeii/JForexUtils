@@ -94,7 +94,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
         @Test
         public void testOrdersHasBuyOrder() {
-            final Set<IOrder> orders = position.get();
+            final Set<IOrder> orders = position.all();
             assertTrue(orders.contains(buyOrder));
         }
 
@@ -189,7 +189,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                 @Test
                 public void testOrdersHasBuyAndSellOrder() {
-                    final Set<IOrder> orders = position.get();
+                    final Set<IOrder> orders = position.all();
                     assertTrue(orders.contains(buyOrder));
                     assertTrue(orders.contains(sellOrder));
                 }
@@ -248,7 +248,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testOrdersHasBuyAndSellOrder() {
-                        final Set<IOrder> orders = position.get();
+                        final Set<IOrder> orders = position.all();
                         assertTrue(orders.contains(buyOrder));
                         assertTrue(orders.contains(sellOrder));
                     }
@@ -299,7 +299,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     final double sellAmount = OrderStaticUtil.signedAmount(sellOrder);
                     assertThat(position.signedExposure(), equalTo(sellAmount));
 
-                    final Set<IOrder> orders = position.get();
+                    final Set<IOrder> orders = position.all();
                     assertTrue(orders.contains(sellOrder));
 
                     final Set<IOrder> filledOrders = position.filled();
