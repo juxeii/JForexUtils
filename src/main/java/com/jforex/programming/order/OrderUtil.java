@@ -17,6 +17,8 @@ import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventTypeData;
+import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.RestoreSLTPData;
@@ -46,14 +48,29 @@ public class OrderUtil {
         return positionFactory.forInstrument(instrument);
     }
 
+    private Position position(final Instrument instrument) {
+        return (Position) positionOrders(instrument);
+    }
+
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
-        return orderPositionHandler.submitOrder(new SubmitCommand(orderParams, engine));
+        return orderUtilHandler
+                .callObservable(new SubmitCommand(orderParams, engine))
+                .doOnNext(submitEvent -> addOrderToPositionIfDone(submitEvent,
+                                                                  OrderEventTypeData.submitData));
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
         return orderPositionHandler
                 .mergeOrders(new MergeCommand(mergeOrderLabel, toMergeOrders, engine));
+    }
+
+    private void addOrderToPositionIfDone(final OrderEvent orderEvent,
+                                          final OrderEventTypeData orderEventTypeData) {
+        if (orderEventTypeData.isDoneType(orderEvent.type())) {
+            final IOrder order = orderEvent.order();
+            position(order.getInstrument()).addOrder(order);
+        }
     }
 
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,

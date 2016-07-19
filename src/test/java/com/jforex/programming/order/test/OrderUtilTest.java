@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
@@ -27,6 +28,7 @@ import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
@@ -35,9 +37,11 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
+import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 
+@RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {
 
     private OrderUtil orderUtil;
@@ -55,9 +59,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private Position positionMock;
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
-    private final IOrderForTest orderToChange = IOrderForTest.buyOrderEURUSD();
+    private final IOrderForTest orderForTest = IOrderForTest.buyOrderEURUSD();
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
                                                               IOrderForTest.sellOrderEURUSD());
+    private final Observable<OrderEvent> changeObservable = Observable.just(null);
     private final String mergeOrderLabel = "MergeLabel";
 
     @Before
@@ -70,19 +75,32 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                                   orderUtilHandlerMock);
     }
 
-    public void setUpMocks() {
+    private void setUpMocks() {
         when(positionFactoryMock.forInstrument(instrumentEURUSD))
                 .thenReturn(positionMock);
     }
 
-    private void expectOnOrderUtilHadler(final Class<? extends OrderCallCommand> clazz) {
-        when(orderUtilHandlerMock.callObservable(any(clazz)))
-                .thenReturn(Observable.empty());
+    private void assertOrderEventNotification(final OrderEvent expectedEvent) {
+        orderEventSubscriber.assertValueCount(1);
+
+        final OrderEvent orderEvent = orderEventSubscriber.getOnNextEvents().get(0);
+
+        assertThat(orderEvent.order(), equalTo(expectedEvent.order()));
+        assertThat(orderEvent.type(), equalTo(expectedEvent.type()));
     }
 
-    private void verifyOnOrderUtilHadler(final Class<? extends OrderCallCommand> clazz) {
+    public void verifyOrderUtilMockCall(final Class<? extends OrderCallCommand> clazz) {
         verify(orderUtilHandlerMock).callObservable(any(clazz));
-        orderEventSubscriber.assertCompleted();
+    }
+
+    private void setOrderUtilMockResult(final Observable<OrderEvent> observable) {
+        when(orderUtilHandlerMock.callObservable(any(SubmitCommand.class)))
+                .thenReturn(observable);
+    }
+
+    private void expectOnOrderUtilHadler(final Class<? extends OrderCallCommand> clazz) {
+        when(orderUtilHandlerMock.callObservable(any(clazz)))
+                .thenReturn(changeObservable);
     }
 
     @Test
@@ -91,18 +109,65 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                    equalTo(positionMock));
     }
 
-    @Test
-    public void submitCallsOnPositionHandler() {
-        final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
-        when(orderPositionHandlerMock.submitOrder(any(SubmitCommand.class)))
-                .thenReturn(Observable.empty());
+    public class SubmitSetup {
 
-        orderUtil
-                .submitOrder(orderParams)
-                .subscribe(orderEventSubscriber);
+        private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
+        private final OrderEvent submitEvent =
+                new OrderEvent(orderForTest, OrderEventType.FULLY_FILLED);
+        private final OrderEvent rejectEvent =
+                new OrderEvent(orderForTest, OrderEventType.SUBMIT_REJECTED);
+        private final Runnable submitCall =
+                () -> orderUtil
+                        .submitOrder(orderParams)
+                        .subscribe(orderEventSubscriber);
 
-        verify(orderPositionHandlerMock).submitOrder(any(SubmitCommand.class));
-        orderEventSubscriber.assertCompleted();
+        @Test
+        public void noRetryIsDoneOnJFException() {
+            setOrderUtilMockResult(exceptionObservable());
+
+            submitCall.run();
+
+            verifyOrderUtilMockCall(SubmitCommand.class);
+        }
+
+        @Test
+        public void noRetryIsDoneOnRejectError() {
+            setOrderUtilMockResult(rejectObservable(rejectEvent));
+
+            submitCall.run();
+
+            verifyOrderUtilMockCall(SubmitCommand.class);
+        }
+
+        public class SubmitOK {
+
+            @Before
+            public void setUp() {
+                setOrderUtilMockResult(doneEventObservable(submitEvent));
+
+                submitCall.run();
+            }
+
+            @Test
+            public void submitOnOrderUtilHandlerHasBeenCalled() {
+                verifyOrderUtilMockCall(SubmitCommand.class);
+            }
+
+            @Test
+            public void subscriberHasBeenNotifiedWithOrderEvent() {
+                assertOrderEventNotification(submitEvent);
+            }
+
+            @Test
+            public void subscriberCompleted() {
+                orderEventSubscriber.assertCompleted();
+            }
+
+            @Test
+            public void orderHasBeenAddedToPosition() {
+                verify(positionMock).addOrder(orderForTest);
+            }
+        }
     }
 
     @Test
@@ -163,11 +228,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void closeCallsOnOrderUtilHandler() {
         expectOnOrderUtilHadler(CloseCommand.class);
 
-        orderUtil
-                .close(orderToChange)
-                .subscribe(orderEventSubscriber);
+        final Observable<OrderEvent> observable =
+                orderUtil.close(orderForTest);
 
-        verifyOnOrderUtilHadler(CloseCommand.class);
+        assertThat(observable, equalTo(changeObservable));
     }
 
     @Test
@@ -175,11 +239,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final String newLabel = "NewLabel";
         expectOnOrderUtilHadler(SetLabelCommand.class);
 
-        orderUtil
-                .setLabel(orderToChange, newLabel)
-                .subscribe(orderEventSubscriber);
+        final Observable<OrderEvent> observable =
+                orderUtil.setLabel(orderForTest, newLabel);
 
-        verifyOnOrderUtilHadler(SetLabelCommand.class);
+        assertThat(observable, equalTo(changeObservable));
     }
 
     @Test
@@ -187,11 +250,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final long newGTT = 123456L;
         expectOnOrderUtilHadler(SetGTTCommand.class);
 
-        orderUtil
-                .setGoodTillTime(orderToChange, newGTT)
-                .subscribe(orderEventSubscriber);
+        final Observable<OrderEvent> observable =
+                orderUtil.setGoodTillTime(orderForTest, newGTT);
 
-        verifyOnOrderUtilHadler(SetGTTCommand.class);
+        assertThat(observable, equalTo(changeObservable));
     }
 
     @Test
@@ -199,11 +261,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final double newOpenPrice = 1.12122;
         expectOnOrderUtilHadler(SetOpenPriceCommand.class);
 
-        orderUtil
-                .setOpenPrice(orderToChange, newOpenPrice)
-                .subscribe(orderEventSubscriber);
+        final Observable<OrderEvent> observable =
+                orderUtil.setOpenPrice(orderForTest, newOpenPrice);
 
-        verifyOnOrderUtilHadler(SetOpenPriceCommand.class);
+        assertThat(observable, equalTo(changeObservable));
     }
 
     @Test
@@ -211,11 +272,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final double newRequestedAmount = 0.12;
         expectOnOrderUtilHadler(SetAmountCommand.class);
 
-        orderUtil
-                .setRequestedAmount(orderToChange, newRequestedAmount)
-                .subscribe(orderEventSubscriber);
+        final Observable<OrderEvent> observable =
+                orderUtil.setRequestedAmount(orderForTest, newRequestedAmount);
 
-        verifyOnOrderUtilHadler(SetAmountCommand.class);
+        assertThat(observable, equalTo(changeObservable));
     }
 
     @Test
@@ -223,11 +283,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final double newSL = 1.10987;
         expectOnOrderUtilHadler(SetSLCommand.class);
 
-        orderUtil
-                .setStopLossPrice(orderToChange, newSL)
-                .subscribe(orderEventSubscriber);
+        final Observable<OrderEvent> observable =
+                orderUtil.setStopLossPrice(orderForTest, newSL);
 
-        verifyOnOrderUtilHadler(SetSLCommand.class);
+        assertThat(observable, equalTo(changeObservable));
     }
 
     @Test
@@ -235,10 +294,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final double newTP = 1.11001;
         expectOnOrderUtilHadler(SetTPCommand.class);
 
-        orderUtil
-                .setTakeProfitPrice(orderToChange, newTP)
-                .subscribe(orderEventSubscriber);
+        final Observable<OrderEvent> observable =
+                orderUtil.setTakeProfitPrice(orderForTest, newTP);
 
-        verifyOnOrderUtilHadler(SetTPCommand.class);
+        assertThat(observable, equalTo(changeObservable));
     }
 }
