@@ -35,6 +35,8 @@ import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.call.OrderCallRejectException;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.OrderProcessState;
 import com.jforex.programming.position.PositionSwitcher;
@@ -44,6 +46,9 @@ import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.test.fakes.IClientForTest;
 import com.jforex.programming.test.fakes.IEngineForTest;
+
+import rx.Observable;
+import rx.observers.TestSubscriber;
 
 public class CommonUtilForTest extends BDDMockito {
 
@@ -95,6 +100,8 @@ public class CommonUtilForTest extends BDDMockito {
             ConfigFactory.create(PlatformSettings.class);
     protected static final UserSettings userSettings =
             ConfigFactory.create(UserSettings.class);
+    protected static final double noSL = platformSettings.noSLPrice();
+    protected static final double noTP = platformSettings.noTPPrice();
     protected static final Logger logger = LogManager.getLogger(CommonUtilForTest.class);
 
     public CommonUtilForTest() {
@@ -161,5 +168,39 @@ public class CommonUtilForTest extends BDDMockito {
                 .valueOf(PositionSwitcher.FSMTrigger.FLAT.toString());
         PositionSwitcher.FSMState
                 .valueOf(PositionSwitcher.FSMState.FLAT.toString());
+    }
+
+    public OrderCallRejectException createRejectException(final OrderEvent orderEvent) {
+        return new OrderCallRejectException("", orderEvent);
+    }
+
+    public Observable<OrderEvent> exceptionObservable() {
+        return Observable.error(jfException);
+    }
+
+    public Observable<OrderEvent> doneObservable() {
+        return Observable.empty();
+    }
+
+    public Observable<OrderEvent> doneEventObservable(final OrderEvent orderEvent) {
+        return Observable.just(orderEvent);
+    }
+
+    public Observable<OrderEvent> busyObservable() {
+        return Observable.never();
+    }
+
+    public Observable<OrderEvent> rejectObservable(final OrderEvent orderEvent) {
+        return Observable.error(createRejectException(orderEvent));
+    }
+
+    public void assertJFException(final TestSubscriber<?> subscriber) {
+        subscriber.assertValueCount(0);
+        subscriber.assertError(JFException.class);
+    }
+
+    public void assertRejectException(final TestSubscriber<?> subscriber) {
+        subscriber.assertValueCount(0);
+        subscriber.assertError(OrderCallRejectException.class);
     }
 }

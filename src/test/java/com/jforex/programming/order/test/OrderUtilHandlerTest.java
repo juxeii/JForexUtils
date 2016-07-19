@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.concurrent.Callable;
-import java.util.function.Supplier;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
@@ -47,11 +48,23 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private ArgumentCaptor<Callable<IOrder>> orderCallCaptor;
     @Captor
     private ArgumentCaptor<OrderCallRequest> callRequestCaptor;
+    private final IOrderForTest orderToClose = IOrderForTest.buyOrderEURUSD();
+    private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
+    private final OrderCallCommand command = new CloseCommand(orderToClose);
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
 
     @Before
     public void setUp() {
+        setUpMocks();
+
         orderUtilHandler = new OrderUtilHandler(orderCallExecutorMock, orderEventGatewayMock);
+    }
+
+    public void setUpMocks() {
+        setStrategyThread();
+        orderToClose.setState(IOrder.State.FILLED);
+        when(orderCallExecutorMock.callObservable(any()))
+                .thenReturn(Observable.fromCallable(command.callable()));
     }
 
     private void sendOrderEvent(final IOrder order,
@@ -59,66 +72,23 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         orderEventSubject.onNext(new OrderEvent(order, orderEventType));
     }
 
-    @Test
-    public void rejectEventIsTreatedAsError() {
-        final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
-        final OrderEvent rejectEvent = new OrderEvent(IOrderForTest.buyOrderEURUSD(),
-                                                      OrderEventType.CHANGE_AMOUNT_REJECTED);
-
-        orderUtilHandler
-                .rejectAsErrorObservable(rejectEvent)
-                .subscribe(subscriber);
-
-        subscriber.assertError(OrderCallRejectException.class);
-    }
-
-    @Test
-    public void nonRejectEventIsTreatedAsNonError() {
-        final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
-        final OrderEvent nonRejectEvent = new OrderEvent(IOrderForTest.buyOrderEURUSD(),
-                                                         OrderEventType.CHANGED_AMOUNT);
-
-        orderUtilHandler
-                .rejectAsErrorObservable(nonRejectEvent)
-                .subscribe(subscriber);
-
-        subscriber.assertNoErrors();
-        subscriber.assertCompleted();
-    }
-
     public class CloseCallSetup {
 
-        private final IOrderForTest orderToClose = IOrderForTest.buyOrderEURUSD();
-        private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
-        private final OrderCallCommand command = new CloseCommand(orderToClose);
-        private final Supplier<Observable<OrderEvent>> runCall =
-                () -> orderUtilHandler.callObservable(command);
+        private final Runnable closeCall =
+                () -> orderUtilHandler.callObservable(command).subscribe(subscriber);
 
         @Before
         public void setUp() {
             when(orderEventGatewayMock.observable()).thenReturn(orderEventSubject);
         }
 
-        @Test
-        public void closeCallIsExecutedOnSubscribe() throws Exception {
-            when(orderCallExecutorMock.callObservable(any()))
-                    .thenReturn(Observable.just(orderToClose));
-
-            runCall.get().subscribe(subscriber);
-            verify(orderCallExecutorMock).callObservable(orderCallCaptor.capture());
-            orderCallCaptor.getValue().call();
-
-            verify(orderToClose).close();
-        }
-
         public class ExecutesWithJFExceptionError {
 
             @Before
-            public void setUp() {
-                when(orderCallExecutorMock.callObservable(any()))
-                        .thenReturn(Observable.error(jfException));
+            public void setUp() throws JFException {
+                Mockito.doThrow(jfException).when(orderToClose).close();
 
-                runCall.get().subscribe(subscriber);
+                closeCall.run();
             }
 
             @Test
@@ -138,10 +108,12 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                when(orderCallExecutorMock.callObservable(any()))
-                        .thenReturn(Observable.just(orderToClose));
+                closeCall.run();
+            }
 
-                runCall.get().subscribe(subscriber);
+            @Test
+            public void closeCallIsExecutedOnSubscribe() throws Exception {
+                verify(orderToClose).close();
             }
 
             @Test
@@ -217,6 +189,64 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 sendOrderEvent(orderToClose, OrderEventType.CHANGED_GTT);
 
                 subscriber.assertNotCompleted();
+            }
+        }
+    }
+
+    public class CloseCallWithRetriesSetup {
+
+        private final int maxRetriesCount = platformSettings.maxRetriesOnOrderFail();
+        private final int retryExceedCount = maxRetriesCount + 1;
+        private final Runnable closeWithRetryCall =
+                () -> orderUtilHandler.callWithRetriesObservable(command).subscribe(subscriber);
+
+        private void sendFailAndAdvanceTime(final int times) {
+            for (int i = 0; i < times; ++i) {
+                sendOrderEvent(orderToClose, OrderEventType.CLOSE_REJECTED);
+                rxTestUtil.advanceTimeBy(1500L, TimeUnit.MILLISECONDS);
+            }
+        }
+
+        @Before
+        public void setUp() {
+            when(orderEventGatewayMock.observable()).thenReturn(orderEventSubject);
+        }
+
+        @Test
+        public void subscriberErrorsOnJFException() throws JFException {
+            Mockito.doThrow(jfException).when(orderToClose).close();
+
+            closeWithRetryCall.run();
+
+            verify(orderToClose).close();
+            subscriber.assertError(JFException.class);
+        }
+
+        public class ExecutesOK {
+
+            @Before
+            public void setUp() {
+                closeWithRetryCall.run();
+            }
+
+            @Test
+            public void subscriberCompletesAfterAllRetries() throws Exception {
+                sendFailAndAdvanceTime(maxRetriesCount);
+                sendOrderEvent(orderToClose, OrderEventType.CLOSE_OK);
+
+                verify(orderToClose, times(maxRetriesCount + 1)).close();
+
+                subscriber.assertNoErrors();
+                subscriber.assertCompleted();
+            }
+
+            @Test
+            public void subscriberErrorsAfterRetryExceed() throws Exception {
+                sendFailAndAdvanceTime(retryExceedCount);
+
+                verify(orderToClose, times(maxRetriesCount + 1)).close();
+
+                subscriber.assertError(OrderCallRejectException.class);
             }
         }
     }

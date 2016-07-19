@@ -5,7 +5,6 @@ import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.SetSLCommand;
@@ -28,9 +27,7 @@ public class PositionSingleTask {
                 .just(orderToChangeSL)
                 .filter(order -> !isSLSetTo(newSL).test(order))
                 .flatMap(order -> orderUtilHandler
-                        .callObservable(new SetSLCommand(orderToChangeSL, newSL)))
-                .flatMap(orderUtilHandler::rejectAsErrorObservable)
-                .retryWhen(StreamUtil::positionTaskRetry);
+                        .callWithRetriesObservable(new SetSLCommand(orderToChangeSL, newSL)));
     }
 
     public Observable<OrderEvent> setTPObservable(final IOrder orderToChangeTP,
@@ -39,9 +36,7 @@ public class PositionSingleTask {
                 .just(orderToChangeTP)
                 .filter(order -> !isTPSetTo(newTP).test(order))
                 .flatMap(order -> orderUtilHandler
-                        .callObservable(new SetTPCommand(orderToChangeTP, newTP)))
-                .flatMap(orderUtilHandler::rejectAsErrorObservable)
-                .retryWhen(StreamUtil::positionTaskRetry);
+                        .callWithRetriesObservable(new SetTPCommand(orderToChangeTP, newTP)));
     }
 
     public Observable<OrderEvent> closeObservable(final IOrder orderToClose) {
@@ -49,8 +44,6 @@ public class PositionSingleTask {
                 .just(orderToClose)
                 .filter(order -> !isClosed.test(order))
                 .flatMap(order -> orderUtilHandler
-                        .callObservable(new CloseCommand(orderToClose)))
-                .flatMap(orderUtilHandler::rejectAsErrorObservable)
-                .retryWhen(StreamUtil::positionTaskRetry);
+                        .callWithRetriesObservable(new CloseCommand(orderToClose)));
     }
 }

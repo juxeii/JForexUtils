@@ -2,10 +2,6 @@ package com.jforex.programming.test.common;
 
 import java.util.concurrent.TimeUnit;
 
-import org.aeonbits.owner.ConfigFactory;
-
-import com.jforex.programming.settings.PlatformSettings;
-
 import rx.Scheduler;
 import rx.plugins.RxJavaPlugins;
 import rx.plugins.RxJavaSchedulersHook;
@@ -15,11 +11,6 @@ public final class RxTestUtil {
 
     private static final RxTestUtil instance = new RxTestUtil();
     private static final TestScheduler testScheduler = new TestScheduler();
-
-    private static final PlatformSettings platformSettings =
-            ConfigFactory.create(PlatformSettings.class);
-    private static final long timeDelayForAllRetries =
-            platformSettings.maxRetriesOnOrderFail() * platformSettings.delayOnOrderFailRetry();
 
     static {
         RxJavaPlugins.getInstance().registerSchedulersHook(new RxJavaSchedulersHook() {
@@ -47,9 +38,5 @@ public final class RxTestUtil {
     public final void advanceTimeBy(final long delayTime,
                                     final TimeUnit unit) {
         testScheduler.advanceTimeBy(delayTime, unit);
-    }
-
-    public final void advanceTimeForAllOrderRetries() {
-        advanceTimeBy(timeDelayForAllRetries, TimeUnit.MILLISECONDS);
     }
 }

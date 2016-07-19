@@ -4,6 +4,7 @@ import static com.jforex.programming.order.event.OrderEventTypeSets.finishEventT
 import static com.jforex.programming.order.event.OrderEventTypeSets.rejectEventTypes;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -30,14 +31,24 @@ public class OrderUtilHandler {
         final OrderEventTypeData orderEventTypeData = command.orderEventTypeData();
         return orderCallExecutor
                 .callObservable(command.callable())
+                .doOnSubscribe(command::logOnSubscribe)
                 .doOnNext(order -> registerOrder(order, orderEventTypeData.callReason()))
                 .flatMap(order -> gatewayObservable(order, orderEventTypeData))
-                .doOnSubscribe(command::logOnSubscribe)
                 .doOnError(command::logOnError)
                 .doOnCompleted(command::logOnCompleted);
     }
 
-    public Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
+    public Observable<OrderEvent> callWithRetriesObservable(final OrderCallCommand command) {
+        return callRejectAsErrorObservable(command)
+                .retryWhen(StreamUtil::positionTaskRetry);
+    }
+
+    private Observable<OrderEvent> callRejectAsErrorObservable(final OrderCallCommand command) {
+        return callObservable(command)
+                .flatMap(this::rejectAsErrorObservable);
+    }
+
+    private Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
         return rejectEventTypes.contains(orderEvent.type())
                 ? Observable.error(new OrderCallRejectException("", orderEvent))
                 : Observable.just(orderEvent);

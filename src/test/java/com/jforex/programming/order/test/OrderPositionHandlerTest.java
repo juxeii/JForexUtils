@@ -28,8 +28,8 @@ import com.jforex.programming.position.PositionMultiTask;
 import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
+import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
-import com.jforex.programming.test.common.PositionCommonTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -37,7 +37,7 @@ import rx.Observable;
 import rx.observers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderPositionHandlerTest extends PositionCommonTest {
+public class OrderPositionHandlerTest extends InstrumentUtilForTest {
 
     private OrderPositionHandler orderPositionHandler;
 
@@ -348,7 +348,7 @@ public class OrderPositionHandlerTest extends PositionCommonTest {
             when(orderUtilHandlerMock.callObservable(command))
                     .thenReturn(observable);
 
-            when(orderUtilHandlerMock.rejectAsErrorObservable(any()))
+            when(orderUtilHandlerMock.callWithRetriesObservable(command))
                     .thenReturn(observable);
         }
 

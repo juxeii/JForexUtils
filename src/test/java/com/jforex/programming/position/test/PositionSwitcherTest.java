@@ -18,15 +18,15 @@ import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionSwitcher;
+import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
-import com.jforex.programming.test.common.PositionCommonTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
 import rx.Observable;
 
 @RunWith(HierarchicalContextRunner.class)
-public class PositionSwitcherTest extends PositionCommonTest {
+public class PositionSwitcherTest extends InstrumentUtilForTest {
 
     private PositionSwitcher positionSwitcher;
 

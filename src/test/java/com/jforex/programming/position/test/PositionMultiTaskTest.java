@@ -13,7 +13,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionMultiTask;
 import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPData;
-import com.jforex.programming.test.common.PositionCommonTest;
+import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -21,7 +21,7 @@ import rx.Observable;
 import rx.observers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
-public class PositionMultiTaskTest extends PositionCommonTest {
+public class PositionMultiTaskTest extends CommonUtilForTest {
 
     private PositionMultiTask positionMultiTask;
 

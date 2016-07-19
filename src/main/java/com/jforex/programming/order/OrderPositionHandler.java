@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergePositionCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
@@ -84,9 +83,9 @@ public class OrderPositionHandler {
                     position(instrument).markAllOrdersActive();
                 })
                 .flatMap(positionMultiTask::removeTPSLObservable)
-                .concatWith(mergeOrders(command)
-                        .flatMap(orderUtilHandler::rejectAsErrorObservable)
-                        .retryWhen(StreamUtil::positionTaskRetry)
+                .concatWith(orderUtilHandler
+                        .callWithRetriesObservable(command)
+                        .doOnNext(oe -> position(oe.order().getInstrument()).addOrder(oe.order()))
                         .map(OrderEvent::order)
                         .flatMap(order -> positionMultiTask
                                 .restoreSLTPObservable(order, command.restoreSLTPData())))
