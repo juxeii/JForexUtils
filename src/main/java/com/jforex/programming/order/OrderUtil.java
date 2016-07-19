@@ -3,6 +3,9 @@ package com.jforex.programming.order;
 import java.util.Collection;
 import java.util.Set;
 
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergePositionCommand;
@@ -14,13 +17,10 @@ import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
-
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -28,19 +28,22 @@ import rx.Observable;
 public class OrderUtil {
 
     private final IEngine engine;
+    private final PositionFactory positionFactory;
     private final OrderPositionHandler orderPositionHandler;
     private final OrderUtilHandler orderUtilHandler;
 
     public OrderUtil(final IEngine engine,
+                     final PositionFactory positionFactory,
                      final OrderPositionHandler orderPositionHandler,
                      final OrderUtilHandler orderUtilHandler) {
         this.engine = engine;
+        this.positionFactory = positionFactory;
         this.orderPositionHandler = orderPositionHandler;
         this.orderUtilHandler = orderUtilHandler;
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
-        return orderPositionHandler.positionOrders(instrument);
+        return positionFactory.forInstrument(instrument);
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {

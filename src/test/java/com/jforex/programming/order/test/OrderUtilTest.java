@@ -27,6 +27,8 @@ import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -48,6 +50,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private RestoreSLTPPolicy restoreSLTPPolicyMock;
     @Mock
     private PositionOrders positionOrdersMock;
+    @Mock
+    private PositionFactory positionFactoryMock;
+    @Mock
+    private Position positionMock;
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
     private final IOrderForTest orderToChange = IOrderForTest.buyOrderEURUSD();
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
@@ -56,9 +62,17 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
+        setUpMocks();
+
         orderUtil = new OrderUtil(engineMock,
+                                  positionFactoryMock,
                                   orderPositionHandlerMock,
                                   orderUtilHandlerMock);
+    }
+
+    public void setUpMocks() {
+        when(positionFactoryMock.forInstrument(instrumentEURUSD))
+                .thenReturn(positionMock);
     }
 
     private void expectOnOrderUtilHadler(final Class<? extends OrderCallCommand> clazz) {
@@ -73,12 +87,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void positionOrdersReturnsCorrectInstance() {
-        when(orderPositionHandlerMock.positionOrders(instrumentEURUSD))
-                .thenReturn(positionOrdersMock);
-
-        final PositionOrders positionOrders = orderUtil.positionOrders(instrumentEURUSD);
-
-        assertThat(positionOrders, equalTo(positionOrdersMock));
+        assertThat(orderUtil.positionOrders(instrumentEURUSD),
+                   equalTo(positionMock));
     }
 
     @Test
@@ -110,12 +120,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergePositionCallsOnPositionHandler() {
-        when(orderPositionHandlerMock.positionOrders(instrumentEURUSD))
-                .thenReturn(positionOrdersMock);
-        when(positionOrdersMock.filled())
-                .thenReturn(toMergeOrders);
         when(orderPositionHandlerMock.mergePositionOrders(any(MergePositionCommand.class)))
                 .thenReturn(Observable.empty());
+        when(positionMock.filled()).thenReturn(toMergeOrders);
 
         orderUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock)
                 .subscribe(orderEventSubscriber);
