@@ -3,9 +3,6 @@ package com.jforex.programming.order;
 import java.util.Collection;
 import java.util.Set;
 
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergePositionCommand;
@@ -23,6 +20,10 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
+
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -61,8 +62,10 @@ public class OrderUtil {
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
-        return orderPositionHandler
-                .mergeOrders(new MergeCommand(mergeOrderLabel, toMergeOrders, engine));
+        return orderUtilHandler
+                .callObservable(new MergeCommand(mergeOrderLabel, toMergeOrders, engine))
+                .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
+                                                                 OrderEventTypeData.mergeData));
     }
 
     private void addOrderToPositionIfDone(final OrderEvent orderEvent,
