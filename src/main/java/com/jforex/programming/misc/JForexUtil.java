@@ -17,7 +17,6 @@ import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.mm.RiskPercentMM;
-import com.jforex.programming.order.OrderPositionHandler;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
@@ -61,7 +60,6 @@ public class JForexUtil {
 
     private PositionSingleTask positionSingleTask;
     private PositionMultiTask positionMultiTask;
-    private OrderPositionHandler orderPositionUtil;
 
     private final CalculationUtil calculationUtil;
     private final RiskPercentMM riskPercentMM;
@@ -119,15 +117,11 @@ public class JForexUtil {
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
         positionSingleTask = new PositionSingleTask(orderUtilHandler);
         positionMultiTask = new PositionMultiTask(positionSingleTask);
-        orderPositionUtil = new OrderPositionHandler(orderUtilHandler,
-                                                     positionSingleTask,
-                                                     positionMultiTask,
-                                                     positionFactory);
         orderUtil = new OrderUtil(engine,
                                   positionFactory,
-                                  orderPositionUtil,
+                                  orderUtilHandler,
                                   positionSingleTask,
-                                  orderUtilHandler);
+                                  positionMultiTask);
     }
 
     public IContext context() {

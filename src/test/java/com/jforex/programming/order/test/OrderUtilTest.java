@@ -8,17 +8,17 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderPositionHandler;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.MergePositionCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
 import com.jforex.programming.order.command.SetGTTCommand;
@@ -31,8 +31,10 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.PositionMultiTask;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionSingleTask;
+import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
@@ -48,25 +50,27 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderUtil orderUtil;
 
     @Mock
+    private PositionFactory positionFactoryMock;
+    @Mock
     private OrderUtilHandler orderUtilHandlerMock;
     @Mock
-    private OrderPositionHandler orderPositionHandlerMock;
-    @Mock
     private PositionSingleTask positionSingleTaskMock;
+    @Mock
+    private PositionMultiTask positionMultiTaskMock;
     @Mock
     private RestoreSLTPPolicy restoreSLTPPolicyMock;
     @Mock
     private PositionOrders positionOrdersMock;
     @Mock
-    private PositionFactory positionFactoryMock;
-    @Mock
     private Position positionMock;
+    @Captor
+    private ArgumentCaptor<RestoreSLTPData> restoreSLTPCaptor;
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
     private final IOrderForTest orderForTest = IOrderForTest.buyOrderEURUSD();
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
                                                               IOrderForTest.sellOrderEURUSD());
-    private final Observable<OrderEvent> testObservable = Observable.just(null);
     private final String mergeOrderLabel = "MergeLabel";
+    private final Observable<OrderEvent> testObservable = Observable.just(null);
 
     @Before
     public void setUp() {
@@ -74,9 +78,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil = new OrderUtil(engineMock,
                                   positionFactoryMock,
-                                  orderPositionHandlerMock,
+                                  orderUtilHandlerMock,
                                   positionSingleTaskMock,
-                                  orderUtilHandlerMock);
+                                  positionMultiTaskMock);
     }
 
     private void setUpMocks() {
@@ -97,7 +101,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         verify(orderUtilHandlerMock).callObservable(any(clazz));
     }
 
-    private void setOrderUtilMockResult(final Observable<OrderEvent> observable) {
+    private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
         when(orderUtilHandlerMock.callObservable(any(SubmitCommand.class)))
                 .thenReturn(observable);
     }
@@ -121,7 +125,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         public void noOrderIsAddedWhenNoDoneEvent() {
             final OrderEvent submitOKEvent =
                     new OrderEvent(orderForTest, OrderEventType.SUBMIT_OK);
-            setOrderUtilMockResult(doneEventObservable(submitOKEvent));
+            setOrderUtilHandlerMockResult(doneEventObservable(submitOKEvent));
 
             orderUtil
                     .submitOrder(orderParams)
@@ -137,7 +141,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                setOrderUtilMockResult(doneEventObservable(submitDoneEvent));
+                setOrderUtilHandlerMockResult(doneEventObservable(submitDoneEvent));
 
                 orderUtil
                         .submitOrder(orderParams)
@@ -168,15 +172,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     public class MergeSetup {
 
-        private final String mergeOrderLabel = "MergeLabel";
-        private final Set<IOrder> toMergeOrders = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
-                                                                  IOrderForTest.sellOrderEURUSD());
-
         @Test
         public void noOrderIsAddedWhenNoDoneEvent() {
             final OrderEvent submitOKEvent =
                     new OrderEvent(orderForTest, OrderEventType.SUBMIT_OK);
-            setOrderUtilMockResult(doneEventObservable(submitOKEvent));
+            setOrderUtilHandlerMockResult(doneEventObservable(submitOKEvent));
 
             orderUtil
                     .mergeOrders(mergeOrderLabel, toMergeOrders)
@@ -192,7 +192,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                setOrderUtilMockResult(doneEventObservable(mergeDoneEvent));
+                setOrderUtilHandlerMockResult(doneEventObservable(mergeDoneEvent));
 
                 orderUtil
                         .mergeOrders(mergeOrderLabel, toMergeOrders)
@@ -217,6 +217,178 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Test
             public void orderHasBeenAddedToPosition() {
                 verify(positionMock).addOrder(orderForTest);
+            }
+        }
+    }
+
+    public class MergePositionSetup {
+
+        private final double restoreSL = 1.10234;
+        private final double restoreTP = 1.11234;
+        private final OrderEvent mergeEvent =
+                new OrderEvent(orderForTest, OrderEventType.MERGE_OK);
+        private final OrderEvent rejectEvent =
+                new OrderEvent(orderForTest, OrderEventType.MERGE_REJECTED);
+        private final Runnable mergePositionCall = () -> orderUtil
+                .mergePositionOrders(mergeOrderLabel,
+                                     instrumentEURUSD,
+                                     restoreSLTPPolicyMock)
+                .subscribe(orderEventSubscriber);
+
+        private void setOrderUtilHandlerRetryMockResult(final Observable<OrderEvent> observable) {
+            when(orderUtilHandlerMock.callWithRetriesObservable(any(MergeCommand.class)))
+                    .thenReturn(observable);
+        }
+
+        private void setRemoveTPSLMockResult(final Observable<OrderEvent> observable) {
+            when(positionMultiTaskMock.removeTPSLObservable(toMergeOrders))
+                    .thenReturn(observable);
+        }
+
+        private void setRestoreMockResult(final Observable<OrderEvent> observable) {
+            when(positionMultiTaskMock
+                    .restoreSLTPObservable(eq(orderForTest),
+                                           restoreSLTPCaptor.capture())).thenReturn(observable);
+        }
+
+        @Before
+        public void setUp() {
+            final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSL, restoreTP);
+
+            when(restoreSLTPPolicyMock.restoreSL(toMergeOrders))
+                    .thenReturn(restoreSLTPData.sl());
+            when(restoreSLTPPolicyMock.restoreTP(toMergeOrders))
+                    .thenReturn(restoreSLTPData.tp());
+
+            when(positionMock.filled()).thenReturn(toMergeOrders);
+        }
+
+        @Test
+        public void allPositionOrdersAreMarkedActiveWhenEnoughOrdersToMerge() {
+            setRemoveTPSLMockResult(busyObservable());
+            setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
+
+            mergePositionCall.run();
+
+            verify(positionMock).markAllOrdersActive();
+        }
+
+        public class RemoveTPSLOKCall {
+
+            @Before
+            public void setUp() {
+                setRemoveTPSLMockResult(doneObservable());
+                setOrderUtilHandlerRetryMockResult(busyObservable());
+            }
+
+            @Test
+            public void testSubscriberIsNotCompletedYet() {
+                mergePositionCall.run();
+
+                orderEventSubscriber.assertNotCompleted();
+            }
+
+            @Test
+            public void testRemoveTPSLHasBeenCalledCorrect() {
+                mergePositionCall.run();
+
+                verify(positionMultiTaskMock).removeTPSLObservable(toMergeOrders);
+            }
+
+            public class MergeOKCall {
+
+                @Before
+                public void setUp() {
+                }
+
+                @Test
+                public void testSubscriberIsNotCompletedYet() {
+                    setRestoreMockResult(busyObservable());
+                    setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
+
+                    mergePositionCall.run();
+
+                    orderEventSubscriber.assertNotCompleted();
+                }
+
+                @Test
+                public void testOrderHasBeenAddedToPosition() {
+                    setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
+
+                    mergePositionCall.run();
+
+                    verify(positionMock).addOrder(orderForTest);
+                }
+
+                public class RestoreSLTPWithJFException {
+
+                    @Before
+                    public void setUp() {
+                        setRestoreMockResult(exceptionObservable());
+                        setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
+
+                        mergePositionCall.run();
+                    }
+
+                    @Test
+                    public void testRestoreSLTPOnMultiUtilHasBeenCalledWithoutRetry() {
+                        verify(positionMultiTaskMock).restoreSLTPObservable(eq(orderForTest),
+                                                                            restoreSLTPCaptor
+                                                                                    .capture());
+                    }
+
+                    @Test
+                    public void testSubscriberGetsJFExceptionNotification() {
+                        assertJFException(orderEventSubscriber);
+                    }
+                }
+
+                public class RestoreSLTPWithRejection {
+
+                    @Before
+                    public void setUp() {
+                        setRestoreMockResult(rejectObservable(rejectEvent));
+                        setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
+
+                        mergePositionCall.run();
+                    }
+
+                    @Test
+                    public void testRestoreSLTPOnMultiUtilHasBeenCalledWithoutRetry() {
+                        verify(positionMultiTaskMock).restoreSLTPObservable(eq(orderForTest),
+                                                                            restoreSLTPCaptor
+                                                                                    .capture());
+                    }
+
+                    @Test
+                    public void testSubscriberGetsRejectExceptionNotification() {
+                        assertRejectException(orderEventSubscriber);
+                    }
+                }
+
+                public class RestoreSLTPOKCall {
+
+                    private final OrderEvent restoreTPEvent =
+                            new OrderEvent(orderForTest, OrderEventType.CHANGED_TP);
+
+                    @Before
+                    public void setUp() {
+                        setRestoreMockResult(doneEventObservable(restoreTPEvent));
+                        setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
+
+                        mergePositionCall.run();
+                    }
+
+                    @Test
+                    public void testSubscriberCompleted() {
+                        orderEventSubscriber.assertCompleted();
+                    }
+
+                    @Test
+                    public void testSubscriberHasBeenNotifiedWithOrderEvent() {
+                        assertOrderEventNotification(restoreTPEvent);
+                    }
+                }
             }
         }
     }
@@ -328,34 +500,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 assertJFException(orderEventSubscriber);
             }
         }
-    }
-
-    @Test
-    public void mergePositionCallsOnPositionHandler() {
-        when(orderPositionHandlerMock.mergePositionOrders(any(MergePositionCommand.class)))
-                .thenReturn(Observable.empty());
-        when(positionMock.filled()).thenReturn(toMergeOrders);
-
-        orderUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock)
-                .subscribe(orderEventSubscriber);
-
-        verify(orderPositionHandlerMock)
-                .mergePositionOrders(any(MergePositionCommand.class));
-        orderEventSubscriber.assertCompleted();
-    }
-
-    @Test
-    public void mergePositionReturnsEmptyObservale() {
-        when(orderPositionHandlerMock.positionOrders(instrumentEURUSD))
-                .thenReturn(positionOrdersMock);
-        when(positionOrdersMock.filled())
-                .thenReturn(Sets.newHashSet());
-
-        orderUtil.mergePositionOrders(mergeOrderLabel, instrumentEURUSD, restoreSLTPPolicyMock)
-                .subscribe(orderEventSubscriber);
-
-        orderEventSubscriber.assertValueCount(0);
-        orderEventSubscriber.assertCompleted();
     }
 
     @Test

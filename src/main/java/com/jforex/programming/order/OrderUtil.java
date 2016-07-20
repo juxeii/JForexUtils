@@ -11,7 +11,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.MergePositionCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
 import com.jforex.programming.order.command.SetGTTCommand;
 import com.jforex.programming.order.command.SetLabelCommand;
@@ -23,6 +22,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.PositionMultiTask;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPData;
@@ -35,22 +35,22 @@ public class OrderUtil {
 
     private final IEngine engine;
     private final PositionFactory positionFactory;
-    private final OrderPositionHandler orderPositionHandler;
-    private final PositionSingleTask positionSingleTask;
     private final OrderUtilHandler orderUtilHandler;
+    private final PositionSingleTask positionSingleTask;
+    private final PositionMultiTask positionMultiTask;
 
     private static final Logger logger = LogManager.getLogger(OrderUtil.class);
 
     public OrderUtil(final IEngine engine,
                      final PositionFactory positionFactory,
-                     final OrderPositionHandler orderPositionHandler,
+                     final OrderUtilHandler orderUtilHandler,
                      final PositionSingleTask positionSingleTask,
-                     final OrderUtilHandler orderUtilHandler) {
+                     final PositionMultiTask positionMultiTask) {
         this.engine = engine;
         this.positionFactory = positionFactory;
-        this.orderPositionHandler = orderPositionHandler;
-        this.positionSingleTask = positionSingleTask;
         this.orderUtilHandler = orderUtilHandler;
+        this.positionSingleTask = positionSingleTask;
+        this.positionMultiTask = positionMultiTask;
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
@@ -87,19 +87,35 @@ public class OrderUtil {
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
                                                       final Instrument instrument,
                                                       final RestoreSLTPPolicy restoreSLTPPolicy) {
-        final Set<IOrder> toMergeOrders = positionOrders(instrument).filled();
+        final Set<IOrder> toMergeOrders = position(instrument).filled();
         if (toMergeOrders.size() < 2)
             return Observable.empty();
 
         final RestoreSLTPData restoreSLTPData =
                 new RestoreSLTPData(restoreSLTPPolicy.restoreSL(toMergeOrders),
                                     restoreSLTPPolicy.restoreTP(toMergeOrders));
-        final MergePositionCommand command = new MergePositionCommand(mergeOrderLabel,
-                                                                      toMergeOrders,
-                                                                      instrument,
-                                                                      restoreSLTPData,
-                                                                      engine);
-        return orderPositionHandler.mergePositionOrders(command);
+        final Observable<OrderEvent> mergeAndRestoreObservable =
+                orderUtilHandler
+                        .callWithRetriesObservable(new MergeCommand(mergeOrderLabel,
+                                                                    toMergeOrders,
+                                                                    engine))
+                        .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
+                                                                         OrderEventTypeData.mergeData))
+                        .flatMap(mergeEvent -> positionMultiTask
+                                .restoreSLTPObservable(mergeEvent.order(),
+                                                       restoreSLTPData));
+
+        return Observable
+                .just(toMergeOrders)
+                .doOnSubscribe(() -> {
+                    logger.debug("Starting position merge for "
+                            + instrument + " with label " + mergeOrderLabel);
+                    position(instrument).markAllOrdersActive();
+                })
+                .flatMap(positionMultiTask::removeTPSLObservable)
+                .concatWith(mergeAndRestoreObservable)
+                .doOnCompleted(() -> logger.debug("Position merge for " + instrument
+                        + "  with label " + mergeOrderLabel + " was successful."));
     }
 
     public Completable closePosition(final Instrument instrument) {
