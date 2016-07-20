@@ -1,5 +1,7 @@
 package com.jforex.programming.math;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.function.Function;
 
 import com.dukascopy.api.ICurrency;
@@ -83,19 +85,19 @@ public class ConversionBuilder {
 
         @Override
         public ForOfferSide toInstrument(final Instrument targetInstrument) {
-            this.targetCurrency = targetInstrument.getPrimaryJFCurrency();
+            this.targetCurrency = checkNotNull(targetInstrument).getPrimaryJFCurrency();
             return this;
         }
 
         @Override
         public ForOfferSide toCurrency(final ICurrency currency) {
-            this.targetCurrency = currency;
+            this.targetCurrency = checkNotNull(currency);
             return this;
         }
 
         @Override
         public double forOfferSide(final OfferSide offerSide) {
-            this.offerSide = offerSide;
+            this.offerSide = checkNotNull(offerSide);
             return consumer.apply(ConversionBuilder.this);
         }
     }

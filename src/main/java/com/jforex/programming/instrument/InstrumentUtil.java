@@ -1,5 +1,7 @@
 package com.jforex.programming.instrument;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Currency;
 
 import com.dukascopy.api.IBar;
@@ -50,7 +52,7 @@ public final class InstrumentUtil {
     }
 
     public final IBar bar(final BarQuoteParams barQuoteParams) {
-        return barQuoteProvider.bar(barQuoteParams);
+        return barQuoteProvider.bar(checkNotNull(barQuoteParams));
     }
 
     public final double spread() {
@@ -77,11 +79,11 @@ public final class InstrumentUtil {
     }
 
     public final boolean containsCurrency(final ICurrency currency) {
-        return CurrencyUtil.isInInstrument(currency, instrument);
+        return CurrencyUtil.isInInstrument(checkNotNull(currency), instrument);
     }
 
     public final boolean containsCurrencyCode(final String currencyCode) {
-        return CurrencyUtil.isInInstrument(currencyCode, instrument);
+        return CurrencyUtil.isInInstrument(checkNotNull(currencyCode), instrument);
     }
 
     public static final int numberOfDigits(final Instrument instrument) {
@@ -89,26 +91,29 @@ public final class InstrumentUtil {
     }
 
     public static final String toStringNoSeparator(final Instrument instrument) {
-        return instrument
+        return checkNotNull(instrument)
                 .getPrimaryJFCurrency()
                 .toString()
                 .concat(instrument.getSecondaryJFCurrency().toString());
     }
 
     public static final Currency baseJavaCurrency(final Instrument instrument) {
-        return instrument
+        return checkNotNull(instrument)
                 .getPrimaryJFCurrency()
                 .getJavaCurrency();
     }
 
     public static final Currency quoteJavaCurrency(final Instrument instrument) {
-        return instrument
+        return checkNotNull(instrument)
                 .getSecondaryJFCurrency()
                 .getJavaCurrency();
     }
 
     public static final String nameFromCurrencies(final ICurrency baseCurrency,
                                                   final ICurrency quoteCurrency) {
+        checkNotNull(baseCurrency);
+        checkNotNull(quoteCurrency);
+
         return baseCurrency
                 .toString()
                 .concat(pairsSeparator)

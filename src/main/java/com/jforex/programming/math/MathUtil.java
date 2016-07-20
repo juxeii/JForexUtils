@@ -1,5 +1,7 @@
 package com.jforex.programming.math;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -22,6 +24,8 @@ public final class MathUtil {
 
     public static final <T> Set<Set<T>> kPowerSet(final Set<T> sourceSet,
                                                   final int setSize) {
+        checkNotNull(sourceSet);
+
         final Set<Set<T>> kPowerSet = Sets.newHashSet();
         final Generator<T> generator =
                 Factory.createSimpleCombinationGenerator(Factory.createVector(sourceSet), setSize);
@@ -51,6 +55,8 @@ public final class MathUtil {
 
     public static final double roundPrice(final double rawPrice,
                                           final Instrument instrument) {
+        checkNotNull(instrument);
+
         return roundDouble(rawPrice, InstrumentUtil.numberOfDigits(instrument));
     }
 

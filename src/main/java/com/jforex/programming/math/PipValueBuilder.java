@@ -1,5 +1,7 @@
 package com.jforex.programming.math;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.function.Function;
 
 import com.dukascopy.api.ICurrency;
@@ -28,7 +30,7 @@ public class PipValueBuilder {
     }
 
     public OfInstrument pipValueInCurrency(final ICurrency currency) {
-        builder = new Builder(currency);
+        builder = new Builder(checkNotNull(currency));
         return builder;
     }
 
@@ -70,13 +72,13 @@ public class PipValueBuilder {
 
         @Override
         public WithAmount ofInstrument(final Instrument instrument) {
-            this.instrument = instrument;
+            this.instrument = checkNotNull(instrument);
             return this;
         }
 
         @Override
         public double andOfferSide(final OfferSide offerSide) {
-            this.offerSide = offerSide;
+            this.offerSide = checkNotNull(offerSide);
             return consumer.apply(PipValueBuilder.this);
         }
     }

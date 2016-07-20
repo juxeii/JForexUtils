@@ -1,5 +1,7 @@
 package com.jforex.programming.client;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Optional;
@@ -29,9 +31,9 @@ public class ClientUtil {
 
     public ClientUtil(final IClient client,
                       final String cacheDirectory) {
-        this.client = client;
+        this.client = checkNotNull(client);
 
-        setCacheDirectory(cacheDirectory);
+        setCacheDirectory(checkNotNull(cacheDirectory));
         initSystemListener();
         initAuthentification();
         keepConnection();
@@ -79,12 +81,12 @@ public class ClientUtil {
     }
 
     public final Completable loginCompletable(final LoginCredentials loginCredentials) {
-        return authentificationUtil.loginCompletable(loginCredentials);
+        return authentificationUtil.loginCompletable(checkNotNull(loginCredentials));
     }
 
     public final Optional<BufferedImage> pinCaptchaForAWT(final String jnlpAddress) {
         try {
-            return Optional.of(client.getCaptchaImage(jnlpAddress));
+            return Optional.of(client.getCaptchaImage(checkNotNull(jnlpAddress)));
         } catch (final Exception e) {
             logger.error("Error while retreiving pin captcha! " + e.getMessage());
             return Optional.empty();
@@ -92,7 +94,7 @@ public class ClientUtil {
     }
 
     public final Optional<Image> pinCaptchaForJavaFX(final String jnlpAddress) {
-        final Optional<BufferedImage> captcha = pinCaptchaForAWT(jnlpAddress);
+        final Optional<BufferedImage> captcha = pinCaptchaForAWT(checkNotNull(jnlpAddress));
         return captcha.isPresent()
                 ? Optional.of(SwingFXUtils.toFXImage(captcha.get(), null))
                 : Optional.empty();

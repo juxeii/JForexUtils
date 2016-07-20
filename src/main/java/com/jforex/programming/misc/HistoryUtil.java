@@ -32,7 +32,8 @@ public class HistoryUtil {
     }
 
     public Map<Instrument, TickQuote> tickQuotes(final Set<Instrument> instruments) {
-        return instruments.stream()
+        return instruments
+                .stream()
                 .map(instrument -> {
                     final TickQuote tickQuote = new TickQuote(instrument, latestTick(instrument));
                     return new SimpleEntry<>(instrument, tickQuote);

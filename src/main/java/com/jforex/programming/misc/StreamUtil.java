@@ -1,5 +1,7 @@
 package com.jforex.programming.misc;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -28,7 +30,7 @@ public final class StreamUtil {
 
     public static final Observable<Long>
            retryObservable(final Observable<? extends Throwable> errors) {
-        return errors
+        return checkNotNull(errors)
                 .flatMap(StreamUtil::filterErrorType)
                 .zipWith(retryCounterObservable(maxRetriesOnOrderFail), Pair::of)
                 .flatMap(retryPair -> evaluateRetryPair(retryPair,
@@ -42,6 +44,8 @@ public final class StreamUtil {
     }
 
     public static final Completable CompletableFromJFRunnable(final JFRunnable jfRunnable) {
+        checkNotNull(jfRunnable);
+
         return Completable.fromCallable(() -> {
             jfRunnable.run();
             return null;
@@ -81,7 +85,7 @@ public final class StreamUtil {
     }
 
     public static <T> Stream<T> streamOptional(final Optional<T> optional) {
-        return optional.isPresent()
+        return checkNotNull(optional).isPresent()
                 ? Stream.of(optional.get())
                 : Stream.empty();
     }

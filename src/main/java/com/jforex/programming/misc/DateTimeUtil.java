@@ -1,5 +1,7 @@
 package com.jforex.programming.misc;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -27,8 +29,11 @@ public final class DateTimeUtil {
         return LocalDateTime.ofInstant(instant, localZoneId);
     }
 
-    public static final long localMillisFromDateTime(final LocalDateTime dateTime) {
-        return dateTime.atZone(localZoneId).toInstant().toEpochMilli();
+    public static final long localMillisFromDateTime(final LocalDateTime localDateTime) {
+        return checkNotNull(localDateTime)
+                .atZone(localZoneId)
+                .toInstant()
+                .toEpochMilli();
     }
 
     public static final long localMillisNow() {
@@ -40,7 +45,7 @@ public final class DateTimeUtil {
     }
 
     public static final String format(final LocalDateTime localDateTime) {
-        return localDateTime.format(defaultformatter);
+        return checkNotNull(localDateTime).format(defaultformatter);
     }
 
     public static final String millisToString(final long millis) {

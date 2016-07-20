@@ -1,5 +1,7 @@
 package com.jforex.programming.connection;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Optional;
 
 public final class LoginCredentials {
@@ -13,10 +15,10 @@ public final class LoginCredentials {
                             final String username,
                             final String password,
                             final String pin) {
-        this.jnlpAddress = jnlpAddress;
-        this.username = username;
-        this.password = password;
-        maybePin = pin.isEmpty()
+        this.jnlpAddress = checkNotNull(jnlpAddress);
+        this.username = checkNotNull(username);
+        this.password = checkNotNull(password);
+        maybePin = checkNotNull(pin).isEmpty()
                 ? Optional.empty()
                 : Optional.of(pin);
     }

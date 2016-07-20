@@ -1,5 +1,7 @@
 package com.jforex.programming.connection;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Optional;
 
 import com.dukascopy.api.system.IClient;
@@ -27,9 +29,9 @@ public class AuthentificationUtil {
 
     public AuthentificationUtil(final IClient client,
                                 final Observable<ConnectionState> connectionStateObs) {
-        this.client = client;
+        this.client = checkNotNull(client);
 
-        initConnectionStateObs(connectionStateObs);
+        initConnectionStateObs(checkNotNull(connectionStateObs));
         configureFSM();
     }
 
@@ -66,6 +68,8 @@ public class AuthentificationUtil {
     }
 
     public Completable loginCompletable(final LoginCredentials loginCredentials) {
+        checkNotNull(loginCredentials);
+
         final String jnlpAddress = loginCredentials.jnlpAddress();
         final String username = loginCredentials.username();
         final String password = loginCredentials.password();

@@ -1,5 +1,7 @@
 package com.jforex.programming.math;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.function.Function;
 
 import com.dukascopy.api.Instrument;
@@ -58,7 +60,7 @@ public class PipDistanceBuilder {
 
         @Override
         public double forInstrument(final Instrument instrument) {
-            this.instrument = instrument;
+            this.instrument = checkNotNull(instrument);
             return consumer.apply(PipDistanceBuilder.this);
         }
     }

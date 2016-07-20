@@ -1,5 +1,6 @@
 package com.jforex.programming.math;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.jforex.programming.math.MathUtil.isValueDivisibleByX;
 import static com.jforex.programming.math.MathUtil.roundAmount;
 import static com.jforex.programming.math.MathUtil.roundPips;
@@ -21,7 +22,8 @@ public final class CalculationUtil {
 
     private final TickQuoteHandler tickQuoteProvider;
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings =
+            ConfigFactory.create(PlatformSettings.class);
 
     public CalculationUtil(final TickQuoteHandler tickQuoteProvider) {
         this.tickQuoteProvider = tickQuoteProvider;
@@ -48,13 +50,16 @@ public final class CalculationUtil {
                                          final OfferSide offerSide) {
         final Instrument conversionInstrument =
                 InstrumentBuilder.fromCurrencies(sourceCurrency, targetCurrency).get();
-        final double conversionQuote = tickQuoteProvider.forOfferSide(conversionInstrument, offerSide);
+        final double conversionQuote =
+                tickQuoteProvider.forOfferSide(conversionInstrument, offerSide);
         return targetCurrency.equals(conversionInstrument.getPrimaryJFCurrency())
                 ? 1 / conversionQuote
                 : conversionQuote;
     }
 
     public OfInstrument pipValueInCurrency(final ICurrency currency) {
+        checkNotNull(currency);
+
         return new PipValueBuilder(this::pipValueInCurrency).pipValueInCurrency(currency);
     }
 
@@ -75,12 +80,16 @@ public final class CalculationUtil {
 
     public static final double scalePipsToInstrument(final double pips,
                                                      final Instrument instrument) {
+        checkNotNull(instrument);
+
         return roundPrice(instrument.getPipValue() * pips, instrument);
     }
 
     public static final double addPips(final Instrument instrument,
                                        final double price,
                                        final double pipsToAdd) {
+        checkNotNull(instrument);
+
         return roundPrice(price + scalePipsToInstrument(pipsToAdd, instrument), instrument);
     }
 
@@ -96,6 +105,8 @@ public final class CalculationUtil {
 
     public static final boolean isPricePipDivisible(final Instrument instrument,
                                                     final double price) {
+        checkNotNull(instrument);
+
         return isValueDivisibleByX(price, instrument.getPipValue() / 10);
     }
 

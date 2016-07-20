@@ -1,5 +1,7 @@
 package com.jforex.programming.misc;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
 
@@ -74,7 +76,7 @@ public class JForexUtil {
             ConfigFactory.create(UserSettings.class);
 
     public JForexUtil(final IContext context) {
-        this.context = context;
+        this.context = checkNotNull(context);
 
         initContextRelated();
         initInfrastructure();
@@ -153,7 +155,9 @@ public class JForexUtil {
     }
 
     public InstrumentUtil instrumentUtil(final Instrument instrument) {
-        return new InstrumentUtil(instrument, tickQuoteHandler, barQuoteHandler);
+        return new InstrumentUtil(checkNotNull(instrument),
+                                  tickQuoteHandler,
+                                  barQuoteHandler);
     }
 
     public CalculationUtil calculationUtil() {
@@ -181,11 +185,14 @@ public class JForexUtil {
     }
 
     public void onMessage(final IMessage message) {
-        messageSubject.onNext(message);
+        messageSubject.onNext(checkNotNull(message));
     }
 
     public void onTick(final Instrument instrument,
                        final ITick tick) {
+        checkNotNull(instrument);
+        checkNotNull(tick);
+
         if (shouldForwardQuote(tick.getTime())) {
             final TickQuote tickQuote = new TickQuote(instrument, tick);
             tickQuoteSubject.onNext(tickQuote);
@@ -208,6 +215,11 @@ public class JForexUtil {
                       final Period period,
                       final IBar askBar,
                       final IBar bidBar) {
+        checkNotNull(instrument);
+        checkNotNull(period);
+        checkNotNull(askBar);
+        checkNotNull(bidBar);
+
         onOfferSidedBar(instrument, period, OfferSide.ASK, askBar);
         onOfferSidedBar(instrument, period, OfferSide.BID, bidBar);
     }
@@ -227,6 +239,8 @@ public class JForexUtil {
     }
 
     public void subscribeToBarsFeed(final BarQuoteParams barQuoteParams) {
+        checkNotNull(barQuoteParams);
+
         context.subscribeToBarsFeed(barQuoteParams.instrument(),
                                     barQuoteParams.period(),
                                     barQuoteParams.offerSide(),
