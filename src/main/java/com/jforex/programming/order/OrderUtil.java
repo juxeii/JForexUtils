@@ -3,6 +3,12 @@ package com.jforex.programming.order;
 import java.util.Collection;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergePositionCommand;
@@ -18,12 +24,9 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
+import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
-
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Completable;
 import rx.Observable;
@@ -33,15 +36,20 @@ public class OrderUtil {
     private final IEngine engine;
     private final PositionFactory positionFactory;
     private final OrderPositionHandler orderPositionHandler;
+    private final PositionSingleTask positionSingleTask;
     private final OrderUtilHandler orderUtilHandler;
+
+    private static final Logger logger = LogManager.getLogger(OrderUtil.class);
 
     public OrderUtil(final IEngine engine,
                      final PositionFactory positionFactory,
                      final OrderPositionHandler orderPositionHandler,
+                     final PositionSingleTask positionSingleTask,
                      final OrderUtilHandler orderUtilHandler) {
         this.engine = engine;
         this.positionFactory = positionFactory;
         this.orderPositionHandler = orderPositionHandler;
+        this.positionSingleTask = positionSingleTask;
         this.orderUtilHandler = orderUtilHandler;
     }
 
@@ -95,7 +103,19 @@ public class OrderUtil {
     }
 
     public Completable closePosition(final Instrument instrument) {
-        return orderPositionHandler.closePosition(instrument);
+        final Position position = position(instrument);
+        return Observable
+                .from(position.filledOrOpened())
+                .doOnSubscribe(() -> {
+                    logger.debug("Starting position close for " + instrument);
+                    position.markAllOrdersActive();
+                })
+                .flatMap(positionSingleTask::closeObservable)
+                .doOnCompleted(() -> logger.debug("Closing position "
+                        + instrument + " was successful."))
+                .doOnError(e -> logger.error("Closing position " + instrument
+                        + " failed! Exception: " + e.getMessage()))
+                .toCompletable();
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {

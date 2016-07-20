@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderPositionHandler;
@@ -31,12 +32,11 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
+import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -51,6 +51,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderUtilHandler orderUtilHandlerMock;
     @Mock
     private OrderPositionHandler orderPositionHandlerMock;
+    @Mock
+    private PositionSingleTask positionSingleTaskMock;
     @Mock
     private RestoreSLTPPolicy restoreSLTPPolicyMock;
     @Mock
@@ -73,6 +75,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         orderUtil = new OrderUtil(engineMock,
                                   positionFactoryMock,
                                   orderPositionHandlerMock,
+                                  positionSingleTaskMock,
                                   orderUtilHandlerMock);
     }
 
@@ -218,6 +221,115 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
     }
 
+    public class CloseCompletableSetup {
+
+        private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
+        private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
+        private final Set<IOrder> ordersToClose = Sets.newHashSet(buyOrder, sellOrder);
+
+        private final Runnable closeCompletableCall =
+                () -> orderUtil
+                        .closePosition(instrumentEURUSD)
+                        .subscribe(orderEventSubscriber);
+
+        private void setPositionSingleTaskMockResult(final IOrder orderToClose,
+                                                     final Observable<OrderEvent> observable) {
+            when(positionSingleTaskMock.closeObservable(orderToClose))
+                    .thenReturn(observable);
+        }
+
+        @Before
+        public void setUp() {
+            buyOrder.setState(IOrder.State.FILLED);
+            sellOrder.setState(IOrder.State.FILLED);
+            when(positionMock.filledOrOpened())
+                    .thenReturn(ordersToClose);
+        }
+
+        @Test
+        public void testAllPositionOrdersAreMarkedActive() {
+            setPositionSingleTaskMockResult(buyOrder, doneObservable());
+
+            closeCompletableCall.run();
+
+            verify(positionMock).markAllOrdersActive();
+        }
+
+        public class NoOrdersToClose {
+
+            @Before
+            public void setUp() {
+                when(positionMock.filledOrOpened()).thenReturn(Sets.newHashSet());
+
+                closeCompletableCall.run();
+            }
+
+            @Test
+            public void testNoCallToSingleUtil() {
+                verify(positionSingleTaskMock, never()).closeObservable(any());
+            }
+
+            @Test
+            public void testSubscriberCompleted() {
+                orderEventSubscriber.assertCompleted();
+            }
+        }
+
+        public class CloseBuyOK {
+
+            @Before
+            public void setUp() {
+                when(positionSingleTaskMock.closeObservable(buyOrder))
+                        .thenReturn(doneObservable());
+            }
+
+            public class CloseSellOK {
+
+                @Before
+                public void setUp() {
+                    when(positionSingleTaskMock.closeObservable(sellOrder))
+                            .thenReturn(doneObservable());
+
+                    closeCompletableCall.run();
+                }
+
+                @Test
+                public void testCloseOnSingleTaskForAllOrdersHasBeenCalled() {
+                    verify(positionSingleTaskMock).closeObservable(buyOrder);
+                    verify(positionSingleTaskMock).closeObservable(sellOrder);
+                }
+
+                @Test
+                public void testSubscriberCompleted() {
+                    orderEventSubscriber.assertCompleted();
+                }
+            }
+        }
+
+        public class SingleTaskCallWithJFException {
+
+            @Before
+            public void setUp() {
+                when(positionSingleTaskMock.closeObservable(buyOrder))
+                        .thenReturn(exceptionObservable());
+                when(positionSingleTaskMock.closeObservable(sellOrder))
+                        .thenReturn(exceptionObservable());
+
+                closeCompletableCall.run();
+            }
+
+            @Test
+            public void testCloseOnOrderHasBeenCalledWithoutRetry() {
+                verify(positionSingleTaskMock).closeObservable(any());
+            }
+
+            @Test
+            public void testSubscriberGetsJFExceptionNotification() {
+                assertJFException(orderEventSubscriber);
+            }
+        }
+    }
+
     @Test
     public void mergePositionCallsOnPositionHandler() {
         when(orderPositionHandlerMock.mergePositionOrders(any(MergePositionCommand.class)))
@@ -243,19 +355,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 .subscribe(orderEventSubscriber);
 
         orderEventSubscriber.assertValueCount(0);
-        orderEventSubscriber.assertCompleted();
-    }
-
-    @Test
-    public void closePositionCallsOnPositionHandler() {
-        when(orderPositionHandlerMock.closePosition(instrumentEURUSD))
-                .thenReturn(Observable.empty().toCompletable());
-
-        orderUtil
-                .closePosition(instrumentEURUSD)
-                .subscribe(orderEventSubscriber);
-
-        verify(orderPositionHandlerMock).closePosition(instrumentEURUSD);
         orderEventSubscriber.assertCompleted();
     }
 
