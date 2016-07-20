@@ -1,5 +1,7 @@
 package com.jforex.programming.order;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 import java.util.Set;
 
@@ -56,7 +58,7 @@ public class OrderUtil {
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
-        return positionFactory.forInstrument(instrument);
+        return positionFactory.forInstrument(checkNotNull(instrument));
     }
 
     private Position position(final Instrument instrument) {
@@ -64,12 +66,16 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> retryObservable(final OrderEvent orderEvent) {
+        checkNotNull(orderEvent);
+
         return orderUtilHandler
                 .rejectAsErrorObservable(orderEvent)
                 .retryWhen(StreamUtil::retryObservable);
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
+        checkNotNull(orderParams);
+
         return orderUtilHandler
                 .callObservable(new SubmitCommand(orderParams, engine))
                 .doOnNext(submitEvent -> addOrderToPositionIfDone(submitEvent,
@@ -78,6 +84,9 @@ public class OrderUtil {
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
+        checkNotNull(mergeOrderLabel);
+        checkNotNull(toMergeOrders);
+
         return orderUtilHandler
                 .callObservable(new MergeCommand(mergeOrderLabel, toMergeOrders, engine))
                 .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
@@ -95,6 +104,10 @@ public class OrderUtil {
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
                                                       final Instrument instrument,
                                                       final RestoreSLTPPolicy restoreSLTPPolicy) {
+        checkNotNull(mergeOrderLabel);
+        checkNotNull(instrument);
+        checkNotNull(restoreSLTPPolicy);
+
         final Set<IOrder> toMergeOrders = position(instrument).filled();
         if (toMergeOrders.size() < 2)
             return Observable.empty();
@@ -128,7 +141,7 @@ public class OrderUtil {
     }
 
     public Completable closePosition(final Instrument instrument) {
-        logger.debug("Starting position close for " + instrument);
+        logger.debug("Starting position close for " + checkNotNull(instrument));
         final Position position = position(instrument);
 
         return Observable
@@ -145,39 +158,53 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
+        checkNotNull(orderToClose);
+
         return orderUtilHandler.callObservable(new CloseCommand(orderToClose));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
                                            final String newLabel) {
+        checkNotNull(orderToChangeLabel);
+
         return orderUtilHandler
                 .callObservable(new SetLabelCommand(orderToChangeLabel, newLabel));
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
                                                   final long newGTT) {
+        checkNotNull(orderToChangeGTT);
+
         return orderUtilHandler.callObservable(new SetGTTCommand(orderToChangeGTT, newGTT));
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
+        checkNotNull(orderToChangeOpenPrice);
+
         return orderUtilHandler
                 .callObservable(new SetOpenPriceCommand(orderToChangeOpenPrice, newOpenPrice));
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
                                                      final double newRequestedAmount) {
+        checkNotNull(orderToChangeAmount);
+
         return orderUtilHandler
                 .callObservable(new SetAmountCommand(orderToChangeAmount, newRequestedAmount));
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
                                                    final double newSL) {
+        checkNotNull(orderToChangeSL);
+
         return orderUtilHandler.callObservable(new SetSLCommand(orderToChangeSL, newSL));
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
                                                      final double newTP) {
+        checkNotNull(orderToChangeTP);
+
         return orderUtilHandler.callObservable(new SetTPCommand(orderToChangeTP, newTP));
     }
 }

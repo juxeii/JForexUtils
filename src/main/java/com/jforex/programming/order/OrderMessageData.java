@@ -1,5 +1,7 @@
 package com.jforex.programming.order;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Set;
 
 import com.dukascopy.api.IMessage;
@@ -14,7 +16,7 @@ public final class OrderMessageData {
     private final Set<IMessage.Reason> messageReasons;
 
     public OrderMessageData(final IMessage message) {
-        this.order = message.getOrder();
+        this.order = checkNotNull(message).getOrder();
         this.orderState = order.getState();
         this.messageType = message.getType();
         this.messageReasons = ImmutableSet.copyOf(message.getReasons());

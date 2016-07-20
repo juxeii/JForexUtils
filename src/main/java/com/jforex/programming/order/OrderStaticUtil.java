@@ -1,5 +1,7 @@
 package com.jforex.programming.order;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -7,6 +9,10 @@ import java.util.function.Predicate;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -14,14 +20,10 @@ import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.settings.PlatformSettings;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
-
 public final class OrderStaticUtil {
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings =
+            ConfigFactory.create(PlatformSettings.class);
 
     private OrderStaticUtil() {
     }
@@ -48,13 +50,14 @@ public final class OrderStaticUtil {
     public static final Predicate<IOrder> isFilled = statePredicate.apply(IOrder.State.FILLED);
     public static final Predicate<IOrder> isClosed = statePredicate.apply(IOrder.State.CLOSED);
     public static final Predicate<IOrder> isCanceled = statePredicate.apply(IOrder.State.CANCELED);
-    public static final Predicate<IOrder> isConditional = order -> order.getOrderCommand().isConditional();
+    public static final Predicate<IOrder> isConditional =
+            order -> order.getOrderCommand().isConditional();
 
     public static final Function<Instrument, Predicate<IOrder>> instrumentPredicate =
             instrument -> order -> order.getInstrument() == instrument;
 
     public static final Predicate<IOrder> ofInstrument(final Instrument instrument) {
-        return instrumentPredicate.apply(instrument);
+        return instrumentPredicate.apply(checkNotNull(instrument));
     }
 
     public static final Function<Double, Predicate<IOrder>> orderSLPredicate =
@@ -83,7 +86,7 @@ public final class OrderStaticUtil {
     }
 
     public static final OrderDirection combinedDirection(final Collection<IOrder> orders) {
-        final double signedAmount = combinedSignedAmount(orders);
+        final double signedAmount = combinedSignedAmount(checkNotNull(orders));
         if (signedAmount > 0)
             return OrderDirection.LONG;
         return signedAmount < 0
@@ -93,42 +96,42 @@ public final class OrderStaticUtil {
 
     public static final double signedAmount(final double amount,
                                             final OrderCommand orderCommand) {
-        return buyOrderCommands.contains(orderCommand)
+        return buyOrderCommands.contains(checkNotNull(orderCommand))
                 ? amount
                 : -amount;
     }
 
     public static final double signedAmount(final IOrder order) {
-        return signedAmount(order.getAmount(), order.getOrderCommand());
+        return signedAmount(checkNotNull(order).getAmount(), order.getOrderCommand());
     }
 
     public static final double combinedSignedAmount(final Collection<IOrder> orders) {
-        return orders
+        return checkNotNull(orders)
                 .stream()
                 .mapToDouble(OrderStaticUtil::signedAmount)
                 .sum();
     }
 
     public static final OfferSide offerSideForOrderCommand(final OrderCommand orderCommand) {
-        return buyOrderCommands.contains(orderCommand)
+        return buyOrderCommands.contains(checkNotNull(orderCommand))
                 ? OfferSide.ASK
                 : OfferSide.BID;
     }
 
     public static final OrderCommand directionToCommand(final OrderDirection orderDirection) {
-        return orderDirection == OrderDirection.LONG
+        return checkNotNull(orderDirection) == OrderDirection.LONG
                 ? OrderCommand.BUY
                 : OrderCommand.SELL;
     }
 
     public static final OrderCommand switchCommand(final OrderCommand orderCommand) {
-        return orderCommands.containsKey(orderCommand)
+        return orderCommands.containsKey(checkNotNull(orderCommand))
                 ? orderCommands.get(orderCommand)
                 : orderCommands.inverse().get(orderCommand);
     }
 
     public static final OrderDirection switchDirection(final OrderDirection orderDirection) {
-        if (orderDirection == OrderDirection.FLAT)
+        if (checkNotNull(orderDirection) == OrderDirection.FLAT)
             return orderDirection;
         return orderDirection == OrderDirection.LONG
                 ? OrderDirection.SHORT
@@ -138,7 +141,7 @@ public final class OrderStaticUtil {
     public static final double slPriceWithPips(final IOrder order,
                                                final double price,
                                                final double pips) {
-        return CalculationUtil.addPips(order.getInstrument(),
+        return CalculationUtil.addPips(checkNotNull(order).getInstrument(),
                                        price,
                                        order.isLong() ? -pips : pips);
     }
@@ -146,7 +149,9 @@ public final class OrderStaticUtil {
     public static final double tpPriceWithPips(final IOrder order,
                                                final double price,
                                                final double pips) {
-        return slPriceWithPips(order, price, -pips);
+        return slPriceWithPips(checkNotNull(order),
+                               price,
+                               -pips);
     }
 
     public static Callable<IOrder> runnableToCallable(final JFRunnable runnable,

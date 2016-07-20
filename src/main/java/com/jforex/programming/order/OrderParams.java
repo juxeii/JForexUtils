@@ -1,12 +1,13 @@
 package com.jforex.programming.order;
 
-import org.aeonbits.owner.ConfigFactory;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.jforex.programming.settings.PlatformSettings;
-import com.jforex.programming.settings.UserSettings;
+import org.aeonbits.owner.ConfigFactory;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.settings.UserSettings;
 
 public final class OrderParams implements Cloneable {
 
@@ -81,7 +82,7 @@ public final class OrderParams implements Cloneable {
     }
 
     public static WithOrderCommand forInstrument(final Instrument instrument) {
-        return new Builder(instrument);
+        return new Builder(checkNotNull(instrument));
     }
 
     public interface WithOrderCommand {
@@ -136,11 +137,12 @@ public final class OrderParams implements Cloneable {
         public OrderParams build();
     }
 
-    private static class Builder implements WithOrderCommand,
-                                 WithAmount,
-                                 WithLabel,
-                                 WithOptions,
-                                 Clone {
+    private static class Builder implements
+            WithOrderCommand,
+            WithAmount,
+            WithLabel,
+            WithOptions,
+            Clone {
 
         private String label;
         private Instrument instrument;
@@ -154,8 +156,10 @@ public final class OrderParams implements Cloneable {
         private long goodTillTime;
         private String comment;
 
-        private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-        private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+        private static final PlatformSettings platformSettings =
+                ConfigFactory.create(PlatformSettings.class);
+        private static final UserSettings userSettings =
+                ConfigFactory.create(UserSettings.class);
 
         private Builder(final Instrument instrument) {
             this.instrument = instrument;
@@ -182,19 +186,19 @@ public final class OrderParams implements Cloneable {
 
         @Override
         public Builder withLabel(final String label) {
-            this.label = label;
+            this.label = checkNotNull(label);
             return this;
         }
 
         @Override
         public Builder forInstrument(final Instrument instrument) {
-            this.instrument = instrument;
+            this.instrument = checkNotNull(instrument);
             return this;
         }
 
         @Override
         public Builder withOrderCommand(final OrderCommand orderCommand) {
-            this.orderCommand = orderCommand;
+            this.orderCommand = checkNotNull(orderCommand);
             return this;
         }
 
@@ -236,7 +240,7 @@ public final class OrderParams implements Cloneable {
 
         @Override
         public Builder comment(final String comment) {
-            this.comment = comment;
+            this.comment = checkNotNull(comment);
             return this;
         }
 

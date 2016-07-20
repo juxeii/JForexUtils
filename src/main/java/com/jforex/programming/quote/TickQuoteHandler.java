@@ -1,5 +1,7 @@
 package com.jforex.programming.quote;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Set;
 
 import com.dukascopy.api.ITick;
@@ -21,22 +23,27 @@ public class TickQuoteHandler implements TickQuoteProvider {
 
     @Override
     public ITick tick(final Instrument instrument) {
-        return tickQuoteRepository.get(instrument).tick();
+        return tickQuoteRepository
+                .get(checkNotNull(instrument))
+                .tick();
     }
 
     @Override
     public double ask(final Instrument instrument) {
-        return tick(instrument).getAsk();
+        return tick(checkNotNull(instrument)).getAsk();
     }
 
     @Override
     public double bid(final Instrument instrument) {
-        return tick(instrument).getBid();
+        return tick(checkNotNull(instrument)).getBid();
     }
 
     @Override
     public double forOfferSide(final Instrument instrument,
                                final OfferSide offerSide) {
+        checkNotNull(instrument);
+        checkNotNull(offerSide);
+
         return offerSide == OfferSide.BID
                 ? bid(instrument)
                 : ask(instrument);
@@ -49,6 +56,8 @@ public class TickQuoteHandler implements TickQuoteProvider {
 
     @Override
     public Observable<TickQuote> observableForInstruments(final Set<Instrument> instruments) {
+        checkNotNull(instruments);
+
         return tickQuoteObservable
                 .filter(tickQuote -> instruments.contains(tickQuote.instrument()));
     }

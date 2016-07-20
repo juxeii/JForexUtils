@@ -1,11 +1,12 @@
 package com.jforex.programming.quote;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.jforex.programming.misc.JForexUtil;
-
 import com.dukascopy.api.IBar;
+import com.jforex.programming.misc.JForexUtil;
 
 import rx.Observable;
 
@@ -25,12 +26,15 @@ public class BarQuoteHandler implements BarQuoteProvider {
 
     @Override
     public IBar bar(final BarQuoteParams barQuoteParams) {
-        return barQuoteRepository.get(barQuoteParams).bar();
+        return barQuoteRepository
+                .get(checkNotNull(barQuoteParams))
+                .bar();
     }
 
     @Override
-    public Observable<BarQuote> observableForFilters(final List<BarQuoteParams> barQuoteParams) {
-        final List<Observable<BarQuote>> paramsObservables = barQuoteParams
+    public Observable<BarQuote>
+           observableForFilters(final List<BarQuoteParams> barQuoteParamsList) {
+        final List<Observable<BarQuote>> paramsObservables = checkNotNull(barQuoteParamsList)
                 .stream()
                 .map(params -> {
                     if (params.period().name() == null)

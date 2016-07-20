@@ -1,5 +1,7 @@
 package com.jforex.programming.position;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Map;
 
 import org.aeonbits.owner.ConfigFactory;
@@ -52,9 +54,9 @@ public final class PositionSwitcher {
     public PositionSwitcher(final Instrument instrument,
                             final OrderUtil orderUtil,
                             final OrderParamsSupplier orderParamsSupplier) {
-        this.instrument = instrument;
-        this.orderUtil = orderUtil;
-        this.orderParamsSupplier = orderParamsSupplier;
+        this.instrument = checkNotNull(instrument);
+        this.orderUtil = checkNotNull(orderUtil);
+        this.orderParamsSupplier = checkNotNull(orderParamsSupplier);
 
         positionOrders = orderUtil.positionOrders(instrument);
         configureFSM();

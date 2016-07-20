@@ -1,5 +1,7 @@
 package com.jforex.programming.quote;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
@@ -37,7 +39,7 @@ public class BarQuoteParams {
     }
 
     public static AndPeriod forInstrument(final Instrument instrument) {
-        return new Builder(instrument);
+        return new Builder(checkNotNull(instrument));
     }
 
     private static class Builder implements
@@ -54,13 +56,13 @@ public class BarQuoteParams {
 
         @Override
         public AndOfferSide period(final Period period) {
-            this.period = period;
+            this.period = checkNotNull(period);
             return this;
         }
 
         @Override
         public BarQuoteParams offerSide(final OfferSide offerSide) {
-            this.offerSide = offerSide;
+            this.offerSide = checkNotNull(offerSide);
             return new BarQuoteParams(this);
         }
     }

@@ -1,10 +1,12 @@
 package com.jforex.programming.mm;
 
-import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.math.MathUtil;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.math.MathUtil;
 
 public final class RiskPercentMM {
 
@@ -25,14 +27,20 @@ public final class RiskPercentMM {
                                       final OfferSide offerSide,
                                       final double riskPercent,
                                       final double pipsToSL) {
-        return amountForBetSize(instrument, offerSide, percentOfEquity(riskPercent), pipsToSL);
+        return amountForBetSize(checkNotNull(instrument),
+                                checkNotNull(offerSide),
+                                percentOfEquity(riskPercent),
+                                pipsToSL);
     }
 
     public final double amountForFixMargin(final Instrument instrument,
                                            final OfferSide offerSide,
                                            final double fixMargin,
                                            final double pipsToSL) {
-        return amountForBetSize(instrument, offerSide, fixMargin, pipsToSL);
+        return amountForBetSize(checkNotNull(instrument),
+                                checkNotNull(offerSide),
+                                fixMargin,
+                                pipsToSL);
     }
 
     private final double amountForBetSize(final Instrument instrument,
@@ -40,11 +48,12 @@ public final class RiskPercentMM {
                                           final double betSize,
                                           final double pipsToSL) {
         final double pipValueAmountInAccountCurrency = betSize / pipsToSL;
-        final double pipValueAmountInQuoteCurrency = calculationUtil
-                .convertAmount(pipValueAmountInAccountCurrency)
-                .fromCurrency(account.getAccountCurrency())
-                .toCurrency(instrument.getSecondaryJFCurrency())
-                .forOfferSide(offerSide);
+        final double pipValueAmountInQuoteCurrency =
+                calculationUtil
+                        .convertAmount(pipValueAmountInAccountCurrency)
+                        .fromCurrency(account.getAccountCurrency())
+                        .toCurrency(instrument.getSecondaryJFCurrency())
+                        .forOfferSide(offerSide);
 
         final double scaledAmount = pipValueAmountInQuoteCurrency / instrument.getPipValue();
         return CalculationUtil.scaleToPlatformAmount(scaledAmount);
