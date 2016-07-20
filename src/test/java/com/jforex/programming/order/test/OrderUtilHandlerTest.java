@@ -72,6 +72,33 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         orderEventSubject.onNext(new OrderEvent(order, orderEventType));
     }
 
+    @Test
+    public void rejectEventIsTreatedAsError() {
+        final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
+        final OrderEvent rejectEvent = new OrderEvent(IOrderForTest.buyOrderEURUSD(),
+                                                      OrderEventType.CHANGE_AMOUNT_REJECTED);
+
+        orderUtilHandler
+                .rejectAsErrorObservable(rejectEvent)
+                .subscribe(subscriber);
+
+        subscriber.assertError(OrderCallRejectException.class);
+    }
+
+    @Test
+    public void nonRejectEventIsTreatedAsNonError() {
+        final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
+        final OrderEvent nonRejectEvent = new OrderEvent(IOrderForTest.buyOrderEURUSD(),
+                                                         OrderEventType.CHANGED_AMOUNT);
+
+        orderUtilHandler
+                .rejectAsErrorObservable(nonRejectEvent)
+                .subscribe(subscriber);
+
+        subscriber.assertNoErrors();
+        subscriber.assertCompleted();
+    }
+
     public class CloseCallSetup {
 
         private final Runnable closeCall =

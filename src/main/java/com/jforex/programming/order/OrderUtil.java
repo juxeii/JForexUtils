@@ -99,14 +99,17 @@ public class OrderUtil {
         if (toMergeOrders.size() < 2)
             return Observable.empty();
 
+        logger.debug("Starting position merge for " + instrument
+                + " with label " + mergeOrderLabel);
         final RestoreSLTPData restoreSLTPData =
                 new RestoreSLTPData(restoreSLTPPolicy.restoreSL(toMergeOrders),
                                     restoreSLTPPolicy.restoreTP(toMergeOrders));
+        final MergeCommand command = new MergeCommand(mergeOrderLabel,
+                                                      toMergeOrders,
+                                                      engine);
         final Observable<OrderEvent> mergeAndRestoreObservable =
                 orderUtilHandler
-                        .callWithRetryObservable(new MergeCommand(mergeOrderLabel,
-                                                                  toMergeOrders,
-                                                                  engine))
+                        .callWithRetryObservable(command)
                         .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
                                                                          OrderEventTypeData.mergeData))
                         .flatMap(mergeEvent -> positionMultiTask
@@ -117,11 +120,7 @@ public class OrderUtil {
 
         return Observable
                 .just(toMergeOrders)
-                .doOnSubscribe(() -> {
-                    logger.debug("Starting position merge for "
-                            + instrument + " with label " + mergeOrderLabel);
-                    position(instrument).markAllOrders(OrderProcessState.ACTIVE);
-                })
+                .doOnSubscribe(() -> position(instrument).markAllOrders(OrderProcessState.ACTIVE))
                 .flatMap(positionMultiTask::removeTPSLObservable)
                 .concatWith(mergeAndRestoreObservable)
                 .doOnCompleted(() -> logger.debug("Position merge for " + instrument
@@ -129,13 +128,12 @@ public class OrderUtil {
     }
 
     public Completable closePosition(final Instrument instrument) {
+        logger.debug("Starting position close for " + instrument);
         final Position position = position(instrument);
+
         return Observable
                 .from(position.filledOrOpened())
-                .doOnSubscribe(() -> {
-                    logger.debug("Starting position close for " + instrument);
-                    position.markAllOrders(OrderProcessState.ACTIVE);
-                })
+                .doOnSubscribe(() -> position.markAllOrders(OrderProcessState.ACTIVE))
                 .flatMap(positionSingleTask::closeObservable)
                 .doOnTerminate(() -> position(instrument)
                         .markAllOrders(OrderProcessState.IDLE))

@@ -18,7 +18,6 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
@@ -46,6 +45,8 @@ import com.jforex.programming.test.fakes.IOrderForTest;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
 import rx.observers.TestSubscriber;
+import rx.subjects.PublishSubject;
+import rx.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {
@@ -117,24 +118,30 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void retryObservableWorksCorrect() throws JFException {
-        final long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
+        final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
+
         final OrderEvent closeRejectEvent =
                 new OrderEvent(orderForTest, OrderEventType.CLOSE_REJECTED);
         final OrderEvent closeOKEvent =
                 new OrderEvent(orderForTest, OrderEventType.CLOSE_OK);
 
         when(orderUtilHandlerMock.callObservable(any(CloseCommand.class)))
-                .thenReturn(Observable.just(closeRejectEvent, closeOKEvent));
+                .thenReturn(orderEventSubject);
 
-        when(orderUtilHandlerMock.rejectAsErrorObservable(closeRejectEvent))
-                .thenReturn(Observable.error(new OrderCallRejectException("", closeRejectEvent)));
-        when(orderUtilHandlerMock.rejectAsErrorObservable(closeOKEvent))
-                .thenReturn(Observable.just(closeOKEvent));
+        when(orderUtilHandlerMock.rejectAsErrorObservable(any()))
+                .thenReturn(orderEventSubject);
+        System.out.println("hallo");
 
         orderUtil
                 .close(orderForTest)
+                .doOnNext(item -> System.out.println("before " + item.type()))
                 .flatMap(orderUtil::retryObservable)
+                .doOnNext(item -> System.out.println("hallo " + item.type()))
                 .subscribe(orderEventSubscriber);
+
+        orderEventSubject.onNext(closeRejectEvent);
+        orderEventSubject.onNext(closeOKEvent);
+        orderEventSubject.onCompleted();
 
         orderEventSubscriber.assertNoErrors();
         orderEventSubscriber.assertValueCount(1);
