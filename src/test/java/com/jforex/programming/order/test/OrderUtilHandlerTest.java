@@ -197,13 +197,14 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
         private final int maxRetriesCount = platformSettings.maxRetriesOnOrderFail();
         private final int retryExceedCount = maxRetriesCount + 1;
+        private final long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
         private final Runnable closeWithRetryCall =
-                () -> orderUtilHandler.callWithRetriesObservable(command).subscribe(subscriber);
+                () -> orderUtilHandler.callWithRetryObservable(command).subscribe(subscriber);
 
         private void sendFailAndAdvanceTime(final int times) {
             for (int i = 0; i < times; ++i) {
                 sendOrderEvent(orderToClose, OrderEventType.CLOSE_REJECTED);
-                rxTestUtil.advanceTimeBy(1500L, TimeUnit.MILLISECONDS);
+                rxTestUtil.advanceTimeBy(delayOnOrderFailRetry, TimeUnit.MILLISECONDS);
             }
         }
 

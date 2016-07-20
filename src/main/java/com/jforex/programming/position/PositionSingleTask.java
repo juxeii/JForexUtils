@@ -27,7 +27,7 @@ public class PositionSingleTask {
                 .just(orderToChangeSL)
                 .filter(order -> !isSLSetTo(newSL).test(order))
                 .flatMap(order -> orderUtilHandler
-                        .callWithRetriesObservable(new SetSLCommand(orderToChangeSL, newSL)));
+                        .callWithRetryObservable(new SetSLCommand(orderToChangeSL, newSL)));
     }
 
     public Observable<OrderEvent> setTPObservable(final IOrder orderToChangeTP,
@@ -36,7 +36,7 @@ public class PositionSingleTask {
                 .just(orderToChangeTP)
                 .filter(order -> !isTPSetTo(newTP).test(order))
                 .flatMap(order -> orderUtilHandler
-                        .callWithRetriesObservable(new SetTPCommand(orderToChangeTP, newTP)));
+                        .callWithRetryObservable(new SetTPCommand(orderToChangeTP, newTP)));
     }
 
     public Observable<OrderEvent> closeObservable(final IOrder orderToClose) {
@@ -44,6 +44,6 @@ public class PositionSingleTask {
                 .just(orderToClose)
                 .filter(order -> !isClosed.test(order))
                 .flatMap(order -> orderUtilHandler
-                        .callWithRetriesObservable(new CloseCommand(orderToClose)));
+                        .callWithRetryObservable(new CloseCommand(orderToClose)));
     }
 }

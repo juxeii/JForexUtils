@@ -56,12 +56,12 @@ public class PositionSingleTaskTest extends CommonUtilForTest {
     }
 
     private void setOrderUtilMockResult(final Observable<OrderEvent> observable) {
-        when(orderUtilHandlerMock.callWithRetriesObservable(any()))
+        when(orderUtilHandlerMock.callWithRetryObservable(any()))
                 .thenReturn(observable);
     }
 
     private void verfiyOrderUtilMockCall(final Class<? extends OrderCallCommand> clazz) {
-        verify(orderUtilHandlerMock).callWithRetriesObservable(any(clazz));
+        verify(orderUtilHandlerMock).callWithRetryObservable(any(clazz));
     }
 
     public class SetSLSetup {

@@ -38,9 +38,9 @@ public class OrderUtilHandler {
                 .doOnCompleted(command::logOnCompleted);
     }
 
-    public Observable<OrderEvent> callWithRetriesObservable(final OrderCallCommand command) {
+    public Observable<OrderEvent> callWithRetryObservable(final OrderCallCommand command) {
         return callRejectAsErrorObservable(command)
-                .retryWhen(StreamUtil::positionTaskRetry);
+                .retryWhen(StreamUtil::retryObservable);
     }
 
     private Observable<OrderEvent> callRejectAsErrorObservable(final OrderCallCommand command) {
@@ -48,7 +48,7 @@ public class OrderUtilHandler {
                 .flatMap(this::rejectAsErrorObservable);
     }
 
-    private Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
+    public Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
         return rejectEventTypes.contains(orderEvent.type())
                 ? Observable.error(new OrderCallRejectException("", orderEvent))
                 : Observable.just(orderEvent);

@@ -27,7 +27,7 @@ public final class StreamUtil {
     }
 
     public static final Observable<Long>
-           positionTaskRetry(final Observable<? extends Throwable> errors) {
+           retryObservable(final Observable<? extends Throwable> errors) {
         return errors
                 .flatMap(StreamUtil::filterErrorType)
                 .zipWith(retryCounterObservable(maxRetriesOnOrderFail), Pair::of)

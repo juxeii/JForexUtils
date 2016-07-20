@@ -13,10 +13,12 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
+import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
@@ -102,12 +104,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         verify(orderUtilHandlerMock).callObservable(any(clazz));
     }
 
-    private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
-        when(orderUtilHandlerMock.callObservable(any(SubmitCommand.class)))
-                .thenReturn(observable);
-    }
-
-    private void expectOnOrderUtilHadler(final Class<? extends OrderCallCommand> clazz) {
+    private void expectOnOrderUtilHandler(final Class<? extends OrderCallCommand> clazz) {
         when(orderUtilHandlerMock.callObservable(any(clazz)))
                 .thenReturn(testObservable);
     }
@@ -118,9 +115,39 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                    equalTo(positionMock));
     }
 
+    @Test
+    public void retryObservableWorksCorrect() throws JFException {
+        final long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
+        final OrderEvent closeRejectEvent =
+                new OrderEvent(orderForTest, OrderEventType.CLOSE_REJECTED);
+        final OrderEvent closeOKEvent =
+                new OrderEvent(orderForTest, OrderEventType.CLOSE_OK);
+
+        when(orderUtilHandlerMock.callObservable(any(CloseCommand.class)))
+                .thenReturn(Observable.just(closeRejectEvent, closeOKEvent));
+
+        when(orderUtilHandlerMock.rejectAsErrorObservable(closeRejectEvent))
+                .thenReturn(Observable.error(new OrderCallRejectException("", closeRejectEvent)));
+        when(orderUtilHandlerMock.rejectAsErrorObservable(closeOKEvent))
+                .thenReturn(Observable.just(closeOKEvent));
+
+        orderUtil
+                .close(orderForTest)
+                .flatMap(orderUtil::retryObservable)
+                .subscribe(orderEventSubscriber);
+
+        orderEventSubscriber.assertNoErrors();
+        orderEventSubscriber.assertValueCount(1);
+    }
+
     public class SubmitSetup {
 
         private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
+
+        private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
+            when(orderUtilHandlerMock.callObservable(any(SubmitCommand.class)))
+                    .thenReturn(observable);
+        }
 
         @Test
         public void noOrderIsAddedWhenNoDoneEvent() {
@@ -172,6 +199,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     public class MergeSetup {
+
+        private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
+            when(orderUtilHandlerMock.callObservable(any(MergeCommand.class)))
+                    .thenReturn(observable);
+        }
 
         @Test
         public void noOrderIsAddedWhenNoDoneEvent() {
@@ -238,7 +270,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                         .subscribe(orderEventSubscriber);
 
         private void setOrderUtilHandlerRetryMockResult(final Observable<OrderEvent> observable) {
-            when(orderUtilHandlerMock.callWithRetriesObservable(any(MergeCommand.class)))
+            when(orderUtilHandlerMock.callWithRetryObservable(any(MergeCommand.class)))
                     .thenReturn(observable);
         }
 
@@ -519,7 +551,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void closeCallsOnOrderUtilHandler() {
-        expectOnOrderUtilHadler(CloseCommand.class);
+        expectOnOrderUtilHandler(CloseCommand.class);
 
         final Observable<OrderEvent> observable =
                 orderUtil.close(orderForTest);
@@ -530,7 +562,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setLabelCallsOnOrderUtilHandler() {
         final String newLabel = "NewLabel";
-        expectOnOrderUtilHadler(SetLabelCommand.class);
+        expectOnOrderUtilHandler(SetLabelCommand.class);
 
         final Observable<OrderEvent> observable =
                 orderUtil.setLabel(orderForTest, newLabel);
@@ -541,7 +573,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setGTTCallsOnOrderUtilHandler() {
         final long newGTT = 123456L;
-        expectOnOrderUtilHadler(SetGTTCommand.class);
+        expectOnOrderUtilHandler(SetGTTCommand.class);
 
         final Observable<OrderEvent> observable =
                 orderUtil.setGoodTillTime(orderForTest, newGTT);
@@ -552,7 +584,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setOpenPriceCallsOnOrderUtilHandler() {
         final double newOpenPrice = 1.12122;
-        expectOnOrderUtilHadler(SetOpenPriceCommand.class);
+        expectOnOrderUtilHandler(SetOpenPriceCommand.class);
 
         final Observable<OrderEvent> observable =
                 orderUtil.setOpenPrice(orderForTest, newOpenPrice);
@@ -563,7 +595,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setRequestedAmountCallsOnOrderUtilHandler() {
         final double newRequestedAmount = 0.12;
-        expectOnOrderUtilHadler(SetAmountCommand.class);
+        expectOnOrderUtilHandler(SetAmountCommand.class);
 
         final Observable<OrderEvent> observable =
                 orderUtil.setRequestedAmount(orderForTest, newRequestedAmount);
@@ -574,7 +606,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setStopLossPriceCallsOnOrderUtilHandler() {
         final double newSL = 1.10987;
-        expectOnOrderUtilHadler(SetSLCommand.class);
+        expectOnOrderUtilHandler(SetSLCommand.class);
 
         final Observable<OrderEvent> observable =
                 orderUtil.setStopLossPrice(orderForTest, newSL);
@@ -585,7 +617,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setTakeProfitPriceCallsOnOrderUtilHandler() {
         final double newTP = 1.11001;
-        expectOnOrderUtilHadler(SetTPCommand.class);
+        expectOnOrderUtilHandler(SetTPCommand.class);
 
         final Observable<OrderEvent> observable =
                 orderUtil.setTakeProfitPrice(orderForTest, newTP);

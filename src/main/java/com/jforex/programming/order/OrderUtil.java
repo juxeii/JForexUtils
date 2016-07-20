@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
@@ -62,6 +63,12 @@ public class OrderUtil {
         return (Position) positionOrders(instrument);
     }
 
+    public Observable<OrderEvent> retryObservable(final OrderEvent orderEvent) {
+        return orderUtilHandler
+                .rejectAsErrorObservable(orderEvent)
+                .retryWhen(StreamUtil::retryObservable);
+    }
+
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
         return orderUtilHandler
                 .callObservable(new SubmitCommand(orderParams, engine))
@@ -97,9 +104,9 @@ public class OrderUtil {
                                     restoreSLTPPolicy.restoreTP(toMergeOrders));
         final Observable<OrderEvent> mergeAndRestoreObservable =
                 orderUtilHandler
-                        .callWithRetriesObservable(new MergeCommand(mergeOrderLabel,
-                                                                    toMergeOrders,
-                                                                    engine))
+                        .callWithRetryObservable(new MergeCommand(mergeOrderLabel,
+                                                                  toMergeOrders,
+                                                                  engine))
                         .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
                                                                          OrderEventTypeData.mergeData))
                         .flatMap(mergeEvent -> positionMultiTask
