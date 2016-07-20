@@ -18,7 +18,6 @@ import com.dukascopy.api.OfferSide;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
-import com.jforex.programming.test.common.OrderParamsForTest;
 
 public class IOrderForTest implements IOrder {
 
@@ -359,12 +358,18 @@ public class IOrderForTest implements IOrder {
                                                  .build();
     }
 
+    @Override
+    @Deprecated
+    public boolean compare(final IOrder order) {
+        return false;
+    }
+
     public static IOrderForTest buyOrderEURUSD() {
-        return fromOrderParams(OrderParamsForTest.paramsBuyEURUSD());
+        return fromOrderParams(paramsBuyEURUSD());
     }
 
     public static IOrderForTest sellOrderEURUSD() {
-        return fromOrderParams(OrderParamsForTest.paramsSellEURUSD());
+        return fromOrderParams(paramsSellEURUSD());
     }
 
     public static IOrderForTest orderAUDUSD() {
@@ -375,9 +380,31 @@ public class IOrderForTest implements IOrder {
                                                  .build();
     }
 
-    @Override
-    @Deprecated
-    public boolean compare(final IOrder order) {
-        return false;
+    public static OrderParams paramsBuyEURUSD() {
+        return OrderParams.forInstrument(Instrument.EURUSD)
+                .withOrderCommand(OrderCommand.BUY)
+                .withAmount(0.1)
+                .withLabel("TestBuyLabelEURUSD")
+                .price(userSettings.defaultOpenPrice())
+                .slippage(userSettings.defaultSlippage())
+                .stopLossPrice(1.32456)
+                .takeProfitPrice(1.32556)
+                .goodTillTime(userSettings.defaultGTT())
+                .comment("Test comment for buy EURUSD")
+                .build();
+    }
+
+    public static OrderParams paramsSellEURUSD() {
+        return OrderParams.forInstrument(Instrument.EURUSD)
+                .withOrderCommand(OrderCommand.SELL)
+                .withAmount(0.12)
+                .withLabel("TestSellLabelEURUSD")
+                .price(userSettings.defaultOpenPrice())
+                .slippage(userSettings.defaultSlippage())
+                .stopLossPrice(1.32456)
+                .takeProfitPrice(1.32556)
+                .goodTillTime(userSettings.defaultGTT())
+                .comment("Test comment for sell EURUSD")
+                .build();
     }
 }

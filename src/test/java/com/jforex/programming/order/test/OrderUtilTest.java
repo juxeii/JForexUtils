@@ -39,7 +39,6 @@ import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -149,7 +148,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     public class SubmitSetup {
 
-        private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
+        private final OrderParams orderParams = IOrderForTest.paramsBuyEURUSD();
 
         private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
             when(orderUtilHandlerMock.callObservable(any(SubmitCommand.class)))

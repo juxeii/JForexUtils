@@ -14,13 +14,12 @@ import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.CommonUtilForTest;
-import com.jforex.programming.test.common.OrderParamsForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
 public class SubmitCommandTest extends CommonUtilForTest {
 
     private OrderCallCommand command;
-    private final OrderParams orderParams = OrderParamsForTest.paramsBuyEURUSD();
+    private final OrderParams orderParams = IOrderForTest.paramsBuyEURUSD();
 
     @Before
     public void setUp() {
