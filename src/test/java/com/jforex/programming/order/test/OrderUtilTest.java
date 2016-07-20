@@ -29,6 +29,7 @@ import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.position.OrderProcessState;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionMultiTask;
@@ -229,11 +230,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 new OrderEvent(orderForTest, OrderEventType.MERGE_OK);
         private final OrderEvent rejectEvent =
                 new OrderEvent(orderForTest, OrderEventType.MERGE_REJECTED);
-        private final Runnable mergePositionCall = () -> orderUtil
-                .mergePositionOrders(mergeOrderLabel,
-                                     instrumentEURUSD,
-                                     restoreSLTPPolicyMock)
-                .subscribe(orderEventSubscriber);
+        private final Runnable mergePositionCall =
+                () -> orderUtil
+                        .mergePositionOrders(mergeOrderLabel,
+                                             instrumentEURUSD,
+                                             restoreSLTPPolicyMock)
+                        .subscribe(orderEventSubscriber);
 
         private void setOrderUtilHandlerRetryMockResult(final Observable<OrderEvent> observable) {
             when(orderUtilHandlerMock.callWithRetriesObservable(any(MergeCommand.class)))
@@ -251,34 +253,64 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                                            restoreSLTPCaptor.capture())).thenReturn(observable);
         }
 
-        @Before
-        public void setUp() {
-            final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSL, restoreTP);
+        public class NotEnoughOrdersForMerge {
 
-            when(restoreSLTPPolicyMock.restoreSL(toMergeOrders))
-                    .thenReturn(restoreSLTPData.sl());
-            when(restoreSLTPPolicyMock.restoreTP(toMergeOrders))
-                    .thenReturn(restoreSLTPData.tp());
+            @Before
+            public void setUp() {
+                when(positionMock.filled()).thenReturn(Sets.newHashSet());
 
-            when(positionMock.filled()).thenReturn(toMergeOrders);
-        }
+                orderUtil
+                        .mergePositionOrders(mergeOrderLabel,
+                                             instrumentEURUSD,
+                                             restoreSLTPPolicyMock)
+                        .subscribe(orderEventSubscriber);
+            }
 
-        @Test
-        public void allPositionOrdersAreMarkedActiveWhenEnoughOrdersToMerge() {
-            setRemoveTPSLMockResult(busyObservable());
-            setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
+            @Test
+            public void subscriberCompletesEmpty() {
+                orderEventSubscriber.assertNoErrors();
+                orderEventSubscriber.assertValueCount(0);
+                orderEventSubscriber.assertCompleted();
+            }
 
-            mergePositionCall.run();
+            @Test
+            public void noCallToOrderUtilHandler() {
+                verifyZeroInteractions(orderUtilHandlerMock);
+            }
 
-            verify(positionMock).markAllOrdersActive();
+            @Test
+            public void noCallToPositionMultiTask() {
+                verifyZeroInteractions(positionMultiTaskMock);
+            }
+
+            @Test
+            public void positionOrdersWereNotMarkedAsActive() {
+                verify(positionMock, never()).markAllOrders(OrderProcessState.ACTIVE);
+            }
         }
 
         public class RemoveTPSLOKCall {
 
             @Before
             public void setUp() {
+                final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSL, restoreTP);
+
+                when(restoreSLTPPolicyMock.restoreSL(toMergeOrders))
+                        .thenReturn(restoreSLTPData.sl());
+                when(restoreSLTPPolicyMock.restoreTP(toMergeOrders))
+                        .thenReturn(restoreSLTPData.tp());
+
+                when(positionMock.filled()).thenReturn(toMergeOrders);
+
                 setRemoveTPSLMockResult(doneObservable());
                 setOrderUtilHandlerRetryMockResult(busyObservable());
+            }
+
+            @Test
+            public void allPositionOrdersAreMarkedActive() {
+                mergePositionCall.run();
+
+                verify(positionMock).markAllOrders(OrderProcessState.ACTIVE);
             }
 
             @Test
@@ -297,20 +329,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             public class MergeOKCall {
 
-                @Before
-                public void setUp() {
-                }
-
-                @Test
-                public void testSubscriberIsNotCompletedYet() {
-                    setRestoreMockResult(busyObservable());
-                    setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
-
-                    mergePositionCall.run();
-
-                    orderEventSubscriber.assertNotCompleted();
-                }
-
                 @Test
                 public void testOrderHasBeenAddedToPosition() {
                     setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
@@ -318,29 +336,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                     mergePositionCall.run();
 
                     verify(positionMock).addOrder(orderForTest);
-                }
-
-                public class RestoreSLTPWithJFException {
-
-                    @Before
-                    public void setUp() {
-                        setRestoreMockResult(exceptionObservable());
-                        setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
-
-                        mergePositionCall.run();
-                    }
-
-                    @Test
-                    public void testRestoreSLTPOnMultiUtilHasBeenCalledWithoutRetry() {
-                        verify(positionMultiTaskMock).restoreSLTPObservable(eq(orderForTest),
-                                                                            restoreSLTPCaptor
-                                                                                    .capture());
-                    }
-
-                    @Test
-                    public void testSubscriberGetsJFExceptionNotification() {
-                        assertJFException(orderEventSubscriber);
-                    }
                 }
 
                 public class RestoreSLTPWithRejection {
@@ -363,6 +358,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                     @Test
                     public void testSubscriberGetsRejectExceptionNotification() {
                         assertRejectException(orderEventSubscriber);
+                    }
+
+                    @Test
+                    public void positionOrdersAreMarkedAsIDLE() {
+                        verify(positionMock).markAllOrders(OrderProcessState.IDLE);
                     }
                 }
 
@@ -387,6 +387,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                     @Test
                     public void testSubscriberHasBeenNotifiedWithOrderEvent() {
                         assertOrderEventNotification(restoreTPEvent);
+                    }
+
+                    @Test
+                    public void positionOrdersAreMarkedAsIDLE() {
+                        verify(positionMock).markAllOrders(OrderProcessState.IDLE);
                     }
                 }
             }
@@ -424,7 +429,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             closeCompletableCall.run();
 
-            verify(positionMock).markAllOrdersActive();
+            verify(positionMock).markAllOrders(OrderProcessState.ACTIVE);
         }
 
         public class NoOrdersToClose {
@@ -475,6 +480,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 public void testSubscriberCompleted() {
                     orderEventSubscriber.assertCompleted();
                 }
+
+                @Test
+                public void positionOrdersAreMarkedAsIDLE() {
+                    verify(positionMock).markAllOrders(OrderProcessState.IDLE);
+                }
             }
         }
 
@@ -498,6 +508,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Test
             public void testSubscriberGetsJFExceptionNotification() {
                 assertJFException(orderEventSubscriber);
+            }
+
+            @Test
+            public void positionOrdersAreMarkedAsIDLE() {
+                verify(positionMock).markAllOrders(OrderProcessState.IDLE);
             }
         }
     }

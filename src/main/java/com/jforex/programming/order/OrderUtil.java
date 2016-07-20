@@ -20,6 +20,7 @@ import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
+import com.jforex.programming.position.OrderProcessState;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionMultiTask;
@@ -103,14 +104,16 @@ public class OrderUtil {
                                                                          OrderEventTypeData.mergeData))
                         .flatMap(mergeEvent -> positionMultiTask
                                 .restoreSLTPObservable(mergeEvent.order(),
-                                                       restoreSLTPData));
+                                                       restoreSLTPData))
+                        .doOnTerminate(() -> position(instrument)
+                                .markAllOrders(OrderProcessState.IDLE));
 
         return Observable
                 .just(toMergeOrders)
                 .doOnSubscribe(() -> {
                     logger.debug("Starting position merge for "
                             + instrument + " with label " + mergeOrderLabel);
-                    position(instrument).markAllOrdersActive();
+                    position(instrument).markAllOrders(OrderProcessState.ACTIVE);
                 })
                 .flatMap(positionMultiTask::removeTPSLObservable)
                 .concatWith(mergeAndRestoreObservable)
@@ -124,9 +127,11 @@ public class OrderUtil {
                 .from(position.filledOrOpened())
                 .doOnSubscribe(() -> {
                     logger.debug("Starting position close for " + instrument);
-                    position.markAllOrdersActive();
+                    position.markAllOrders(OrderProcessState.ACTIVE);
                 })
                 .flatMap(positionSingleTask::closeObservable)
+                .doOnTerminate(() -> position(instrument)
+                        .markAllOrders(OrderProcessState.IDLE))
                 .doOnCompleted(() -> logger.debug("Closing position "
                         + instrument + " was successful."))
                 .doOnError(e -> logger.error("Closing position " + instrument

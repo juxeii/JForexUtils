@@ -18,6 +18,7 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.position.OrderProcessState;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -220,7 +221,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Before
                     public void setUp() {
-                        position.markAllOrdersActive();
+                        position.markAllOrders(OrderProcessState.ACTIVE);
                     }
 
                     @Test
@@ -286,6 +287,82 @@ public class PositionTest extends InstrumentUtilForTest {
                         sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_SL);
 
                         assertFalse(position.contains(sellOrder));
+                    }
+
+                    public class MarkingOrdersIDLE {
+
+                        @Before
+                        public void setUp() {
+                            position.markAllOrders(OrderProcessState.IDLE);
+                        }
+
+                        @Test
+                        public void testPositionHasBuyAndSellOrder() {
+                            assertTrue(position.contains(buyOrder));
+                            assertTrue(position.contains(sellOrder));
+                        }
+
+                        @Test
+                        public void testPositionOrderSizeIsTwo() {
+                            assertThat(position.size(), equalTo(2));
+                        }
+
+                        @Test
+                        public void testDirectionIsShortSinceSellAmountIsBigger() {
+                            assertThat(position.direction(), equalTo(OrderDirection.SHORT));
+                        }
+
+                        @Test
+                        public void testExposureIsSignedAmount() {
+                            final double buyAmount = OrderStaticUtil.signedAmount(buyOrder);
+                            final double sellAmount = OrderStaticUtil.signedAmount(sellOrder);
+                            assertThat(position.signedExposure(), equalTo(buyAmount + sellAmount));
+                        }
+
+                        @Test
+                        public void testOrdersHasBuyAndSellOrder() {
+                            final Set<IOrder> orders = position.all();
+                            assertTrue(orders.contains(buyOrder));
+                            assertTrue(orders.contains(sellOrder));
+                        }
+
+                        @Test
+                        public void testOrdersAreIDLE() {
+                            final Set<IOrder> notProcessingOrders =
+                                    position.notProcessingOrders(order -> true);
+                            assertTrue(notProcessingOrders.contains(buyOrder));
+                            assertTrue(notProcessingOrders.contains(sellOrder));
+                        }
+
+                        @Test
+                        public void filledOrdersContainsBuyAndSellOrderSinceAllAreIDLE() {
+                            final Set<IOrder> filledOrders = position.filled();
+                            assertTrue(filledOrders.contains(buyOrder));
+                            assertTrue(filledOrders.contains(sellOrder));
+                        }
+
+                        @Test
+                        public void filledOrOpenedOrdersContainsBuyAndSellOrderSinceAllAreIDLE() {
+                            final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
+                            assertTrue(filledOrOpenedOrders.contains(buyOrder));
+                            assertTrue(filledOrOpenedOrders.contains(sellOrder));
+                        }
+
+                        @Test
+                        public void testCloseOnTPRemovesOrderAlsoWhenMarkedActive() {
+                            sellOrder.setState(IOrder.State.CLOSED);
+                            sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_TP);
+
+                            assertFalse(position.contains(sellOrder));
+                        }
+
+                        @Test
+                        public void testCloseOnSLRemovesOrderAlsoWhenMarkedActive() {
+                            sellOrder.setState(IOrder.State.CLOSED);
+                            sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_SL);
+
+                            assertFalse(position.contains(sellOrder));
+                        }
                     }
                 }
 

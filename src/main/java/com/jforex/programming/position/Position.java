@@ -52,8 +52,8 @@ public class Position implements PositionOrders {
                 + order.getState() + " repo size " + orderRepository.size());
     }
 
-    public synchronized void markAllOrdersActive() {
-        orderRepository.replaceAll((k, v) -> OrderProcessState.ACTIVE);
+    public synchronized void markAllOrders(final OrderProcessState orderProcessState) {
+        orderRepository.replaceAll((k, v) -> orderProcessState);
     }
 
     private synchronized void removeOrder(final IOrder order) {
