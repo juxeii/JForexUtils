@@ -121,13 +121,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         when(orderUtilHandlerMock.rejectAsErrorObservable(any()))
                 .thenReturn(orderEventSubject);
-        System.out.println("hallo");
 
         orderUtil
                 .close(orderForTest)
-                .doOnNext(item -> System.out.println("before " + item.type()))
                 .flatMap(orderUtil::retryObservable)
-                .doOnNext(item -> System.out.println("hallo " + item.type()))
                 .subscribe(orderEventSubscriber);
 
         orderEventSubject.onNext(closeRejectEvent);
@@ -265,6 +262,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         private void setOrderUtilHandlerRetryMockResult(final Observable<OrderEvent> observable) {
             when(orderUtilHandlerMock.callWithRetryObservable(any(MergeCommand.class)))
                     .thenReturn(observable);
+
+            when(orderUtilHandlerMock.callObservable(any(MergeCommand.class)))
+                    .thenReturn(observable);
         }
 
         private void setRemoveTPSLMockResult(final Observable<OrderEvent> observable) {
@@ -342,6 +342,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 @Before
                 public void setUp() {
+                    when(orderUtilHandlerMock.rejectAsErrorObservable(any()))
+                            .thenReturn(doneEventObservable(mergeEvent));
+
                     setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
 
                     mergePositionCall.run();

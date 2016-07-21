@@ -116,15 +116,8 @@ public class OrderUtil {
                 .doOnNext(orders -> position(instrument).markAllOrders(OrderProcessState.ACTIVE))
                 .flatMap(positionRemoveTPSLTask::observable)
                 .toCompletable()
-                .andThen(Observable
-                        .just(toMergeOrders)
-                        .filter(orders -> orders.size() > 1)
-                        .flatMap(event -> orderUtilHandler
-                                .callWithRetryObservable(new MergeCommand(mergeOrderLabel,
-                                                                          toMergeOrders,
-                                                                          engine)))
-                        .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
-                                                                         OrderEventTypeData.mergeData)))
+                .andThen(mergeOrders(mergeOrderLabel, toMergeOrders)
+                        .flatMap(this::retryObservable))
                 .doOnCompleted(() -> logger.debug("Position merge for " + instrument
                         + "  with label " + mergeOrderLabel + " was successful."));
     }

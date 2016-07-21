@@ -18,9 +18,7 @@ public class MergeCommand extends OrderCallCommand {
         this.mergeOrderLabel = mergeOrderLabel;
         callable = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
         orderEventTypeData = OrderEventTypeData.mergeData;
-        System.out.println("Hallo1 " + toMergeOrders.size());
         instrument = toMergeOrders.iterator().next().getInstrument();
-        System.out.println("Hallo2");
     }
 
     @Override
