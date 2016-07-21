@@ -10,7 +10,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
@@ -20,7 +19,6 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.OrderProcessState;
 import com.jforex.programming.position.Position;
-import com.jforex.programming.position.RestoreSLTPPolicy;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
@@ -33,8 +31,6 @@ public class PositionTest extends InstrumentUtilForTest {
 
     private Position position;
 
-    @Mock
-    private RestoreSLTPPolicy restoreSLTPPolicyMock;
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
 
     @Before

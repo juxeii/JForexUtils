@@ -10,9 +10,8 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.position.PositionMultiTask;
+import com.jforex.programming.position.PositionRemoveTPSLTask;
 import com.jforex.programming.position.PositionSingleTask;
-import com.jforex.programming.position.RestoreSLTPData;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
@@ -21,102 +20,16 @@ import rx.Observable;
 import rx.observers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
-public class PositionMultiTaskTest extends CommonUtilForTest {
+public class PositionRemoveTPSLTaskTest extends CommonUtilForTest {
 
-    private PositionMultiTask positionMultiTask;
+    private PositionRemoveTPSLTask positionMultiTask;
 
     @Mock
     private PositionSingleTask positionSingleTaskMock;
-    private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
-    private final TestSubscriber<OrderEvent> taskSubscriber = new TestSubscriber<>();
 
     @Before
     public void setUp() {
-        positionMultiTask = new PositionMultiTask(positionSingleTaskMock);
-    }
-
-    public class RestoreSLTPSetup {
-
-        private final double restoreSL = 1.10234;
-        private final double restoreTP = 1.11234;
-        private final RestoreSLTPData restoreSLTPData = new RestoreSLTPData(restoreSL, restoreTP);
-        private final Runnable restoreSLTPCall =
-                () -> positionMultiTask
-                        .restoreSLTPObservable(orderUnderTest, restoreSLTPData)
-                        .subscribe(taskSubscriber);
-
-        private void setSLMockResult(final Observable<OrderEvent> observable) {
-            when(positionSingleTaskMock.setSLObservable(orderUnderTest, restoreSL))
-                    .thenReturn(observable);
-        }
-
-        private void setTPMockResult(final Observable<OrderEvent> observable) {
-            when(positionSingleTaskMock.setTPObservable(orderUnderTest, restoreTP))
-                    .thenReturn(observable);
-        }
-
-        @Before
-        public void setUp() {
-            orderUnderTest.setState(IOrder.State.FILLED);
-        }
-
-        @Test
-        public void testSubscriberNotYetCompleted() {
-            setSLMockResult(busyObservable());
-
-            restoreSLTPCall.run();
-
-            taskSubscriber.assertNotCompleted();
-        }
-
-        public class RestoreSLOK {
-
-            @Before
-            public void setUp() {
-                setSLMockResult(doneObservable());
-            }
-
-            public class RestoreTPOK {
-
-                @Before
-                public void setUp() {
-                    setTPMockResult(doneObservable());
-
-                    restoreSLTPCall.run();
-                }
-
-                @Test
-                public void testRestoreSLTPOnSingleTaskHasBeenCalled() {
-                    verify(positionSingleTaskMock).setSLObservable(orderUnderTest, restoreSL);
-                    verify(positionSingleTaskMock).setTPObservable(orderUnderTest, restoreTP);
-                }
-
-                @Test
-                public void testSubscriberCompleted() {
-                    taskSubscriber.assertCompleted();
-                }
-            }
-        }
-
-        public class RestoreSLWithJFException {
-
-            @Before
-            public void setUp() {
-                setSLMockResult(exceptionObservable());
-
-                restoreSLTPCall.run();
-            }
-
-            @Test
-            public void testSetSLOnOrderHasBeenCalledWithoutRetry() {
-                verify(positionSingleTaskMock).setSLObservable(orderUnderTest, restoreSL);
-            }
-
-            @Test
-            public void testSubscriberGetsJFExceptionNotification() {
-                assertJFException(taskSubscriber);
-            }
-        }
+        positionMultiTask = new PositionRemoveTPSLTask(positionSingleTaskMock);
     }
 
     public class RemoveTPSLCompletableSetup {
@@ -127,7 +40,8 @@ public class PositionMultiTaskTest extends CommonUtilForTest {
         private final Set<IOrder> filledOrders = Sets.newHashSet(buyOrder, sellOrder);
 
         private final Runnable removeTPSLCall =
-                () -> positionMultiTask.removeTPSLObservable(filledOrders)
+                () -> positionMultiTask
+                        .observable(filledOrders)
                         .subscribe(taskSubscriber);
 
         private void setSLTaskMockResult(final IOrder order,

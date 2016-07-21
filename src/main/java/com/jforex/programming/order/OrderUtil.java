@@ -26,11 +26,9 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.position.OrderProcessState;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.PositionMultiTask;
 import com.jforex.programming.position.PositionOrders;
+import com.jforex.programming.position.PositionRemoveTPSLTask;
 import com.jforex.programming.position.PositionSingleTask;
-import com.jforex.programming.position.RestoreSLTPData;
-import com.jforex.programming.position.RestoreSLTPPolicy;
 
 import rx.Completable;
 import rx.Observable;
@@ -41,7 +39,7 @@ public class OrderUtil {
     private final PositionFactory positionFactory;
     private final OrderUtilHandler orderUtilHandler;
     private final PositionSingleTask positionSingleTask;
-    private final PositionMultiTask positionMultiTask;
+    private final PositionRemoveTPSLTask positionRemoveTPSLTask;
 
     private static final Logger logger = LogManager.getLogger(OrderUtil.class);
 
@@ -49,12 +47,12 @@ public class OrderUtil {
                      final PositionFactory positionFactory,
                      final OrderUtilHandler orderUtilHandler,
                      final PositionSingleTask positionSingleTask,
-                     final PositionMultiTask positionMultiTask) {
+                     final PositionRemoveTPSLTask positionRemoveTPSLTask) {
         this.engine = engine;
         this.positionFactory = positionFactory;
         this.orderUtilHandler = orderUtilHandler;
         this.positionSingleTask = positionSingleTask;
-        this.positionMultiTask = positionMultiTask;
+        this.positionRemoveTPSLTask = positionRemoveTPSLTask;
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
@@ -102,11 +100,9 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
-                                                      final Instrument instrument,
-                                                      final RestoreSLTPPolicy restoreSLTPPolicy) {
+                                                      final Instrument instrument) {
         checkNotNull(mergeOrderLabel);
         checkNotNull(instrument);
-        checkNotNull(restoreSLTPPolicy);
 
         final Set<IOrder> toMergeOrders = position(instrument).filled();
         if (toMergeOrders.size() < 2)
@@ -114,9 +110,6 @@ public class OrderUtil {
 
         logger.debug("Starting position merge for " + instrument
                 + " with label " + mergeOrderLabel);
-        final RestoreSLTPData restoreSLTPData =
-                new RestoreSLTPData(restoreSLTPPolicy.restoreSL(toMergeOrders),
-                                    restoreSLTPPolicy.restoreTP(toMergeOrders));
         final MergeCommand command = new MergeCommand(mergeOrderLabel,
                                                       toMergeOrders,
                                                       engine);
@@ -125,16 +118,13 @@ public class OrderUtil {
                         .callWithRetryObservable(command)
                         .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
                                                                          OrderEventTypeData.mergeData))
-                        .flatMap(mergeEvent -> positionMultiTask
-                                .restoreSLTPObservable(mergeEvent.order(),
-                                                       restoreSLTPData))
                         .doOnTerminate(() -> position(instrument)
                                 .markAllOrders(OrderProcessState.IDLE));
 
         return Observable
                 .just(toMergeOrders)
                 .doOnSubscribe(() -> position(instrument).markAllOrders(OrderProcessState.ACTIVE))
-                .flatMap(positionMultiTask::removeTPSLObservable)
+                .flatMap(positionRemoveTPSLTask::observable)
                 .concatWith(mergeAndRestoreObservable)
                 .doOnCompleted(() -> logger.debug("Position merge for " + instrument
                         + "  with label " + mergeOrderLabel + " was successful."));

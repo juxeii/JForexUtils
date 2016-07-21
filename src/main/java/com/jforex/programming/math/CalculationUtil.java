@@ -90,7 +90,8 @@ public final class CalculationUtil {
                                        final double pipsToAdd) {
         checkNotNull(instrument);
 
-        return roundPrice(price + scalePipsToInstrument(pipsToAdd, instrument), instrument);
+        final double scaledPips = scalePipsToInstrument(pipsToAdd, instrument);
+        return roundPrice(price + scaledPips, instrument);
     }
 
     public static final To pipDistanceFrom(final double priceFrom) {

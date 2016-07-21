@@ -26,7 +26,6 @@ public final class PositionSwitcher {
     private final PositionOrders positionOrders;
     private final Instrument instrument;
     private final OrderParamsSupplier orderParamsSupplier;
-    private final RestoreSLTPPolicy noRestoreSLTPPolicy = new NoRestorePolicy();
     private final StateMachineConfig<FSMState, FSMTrigger> fsmConfig =
             new StateMachineConfig<>();
     private final StateMachine<FSMState, FSMTrigger> fsm =
@@ -125,8 +124,7 @@ public final class PositionSwitcher {
         orderUtil
                 .submitOrder(adaptedOrderParams)
                 .concatWith(Observable.defer(() -> orderUtil.mergePositionOrders(mergeLabel,
-                                                                                 instrument,
-                                                                                 noRestoreSLTPPolicy)))
+                                                                                 instrument)))
                 .doOnTerminate(() -> fsm.fire(FSMTrigger.MERGE_DONE))
                 .subscribe();
     }

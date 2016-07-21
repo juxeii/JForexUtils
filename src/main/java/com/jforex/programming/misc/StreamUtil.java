@@ -19,8 +19,7 @@ import rx.Observable;
 
 public final class StreamUtil {
 
-    private static final PlatformSettings platformSettings =
-            ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private static final long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
     private static final int maxRetriesOnOrderFail = platformSettings.maxRetriesOnOrderFail();
     private static final Logger logger = LogManager.getLogger(StreamUtil.class);
@@ -28,8 +27,7 @@ public final class StreamUtil {
     private StreamUtil() {
     }
 
-    public static final Observable<Long>
-           retryObservable(final Observable<? extends Throwable> errors) {
+    public static final Observable<Long> retryObservable(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
                 .flatMap(StreamUtil::filterErrorType)
                 .zipWith(retryCounterObservable(maxRetriesOnOrderFail), Pair::of)
@@ -39,36 +37,6 @@ public final class StreamUtil {
                                                         maxRetriesOnOrderFail));
     }
 
-    public static final Observable<Integer> retryCounterObservable(final int maxRetries) {
-        return Observable.range(1, maxRetries + 1);
-    }
-
-    public static final Completable CompletableFromJFRunnable(final JFRunnable jfRunnable) {
-        checkNotNull(jfRunnable);
-
-        return Completable.fromCallable(() -> {
-            jfRunnable.run();
-            return null;
-        });
-    }
-
-    private static final Observable<Long>
-            evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair,
-                              final long delay,
-                              final TimeUnit timeUnit,
-                              final int maxRetries) {
-        return retryPair.getRight() > maxRetries
-                ? Observable.error(retryPair.getLeft())
-                : waitObservable(delay, timeUnit);
-    }
-
-    public static Observable<Long> waitObservable(final long delay,
-                                                  final TimeUnit timeUnit) {
-        return Observable
-                .interval(delay, timeUnit)
-                .take(1);
-    }
-
     private static final Observable<? extends Throwable> filterErrorType(final Throwable error) {
         if (error instanceof OrderCallRejectException) {
             logPositionTaskRetry((OrderCallRejectException) error);
@@ -76,6 +44,26 @@ public final class StreamUtil {
         }
         logger.error("Retry logic received unexpected error " + error.getClass().getName() + "!");
         return Observable.error(error);
+    }
+
+    private static final Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair,
+                                                            final long delay,
+                                                            final TimeUnit timeUnit,
+                                                            final int maxRetries) {
+        return retryPair.getRight() > maxRetries
+                ? Observable.error(retryPair.getLeft())
+                : waitObservable(delay, timeUnit);
+    }
+
+    public static final Observable<Integer> retryCounterObservable(final int maxRetries) {
+        return Observable.range(1, maxRetries + 1);
+    }
+
+    public static Observable<Long> waitObservable(final long delay,
+                                                  final TimeUnit timeUnit) {
+        return Observable
+                .interval(delay, timeUnit)
+                .take(1);
     }
 
     private static final void logPositionTaskRetry(final OrderCallRejectException rejectException) {
@@ -88,5 +76,14 @@ public final class StreamUtil {
         return checkNotNull(optional).isPresent()
                 ? Stream.of(optional.get())
                 : Stream.empty();
+    }
+
+    public static final Completable CompletableFromJFRunnable(final JFRunnable jfRunnable) {
+        checkNotNull(jfRunnable);
+
+        return Completable.fromCallable(() -> {
+            jfRunnable.run();
+            return null;
+        });
     }
 }

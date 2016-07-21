@@ -40,7 +40,8 @@ public final class MathUtil {
 
     public static final double roundDouble(final double rawValue,
                                            final int digitPrecision) {
-        return BigDecimal.valueOf(rawValue)
+        return BigDecimal
+                .valueOf(rawValue)
                 .setScale(digitPrecision, BigDecimal.ROUND_HALF_UP)
                 .doubleValue();
     }
@@ -62,7 +63,8 @@ public final class MathUtil {
 
     public static final boolean isValueDivisibleByX(final double value,
                                                     final double divisor) {
-        return BigDecimal.valueOf(value)
+        return BigDecimal
+                .valueOf(value)
                 .remainder(BigDecimal.valueOf(divisor))
                 .doubleValue() == 0;
     }

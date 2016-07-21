@@ -2,11 +2,10 @@ package com.jforex.programming.order.command;
 
 import java.util.Collection;
 
-import com.jforex.programming.order.event.OrderEventTypeData;
-
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class MergeCommand extends OrderCallCommand {
 
@@ -19,7 +18,9 @@ public class MergeCommand extends OrderCallCommand {
         this.mergeOrderLabel = mergeOrderLabel;
         callable = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
         orderEventTypeData = OrderEventTypeData.mergeData;
+        System.out.println("Hallo1 " + toMergeOrders.size());
         instrument = toMergeOrders.iterator().next().getInstrument();
+        System.out.println("Hallo2");
     }
 
     @Override
