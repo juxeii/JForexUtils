@@ -178,7 +178,7 @@ public class CommonUtilForTest extends BDDMockito {
         return Observable.error(jfException);
     }
 
-    public Observable<OrderEvent> doneObservable() {
+    public Observable<OrderEvent> emptyObservable() {
         return Observable.empty();
     }
 

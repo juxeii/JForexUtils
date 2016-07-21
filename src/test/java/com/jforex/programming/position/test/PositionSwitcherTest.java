@@ -22,7 +22,6 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.Completable;
 import rx.Observable;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -56,7 +55,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     private void setUpMocks() {
         when(orderUtilMock.positionOrders(instrumentEURUSD)).thenReturn(positionOrdersMock);
         when(orderUtilMock.submitOrder(any())).thenReturn(Observable.empty());
-        when(orderUtilMock.closePosition(instrumentEURUSD)).thenReturn(Completable.complete());
+        when(orderUtilMock.closePosition(instrumentEURUSD)).thenReturn(emptyObservable());
 
         when(orderParamsSupplierMock.forCommand(OrderCommand.BUY)).thenReturn(orderParamsBUY);
         when(orderParamsSupplierMock.forCommand(OrderCommand.SELL)).thenReturn(orderParamsSELL);
@@ -237,7 +236,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                     @Before
                     public void setUp() {
                         when(orderUtilMock.closePosition(instrumentEURUSD))
-                                .thenReturn(Completable.never());
+                                .thenReturn(Observable.never());
 
                         positionSwitcher.sendFlatSignal();
                     }
@@ -271,7 +270,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                         setPositionOrderDirection(OrderDirection.FLAT);
 
                         when(orderUtilMock.closePosition(instrumentEURUSD))
-                                .thenReturn(Completable.complete());
+                                .thenReturn(emptyObservable());
 
                         positionSwitcher.sendFlatSignal();
                     }
@@ -428,7 +427,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                     @Before
                     public void setUp() {
                         when(orderUtilMock.closePosition(instrumentEURUSD))
-                                .thenReturn(Completable.never());
+                                .thenReturn(Observable.never());
 
                         positionSwitcher.sendFlatSignal();
                     }
@@ -462,7 +461,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                         setPositionOrderDirection(OrderDirection.FLAT);
 
                         when(orderUtilMock.closePosition(instrumentEURUSD))
-                                .thenReturn(Completable.complete());
+                                .thenReturn(emptyObservable());
 
                         positionSwitcher.sendFlatSignal();
                     }

@@ -16,6 +16,8 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
@@ -406,5 +408,9 @@ public class IOrderForTest implements IOrder {
                 .goodTillTime(userSettings.defaultGTT())
                 .comment("Test comment for sell EURUSD")
                 .build();
+    }
+
+    public static OrderEvent notificationEvent(final IOrder order) {
+        return new OrderEvent(order, OrderEventType.NOTIFICATION);
     }
 }

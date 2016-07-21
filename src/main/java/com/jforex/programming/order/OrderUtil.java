@@ -35,7 +35,6 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.settings.PlatformSettings;
 
-import rx.Completable;
 import rx.Observable;
 
 public class OrderUtil {
@@ -100,22 +99,24 @@ public class OrderUtil {
         checkNotNull(mergeOrderLabel);
         checkNotNull(instrument);
 
+        final Position position = position(instrument);
         final Set<IOrder> toMergeOrders = position(instrument).filled();
         return Observable
                 .just(toMergeOrders)
                 .doOnSubscribe(() -> logger.debug("Starting position merge for " +
                         instrument + " with label " + mergeOrderLabel))
                 .filter(orders -> orders.size() > 1)
-                .doOnNext(orders -> position(instrument).markAllOrders(OrderProcessState.ACTIVE))
+                .doOnNext(orders -> position.markAllOrders(OrderProcessState.ACTIVE))
                 .flatMap(this::removeTPSLObservable)
                 .toCompletable()
                 .andThen(mergeOrders(mergeOrderLabel, toMergeOrders))
+                .doOnTerminate(() -> position.markAllOrders(OrderProcessState.IDLE))
                 .doOnCompleted(() -> logger.debug("Position merge for " + instrument
                         + "  with label " + mergeOrderLabel + " was successful."));
     }
 
-    public Completable closePosition(final Instrument instrument) {
-        final Position position = position(instrument);
+    public Observable<OrderEvent> closePosition(final Instrument instrument) {
+        final Position position = position(checkNotNull(instrument));
         return Observable
                 .from(position.filledOrOpened())
                 .doOnSubscribe(() -> {
@@ -127,8 +128,7 @@ public class OrderUtil {
                 .doOnCompleted(() -> logger.debug("Closing position "
                         + instrument + " was successful."))
                 .doOnError(e -> logger.error("Closing position " + instrument
-                        + " failed! Exception: " + e.getMessage()))
-                .toCompletable();
+                        + " failed! Exception: " + e.getMessage()));
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {

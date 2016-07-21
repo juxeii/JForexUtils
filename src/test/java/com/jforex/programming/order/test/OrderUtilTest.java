@@ -98,6 +98,39 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 .thenReturn(testObservable);
     }
 
+    private void setOrderUtilHandlerExpectation(final Class<? extends OrderCallCommand> clazz,
+                                                final OrderEvent orderEvent) {
+        when(orderUtilHandlerMock.callObservable(any(clazz)))
+                .thenReturn(doneEventObservable(orderEvent));
+    }
+
+    private void assertChangeCallCallsOnOrderUtilHandler(final Class<? extends OrderCallCommand> clazz,
+                                                         final Observable<OrderEvent> observable) {
+        final OrderEvent event = IOrderForTest.notificationEvent(orderForTest);
+        setOrderUtilHandlerExpectation(clazz, event);
+
+        observable.subscribe(orderEventSubscriber);
+
+        verify(orderUtilHandlerMock).callObservable(any(clazz));
+        orderEventSubscriber.assertNoErrors();
+        orderEventSubscriber.assertValueCount(1);
+        orderEventSubscriber.assertCompleted();
+        assertThat(orderEventSubscriber.getOnNextEvents().get(0), equalTo(event));
+    }
+
+    private void assertNoCallOnOrderUtilHandler(final Class<? extends OrderCallCommand> clazz,
+                                                final Observable<OrderEvent> observable) {
+        final OrderEvent event = IOrderForTest.notificationEvent(orderForTest);
+        setOrderUtilHandlerExpectation(clazz, event);
+
+        observable.subscribe(orderEventSubscriber);
+
+        verify(orderUtilHandlerMock, never()).callObservable(any(clazz));
+        orderEventSubscriber.assertNoErrors();
+        orderEventSubscriber.assertValueCount(0);
+        orderEventSubscriber.assertCompleted();
+    }
+
     @Test
     public void positionOrdersReturnsCorrectInstance() {
         assertThat(orderUtil.positionOrders(instrumentEURUSD),
@@ -342,6 +375,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 public void subscriberIsCompleted() {
                     orderEventSubscriber.assertCompleted();
                 }
+
+                @Test
+                public void positionOrdersAreMarkedAsIDLE() {
+                    verify(positionMock).markAllOrders(OrderProcessState.IDLE);
+                }
             }
         }
     }
@@ -366,7 +404,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void testAllPositionOrdersAreMarkedActive() {
+        public void testThatAllPositionOrdersAreMarkedAsActive() {
             closeCompletableCall.run();
 
             verify(positionMock).markAllOrders(OrderProcessState.ACTIVE);
@@ -445,17 +483,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void closeCallsOnOrderUtilHandlerWhenOrderIsFilled() {
-        orderForTest.setState(IOrder.State.FILLED);
-        expectOnOrderUtilHandler(CloseCommand.class);
-
-        final Observable<OrderEvent> observable =
-                orderUtil.close(orderForTest);
-
-        // assertThat(observable, equalTo(testObservable));
-    }
-
-    @Test
     public void setLabelCallsOnOrderUtilHandler() {
         final String newLabel = "NewLabel";
         expectOnOrderUtilHandler(SetLabelCommand.class);
@@ -499,25 +526,88 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         assertThat(observable, equalTo(testObservable));
     }
 
-    @Test
-    public void setStopLossPriceCallsOnOrderUtilHandler() {
-        final double newSL = 1.10987;
-        expectOnOrderUtilHandler(SetSLCommand.class);
+    public class ChangeCallSetup {
 
-        final Observable<OrderEvent> observable =
-                orderUtil.setStopLossPrice(orderForTest, newSL);
+        private Observable<OrderEvent> observable;
+        private Class<? extends OrderCallCommand> commandClass;
 
-        // assertThat(observable, equalTo(testObservable));
-    }
+        private void assertOrderUtilHandlerCall() {
+            assertChangeCallCallsOnOrderUtilHandler(commandClass,
+                                                    observable);
+        }
 
-    @Test
-    public void setTakeProfitPriceCallsOnOrderUtilHandler() {
-        final double newTP = 1.11001;
-        expectOnOrderUtilHandler(SetTPCommand.class);
+        private void assertNoOrderUtilHandlerCall() {
+            assertNoCallOnOrderUtilHandler(commandClass,
+                                           observable);
+        }
 
-        final Observable<OrderEvent> observable =
-                orderUtil.setTakeProfitPrice(orderForTest, newTP);
+        public class CloseSetup {
 
-        // assertThat(observable, equalTo(testObservable));
+            private final IOrder.State newState = IOrder.State.CLOSED;
+
+            @Before
+            public void setUp() {
+                commandClass = CloseCommand.class;
+                observable = orderUtil.close(orderForTest);
+            }
+
+            @Test
+            public void closeCallsOnOrderUtilHandler() {
+                assertOrderUtilHandlerCall();
+            }
+
+            @Test
+            public void closeCallDoesNotCallOrderUtilHandlerWhenOrderAlreadyClosed() {
+                orderForTest.setState(newState);
+
+                assertNoOrderUtilHandlerCall();
+            }
+        }
+
+        public class SetTPSetup {
+
+            private final double newTP = 1.11001;
+
+            @Before
+            public void setUp() {
+                commandClass = SetTPCommand.class;
+                observable = orderUtil.setTakeProfitPrice(orderForTest, newTP);
+            }
+
+            @Test
+            public void setTakeProfitPriceCallsOnOrderUtilHandler() {
+                assertOrderUtilHandlerCall();
+            }
+
+            @Test
+            public void setTakeProfitPriceDoesNotCallOrderUtilHandlerWhenTPAlreadySet() {
+                orderForTest.setTakeProfitPrice(newTP);
+
+                assertNoOrderUtilHandlerCall();
+            }
+        }
+
+        public class SetSLSetup {
+
+            private final double newSL = 1.11001;
+
+            @Before
+            public void setUp() {
+                commandClass = SetSLCommand.class;
+                observable = orderUtil.setStopLossPrice(orderForTest, newSL);
+            }
+
+            @Test
+            public void setStopLossPriceCallsOnOrderUtilHandler() {
+                assertOrderUtilHandlerCall();
+            }
+
+            @Test
+            public void setStopLossPriceDoesNotCallOrderUtilHandlerWhenSLAlreadySet() {
+                orderForTest.setStopLossPrice(newSL);
+
+                assertNoOrderUtilHandlerCall();
+            }
+        }
     }
 }

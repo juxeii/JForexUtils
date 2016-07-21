@@ -95,7 +95,9 @@ public final class PositionSwitcher {
                 .onEntryFrom(FSMTrigger.FLAT,
                              () -> orderUtil
                                      .closePosition(instrument)
-                                     .subscribe(() -> fsm.fire(FSMTrigger.CLOSE_DONE)))
+                                     .subscribe(orderEvent -> {},
+                                                error -> {},
+                                                () -> fsm.fire(FSMTrigger.CLOSE_DONE)))
                 .permitDynamic(FSMTrigger.MERGE_DONE,
                                () -> nextStatesByDirection.get(positionOrders.direction()))
                 .permit(FSMTrigger.CLOSE_DONE, FSMState.FLAT)
