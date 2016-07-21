@@ -1,10 +1,12 @@
 package com.jforex.programming.order;
 
 import static com.jforex.programming.order.event.OrderEventTypeSets.finishEventTypes;
+import static com.jforex.programming.order.event.OrderEventTypeSets.rejectEventTypes;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.event.OrderEvent;
@@ -47,6 +49,13 @@ public class OrderUtilHandler {
                 .observable()
                 .filter(orderEvent -> orderEvent.order().equals(order))
                 .filter(orderEvent -> orderEventTypeData.all().contains(orderEvent.type()))
+                .flatMap(this::rejectAsErrorObservable)
                 .takeUntil(orderEvent -> finishEventTypes.contains(orderEvent.type()));
+    }
+
+    private Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
+        return rejectEventTypes.contains(orderEvent.type())
+                ? Observable.error(new OrderCallRejectException("", orderEvent))
+                : Observable.just(orderEvent);
     }
 }

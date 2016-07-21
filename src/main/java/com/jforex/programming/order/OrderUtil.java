@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
-import static com.jforex.programming.order.event.OrderEventTypeSets.rejectEventTypes;
 
 import java.util.Collection;
 import java.util.Set;
@@ -17,7 +16,6 @@ import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.StreamUtil;
-import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
@@ -193,18 +191,11 @@ public class OrderUtil {
                         .callObservable(new SetTPCommand(orderToChangeTP, newTP)));
     }
 
-    public Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
-        return rejectEventTypes.contains(orderEvent.type())
-                ? Observable.error(new OrderCallRejectException("", orderEvent))
-                : Observable.just(orderEvent);
-    }
-
     public Observable<OrderEvent> retryObservable(final OrderEvent orderEvent) {
         checkNotNull(orderEvent);
 
         return Observable
                 .just(orderEvent)
-                .flatMap(this::rejectAsErrorObservable)
                 .retryWhen(StreamUtil::retryObservable);
     }
 

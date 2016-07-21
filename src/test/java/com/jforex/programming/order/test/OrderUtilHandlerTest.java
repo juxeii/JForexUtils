@@ -18,6 +18,7 @@ import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
@@ -155,12 +156,10 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void subscriberCompletesOnRejectEvent() {
+            public void subscriberErrosRejectEvent() {
                 sendOrderEvent(orderToClose, OrderEventType.CLOSE_REJECTED);
 
-                subscriber.assertNoErrors();
-                subscriber.assertValueCount(1);
-                subscriber.assertCompleted();
+                subscriber.assertError(OrderCallRejectException.class);
             }
 
             @Test

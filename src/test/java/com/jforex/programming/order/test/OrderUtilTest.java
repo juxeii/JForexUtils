@@ -13,7 +13,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
@@ -41,8 +40,6 @@ import com.jforex.programming.test.fakes.IOrderForTest;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
 import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {
@@ -135,44 +132,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void positionOrdersReturnsCorrectInstance() {
         assertThat(orderUtil.positionOrders(instrumentEURUSD),
                    equalTo(positionMock));
-    }
-
-    @Test
-    public void rejectEventIsTreatedAsError() {
-        final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
-        final OrderEvent rejectEvent = new OrderEvent(IOrderForTest.buyOrderEURUSD(),
-                                                      OrderEventType.CHANGE_AMOUNT_REJECTED);
-
-        orderUtil
-                .rejectAsErrorObservable(rejectEvent)
-                .subscribe(subscriber);
-
-        subscriber.assertError(OrderCallRejectException.class);
-    }
-
-    @Test
-    public void retryObservableWorksCorrect() throws JFException {
-        final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
-
-        final OrderEvent closeRejectEvent =
-                new OrderEvent(orderForTest, OrderEventType.CLOSE_REJECTED);
-        final OrderEvent closeOKEvent =
-                new OrderEvent(orderForTest, OrderEventType.CLOSE_OK);
-
-        when(orderUtilHandlerMock.callObservable(any(CloseCommand.class)))
-                .thenReturn(orderEventSubject);
-
-        orderUtil
-                .close(orderForTest)
-                .flatMap(orderUtil::retryObservable)
-                .subscribe(orderEventSubscriber);
-
-        orderEventSubject.onNext(closeRejectEvent);
-        orderEventSubject.onNext(closeOKEvent);
-        orderEventSubject.onCompleted();
-
-        orderEventSubscriber.assertNoErrors();
-        orderEventSubscriber.assertValueCount(1);
     }
 
     public class SubmitSetup {
