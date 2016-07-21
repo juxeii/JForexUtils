@@ -25,8 +25,6 @@ import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventMapper;
 import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.PositionRemoveTPSLTask;
-import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.BarQuoteParams;
@@ -59,9 +57,6 @@ public class JForexUtil {
     private OrderUtilHandler orderUtilHandler;
     private OrderUtil orderUtil;
     private final OrderEventMapper orderEventMapper = new OrderEventMapper();
-
-    private PositionSingleTask positionSingleTask;
-    private PositionRemoveTPSLTask positionRemoveTPSLTask;
 
     private final CalculationUtil calculationUtil;
     private final RiskPercentMM riskPercentMM;
@@ -117,12 +112,9 @@ public class JForexUtil {
         orderCallExecutor = new OrderCallExecutor(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
-        positionSingleTask = new PositionSingleTask(orderUtilHandler);
-        positionRemoveTPSLTask = new PositionRemoveTPSLTask(positionSingleTask);
         orderUtil = new OrderUtil(engine,
                                   positionFactory,
-                                  orderUtilHandler,
-                                  positionRemoveTPSLTask);
+                                  orderUtilHandler);
     }
 
     public IContext context() {

@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +18,6 @@ import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
@@ -70,33 +68,6 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private void sendOrderEvent(final IOrder order,
                                 final OrderEventType orderEventType) {
         orderEventSubject.onNext(new OrderEvent(order, orderEventType));
-    }
-
-    @Test
-    public void rejectEventIsTreatedAsError() {
-        final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
-        final OrderEvent rejectEvent = new OrderEvent(IOrderForTest.buyOrderEURUSD(),
-                                                      OrderEventType.CHANGE_AMOUNT_REJECTED);
-
-        orderUtilHandler
-                .rejectAsErrorObservable(rejectEvent)
-                .subscribe(subscriber);
-
-        subscriber.assertError(OrderCallRejectException.class);
-    }
-
-    @Test
-    public void nonRejectEventIsTreatedAsNonError() {
-        final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
-        final OrderEvent nonRejectEvent = new OrderEvent(IOrderForTest.buyOrderEURUSD(),
-                                                         OrderEventType.CHANGED_AMOUNT);
-
-        orderUtilHandler
-                .rejectAsErrorObservable(nonRejectEvent)
-                .subscribe(subscriber);
-
-        subscriber.assertNoErrors();
-        subscriber.assertCompleted();
     }
 
     public class CloseCallSetup {
@@ -216,65 +187,6 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 sendOrderEvent(orderToClose, OrderEventType.CHANGED_GTT);
 
                 subscriber.assertNotCompleted();
-            }
-        }
-    }
-
-    public class CloseCallWithRetriesSetup {
-
-        private final int maxRetriesCount = platformSettings.maxRetriesOnOrderFail();
-        private final int retryExceedCount = maxRetriesCount + 1;
-        private final long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
-        private final Runnable closeWithRetryCall =
-                () -> orderUtilHandler.callWithRetryObservable(command).subscribe(subscriber);
-
-        private void sendFailAndAdvanceTime(final int times) {
-            for (int i = 0; i < times; ++i) {
-                sendOrderEvent(orderToClose, OrderEventType.CLOSE_REJECTED);
-                rxTestUtil.advanceTimeBy(delayOnOrderFailRetry, TimeUnit.MILLISECONDS);
-            }
-        }
-
-        @Before
-        public void setUp() {
-            when(orderEventGatewayMock.observable()).thenReturn(orderEventSubject);
-        }
-
-        @Test
-        public void subscriberErrorsOnJFException() throws JFException {
-            Mockito.doThrow(jfException).when(orderToClose).close();
-
-            closeWithRetryCall.run();
-
-            verify(orderToClose).close();
-            subscriber.assertError(JFException.class);
-        }
-
-        public class ExecutesOK {
-
-            @Before
-            public void setUp() {
-                closeWithRetryCall.run();
-            }
-
-            @Test
-            public void subscriberCompletesAfterAllRetries() throws Exception {
-                sendFailAndAdvanceTime(maxRetriesCount);
-                sendOrderEvent(orderToClose, OrderEventType.CLOSE_OK);
-
-                verify(orderToClose, times(maxRetriesCount + 1)).close();
-
-                subscriber.assertNoErrors();
-                subscriber.assertCompleted();
-            }
-
-            @Test
-            public void subscriberErrorsAfterRetryExceed() throws Exception {
-                sendFailAndAdvanceTime(retryExceedCount);
-
-                verify(orderToClose, times(maxRetriesCount + 1)).close();
-
-                subscriber.assertError(OrderCallRejectException.class);
             }
         }
     }

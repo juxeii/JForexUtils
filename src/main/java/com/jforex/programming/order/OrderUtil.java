@@ -2,10 +2,14 @@ package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
+import static com.jforex.programming.order.event.OrderEventTypeSets.rejectEventTypes;
 
 import java.util.Collection;
 import java.util.Set;
 
+import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,6 +17,7 @@ import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.StreamUtil;
+import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
@@ -28,7 +33,7 @@ import com.jforex.programming.position.OrderProcessState;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
-import com.jforex.programming.position.PositionRemoveTPSLTask;
+import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Completable;
 import rx.Observable;
@@ -38,18 +43,17 @@ public class OrderUtil {
     private final IEngine engine;
     private final PositionFactory positionFactory;
     private final OrderUtilHandler orderUtilHandler;
-    private final PositionRemoveTPSLTask positionRemoveTPSLTask;
 
+    private static final PlatformSettings platformSettings =
+            ConfigFactory.create(PlatformSettings.class);
     private static final Logger logger = LogManager.getLogger(OrderUtil.class);
 
     public OrderUtil(final IEngine engine,
                      final PositionFactory positionFactory,
-                     final OrderUtilHandler orderUtilHandler,
-                     final PositionRemoveTPSLTask positionRemoveTPSLTask) {
+                     final OrderUtilHandler orderUtilHandler) {
         this.engine = engine;
         this.positionFactory = positionFactory;
         this.orderUtilHandler = orderUtilHandler;
-        this.positionRemoveTPSLTask = positionRemoveTPSLTask;
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
@@ -58,14 +62,6 @@ public class OrderUtil {
 
     private Position position(final Instrument instrument) {
         return (Position) positionOrders(instrument);
-    }
-
-    public Observable<OrderEvent> retryObservable(final OrderEvent orderEvent) {
-        checkNotNull(orderEvent);
-
-        return orderUtilHandler
-                .rejectAsErrorObservable(orderEvent)
-                .retryWhen(StreamUtil::retryObservable);
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
@@ -105,32 +101,29 @@ public class OrderUtil {
         checkNotNull(instrument);
 
         final Set<IOrder> toMergeOrders = position(instrument).filled();
-
-        logger.debug("Starting position merge for " + instrument + " with label " + mergeOrderLabel);
         return Observable
                 .just(toMergeOrders)
+                .doOnSubscribe(() -> logger.debug("Starting position merge for " +
+                        instrument + " with label " + mergeOrderLabel))
                 .filter(orders -> orders.size() > 1)
                 .doOnNext(orders -> position(instrument).markAllOrders(OrderProcessState.ACTIVE))
-                .flatMap(positionRemoveTPSLTask::observable)
+                .flatMap(this::removeTPSLObservable)
                 .toCompletable()
-                .andThen(mergeOrders(mergeOrderLabel, toMergeOrders)
-                        .flatMap(this::retryObservable))
+                .andThen(mergeOrders(mergeOrderLabel, toMergeOrders))
                 .doOnCompleted(() -> logger.debug("Position merge for " + instrument
                         + "  with label " + mergeOrderLabel + " was successful."));
     }
 
     public Completable closePosition(final Instrument instrument) {
-        logger.debug("Starting position close for " + checkNotNull(instrument));
         final Position position = position(instrument);
-
         return Observable
                 .from(position.filledOrOpened())
-                .doOnSubscribe(() -> position.markAllOrders(OrderProcessState.ACTIVE))
-                .filter(order -> !isClosed.test(order))
-                .flatMap(order -> orderUtilHandler
-                        .callWithRetryObservable(new CloseCommand(order)))
-                .doOnTerminate(() -> position(instrument)
-                        .markAllOrders(OrderProcessState.IDLE))
+                .doOnSubscribe(() -> {
+                    logger.debug("Starting position close for " + checkNotNull(instrument));
+                    position.markAllOrders(OrderProcessState.ACTIVE);
+                })
+                .flatMap(this::close)
+                .doOnTerminate(() -> position.markAllOrders(OrderProcessState.IDLE))
                 .doOnCompleted(() -> logger.debug("Closing position "
                         + instrument + " was successful."))
                 .doOnError(e -> logger.error("Closing position " + instrument
@@ -141,7 +134,10 @@ public class OrderUtil {
     public Observable<OrderEvent> close(final IOrder orderToClose) {
         checkNotNull(orderToClose);
 
-        return orderUtilHandler.callObservable(new CloseCommand(orderToClose));
+        return Observable
+                .just(orderToClose)
+                .filter(order -> !isClosed.test(order))
+                .flatMap(order -> orderUtilHandler.callObservable(new CloseCommand(order)));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
@@ -179,13 +175,55 @@ public class OrderUtil {
                                                    final double newSL) {
         checkNotNull(orderToChangeSL);
 
-        return orderUtilHandler.callObservable(new SetSLCommand(orderToChangeSL, newSL));
+        return Observable
+                .just(orderToChangeSL)
+                .filter(order -> !isSLSetTo(newSL).test(order))
+                .flatMap(order -> orderUtilHandler
+                        .callObservable(new SetSLCommand(orderToChangeSL, newSL)));
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
                                                      final double newTP) {
         checkNotNull(orderToChangeTP);
 
-        return orderUtilHandler.callObservable(new SetTPCommand(orderToChangeTP, newTP));
+        return Observable
+                .just(orderToChangeTP)
+                .filter(order -> !isTPSetTo(newTP).test(order))
+                .flatMap(order -> orderUtilHandler
+                        .callObservable(new SetTPCommand(orderToChangeTP, newTP)));
+    }
+
+    public Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
+        return rejectEventTypes.contains(orderEvent.type())
+                ? Observable.error(new OrderCallRejectException("", orderEvent))
+                : Observable.just(orderEvent);
+    }
+
+    public Observable<OrderEvent> retryObservable(final OrderEvent orderEvent) {
+        checkNotNull(orderEvent);
+
+        return Observable
+                .just(orderEvent)
+                .flatMap(this::rejectAsErrorObservable)
+                .retryWhen(StreamUtil::retryObservable);
+    }
+
+    private Observable<OrderEvent> removeTPSLObservable(final Set<IOrder> filledOrders) {
+        final Instrument instrument = filledOrders.iterator().next().getInstrument();
+
+        return Observable
+                .from(filledOrders)
+                .doOnSubscribe(() -> logger.debug("Starting remove TPSL task for position "
+                        + instrument))
+                .flatMap(this::removeSingleTPSLObservable)
+                .doOnCompleted(() -> logger.debug("Removing TPSL task from "
+                        + instrument + " was successful."))
+                .doOnError(e -> logger.error("Removing TPSL from " + instrument
+                        + " failed! Exception: " + e.getMessage()));
+    }
+
+    private final Observable<OrderEvent> removeSingleTPSLObservable(final IOrder orderToRemoveSLTP) {
+        return setStopLossPrice(orderToRemoveSLTP, platformSettings.noTPPrice())
+                .concatWith(setTakeProfitPrice(orderToRemoveSLTP, platformSettings.noSLPrice()));
     }
 }
