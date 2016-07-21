@@ -1,7 +1,11 @@
 package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.jforex.programming.order.OrderStaticUtil.isAmountSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+import static com.jforex.programming.order.OrderStaticUtil.isGTTSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isLabelSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isOpenPriceSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
@@ -12,9 +16,6 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
@@ -31,6 +32,10 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.settings.PlatformSettings;
+
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -137,40 +142,51 @@ public class OrderUtil {
         return Observable
                 .just(orderToClose)
                 .filter(order -> !isClosed.test(order))
-                .doOnNext(i -> logger.info("111111111111111"))
-                .flatMap(order -> orderUtilHandler.callObservable(new CloseCommand(order)))
-                .doOnError(i -> logger.info("22222222222222"));
+                .flatMap(order -> orderUtilHandler.callObservable(new CloseCommand(order)));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
                                            final String newLabel) {
         checkNotNull(orderToChangeLabel);
 
-        return orderUtilHandler
-                .callObservable(new SetLabelCommand(orderToChangeLabel, newLabel));
+        return Observable
+                .just(orderToChangeLabel)
+                .filter(order -> !isLabelSetTo(newLabel).test(order))
+                .flatMap(order -> orderUtilHandler
+                        .callObservable(new SetLabelCommand(orderToChangeLabel, newLabel)));
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
                                                   final long newGTT) {
         checkNotNull(orderToChangeGTT);
 
-        return orderUtilHandler.callObservable(new SetGTTCommand(orderToChangeGTT, newGTT));
+        return Observable
+                .just(orderToChangeGTT)
+                .filter(order -> !isGTTSetTo(newGTT).test(order))
+                .flatMap(order -> orderUtilHandler
+                        .callObservable(new SetGTTCommand(orderToChangeGTT, newGTT)));
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
         checkNotNull(orderToChangeOpenPrice);
 
-        return orderUtilHandler
-                .callObservable(new SetOpenPriceCommand(orderToChangeOpenPrice, newOpenPrice));
+        return Observable
+                .just(orderToChangeOpenPrice)
+                .filter(order -> !isOpenPriceSetTo(newOpenPrice).test(order))
+                .flatMap(order -> orderUtilHandler
+                        .callObservable(new SetOpenPriceCommand(orderToChangeOpenPrice, newOpenPrice)));
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
                                                      final double newRequestedAmount) {
         checkNotNull(orderToChangeAmount);
 
-        return orderUtilHandler
-                .callObservable(new SetAmountCommand(orderToChangeAmount, newRequestedAmount));
+        return Observable
+                .just(orderToChangeAmount)
+                .filter(order -> !isAmountSetTo(newRequestedAmount).test(order))
+                .flatMap(order -> orderUtilHandler
+                        .callObservable(new SetAmountCommand(orderToChangeAmount, newRequestedAmount)));
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,

@@ -1,31 +1,39 @@
 package com.jforex.programming.order.test;
 
+import static com.jforex.programming.order.OrderStaticUtil.amountPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.buyOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.combinedDirection;
 import static com.jforex.programming.order.OrderStaticUtil.combinedSignedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.direction;
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
+import static com.jforex.programming.order.OrderStaticUtil.gttPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.instrumentPredicate;
+import static com.jforex.programming.order.OrderStaticUtil.isAmountSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isCanceled;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
+import static com.jforex.programming.order.OrderStaticUtil.isGTTSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isLabelSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isNoSLSet;
 import static com.jforex.programming.order.OrderStaticUtil.isNoTPSet;
+import static com.jforex.programming.order.OrderStaticUtil.isOpenPriceSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.labelPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.ofInstrument;
 import static com.jforex.programming.order.OrderStaticUtil.offerSideForOrderCommand;
-import static com.jforex.programming.order.OrderStaticUtil.orderSLPredicate;
-import static com.jforex.programming.order.OrderStaticUtil.orderTPPredicate;
+import static com.jforex.programming.order.OrderStaticUtil.openPricePredicate;
 import static com.jforex.programming.order.OrderStaticUtil.runnableToCallable;
 import static com.jforex.programming.order.OrderStaticUtil.sellOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.signedAmount;
+import static com.jforex.programming.order.OrderStaticUtil.slPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.slPriceWithPips;
 import static com.jforex.programming.order.OrderStaticUtil.statePredicate;
 import static com.jforex.programming.order.OrderStaticUtil.switchCommand;
 import static com.jforex.programming.order.OrderStaticUtil.switchDirection;
+import static com.jforex.programming.order.OrderStaticUtil.tpPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.tpPriceWithPips;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -154,27 +162,123 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
+    public void testLabelPredicateIsCorrect() throws JFException {
+        final String label = "label";
+        final Predicate<IOrder> predicate = labelPredicate.apply(label);
+
+        buyOrderEURUSD.setLabel(label);
+        assertTrue(predicate.test(buyOrderEURUSD));
+
+        buyOrderEURUSD.setLabel("wrong" + label);
+        assertFalse(predicate.test(buyOrderEURUSD));
+    }
+
+    @Test
+    public void testGTTPredicateIsCorrect() throws JFException {
+        final long gtt = 1234L;
+        final Predicate<IOrder> predicate = gttPredicate.apply(gtt);
+
+        buyOrderEURUSD.setGoodTillTime(gtt);
+        assertTrue(predicate.test(buyOrderEURUSD));
+
+        buyOrderEURUSD.setGoodTillTime(gtt + 1);
+        assertFalse(predicate.test(buyOrderEURUSD));
+    }
+
+    @Test
+    public void testAmountPredicateIsCorrect() throws JFException {
+        final double amount = 1.34521;
+        final Predicate<IOrder> predicate = amountPredicate.apply(amount);
+
+        buyOrderEURUSD.setRequestedAmount(amount);
+        assertTrue(predicate.test(buyOrderEURUSD));
+
+        buyOrderEURUSD.setRequestedAmount(amount + 0.1);
+        assertFalse(predicate.test(buyOrderEURUSD));
+    }
+
+    @Test
+    public void testOpenPricePredicateIsCorrect() throws JFException {
+        final double openPrice = 1.34521;
+        final Predicate<IOrder> predicate = openPricePredicate.apply(openPrice);
+
+        buyOrderEURUSD.setOpenPrice(openPrice);
+        assertTrue(predicate.test(buyOrderEURUSD));
+
+        buyOrderEURUSD.setOpenPrice(openPrice + 0.1);
+        assertFalse(predicate.test(buyOrderEURUSD));
+    }
+
+    @Test
     public void testSLPredicateIsCorrect() throws JFException {
         final double sl = 1.34521;
-        final Predicate<IOrder> slPredicate = orderSLPredicate.apply(sl);
+        final Predicate<IOrder> predicate = slPredicate.apply(sl);
 
         buyOrderEURUSD.setStopLossPrice(sl);
-        assertTrue(slPredicate.test(buyOrderEURUSD));
+        assertTrue(predicate.test(buyOrderEURUSD));
 
         buyOrderEURUSD.setStopLossPrice(sl + 0.1);
-        assertFalse(slPredicate.test(buyOrderEURUSD));
+        assertFalse(predicate.test(buyOrderEURUSD));
     }
 
     @Test
     public void testTPPredicateIsCorrect() throws JFException {
         final double tp = 1.34521;
-        final Predicate<IOrder> tpPredicate = orderTPPredicate.apply(tp);
+        final Predicate<IOrder> predicate = tpPredicate.apply(tp);
 
         buyOrderEURUSD.setTakeProfitPrice(tp);
-        assertTrue(tpPredicate.test(buyOrderEURUSD));
+        assertTrue(predicate.test(buyOrderEURUSD));
 
         buyOrderEURUSD.setTakeProfitPrice(tp + 0.1);
-        assertFalse(tpPredicate.test(buyOrderEURUSD));
+        assertFalse(predicate.test(buyOrderEURUSD));
+    }
+
+    @Test
+    public void testIsLabelSetToPredicateCorrect() throws JFException {
+        final String label = "label";
+        final Predicate<IOrder> slPredicate = isLabelSetTo(label);
+
+        buyOrderEURUSD.setLabel(label);
+        assertTrue(slPredicate.test(buyOrderEURUSD));
+
+        buyOrderEURUSD.setLabel("other" + label);
+        assertFalse(slPredicate.test(buyOrderEURUSD));
+    }
+
+    @Test
+    public void testIsGTTSetToPredicateCorrect() throws JFException {
+        final long gtt = 1234L;
+        final Predicate<IOrder> slPredicate = isGTTSetTo(gtt);
+
+        buyOrderEURUSD.setGoodTillTime(gtt);
+        assertTrue(slPredicate.test(buyOrderEURUSD));
+
+        buyOrderEURUSD.setGoodTillTime(gtt + 1L);
+        assertFalse(slPredicate.test(buyOrderEURUSD));
+    }
+
+    @Test
+    public void testIsOpenPriceSetToPredicateCorrect() throws JFException {
+        final double openPrice = 1.1234;
+        final Predicate<IOrder> slPredicate = isOpenPriceSetTo(openPrice);
+
+        buyOrderEURUSD.setOpenPrice(openPrice);
+        assertTrue(slPredicate.test(buyOrderEURUSD));
+
+        buyOrderEURUSD.setOpenPrice(openPrice + 0.1);
+        assertFalse(slPredicate.test(buyOrderEURUSD));
+    }
+
+    @Test
+    public void testIsAmountSetToPredicateCorrect() throws JFException {
+        final double amount = 0.12;
+        final Predicate<IOrder> predicate = isAmountSetTo(amount);
+
+        buyOrderEURUSD.setRequestedAmount(amount);
+        assertTrue(predicate.test(buyOrderEURUSD));
+
+        buyOrderEURUSD.setRequestedAmount(amount + 0.1);
+        assertFalse(predicate.test(buyOrderEURUSD));
     }
 
     @Test

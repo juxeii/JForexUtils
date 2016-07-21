@@ -9,16 +9,17 @@ import java.util.function.Predicate;
 
 import org.aeonbits.owner.ConfigFactory;
 
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.settings.PlatformSettings;
+
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 
 public final class OrderStaticUtil {
 
@@ -60,18 +61,46 @@ public final class OrderStaticUtil {
         return instrumentPredicate.apply(checkNotNull(instrument));
     }
 
-    public static final Function<Double, Predicate<IOrder>> orderSLPredicate =
-            sl -> order -> order.getStopLossPrice() == sl;
+    public static final Function<String, Predicate<IOrder>> labelPredicate =
+            label -> order -> order.getLabel().equals(label);
 
-    public static final Function<Double, Predicate<IOrder>> orderTPPredicate =
-            tp -> order -> order.getTakeProfitPrice() == tp;
+    public static final Function<Long, Predicate<IOrder>> gttPredicate =
+            gtt -> order -> order.getGoodTillTime() == gtt;
 
-    public static final Predicate<IOrder> isSLSetTo(final Double sl) {
-        return orderSLPredicate.apply(sl);
+    public static final Function<Double, Predicate<IOrder>> amountPredicate =
+            amount -> order -> Double.compare(order.getRequestedAmount(), amount) == 0;
+
+    public static final Function<Double, Predicate<IOrder>> openPricePredicate =
+            openPrice -> order -> Double.compare(order.getOpenPrice(), openPrice) == 0;
+
+    public static final Function<Double, Predicate<IOrder>> slPredicate =
+            sl -> order -> Double.compare(order.getStopLossPrice(), sl) == 0;
+
+    public static final Function<Double, Predicate<IOrder>> tpPredicate =
+            tp -> order -> Double.compare(order.getTakeProfitPrice(), tp) == 0;
+
+    public static final Predicate<IOrder> isLabelSetTo(final String label) {
+        return labelPredicate.apply(checkNotNull(label));
     }
 
-    public static final Predicate<IOrder> isTPSetTo(final Double tp) {
-        return orderTPPredicate.apply(tp);
+    public static final Predicate<IOrder> isGTTSetTo(final long gtt) {
+        return gttPredicate.apply(gtt);
+    }
+
+    public static final Predicate<IOrder> isAmountSetTo(final double amount) {
+        return amountPredicate.apply(amount);
+    }
+
+    public static final Predicate<IOrder> isOpenPriceSetTo(final double openPrice) {
+        return openPricePredicate.apply(openPrice);
+    }
+
+    public static final Predicate<IOrder> isSLSetTo(final double sl) {
+        return slPredicate.apply(sl);
+    }
+
+    public static final Predicate<IOrder> isTPSetTo(final double tp) {
+        return tpPredicate.apply(tp);
     }
 
     public static final Predicate<IOrder> isNoSLSet = isSLSetTo(platformSettings.noSLPrice());

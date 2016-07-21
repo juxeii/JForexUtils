@@ -12,7 +12,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
@@ -36,6 +35,8 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
+
+import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -61,7 +62,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
                                                               IOrderForTest.sellOrderEURUSD());
     private final String mergeOrderLabel = "MergeLabel";
-    private final Observable<OrderEvent> testObservable = Observable.just(null);
 
     @Before
     public void setUp() {
@@ -88,11 +88,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     public void verifyOrderUtilMockCall(final Class<? extends OrderCallCommand> clazz) {
         verify(orderUtilHandlerMock).callObservable(any(clazz));
-    }
-
-    private void expectOnOrderUtilHandler(final Class<? extends OrderCallCommand> clazz) {
-        when(orderUtilHandlerMock.callObservable(any(clazz)))
-                .thenReturn(testObservable);
     }
 
     private void setOrderUtilHandlerExpectation(final Class<? extends OrderCallCommand> clazz,
@@ -446,50 +441,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
     }
 
-    @Test
-    public void setLabelCallsOnOrderUtilHandler() {
-        final String newLabel = "NewLabel";
-        expectOnOrderUtilHandler(SetLabelCommand.class);
-
-        final Observable<OrderEvent> observable =
-                orderUtil.setLabel(orderForTest, newLabel);
-
-        assertThat(observable, equalTo(testObservable));
-    }
-
-    @Test
-    public void setGTTCallsOnOrderUtilHandler() {
-        final long newGTT = 123456L;
-        expectOnOrderUtilHandler(SetGTTCommand.class);
-
-        final Observable<OrderEvent> observable =
-                orderUtil.setGoodTillTime(orderForTest, newGTT);
-
-        assertThat(observable, equalTo(testObservable));
-    }
-
-    @Test
-    public void setOpenPriceCallsOnOrderUtilHandler() {
-        final double newOpenPrice = 1.12122;
-        expectOnOrderUtilHandler(SetOpenPriceCommand.class);
-
-        final Observable<OrderEvent> observable =
-                orderUtil.setOpenPrice(orderForTest, newOpenPrice);
-
-        assertThat(observable, equalTo(testObservable));
-    }
-
-    @Test
-    public void setRequestedAmountCallsOnOrderUtilHandler() {
-        final double newRequestedAmount = 0.12;
-        expectOnOrderUtilHandler(SetAmountCommand.class);
-
-        final Observable<OrderEvent> observable =
-                orderUtil.setRequestedAmount(orderForTest, newRequestedAmount);
-
-        assertThat(observable, equalTo(testObservable));
-    }
-
     public class ChangeCallSetup {
 
         private Observable<OrderEvent> observable;
@@ -523,6 +474,98 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Test
             public void closeCallDoesNotCallOrderUtilHandlerWhenOrderAlreadyClosed() {
                 orderForTest.setState(newState);
+
+                assertNoOrderUtilHandlerCall();
+            }
+        }
+
+        public class SetLabelSetup {
+
+            private final String newLabel = "newLabel";
+
+            @Before
+            public void setUp() {
+                commandClass = SetLabelCommand.class;
+                observable = orderUtil.setLabel(orderForTest, newLabel);
+            }
+
+            @Test
+            public void setLabelCallsOnOrderUtilHandler() {
+                assertOrderUtilHandlerCall();
+            }
+
+            @Test
+            public void setLabelCallDoesNotCallOrderUtilHandlerWhenLabelAlreadySet() {
+                orderForTest.setLabel(newLabel);
+
+                assertNoOrderUtilHandlerCall();
+            }
+        }
+
+        public class SetGTTSetup {
+
+            private final Long newGTT = 1234L;
+
+            @Before
+            public void setUp() {
+                commandClass = SetGTTCommand.class;
+                observable = orderUtil.setGoodTillTime(orderForTest, newGTT);
+            }
+
+            @Test
+            public void setGTTCallsOnOrderUtilHandler() {
+                assertOrderUtilHandlerCall();
+            }
+
+            @Test
+            public void setGTTCallDoesNotCallOrderUtilHandlerWhenGTTAlreadySet() {
+                orderForTest.setGoodTillTime(newGTT);
+
+                assertNoOrderUtilHandlerCall();
+            }
+        }
+
+        public class SetAmountSetup {
+
+            private final double newAmount = 0.12;
+
+            @Before
+            public void setUp() {
+                commandClass = SetAmountCommand.class;
+                observable = orderUtil.setRequestedAmount(orderForTest, newAmount);
+            }
+
+            @Test
+            public void setAmountCallsOnOrderUtilHandler() {
+                assertOrderUtilHandlerCall();
+            }
+
+            @Test
+            public void setAmountCallDoesNotCallOrderUtilHandlerWhenAmountAlreadySet() {
+                orderForTest.setRequestedAmount(newAmount);
+
+                assertNoOrderUtilHandlerCall();
+            }
+        }
+
+        public class SetOpenPriceSetup {
+
+            private final double newOpenPrice = 1.1234;
+
+            @Before
+            public void setUp() {
+                commandClass = SetOpenPriceCommand.class;
+                observable = orderUtil.setOpenPrice(orderForTest, newOpenPrice);
+            }
+
+            @Test
+            public void setAmountCallsOnOrderUtilHandler() {
+                assertOrderUtilHandlerCall();
+            }
+
+            @Test
+            public void setOpenPriceCallDoesNotCallOrderUtilHandlerWhenOpenPriceAlreadySet() {
+                orderForTest.setOpenPrice(newOpenPrice);
 
                 assertNoOrderUtilHandlerCall();
             }
