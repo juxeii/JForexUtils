@@ -85,10 +85,13 @@ public class OrderUtil {
         checkNotNull(mergeOrderLabel);
         checkNotNull(toMergeOrders);
 
-        return orderUtilHandler
-                .callObservable(new MergeCommand(mergeOrderLabel, toMergeOrders, engine))
-                .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
-                                                                 OrderEventTypeData.mergeData));
+        return Observable
+                .just(toMergeOrders)
+                .filter(orders -> orders.size() > 1)
+                .flatMap(orders -> orderUtilHandler
+                        .callObservable(new MergeCommand(mergeOrderLabel, toMergeOrders, engine))
+                        .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
+                                                                         OrderEventTypeData.mergeData)));
     }
 
     private void addOrderToPositionIfDone(final OrderEvent orderEvent,
@@ -105,27 +108,23 @@ public class OrderUtil {
         checkNotNull(instrument);
 
         final Set<IOrder> toMergeOrders = position(instrument).filled();
-        if (toMergeOrders.size() < 2)
-            return Observable.empty();
 
-        logger.debug("Starting position merge for " + instrument
-                + " with label " + mergeOrderLabel);
-        final MergeCommand command = new MergeCommand(mergeOrderLabel,
-                                                      toMergeOrders,
-                                                      engine);
-        final Observable<OrderEvent> mergeAndRestoreObservable =
-                orderUtilHandler
-                        .callWithRetryObservable(command)
-                        .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
-                                                                         OrderEventTypeData.mergeData))
-                        .doOnTerminate(() -> position(instrument)
-                                .markAllOrders(OrderProcessState.IDLE));
-
+        logger.debug("Starting position merge for " + instrument + " with label " + mergeOrderLabel);
         return Observable
                 .just(toMergeOrders)
-                .doOnSubscribe(() -> position(instrument).markAllOrders(OrderProcessState.ACTIVE))
+                .filter(orders -> orders.size() > 1)
+                .doOnNext(orders -> position(instrument).markAllOrders(OrderProcessState.ACTIVE))
                 .flatMap(positionRemoveTPSLTask::observable)
-                .concatWith(mergeAndRestoreObservable)
+                .toCompletable()
+                .andThen(Observable
+                        .just(toMergeOrders)
+                        .filter(orders -> orders.size() > 1)
+                        .flatMap(event -> orderUtilHandler
+                                .callWithRetryObservable(new MergeCommand(mergeOrderLabel,
+                                                                          toMergeOrders,
+                                                                          engine)))
+                        .doOnNext(mergeEvent -> addOrderToPositionIfDone(mergeEvent,
+                                                                         OrderEventTypeData.mergeData)))
                 .doOnCompleted(() -> logger.debug("Position merge for " + instrument
                         + "  with label " + mergeOrderLabel + " was successful."));
     }
