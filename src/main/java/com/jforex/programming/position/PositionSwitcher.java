@@ -97,7 +97,6 @@ public final class PositionSwitcher {
                              () -> orderUtil
                                      .closePosition(instrument)
                                      .retryWhen(StreamUtil::retryObservable)
-                                     .toCompletable()
                                      .doOnTerminate(() -> fsm.fire(FSMTrigger.CLOSE_DONE))
                                      .subscribe())
                 .permitDynamic(FSMTrigger.MERGE_DONE,
