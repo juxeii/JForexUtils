@@ -122,7 +122,6 @@ public class JForexUtil {
         orderUtil = new OrderUtil(engine,
                                   positionFactory,
                                   orderUtilHandler,
-                                  positionSingleTask,
                                   positionRemoveTPSLTask);
     }
 

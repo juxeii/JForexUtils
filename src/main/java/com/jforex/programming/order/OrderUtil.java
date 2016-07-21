@@ -1,6 +1,7 @@
 package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 
 import java.util.Collection;
 import java.util.Set;
@@ -28,7 +29,6 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionRemoveTPSLTask;
-import com.jforex.programming.position.PositionSingleTask;
 
 import rx.Completable;
 import rx.Observable;
@@ -38,7 +38,6 @@ public class OrderUtil {
     private final IEngine engine;
     private final PositionFactory positionFactory;
     private final OrderUtilHandler orderUtilHandler;
-    private final PositionSingleTask positionSingleTask;
     private final PositionRemoveTPSLTask positionRemoveTPSLTask;
 
     private static final Logger logger = LogManager.getLogger(OrderUtil.class);
@@ -46,12 +45,10 @@ public class OrderUtil {
     public OrderUtil(final IEngine engine,
                      final PositionFactory positionFactory,
                      final OrderUtilHandler orderUtilHandler,
-                     final PositionSingleTask positionSingleTask,
                      final PositionRemoveTPSLTask positionRemoveTPSLTask) {
         this.engine = engine;
         this.positionFactory = positionFactory;
         this.orderUtilHandler = orderUtilHandler;
-        this.positionSingleTask = positionSingleTask;
         this.positionRemoveTPSLTask = positionRemoveTPSLTask;
     }
 
@@ -129,7 +126,9 @@ public class OrderUtil {
         return Observable
                 .from(position.filledOrOpened())
                 .doOnSubscribe(() -> position.markAllOrders(OrderProcessState.ACTIVE))
-                .flatMap(positionSingleTask::closeObservable)
+                .filter(order -> !isClosed.test(order))
+                .flatMap(order -> orderUtilHandler
+                        .callWithRetryObservable(new CloseCommand(order)))
                 .doOnTerminate(() -> position(instrument)
                         .markAllOrders(OrderProcessState.IDLE))
                 .doOnCompleted(() -> logger.debug("Closing position "

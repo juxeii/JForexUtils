@@ -8,6 +8,8 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
@@ -33,7 +35,6 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionRemoveTPSLTask;
-import com.jforex.programming.position.PositionSingleTask;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
@@ -53,13 +54,13 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private OrderUtilHandler orderUtilHandlerMock;
     @Mock
-    private PositionSingleTask positionSingleTaskMock;
-    @Mock
     private PositionRemoveTPSLTask positionRemoveTPSLTaskMock;
     @Mock
     private PositionOrders positionOrdersMock;
     @Mock
     private Position positionMock;
+    @Captor
+    private ArgumentCaptor<OrderCallCommand> callCommandCaptor;
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
     private final IOrderForTest orderForTest = IOrderForTest.buyOrderEURUSD();
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
@@ -74,7 +75,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         orderUtil = new OrderUtil(engineMock,
                                   positionFactoryMock,
                                   orderUtilHandlerMock,
-                                  positionSingleTaskMock,
                                   positionRemoveTPSLTaskMock);
     }
 
@@ -374,24 +374,16 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                         .closePosition(instrumentEURUSD)
                         .subscribe(orderEventSubscriber);
 
-        private void setPositionSingleTaskMockResult(final IOrder orderToClose,
-                                                     final Observable<OrderEvent> observable) {
-            when(positionSingleTaskMock.closeObservable(orderToClose))
-                    .thenReturn(observable);
-        }
-
         @Before
         public void setUp() {
             buyOrder.setState(IOrder.State.FILLED);
-            sellOrder.setState(IOrder.State.FILLED);
+            sellOrder.setState(IOrder.State.CLOSED);
             when(positionMock.filledOrOpened())
                     .thenReturn(ordersToClose);
         }
 
         @Test
         public void testAllPositionOrdersAreMarkedActive() {
-            setPositionSingleTaskMockResult(buyOrder, doneObservable());
-
             closeCompletableCall.run();
 
             verify(positionMock).markAllOrders(OrderProcessState.ACTIVE);
@@ -407,8 +399,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void testNoCallToSingleUtil() {
-                verify(positionSingleTaskMock, never()).closeObservable(any());
+            public void testNoCallToOrderUtilHandler() {
+                verify(orderUtilHandlerMock, never())
+                        .callWithRetryObservable(any());
             }
 
             @Test
@@ -417,62 +410,32 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
         }
 
-        public class CloseBuyOK {
+        public class CloseCall {
 
             @Before
             public void setUp() {
-                when(positionSingleTaskMock.closeObservable(buyOrder))
-                        .thenReturn(doneObservable());
-            }
-
-            public class CloseSellOK {
-
-                @Before
-                public void setUp() {
-                    when(positionSingleTaskMock.closeObservable(sellOrder))
-                            .thenReturn(doneObservable());
-
-                    closeCompletableCall.run();
-                }
-
-                @Test
-                public void testCloseOnSingleTaskForAllOrdersHasBeenCalled() {
-                    verify(positionSingleTaskMock).closeObservable(buyOrder);
-                    verify(positionSingleTaskMock).closeObservable(sellOrder);
-                }
-
-                @Test
-                public void testSubscriberCompleted() {
-                    orderEventSubscriber.assertCompleted();
-                }
-
-                @Test
-                public void positionOrdersAreMarkedAsIDLE() {
-                    verify(positionMock).markAllOrders(OrderProcessState.IDLE);
-                }
-            }
-        }
-
-        public class SingleTaskCallWithJFException {
-
-            @Before
-            public void setUp() {
-                when(positionSingleTaskMock.closeObservable(buyOrder))
-                        .thenReturn(exceptionObservable());
-                when(positionSingleTaskMock.closeObservable(sellOrder))
-                        .thenReturn(exceptionObservable());
-
                 closeCompletableCall.run();
             }
 
             @Test
-            public void testCloseOnOrderHasBeenCalledWithoutRetry() {
-                verify(positionSingleTaskMock).closeObservable(any());
+            public void onlyCloseForBuyOrderIsCalled() throws Exception {
+                verify(orderUtilHandlerMock)
+                        .callWithRetryObservable(callCommandCaptor.capture());
+
+                final OrderCallCommand command = callCommandCaptor.getValue();
+                command.callable().call();
+
+                verify(buyOrder).close();
             }
 
             @Test
-            public void testSubscriberGetsJFExceptionNotification() {
-                assertJFException(orderEventSubscriber);
+            public void closeForSellOrderIsNotCalledSinceAlreadyClosed() throws Exception {
+                verify(sellOrder, never()).close();
+            }
+
+            @Test
+            public void testSubscriberCompleted() {
+                orderEventSubscriber.assertCompleted();
             }
 
             @Test
