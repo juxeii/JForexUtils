@@ -15,7 +15,6 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
@@ -57,10 +56,6 @@ public class OrderUtil {
         return positionFactory.forInstrument(checkNotNull(instrument));
     }
 
-    private Position position(final Instrument instrument) {
-        return (Position) positionOrders(instrument);
-    }
-
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
         checkNotNull(orderParams);
 
@@ -68,6 +63,14 @@ public class OrderUtil {
                 .callObservable(new SubmitCommand(orderParams, engine))
                 .doOnNext(submitEvent -> addOrderToPositionIfDone(submitEvent,
                                                                   OrderEventTypeData.submitData));
+    }
+
+    private void addOrderToPositionIfDone(final OrderEvent orderEvent,
+                                          final OrderEventTypeData orderEventTypeData) {
+        if (orderEventTypeData.isDoneType(orderEvent.type())) {
+            final IOrder order = orderEvent.order();
+            position(order.getInstrument()).addOrder(order);
+        }
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
@@ -84,12 +87,8 @@ public class OrderUtil {
                                                                          OrderEventTypeData.mergeData)));
     }
 
-    private void addOrderToPositionIfDone(final OrderEvent orderEvent,
-                                          final OrderEventTypeData orderEventTypeData) {
-        if (orderEventTypeData.isDoneType(orderEvent.type())) {
-            final IOrder order = orderEvent.order();
-            position(order.getInstrument()).addOrder(order);
-        }
+    private Position position(final Instrument instrument) {
+        return (Position) positionOrders(instrument);
     }
 
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
@@ -109,6 +108,9 @@ public class OrderUtil {
                 .toCompletable()
                 .andThen(mergeOrders(mergeOrderLabel, toMergeOrders))
                 .doOnTerminate(() -> position.markAllOrders(OrderProcessState.IDLE))
+                .doOnError(e -> logger.error("Position merge for " + instrument
+                        + "  with label " + mergeOrderLabel + " failed!" +
+                        "Exception: " + e.getMessage()))
                 .doOnCompleted(() -> logger.debug("Position merge for " + instrument
                         + "  with label " + mergeOrderLabel + " was successful."));
     }
@@ -135,7 +137,9 @@ public class OrderUtil {
         return Observable
                 .just(orderToClose)
                 .filter(order -> !isClosed.test(order))
-                .flatMap(order -> orderUtilHandler.callObservable(new CloseCommand(order)));
+                .doOnNext(i -> logger.info("111111111111111"))
+                .flatMap(order -> orderUtilHandler.callObservable(new CloseCommand(order)))
+                .doOnError(i -> logger.info("22222222222222"));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
@@ -189,14 +193,6 @@ public class OrderUtil {
                 .filter(order -> !isTPSetTo(newTP).test(order))
                 .flatMap(order -> orderUtilHandler
                         .callObservable(new SetTPCommand(orderToChangeTP, newTP)));
-    }
-
-    public Observable<OrderEvent> retryObservable(final OrderEvent orderEvent) {
-        checkNotNull(orderEvent);
-
-        return Observable
-                .just(orderEvent)
-                .retryWhen(StreamUtil::retryObservable);
     }
 
     private Observable<OrderEvent> removeTPSLObservable(final Set<IOrder> filledOrders) {

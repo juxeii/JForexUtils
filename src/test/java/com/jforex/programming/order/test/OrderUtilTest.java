@@ -98,7 +98,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private void setOrderUtilHandlerExpectation(final Class<? extends OrderCallCommand> clazz,
                                                 final OrderEvent orderEvent) {
         when(orderUtilHandlerMock.callObservable(any(clazz)))
-                .thenReturn(doneEventObservable(orderEvent));
+                .thenReturn(eventObservable(orderEvent));
     }
 
     private void assertChangeCallCallsOnOrderUtilHandler(final Class<? extends OrderCallCommand> clazz,
@@ -147,7 +147,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         public void noOrderIsAddedWhenNoDoneEvent() {
             final OrderEvent submitOKEvent =
                     new OrderEvent(orderForTest, OrderEventType.SUBMIT_OK);
-            setOrderUtilHandlerMockResult(doneEventObservable(submitOKEvent));
+            setOrderUtilHandlerMockResult(eventObservable(submitOKEvent));
 
             orderUtil
                     .submitOrder(orderParams)
@@ -163,7 +163,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                setOrderUtilHandlerMockResult(doneEventObservable(submitDoneEvent));
+                setOrderUtilHandlerMockResult(eventObservable(submitDoneEvent));
 
                 orderUtil
                         .submitOrder(orderParams)
@@ -194,20 +194,27 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     public class MergeSetup {
 
+        private Runnable mergeCall;
+
         private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
             when(orderUtilHandlerMock.callObservable(any(MergeCommand.class)))
                     .thenReturn(observable);
+        }
+
+        @Before
+        public void setUp() {
+            mergeCall = () -> orderUtil
+                    .mergeOrders(mergeOrderLabel, toMergeOrders)
+                    .subscribe(orderEventSubscriber);
         }
 
         @Test
         public void noOrderIsAddedWhenNoDoneEvent() {
             final OrderEvent submitOKEvent =
                     new OrderEvent(orderForTest, OrderEventType.SUBMIT_OK);
-            setOrderUtilHandlerMockResult(doneEventObservable(submitOKEvent));
+            setOrderUtilHandlerMockResult(eventObservable(submitOKEvent));
 
-            orderUtil
-                    .mergeOrders(mergeOrderLabel, toMergeOrders)
-                    .subscribe(orderEventSubscriber);
+            mergeCall.run();
 
             verifyZeroInteractions(positionMock);
         }
@@ -219,11 +226,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                setOrderUtilHandlerMockResult(doneEventObservable(mergeDoneEvent));
+                setOrderUtilHandlerMockResult(eventObservable(mergeDoneEvent));
 
-                orderUtil
-                        .mergeOrders(mergeOrderLabel, toMergeOrders)
-                        .subscribe(orderEventSubscriber);
+                mergeCall.run();
             }
 
             @Test
@@ -252,15 +257,18 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         private final OrderEvent mergeEvent =
                 new OrderEvent(orderForTest, OrderEventType.MERGE_OK);
-        private final Runnable mergePositionCall =
-                () -> orderUtil
-                        .mergePositionOrders(mergeOrderLabel,
-                                             instrumentEURUSD)
-                        .subscribe(orderEventSubscriber);
+        private Runnable mergePositionCall;
 
         private void setOrderUtilHandlerRetryMockResult(final Observable<OrderEvent> observable) {
             when(orderUtilHandlerMock.callObservable(any(MergeCommand.class)))
                     .thenReturn(observable);
+        }
+
+        @Before
+        public void setUp() {
+            mergePositionCall = () -> orderUtil
+                    .mergePositionOrders(mergeOrderLabel, instrumentEURUSD)
+                    .subscribe(orderEventSubscriber);
         }
 
         public class NotEnoughOrdersForMerge {
@@ -269,10 +277,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             public void setUp() {
                 when(positionMock.filled()).thenReturn(Sets.newHashSet());
 
-                orderUtil
-                        .mergePositionOrders(mergeOrderLabel,
-                                             instrumentEURUSD)
-                        .subscribe(orderEventSubscriber);
+                mergePositionCall.run();
             }
 
             @Test
@@ -320,7 +325,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 @Before
                 public void setUp() {
-                    setOrderUtilHandlerRetryMockResult(doneEventObservable(mergeEvent));
+                    setOrderUtilHandlerRetryMockResult(eventObservable(mergeEvent));
 
                     mergePositionCall.run();
                 }

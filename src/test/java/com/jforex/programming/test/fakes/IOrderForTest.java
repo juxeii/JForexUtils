@@ -413,4 +413,8 @@ public class IOrderForTest implements IOrder {
     public static OrderEvent notificationEvent(final IOrder order) {
         return new OrderEvent(order, OrderEventType.NOTIFICATION);
     }
+
+    public static OrderEvent closeRejectEvent(final IOrder order) {
+        return new OrderEvent(order, OrderEventType.CLOSE_REJECTED);
+    }
 }

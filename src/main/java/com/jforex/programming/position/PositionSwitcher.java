@@ -11,6 +11,7 @@ import com.dukascopy.api.Instrument;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.google.common.collect.ImmutableMap;
+import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderParamsSupplier;
@@ -95,9 +96,10 @@ public final class PositionSwitcher {
                 .onEntryFrom(FSMTrigger.FLAT,
                              () -> orderUtil
                                      .closePosition(instrument)
-                                     .subscribe(orderEvent -> {},
-                                                error -> {},
-                                                () -> fsm.fire(FSMTrigger.CLOSE_DONE)))
+                                     .retryWhen(StreamUtil::retryObservable)
+                                     .toCompletable()
+                                     .doOnTerminate(() -> fsm.fire(FSMTrigger.CLOSE_DONE))
+                                     .subscribe())
                 .permitDynamic(FSMTrigger.MERGE_DONE,
                                () -> nextStatesByDirection.get(positionOrders.direction()))
                 .permit(FSMTrigger.CLOSE_DONE, FSMState.FLAT)

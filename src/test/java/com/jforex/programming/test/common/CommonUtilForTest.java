@@ -182,7 +182,7 @@ public class CommonUtilForTest extends BDDMockito {
         return Observable.empty();
     }
 
-    public Observable<OrderEvent> doneEventObservable(final OrderEvent orderEvent) {
+    public Observable<OrderEvent> eventObservable(final OrderEvent orderEvent) {
         return Observable.just(orderEvent);
     }
 
