@@ -129,6 +129,7 @@ public final class PositionSwitcher {
                 .submitOrder(adaptedOrderParams)
                 .concatWith(Observable.defer(() -> orderUtil.mergePositionOrders(mergeLabel,
                                                                                  instrument)))
+                .retryWhen(StreamUtil::retryObservable)
                 .doOnTerminate(() -> fsm.fire(FSMTrigger.MERGE_DONE))
                 .subscribe();
     }
