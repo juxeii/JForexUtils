@@ -226,7 +226,7 @@ public class OrderUtil {
     }
 
     private final Observable<OrderEvent> removeSingleTPSLObservable(final IOrder orderToRemoveSLTP) {
-        return setStopLossPrice(orderToRemoveSLTP, platformSettings.noTPPrice())
-                .concatWith(setTakeProfitPrice(orderToRemoveSLTP, platformSettings.noSLPrice()));
+        return setTakeProfitPrice(orderToRemoveSLTP, platformSettings.noSLPrice())
+                .concatWith(setStopLossPrice(orderToRemoveSLTP, platformSettings.noTPPrice()));
     }
 }
