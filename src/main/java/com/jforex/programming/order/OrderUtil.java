@@ -16,6 +16,9 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
@@ -32,10 +35,6 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.settings.PlatformSettings;
-
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 

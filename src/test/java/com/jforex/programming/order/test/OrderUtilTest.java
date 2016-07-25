@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
@@ -35,8 +36,6 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IOrder;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -88,12 +87,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     public void verifyOrderUtilMockCall(final Class<? extends OrderCallCommand> clazz) {
-        verify(orderUtilHandlerMock).callObservable(any(clazz));
+        verify(orderUtilHandlerMock).callObservable(isA(clazz));
     }
 
     private void setOrderUtilHandlerExpectation(final Class<? extends OrderCallCommand> clazz,
                                                 final OrderEvent orderEvent) {
-        when(orderUtilHandlerMock.callObservable(any(clazz)))
+        when(orderUtilHandlerMock.callObservable(isA(clazz)))
                 .thenReturn(eventObservable(orderEvent));
     }
 
@@ -255,7 +254,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         private void setOrderUtilHandlerResult(final Class<? extends OrderCallCommand> clazz,
                                                final Observable<OrderEvent> observable) {
-            when(orderUtilHandlerMock.callObservable(any(clazz)))
+            when(orderUtilHandlerMock.callObservable(isA(clazz)))
                     .thenReturn(observable);
         }
 
@@ -335,11 +334,39 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 private final OrderEvent setTPEvent =
                         new OrderEvent(buyOrder, OrderEventType.CHANGED_TP);
+                private final OrderEvent setSLEvent =
+                        new OrderEvent(buyOrder, OrderEventType.CHANGED_SL);
 
                 @Before
                 public void setUp() {
                     setOrderUtilHandlerResult(SetTPCommand.class,
                                               eventObservable(setTPEvent));
+                    setOrderUtilHandlerResult(SetSLCommand.class,
+                                              eventObservable(setSLEvent));
+                }
+
+                public class MergeCallFail {
+
+                    private final OrderEvent rejectEvent =
+                            new OrderEvent(orderForTest, OrderEventType.MERGE_REJECTED);
+
+                    @Before
+                    public void setUp() {
+                        setOrderUtilHandlerResult(MergeCommand.class,
+                                                  rejectObservable(rejectEvent));
+
+                        mergePositionCall.run();
+                    }
+
+                    @Test
+                    public void allPositionOrdersAreMarkedIDLEAgain() {
+                        verify(positionMock).markAllOrders(OrderProcessState.IDLE);
+                    }
+
+                    @Test
+                    public void subscriberErrors() {
+                        orderEventSubscriber.assertError(OrderCallRejectException.class);
+                    }
                 }
 
                 public class MergeOKCall {
