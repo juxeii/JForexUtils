@@ -69,6 +69,11 @@ public final class OrderEventTypeSets {
                                   CHANGE_AMOUNT_REJECTED,
                                   CHANGE_PRICE_REJECTED);
 
+    public static final Set<OrderEventType> createEventTypes =
+            Sets.immutableEnumSet(EnumSet.of(FULLY_FILLED,
+                                             SUBMIT_CONDITIONAL_OK,
+                                             MERGE_OK));
+
     public static final Set<OrderEventType> finishEventTypes =
             Sets.immutableEnumSet(Sets.union(doneEventTypes, rejectEventTypes));
 }

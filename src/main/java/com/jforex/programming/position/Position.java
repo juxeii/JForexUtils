@@ -6,6 +6,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static java.util.stream.Collectors.toSet;
 
+import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
@@ -52,8 +53,18 @@ public class Position implements PositionOrders {
                 + order.getState() + " repo size " + orderRepository.size());
     }
 
-    public synchronized void markAllOrders(final OrderProcessState orderProcessState) {
-        orderRepository.replaceAll((k, v) -> orderProcessState);
+    public synchronized void markOrdersActive(final Collection<IOrder> orders) {
+        orders.forEach(order -> {
+            if (orderRepository.containsKey(order))
+                orderRepository.put(order, OrderProcessState.ACTIVE);
+        });
+    }
+
+    public synchronized void markOrdersIdle(final Collection<IOrder> orders) {
+        orders.forEach(order -> {
+            if (orderRepository.containsKey(order))
+                orderRepository.put(order, OrderProcessState.IDLE);
+        });
     }
 
     private synchronized void removeOrder(final IOrder order) {

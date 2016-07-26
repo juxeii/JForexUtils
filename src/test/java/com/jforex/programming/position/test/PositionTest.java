@@ -13,11 +13,11 @@ import org.junit.runner.RunWith;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
+import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.position.OrderProcessState;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
@@ -217,7 +217,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Before
                     public void setUp() {
-                        position.markAllOrders(OrderProcessState.ACTIVE);
+                        position.markOrdersActive(Sets.newHashSet(buyOrder, sellOrder));
                     }
 
                     @Test
@@ -289,7 +289,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         @Before
                         public void setUp() {
-                            position.markAllOrders(OrderProcessState.IDLE);
+                            position.markOrdersIdle(Sets.newHashSet(buyOrder, sellOrder));
                         }
 
                         @Test
