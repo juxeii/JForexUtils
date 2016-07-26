@@ -124,7 +124,7 @@ public class OrderUtil {
         return Observable
                 .from(position.filledOrOpened())
                 .doOnSubscribe(() -> {
-                    logger.debug("Starting position close for " + checkNotNull(instrument));
+                    logger.debug("Starting position close for " + instrument);
                     position.markAllOrders(OrderProcessState.ACTIVE);
                 })
                 .flatMap(this::close)
@@ -136,20 +136,16 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        checkNotNull(orderToClose);
-
         return Observable
-                .just(orderToClose)
+                .just(checkNotNull(orderToClose))
                 .filter(order -> !isClosed.test(order))
                 .flatMap(order -> orderUtilHandler.callObservable(new CloseCommand(order)));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
                                            final String newLabel) {
-        checkNotNull(orderToChangeLabel);
-
         return Observable
-                .just(orderToChangeLabel)
+                .just(checkNotNull(orderToChangeLabel))
                 .filter(order -> !isLabelSetTo(newLabel).test(order))
                 .flatMap(order -> orderUtilHandler
                         .callObservable(new SetLabelCommand(orderToChangeLabel, newLabel)));
@@ -157,10 +153,8 @@ public class OrderUtil {
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
                                                   final long newGTT) {
-        checkNotNull(orderToChangeGTT);
-
         return Observable
-                .just(orderToChangeGTT)
+                .just(checkNotNull(orderToChangeGTT))
                 .filter(order -> !isGTTSetTo(newGTT).test(order))
                 .flatMap(order -> orderUtilHandler
                         .callObservable(new SetGTTCommand(orderToChangeGTT, newGTT)));
@@ -168,10 +162,8 @@ public class OrderUtil {
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
-        checkNotNull(orderToChangeOpenPrice);
-
         return Observable
-                .just(orderToChangeOpenPrice)
+                .just(checkNotNull(orderToChangeOpenPrice))
                 .filter(order -> !isOpenPriceSetTo(newOpenPrice).test(order))
                 .flatMap(order -> orderUtilHandler
                         .callObservable(new SetOpenPriceCommand(orderToChangeOpenPrice, newOpenPrice)));
@@ -179,10 +171,8 @@ public class OrderUtil {
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
                                                      final double newRequestedAmount) {
-        checkNotNull(orderToChangeAmount);
-
         return Observable
-                .just(orderToChangeAmount)
+                .just(checkNotNull(orderToChangeAmount))
                 .filter(order -> !isAmountSetTo(newRequestedAmount).test(order))
                 .flatMap(order -> orderUtilHandler
                         .callObservable(new SetAmountCommand(orderToChangeAmount, newRequestedAmount)));
@@ -190,10 +180,8 @@ public class OrderUtil {
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
                                                    final double newSL) {
-        checkNotNull(orderToChangeSL);
-
         return Observable
-                .just(orderToChangeSL)
+                .just(checkNotNull(orderToChangeSL))
                 .filter(order -> !isSLSetTo(newSL).test(order))
                 .flatMap(order -> orderUtilHandler
                         .callObservable(new SetSLCommand(orderToChangeSL, newSL)));
@@ -201,10 +189,8 @@ public class OrderUtil {
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
                                                      final double newTP) {
-        checkNotNull(orderToChangeTP);
-
         return Observable
-                .just(orderToChangeTP)
+                .just(checkNotNull(orderToChangeTP))
                 .filter(order -> !isTPSetTo(newTP).test(order))
                 .flatMap(order -> orderUtilHandler
                         .callObservable(new SetTPCommand(orderToChangeTP, newTP)));
