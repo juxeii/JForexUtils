@@ -16,9 +16,6 @@ import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.dukascopy.api.IEngine;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.OrderCallCommand;
@@ -35,6 +32,10 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.settings.PlatformSettings;
+
+import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 
 import rx.Observable;
 
@@ -139,18 +140,21 @@ public class OrderUtil {
     public Observable<OrderEvent> closePosition(final Instrument instrument) {
         final Position position = position(checkNotNull(instrument));
         final Set<IOrder> ordersToClose = position.filledOrOpened();
-        return Observable
-                .from(ordersToClose)
-                .doOnSubscribe(() -> {
-                    logger.debug("Starting position close for " + instrument);
-                    position.markOrdersActive(ordersToClose);
-                })
-                .flatMap(this::close)
-                .doOnTerminate(() -> position.markOrdersIdle(ordersToClose))
-                .doOnCompleted(() -> logger.debug("Closing position "
-                        + instrument + " was successful."))
-                .doOnError(e -> logger.error("Closing position " + instrument
-                        + " failed! Exception: " + e.getMessage()));
+
+        return ordersToClose.isEmpty()
+                ? Observable.empty()
+                : Observable
+                        .from(ordersToClose)
+                        .doOnSubscribe(() -> {
+                            logger.debug("Starting position close for " + instrument);
+                            position.markOrdersActive(ordersToClose);
+                        })
+                        .flatMap(this::close)
+                        .doOnTerminate(() -> position.markOrdersIdle(ordersToClose))
+                        .doOnCompleted(() -> logger.debug("Closing position "
+                                + instrument + " was successful."))
+                        .doOnError(e -> logger.error("Closing position " + instrument
+                                + " failed! Exception: " + e.getMessage()));
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
