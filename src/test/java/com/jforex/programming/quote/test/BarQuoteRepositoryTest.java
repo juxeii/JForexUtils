@@ -29,24 +29,24 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
 
         @Test
         public void askQuoteForEURUSDComesFromHistory() {
-            when(historyUtilMock.latestBar(askBarEURUSDParams))
+            when(historyUtilMock.barQuote(askBarEURUSDParams))
                     .thenReturn(askBarEURUSD);
 
             final BarQuote receivedQuoteEURUSD = barQuoteRepository.get(askBarEURUSDParams);
 
             assertEqualBarQuotes(receivedQuoteEURUSD, askBarQuoteEURUSD);
-            verify(historyUtilMock).latestBar(askBarEURUSDParams);
+            verify(historyUtilMock).barQuote(askBarEURUSDParams);
         }
 
         @Test
         public void bidQuoteForAUDUSDComesFromHistory() {
-            when(historyUtilMock.latestBar(bidBarAUDUSDParams))
+            when(historyUtilMock.barQuote(bidBarAUDUSDParams))
                     .thenReturn(bidBarAUDUSD);
 
             final BarQuote receivedQuoteAUDUSD = barQuoteRepository.get(bidBarAUDUSDParams);
 
             assertEqualBarQuotes(receivedQuoteAUDUSD, bidBarQuoteAUDUSD);
-            verify(historyUtilMock).latestBar(bidBarAUDUSDParams);
+            verify(historyUtilMock).barQuote(bidBarAUDUSDParams);
         }
 
         public class AfterReceivedBars {

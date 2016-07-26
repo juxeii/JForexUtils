@@ -33,7 +33,7 @@ public class HistoryUtilTest extends QuoteProviderForTest {
     public void latestTickIsCorrect() throws JFException {
         when(historyMock.getLastTick(instrumentEURUSD)).thenReturn(tickEURUSD);
 
-        final ITick latestTick = historyUtil.latestTick(instrumentEURUSD);
+        final ITick latestTick = historyUtil.tickQuote(instrumentEURUSD);
 
         assertThat(latestTick, equalTo(tickEURUSD));
     }
@@ -46,7 +46,7 @@ public class HistoryUtilTest extends QuoteProviderForTest {
                 .thenThrow(jfException)
                 .thenReturn(tickEURUSD);
 
-        final ITick latestTick = historyUtil.latestTick(instrumentEURUSD);
+        final ITick latestTick = historyUtil.tickQuote(instrumentEURUSD);
 
         assertThat(latestTick, equalTo(tickEURUSD));
         verify(historyMock, times(4)).getLastTick(instrumentEURUSD);
@@ -57,7 +57,7 @@ public class HistoryUtilTest extends QuoteProviderForTest {
         when(historyMock.getLastTick(instrumentEURUSD))
                 .thenReturn(null);
 
-        historyUtil.latestTick(instrumentEURUSD);
+        historyUtil.tickQuote(instrumentEURUSD);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class HistoryUtilTest extends QuoteProviderForTest {
         when(historyMock.getBar(instrumentEURUSD, barQuotePeriod, OfferSide.ASK, 1))
                 .thenReturn(askBarEURUSD);
 
-        final IBar latestBar = historyUtil.latestBar(askBarEURUSDParams);
+        final IBar latestBar = historyUtil.barQuote(askBarEURUSDParams);
 
         assertThat(latestBar, equalTo(askBarEURUSD));
     }
@@ -91,7 +91,7 @@ public class HistoryUtilTest extends QuoteProviderForTest {
                 .thenThrow(jfException)
                 .thenReturn(askBarEURUSD);
 
-        final IBar latestBar = historyUtil.latestBar(askBarEURUSDParams);
+        final IBar latestBar = historyUtil.barQuote(askBarEURUSDParams);
 
         assertThat(latestBar, equalTo(askBarEURUSD));
         verify(historyMock, times(4)).getBar(instrumentEURUSD,
@@ -105,6 +105,6 @@ public class HistoryUtilTest extends QuoteProviderForTest {
         when(historyMock.getBar(instrumentEURUSD, barQuotePeriod, OfferSide.ASK, 1))
                 .thenReturn(null);
 
-        historyUtil.latestBar(askBarEURUSDParams);
+        historyUtil.barQuote(askBarEURUSDParams);
     }
 }

@@ -39,7 +39,7 @@ public class BarQuoteRepository {
     }
 
     private BarQuote quoteFromHistory(final BarQuoteParams barQuoteParams) {
-        final IBar historyBar = historyUtil.latestBar(barQuoteParams);
+        final IBar historyBar = historyUtil.barQuote(barQuoteParams);
         final BarQuote barQuote = new BarQuote(barQuoteParams, historyBar);
 
         onBarQuote(barQuote);
