@@ -106,12 +106,12 @@ public class OrderUtil {
         checkNotNull(instrument);
 
         return mergeOrders(mergeOrderLabel, position(instrument).filled())
-                .doOnSubscribe(() -> logger.debug("Starting position merge for " +
+                .doOnSubscribe(() -> logger.info("Starting position merge for " +
                         instrument + " with label " + mergeOrderLabel))
                 .doOnError(e -> logger.error("Position merge for " + instrument
                         + "  with label " + mergeOrderLabel + " failed!" +
                         "Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.debug("Position merge for " + instrument
+                .doOnCompleted(() -> logger.info("Position merge for " + instrument
                         + "  with label " + mergeOrderLabel + " was successful."));
     }
 
@@ -120,12 +120,12 @@ public class OrderUtil {
 
         return Observable
                 .from(filledOrders)
-                .doOnSubscribe(() -> logger.debug("Starting remove TPSL task for position "
+                .doOnSubscribe(() -> logger.info("Starting remove TPSL task for position "
                         + instrument))
                 .flatMap(this::removeSingleTPSLObservable)
                 .doOnError(e -> logger.error("Removing TPSL from " + instrument
                         + " failed! Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.debug("Removing TPSL task from "
+                .doOnCompleted(() -> logger.info("Removing TPSL task from "
                         + instrument + " was successful."));
     }
 
@@ -143,12 +143,12 @@ public class OrderUtil {
                 : Observable
                         .from(ordersToClose)
                         .doOnSubscribe(() -> {
-                            logger.debug("Starting position close for " + instrument);
+                            logger.info("Starting position close for " + instrument);
                             position.markOrdersActive(ordersToClose);
                         })
                         .flatMap(this::close)
                         .doOnTerminate(() -> position.markOrdersIdle(ordersToClose))
-                        .doOnCompleted(() -> logger.debug("Closing position "
+                        .doOnCompleted(() -> logger.info("Closing position "
                                 + instrument + " was successful."))
                         .doOnError(e -> logger.error("Closing position " + instrument
                                 + " failed! Exception: " + e.getMessage()));
