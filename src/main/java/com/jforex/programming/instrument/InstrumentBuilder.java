@@ -5,20 +5,21 @@ import static java.util.stream.Collectors.toSet;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.collections4.keyvalue.MultiKey;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.math.MathUtil;
-import com.jforex.programming.misc.Memoizer;
 import com.jforex.programming.misc.StreamUtil;
 
 public final class InstrumentBuilder {
 
-    private static final Function<ICurrency, Function<ICurrency, Instrument>> memoizedFromCurrencies =
-            Memoizer.memoize(c1 -> c2 -> fromCurrencies(c1, c2));
+    private static final Map<MultiKey<Object>, Instrument> instrumentByCurrencies = new ConcurrentHashMap<>();
 
     private InstrumentBuilder() {
     }
@@ -37,7 +38,10 @@ public final class InstrumentBuilder {
                                                                  final ICurrency secondCurrency) {
         return checkNotNull(firstCurrency).equals(checkNotNull(secondCurrency))
                 ? Optional.empty()
-                : Optional.of(memoizedFromCurrencies.apply(firstCurrency).apply(secondCurrency));
+                : Optional.of(instrumentByCurrencies.computeIfAbsent(new MultiKey<Object>(firstCurrency,
+                                                                                          secondCurrency),
+                                                                     k -> fromCurrencies(firstCurrency,
+                                                                                         secondCurrency)));
     }
 
     private static Instrument fromCurrencies(final ICurrency firstCurrency,

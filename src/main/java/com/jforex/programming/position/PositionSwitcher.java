@@ -135,7 +135,7 @@ public final class PositionSwitcher {
 
     private final OrderParams adaptedOrderParams(final OrderCommand newOrderCommand) {
         final double absPositionExposure = Math.abs(positionOrders.signedExposure());
-        final OrderParams orderParams = orderParamsSupplier.get(newOrderCommand);
+        final OrderParams orderParams = orderParamsSupplier.forCommand(newOrderCommand);
 
         return orderParams
                 .clone()
