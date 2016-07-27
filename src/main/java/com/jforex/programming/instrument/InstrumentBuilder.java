@@ -24,7 +24,7 @@ public final class InstrumentBuilder {
     private InstrumentBuilder() {
     }
 
-    public static final Optional<Instrument> fromName(final String instrumentName) {
+    public static final Optional<Instrument> maybeFromName(final String instrumentName) {
         return fromString(checkNotNull(instrumentName).toUpperCase());
     }
 

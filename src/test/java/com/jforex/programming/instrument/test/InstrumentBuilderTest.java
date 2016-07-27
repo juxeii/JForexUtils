@@ -2,7 +2,7 @@ package com.jforex.programming.instrument.test;
 
 import static com.jforex.programming.instrument.InstrumentBuilder.combineAllFromCurrencySet;
 import static com.jforex.programming.instrument.InstrumentBuilder.combineAllWithAnchorCurrency;
-import static com.jforex.programming.instrument.InstrumentBuilder.fromName;
+import static com.jforex.programming.instrument.InstrumentBuilder.maybeFromName;
 import static com.jforex.programming.instrument.InstrumentBuilder.maybeFromCurrencies;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -51,25 +51,25 @@ public class InstrumentBuilderTest extends CurrencyUtilForTest {
 
     @Test
     public void testFromNameReturnsEmptyOptionalForInvalidInstrumentName() {
-        assertFalse(fromName(invalidEmptyCurrencyName).isPresent());
-        assertFalse(fromName(currencyNameEUR).isPresent());
-        assertFalse(fromName(currencyNameEUR).isPresent());
-        assertFalse(fromName("EURUSD").isPresent());
-        assertFalse(fromName("eurusd").isPresent());
+        assertFalse(maybeFromName(invalidEmptyCurrencyName).isPresent());
+        assertFalse(maybeFromName(currencyNameEUR).isPresent());
+        assertFalse(maybeFromName(currencyNameEUR).isPresent());
+        assertFalse(maybeFromName("EURUSD").isPresent());
+        assertFalse(maybeFromName("eurusd").isPresent());
     }
 
     @Test
     public void testFromNameReturnsOptionalWithCorrectInstrument() {
-        assertThat(fromName("EUR/USD").get(), equalTo(instrumentEURUSD));
-        assertThat(fromName("eUr/UsD").get(), equalTo(instrumentEURUSD));
-        assertThat(fromName("USD/EUR").get(), equalTo(instrumentEURUSD));
-        assertThat(fromName("UsD/eUr").get(), equalTo(instrumentEURUSD));
+        assertThat(maybeFromName("EUR/USD").get(), equalTo(instrumentEURUSD));
+        assertThat(maybeFromName("eUr/UsD").get(), equalTo(instrumentEURUSD));
+        assertThat(maybeFromName("USD/EUR").get(), equalTo(instrumentEURUSD));
+        assertThat(maybeFromName("UsD/eUr").get(), equalTo(instrumentEURUSD));
     }
 
     @Test
     public void testFromNameReturnsOptionalWithCorrectInstrumentForInvertedInstrumentName() {
-        assertThat(fromName("USD/EUR").get(), equalTo(instrumentEURUSD));
-        assertThat(fromName("UsD/eUr").get(), equalTo(instrumentEURUSD));
+        assertThat(maybeFromName("USD/EUR").get(), equalTo(instrumentEURUSD));
+        assertThat(maybeFromName("UsD/eUr").get(), equalTo(instrumentEURUSD));
     }
 
     @Test
