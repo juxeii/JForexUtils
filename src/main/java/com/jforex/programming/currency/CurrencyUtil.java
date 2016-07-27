@@ -33,7 +33,7 @@ public final class CurrencyUtil {
         checkNotNull(instrument);
 
         return CurrencyBuilder
-                .fromName(currencyName)
+                .maybeFromName(currencyName)
                 .map(currency -> isInInstrument(currency, instrument))
                 .orElse(false);
     }

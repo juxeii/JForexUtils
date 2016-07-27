@@ -1,6 +1,8 @@
 package com.jforex.programming.instrument.test;
 
 import static com.jforex.programming.instrument.InstrumentUtil.baseJavaCurrency;
+import static com.jforex.programming.instrument.InstrumentUtil.currencies;
+import static com.jforex.programming.instrument.InstrumentUtil.currenciesFromCollection;
 import static com.jforex.programming.instrument.InstrumentUtil.nameFromCurrencies;
 import static com.jforex.programming.instrument.InstrumentUtil.numberOfDigits;
 import static com.jforex.programming.instrument.InstrumentUtil.quoteJavaCurrency;
@@ -10,9 +12,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import com.dukascopy.api.ICurrency;
+import com.dukascopy.api.Instrument;
+import com.google.common.collect.Sets;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.test.common.QuoteProviderForTest;
@@ -20,6 +28,11 @@ import com.jforex.programming.test.common.QuoteProviderForTest;
 public class InstrumentUtilTest extends QuoteProviderForTest {
 
     private InstrumentUtil instrumentUtil;
+
+    private final Set<Instrument> instrumentsAsSet = Sets.newHashSet(instrumentEURUSD,
+                                                                     instrumentUSDJPY);
+    private final Instrument instrumentsAsArray[] =
+            instrumentsAsSet.stream().toArray(Instrument[]::new);
 
     @Before
     public void setUp() {
@@ -32,6 +45,13 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
 
     private void setUpMocks() {
         setTickExpectations(tickQuoteEURUSD);
+    }
+
+    private void assertCurrenciesFromInstruments(final Set<ICurrency> currencies) {
+        assertThat(currencies.size(), equalTo(3));
+        assertTrue(currencies.contains(currencyEUR));
+        assertTrue(currencies.contains(currencyUSD));
+        assertTrue(currencies.contains(currencyJPY));
     }
 
     @Test
@@ -135,5 +155,29 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
         assertThat(nameFromCurrencies(currencyEUR, currencyEUR), equalTo("EUR/EUR"));
         assertThat(nameFromCurrencies(currencyEUR, currencyUSD), equalTo("EUR/USD"));
         assertThat(nameFromCurrencies(currencyUSD, currencyEUR), equalTo("USD/EUR"));
+    }
+
+    @Test
+    public void testCurrenciesFromInstrument() {
+        final Set<ICurrency> currencies = currencies(instrumentEURUSD);
+
+        assertThat(currencies.size(), equalTo(2));
+        assertTrue(currencies.contains(currencyEUR));
+        assertTrue(currencies.contains(currencyUSD));
+    }
+
+    @Test
+    public void testFromInstrumentsRetunsEmptySetForEmptyCollection() {
+        assertTrue(currenciesFromCollection(Collections.<Instrument> emptySet()).isEmpty());
+    }
+
+    @Test
+    public void testFromInstrumentsWithCollection() {
+        assertCurrenciesFromInstruments(currenciesFromCollection(instrumentsAsSet));
+    }
+
+    @Test
+    public void testFromInstrumentsWithEllipsis() {
+        assertCurrenciesFromInstruments(currenciesFromCollection(instrumentsAsArray));
     }
 }

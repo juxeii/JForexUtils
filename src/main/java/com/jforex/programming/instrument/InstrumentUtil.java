@@ -1,8 +1,13 @@
 package com.jforex.programming.instrument;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toSet;
 
+import java.util.Collection;
 import java.util.Currency;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ICurrency;
@@ -10,8 +15,8 @@ import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.currency.CurrencyUtil;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.BarParams;
+import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.TickQuoteHandler;
 
 public final class InstrumentUtil {
@@ -118,5 +123,25 @@ public final class InstrumentUtil {
                 .toString()
                 .concat(pairsSeparator)
                 .concat(quoteCurrency.toString());
+    }
+
+    public static final Set<ICurrency> currencies(final Instrument instrument) {
+        checkNotNull(instrument);
+
+        return Stream.of(instrument.getPrimaryJFCurrency(),
+                         instrument.getSecondaryJFCurrency())
+                .collect(toSet());
+    }
+
+    public static final Set<ICurrency> currenciesFromCollection(final Collection<Instrument> instruments) {
+        return checkNotNull(instruments)
+                .stream()
+                .map(InstrumentUtil::currencies)
+                .flatMap(Set::stream)
+                .collect(toSet());
+    }
+
+    public static final Set<ICurrency> currenciesFromCollection(final Instrument... instruments) {
+        return InstrumentUtil.currenciesFromCollection(asList(checkNotNull(instruments)));
     }
 }

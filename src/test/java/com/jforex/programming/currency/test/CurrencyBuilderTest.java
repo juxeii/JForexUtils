@@ -1,8 +1,6 @@
 package com.jforex.programming.currency.test;
 
-import static com.jforex.programming.currency.CurrencyBuilder.fromInstrument;
-import static com.jforex.programming.currency.CurrencyBuilder.fromInstruments;
-import static com.jforex.programming.currency.CurrencyBuilder.fromName;
+import static com.jforex.programming.currency.CurrencyBuilder.maybeFromName;
 import static com.jforex.programming.currency.CurrencyBuilder.fromNames;
 import static com.jforex.programming.currency.CurrencyBuilder.instanceFromName;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,7 +14,6 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.dukascopy.api.ICurrency;
-import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.currency.CurrencyBuilder;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
@@ -28,28 +25,16 @@ public class CurrencyBuilderTest extends CurrencyUtilForTest {
                                                                    currencyNameLowerCaseJPY,
                                                                    currencyNameEUR);
 
-    private final Set<Instrument> instrumentsAsSet = Sets.newHashSet(instrumentEURUSD,
-                                                                     instrumentUSDJPY);
-
     private final String currencyNamesAsArray[] =
             currencyNamesAsSet.stream().toArray(String[]::new);
-    private final Instrument instrumentsAsArray[] =
-            instrumentsAsSet.stream().toArray(Instrument[]::new);
 
     private ICurrency currencyForValidCurrencyName(final String currencyName) {
-        return fromName(currencyName).get();
+        return maybeFromName(currencyName).get();
     }
 
     private void assertCurrenciesFromNames(final Set<ICurrency> currencies) {
         assertThat(currencies.size(), equalTo(2));
         assertTrue(currencies.contains(currencyEUR));
-        assertTrue(currencies.contains(currencyJPY));
-    }
-
-    private void assertCurrenciesFromInstruments(final Set<ICurrency> currencies) {
-        assertThat(currencies.size(), equalTo(3));
-        assertTrue(currencies.contains(currencyEUR));
-        assertTrue(currencies.contains(currencyUSD));
         assertTrue(currencies.contains(currencyJPY));
     }
 
@@ -60,8 +45,8 @@ public class CurrencyBuilderTest extends CurrencyUtilForTest {
 
     @Test
     public void testFromNameReturnsEmptyOptionalForInvalidName() {
-        assertThat(fromName(invalidEmptyCurrencyName), equalTo(Optional.empty()));
-        assertThat(fromName(invalidLowerCaseCurrencyName), equalTo(Optional.empty()));
+        assertThat(maybeFromName(invalidEmptyCurrencyName), equalTo(Optional.empty()));
+        assertThat(maybeFromName(invalidLowerCaseCurrencyName), equalTo(Optional.empty()));
     }
 
     @Test
@@ -92,29 +77,5 @@ public class CurrencyBuilderTest extends CurrencyUtilForTest {
     @Test
     public void testFromNamesWithEllipsis() {
         assertCurrenciesFromNames(fromNames(currencyNamesAsArray));
-    }
-
-    @Test
-    public void testFromInstrument() {
-        final Set<ICurrency> currencies = fromInstrument(instrumentEURUSD);
-
-        assertThat(currencies.size(), equalTo(2));
-        assertTrue(currencies.contains(currencyEUR));
-        assertTrue(currencies.contains(currencyUSD));
-    }
-
-    @Test
-    public void testFromInstrumentsRetunsEmptySetForEmptyCollection() {
-        assertTrue(fromInstruments(Collections.<Instrument> emptySet()).isEmpty());
-    }
-
-    @Test
-    public void testFromInstrumentsWithCollection() {
-        assertCurrenciesFromInstruments(fromInstruments(instrumentsAsSet));
-    }
-
-    @Test
-    public void testFromInstrumentsWithEllipsis() {
-        assertCurrenciesFromInstruments(fromInstruments(instrumentsAsArray));
     }
 }
