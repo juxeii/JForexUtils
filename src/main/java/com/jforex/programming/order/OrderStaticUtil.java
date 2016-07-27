@@ -9,17 +9,16 @@ import java.util.function.Predicate;
 
 import org.aeonbits.owner.ConfigFactory;
 
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.settings.PlatformSettings;
-
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
 
 public final class OrderStaticUtil {
 

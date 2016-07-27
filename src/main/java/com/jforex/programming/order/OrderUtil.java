@@ -55,10 +55,14 @@ public class OrderUtil {
     }
 
     private Position position(final Collection<IOrder> orders) {
-        return position(orders
+        return position(instrumentFromCollection(orders));
+    }
+
+    private Instrument instrumentFromCollection(final Collection<IOrder> orders) {
+        return orders
                 .iterator()
                 .next()
-                .getInstrument());
+                .getInstrument();
     }
 
     private Position position(final Instrument instrument) {
@@ -69,10 +73,10 @@ public class OrderUtil {
         checkNotNull(orderParams);
 
         return orderUtilObservable(new SubmitCommand(orderParams, engine))
-                .doOnNext(this::addCreatedOrder);
+                .doOnNext(this::addCreatedOrderToPosition);
     }
 
-    private void addCreatedOrder(final OrderEvent orderEvent) {
+    private void addCreatedOrderToPosition(final OrderEvent orderEvent) {
         if (createEventTypes.contains(orderEvent.type())) {
             final IOrder order = orderEvent.order();
             position(order.getInstrument()).addOrder(order);
@@ -92,7 +96,7 @@ public class OrderUtil {
                         .flatMap(this::removeTPSLObservable)
                         .toCompletable()
                         .andThen(orderUtilObservable(new MergeCommand(mergeOrderLabel, toMergeOrders, engine)))
-                        .doOnNext(this::addCreatedOrder)
+                        .doOnNext(this::addCreatedOrderToPosition)
                         .doOnTerminate(() -> position(toMergeOrders).markOrdersIdle(toMergeOrders));
     }
 
@@ -112,7 +116,7 @@ public class OrderUtil {
     }
 
     private Observable<OrderEvent> removeTPSLObservable(final Collection<IOrder> filledOrders) {
-        final Instrument instrument = filledOrders.iterator().next().getInstrument();
+        final Instrument instrument = instrumentFromCollection(filledOrders);
 
         return Observable
                 .from(filledOrders)
@@ -133,18 +137,21 @@ public class OrderUtil {
     public Observable<OrderEvent> closePosition(final Instrument instrument) {
         final Position position = position(checkNotNull(instrument));
         final Set<IOrder> ordersToClose = position.filledOrOpened();
-        return Observable
-                .from(ordersToClose)
-                .doOnSubscribe(() -> {
-                    logger.debug("Starting position close for " + instrument);
-                    position.markOrdersActive(ordersToClose);
-                })
-                .flatMap(this::close)
-                .doOnTerminate(() -> position.markOrdersIdle(ordersToClose))
-                .doOnError(e -> logger.error("Closing position " + instrument
-                        + " failed! Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.debug("Closing position "
-                        + instrument + " was successful."));
+
+        return ordersToClose.isEmpty()
+                ? Observable.empty()
+                : Observable
+                        .from(ordersToClose)
+                        .doOnSubscribe(() -> {
+                            logger.debug("Starting position close for " + instrument);
+                            position.markOrdersActive(ordersToClose);
+                        })
+                        .flatMap(this::close)
+                        .doOnTerminate(() -> position.markOrdersIdle(ordersToClose))
+                        .doOnCompleted(() -> logger.debug("Closing position "
+                                + instrument + " was successful."))
+                        .doOnError(e -> logger.error("Closing position " + instrument
+                                + " failed! Exception: " + e.getMessage()));
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {

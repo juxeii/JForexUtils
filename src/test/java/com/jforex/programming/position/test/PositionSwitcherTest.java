@@ -57,8 +57,8 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         when(orderUtilMock.submitOrder(any())).thenReturn(Observable.empty());
         when(orderUtilMock.closePosition(instrumentEURUSD)).thenReturn(emptyObservable());
 
-        when(orderParamsSupplierMock.forCommand(OrderCommand.BUY)).thenReturn(orderParamsBUY);
-        when(orderParamsSupplierMock.forCommand(OrderCommand.SELL)).thenReturn(orderParamsSELL);
+        when(orderParamsSupplierMock.get(OrderCommand.BUY)).thenReturn(orderParamsBUY);
+        when(orderParamsSupplierMock.get(OrderCommand.SELL)).thenReturn(orderParamsSELL);
     }
 
     private void setPositionOrderDirection(final OrderDirection orderDirection) {
@@ -93,7 +93,7 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
                     .withOrderCommand(OrderCommand.SELL)
                     .build();
 
-            when(orderParamsSupplierMock.forCommand(OrderCommand.BUY))
+            when(orderParamsSupplierMock.get(OrderCommand.BUY))
                     .thenReturn(paramsWithWrongCommand);
 
             setPositionOrderDirection(OrderDirection.FLAT);
