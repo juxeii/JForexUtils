@@ -5,9 +5,8 @@ import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.order.event.OrderEventTypeData;
-
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
 public abstract class OrderCallCommand {
 
@@ -38,7 +37,7 @@ public abstract class OrderCallCommand {
 
     protected abstract String subscribeLog();
 
-    protected abstract String errorLog(final Throwable e);
+    protected abstract String errorLog(final Throwable t);
 
     protected abstract String completedLog();
 }

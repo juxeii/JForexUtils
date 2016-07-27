@@ -11,7 +11,7 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.currency.CurrencyUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.quote.BarQuoteHandler;
-import com.jforex.programming.quote.BarQuoteParams;
+import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.TickQuoteHandler;
 
 public final class InstrumentUtil {
@@ -51,8 +51,8 @@ public final class InstrumentUtil {
         return tickQuoteProvider.bid(instrument);
     }
 
-    public final IBar bar(final BarQuoteParams barQuoteParams) {
-        return barQuoteProvider.bar(checkNotNull(barQuoteParams));
+    public final IBar bar(final BarParams barParams) {
+        return barQuoteProvider.bar(checkNotNull(barParams));
     }
 
     public final double spread() {

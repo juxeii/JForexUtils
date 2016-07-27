@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.quote.BarQuoteParams;
+import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.quote.TickQuote;
 
@@ -61,10 +61,10 @@ public class HistoryUtil {
         return tick;
     }
 
-    public IBar barQuote(final BarQuoteParams barQuoteParams) {
-        final Instrument instrument = barQuoteParams.instrument();
-        final Period period = barQuoteParams.period();
-        final OfferSide offerSide = barQuoteParams.offerSide();
+    public IBar barQuote(final BarParams barParams) {
+        final Instrument instrument = barParams.instrument();
+        final Period period = barParams.period();
+        final OfferSide offerSide = barParams.offerSide();
 
         return Observable
                 .fromCallable(() -> latestHistoryBar(instrument, period, offerSide))

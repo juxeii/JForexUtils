@@ -2,8 +2,8 @@ package com.jforex.programming.instrument.test;
 
 import static com.jforex.programming.instrument.InstrumentBuilder.combineAllFromCurrencySet;
 import static com.jforex.programming.instrument.InstrumentBuilder.combineAllWithAnchorCurrency;
-import static com.jforex.programming.instrument.InstrumentBuilder.fromCurrencies;
 import static com.jforex.programming.instrument.InstrumentBuilder.fromName;
+import static com.jforex.programming.instrument.InstrumentBuilder.maybeFromCurrencies;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -74,13 +74,13 @@ public class InstrumentBuilderTest extends CurrencyUtilForTest {
 
     @Test
     public void testFromCurrenciesReturnsEmptyOptionalForEqualCurrencies() {
-        assertFalse(fromCurrencies(currencyEUR, currencyEUR).isPresent());
+        assertFalse(maybeFromCurrencies(currencyEUR, currencyEUR).isPresent());
     }
 
     @Test
     public void testFromCurrenciesReturnsOptionalWithValidInstrument() {
-        assertThat(fromCurrencies(currencyEUR, currencyUSD).get(), equalTo(instrumentEURUSD));
-        assertThat(fromCurrencies(currencyUSD, currencyEUR).get(), equalTo(instrumentEURUSD));
+        assertThat(maybeFromCurrencies(currencyEUR, currencyUSD).get(), equalTo(instrumentEURUSD));
+        assertThat(maybeFromCurrencies(currencyUSD, currencyEUR).get(), equalTo(instrumentEURUSD));
     }
 
     @Test

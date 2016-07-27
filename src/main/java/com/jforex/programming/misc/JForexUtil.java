@@ -27,7 +27,7 @@ import com.jforex.programming.order.event.OrderEventMapper;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteHandler;
-import com.jforex.programming.quote.BarQuoteParams;
+import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.quote.TickQuote;
@@ -220,21 +220,21 @@ public class JForexUtil {
                                        final OfferSide offerside,
                                        final IBar askBar) {
         if (shouldForwardQuote(askBar.getTime())) {
-            final BarQuoteParams quoteParams = BarQuoteParams
+            final BarParams quoteParams = BarParams
                     .forInstrument(instrument)
                     .period(period)
                     .offerSide(offerside);
-            final BarQuote askBarQuote = new BarQuote(quoteParams, askBar);
+            final BarQuote askBarQuote = new BarQuote(askBar, quoteParams);
             barQuoteSubject.onNext(askBarQuote);
         }
     }
 
-    public void subscribeToBarsFeed(final BarQuoteParams barQuoteParams) {
-        checkNotNull(barQuoteParams);
+    public void subscribeToBarsFeed(final BarParams barParams) {
+        checkNotNull(barParams);
 
-        context.subscribeToBarsFeed(barQuoteParams.instrument(),
-                                    barQuoteParams.period(),
-                                    barQuoteParams.offerSide(),
+        context.subscribeToBarsFeed(barParams.instrument(),
+                                    barParams.period(),
+                                    barParams.offerSide(),
                                     this::onOfferSidedBar);
     }
 

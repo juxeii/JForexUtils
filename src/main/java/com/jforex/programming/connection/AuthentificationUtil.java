@@ -2,12 +2,11 @@ package com.jforex.programming.connection;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Optional;
-
 import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
 import com.jforex.programming.misc.JFHotSubject;
+import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.StreamUtil;
 
 import rx.Completable;
@@ -68,21 +67,25 @@ public class AuthentificationUtil {
     }
 
     public Completable loginCompletable(final LoginCredentials loginCredentials) {
-        checkNotNull(loginCredentials);
+        final JFRunnable connectRunnable =
+                checkNotNull(loginCredentials).maybePin().isPresent()
+                        ? loginRunnableWithPin(loginCredentials)
+                        : loginRunnableNoPin(loginCredentials);
 
-        final String jnlpAddress = loginCredentials.jnlpAddress();
-        final String username = loginCredentials.username();
-        final String password = loginCredentials.password();
-        final Optional<String> maybePin = loginCredentials.maybePin();
+        return StreamUtil.CompletableFromJFRunnable(connectRunnable);
+    }
 
-        return maybePin.isPresent()
-                ? StreamUtil.CompletableFromJFRunnable(() -> client.connect(jnlpAddress,
-                                                                            username,
-                                                                            password,
-                                                                            maybePin.get()))
-                : StreamUtil.CompletableFromJFRunnable(() -> client.connect(jnlpAddress,
-                                                                            username,
-                                                                            password));
+    private JFRunnable loginRunnableWithPin(final LoginCredentials loginCredentials) {
+        return () -> client.connect(loginCredentials.jnlpAddress(),
+                                    loginCredentials.username(),
+                                    loginCredentials.password(),
+                                    loginCredentials.maybePin().get());
+    }
+
+    private JFRunnable loginRunnableNoPin(final LoginCredentials loginCredentials) {
+        return () -> client.connect(loginCredentials.jnlpAddress(),
+                                    loginCredentials.username(),
+                                    loginCredentials.password());
     }
 
     public final void logout() {

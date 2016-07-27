@@ -25,16 +25,16 @@ public class BarQuoteHandler implements BarQuoteProvider {
     }
 
     @Override
-    public IBar bar(final BarQuoteParams barQuoteParams) {
+    public IBar bar(final BarParams barParams) {
         return barQuoteRepository
-                .get(checkNotNull(barQuoteParams))
+                .get(checkNotNull(barParams))
                 .bar();
     }
 
     @Override
     public Observable<BarQuote>
-           observableForFilters(final List<BarQuoteParams> barQuoteParamsList) {
-        final List<Observable<BarQuote>> paramsObservables = checkNotNull(barQuoteParamsList)
+           observableForParams(final List<BarParams> barParamsList) {
+        final List<Observable<BarQuote>> paramsObservables = checkNotNull(barParamsList)
                 .stream()
                 .map(params -> {
                     if (params.period().name() == null)
@@ -46,11 +46,11 @@ public class BarQuoteHandler implements BarQuoteProvider {
         return Observable.merge(paramsObservables);
     }
 
-    private Observable<BarQuote> observableForFilter(final BarQuoteParams barQuoteParams) {
+    private Observable<BarQuote> observableForFilter(final BarParams barParams) {
         return barQuoteObservable
-                .filter(barQuote -> barQuote.instrument() == barQuoteParams.instrument())
-                .filter(barQuote -> barQuoteParams.period().compareTo(barQuote.period()) == 0)
-                .filter(barQuote -> barQuote.offerSide() == barQuoteParams.offerSide());
+                .filter(barQuote -> barQuote.instrument() == barParams.instrument())
+                .filter(barQuote -> barParams.period().compareTo(barQuote.period()) == 0)
+                .filter(barQuote -> barQuote.offerSide() == barParams.offerSide());
     }
 
     @Override

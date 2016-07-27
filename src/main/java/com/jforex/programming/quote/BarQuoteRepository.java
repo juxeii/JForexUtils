@@ -23,24 +23,26 @@ public class BarQuoteRepository {
     }
 
     private void onBarQuote(final BarQuote barQuote) {
-        final MultiKey<Object> quoteKey = new MultiKey<Object>(barQuote.instrument(),
-                                                               barQuote.period(),
-                                                               barQuote.offerSide());
+        final MultiKey<Object> quoteKey = quoteKey(barQuote.barParams());
         barQuotes.put(quoteKey, barQuote);
     }
 
-    public BarQuote get(final BarQuoteParams barQuoteParams) {
-        final MultiKey<Object> quoteKey = new MultiKey<Object>(barQuoteParams.instrument(),
-                                                               barQuoteParams.period(),
-                                                               barQuoteParams.offerSide());
-        return barQuotes.containsKey(quoteKey)
-                ? barQuotes.get(quoteKey)
-                : quoteFromHistory(barQuoteParams);
+    private MultiKey<Object> quoteKey(final BarParams barParams) {
+        return new MultiKey<Object>(barParams.instrument(),
+                                    barParams.period(),
+                                    barParams.offerSide());
     }
 
-    private BarQuote quoteFromHistory(final BarQuoteParams barQuoteParams) {
-        final IBar historyBar = historyUtil.barQuote(barQuoteParams);
-        final BarQuote barQuote = new BarQuote(barQuoteParams, historyBar);
+    public BarQuote get(final BarParams barParams) {
+        final MultiKey<Object> quoteKey = quoteKey(barParams);
+        return barQuotes.containsKey(quoteKey)
+                ? barQuotes.get(quoteKey)
+                : quoteFromHistory(barParams);
+    }
+
+    private BarQuote quoteFromHistory(final BarParams barParams) {
+        final IBar historyBar = historyUtil.barQuote(barParams);
+        final BarQuote barQuote = new BarQuote(historyBar, barParams);
 
         onBarQuote(barQuote);
 

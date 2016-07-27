@@ -52,12 +52,12 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
         public class AfterReceivedBars {
 
             private final IBar newEURUSDBar = mock(IBar.class);
-            private final BarQuote newEURUSDQuote = new BarQuote(askBarEURUSDParams,
-                                                                 newEURUSDBar);
+            private final BarQuote newEURUSDQuote = new BarQuote(newEURUSDBar,
+                                                                 askBarEURUSDParams);
 
             private final IBar newAUDUSDBar = mock(IBar.class);
-            private final BarQuote newAUDUSDQuote = new BarQuote(askBarAUDUSDParams,
-                                                                 newAUDUSDBar);
+            private final BarQuote newAUDUSDQuote = new BarQuote(newAUDUSDBar,
+                                                                 askBarAUDUSDParams);
 
             @Before
             public void setUp() {

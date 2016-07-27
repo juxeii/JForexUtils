@@ -11,22 +11,30 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class LoginCredentialsTest extends CommonUtilForTest {
 
+    private void assertCommonAttributes() {
+        assertThat(loginCredentials.jnlpAddress(), equalTo(jnlpAddress));
+        assertThat(loginCredentials.username(), equalTo(username));
+        assertThat(loginCredentials.password(), equalTo(password));
+    }
+
     @Test
     public void testPinIsSet() {
         loginCredentials = new LoginCredentials(jnlpAddress,
-                                                userName,
+                                                username,
                                                 password,
                                                 pin);
 
+        assertCommonAttributes();
         assertThat(loginCredentials.maybePin().get(), equalTo(pin));
     }
 
     @Test
     public void testPinIsEmptyWhenNotSet() {
         loginCredentials = new LoginCredentials(jnlpAddress,
-                                                userName,
+                                                username,
                                                 password);
 
+        assertCommonAttributes();
         assertFalse(loginCredentials.maybePin().isPresent());
     }
 }

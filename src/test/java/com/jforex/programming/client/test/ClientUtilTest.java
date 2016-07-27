@@ -45,8 +45,13 @@ public class ClientUtilTest extends CommonUtilForTest {
         clientUtil = new ClientUtil(clientMock, cacheDirectory);
 
         jfSystemListener = clientUtil.systemListener();
-        clientUtil.connectionStateObservable().subscribe(connectionStateSubscriber);
-        clientUtil.strategyInfoObservable().subscribe(runDataSubscriber);
+
+        clientUtil
+                .connectionStateObservable()
+                .subscribe(connectionStateSubscriber);
+        clientUtil
+                .strategyInfoObservable()
+                .subscribe(runDataSubscriber);
     }
 
     @Test

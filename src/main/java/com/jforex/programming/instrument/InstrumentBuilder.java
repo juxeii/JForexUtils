@@ -12,11 +12,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections4.keyvalue.MultiKey;
 
-import com.jforex.programming.math.MathUtil;
-import com.jforex.programming.misc.StreamUtil;
-
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.math.MathUtil;
+import com.jforex.programming.misc.StreamUtil;
 
 public final class InstrumentBuilder {
 
@@ -35,24 +34,20 @@ public final class InstrumentBuilder {
                 : Optional.ofNullable(Instrument.fromString(instrumentName));
     }
 
-    public static final Optional<Instrument> fromCurrencies(final ICurrency firstCurrency,
-                                                            final ICurrency secondCurrency) {
-        final MultiKey<Object> instrumentKey = new MultiKey<Object>(checkNotNull(firstCurrency),
-                                                                    checkNotNull(secondCurrency));
-
-        return instrumentByCurrencies.containsKey(instrumentKey)
-                ? Optional.of(instrumentByCurrencies.get(instrumentKey))
-                : fromCurrenciesNotCached(instrumentKey, firstCurrency, secondCurrency);
+    public static final Optional<Instrument> maybeFromCurrencies(final ICurrency firstCurrency,
+                                                                 final ICurrency secondCurrency) {
+        return checkNotNull(firstCurrency).equals(checkNotNull(secondCurrency))
+                ? Optional.empty()
+                : Optional.of(instrumentByCurrencies.computeIfAbsent(new MultiKey<Object>(firstCurrency,
+                                                                                          secondCurrency),
+                                                                     k -> fromCurrencies(firstCurrency,
+                                                                                         secondCurrency)));
     }
 
-    private static Optional<Instrument> fromCurrenciesNotCached(final MultiKey<Object> instrumentKey,
-                                                                final ICurrency firstCurrency,
-                                                                final ICurrency secondCurrency) {
+    private static Instrument fromCurrencies(final ICurrency firstCurrency,
+                                             final ICurrency secondCurrency) {
         final String instrumentName = InstrumentUtil.nameFromCurrencies(firstCurrency, secondCurrency);
-        final Optional<Instrument> maybeInstrument = fromString(instrumentName);
-        maybeInstrument.ifPresent(instrument -> instrumentByCurrencies.put(instrumentKey, instrument));
-
-        return maybeInstrument;
+        return fromString(instrumentName).get();
     }
 
     public static final Set<Instrument> combineAllFromCurrencySet(final Set<ICurrency> currencies) {
@@ -60,7 +55,7 @@ public final class InstrumentBuilder {
                 .kPowerSet(checkNotNull(currencies), 2)
                 .stream()
                 .map(ArrayList<ICurrency>::new)
-                .map(pair -> fromCurrencies(pair.get(0), pair.get(1)))
+                .map(pair -> maybeFromCurrencies(pair.get(0), pair.get(1)))
                 .flatMap(StreamUtil::streamOptional)
                 .collect(toSet());
     }
@@ -72,7 +67,7 @@ public final class InstrumentBuilder {
 
         return partnerCurrencies
                 .stream()
-                .map(partnerCurrency -> fromCurrencies(anchorCurrency, partnerCurrency))
+                .map(partnerCurrency -> maybeFromCurrencies(anchorCurrency, partnerCurrency))
                 .flatMap(StreamUtil::streamOptional)
                 .collect(toSet());
     }

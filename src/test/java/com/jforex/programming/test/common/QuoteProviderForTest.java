@@ -10,7 +10,7 @@ import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.dukascopy.api.Unit;
 import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteParams;
+import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.TickQuote;
 
 public class QuoteProviderForTest extends CurrencyUtilForTest {
@@ -32,33 +32,33 @@ public class QuoteProviderForTest extends CurrencyUtilForTest {
 
     public final Period barQuotePeriod = Period.FIVE_MINS;
     public final Period custom3MinutePeriod = Period.createCustomPeriod(Unit.Minute, 3);
-    public final BarQuoteParams askBarEURUSDParams = BarQuoteParams
+    public final BarParams askBarEURUSDParams = BarParams
             .forInstrument(instrumentEURUSD)
             .period(barQuotePeriod)
             .offerSide(OfferSide.ASK);
-    public final BarQuoteParams bidBarEURUSDParams = BarQuoteParams
+    public final BarParams bidBarEURUSDParams = BarParams
             .forInstrument(instrumentEURUSD)
             .period(barQuotePeriod)
             .offerSide(OfferSide.BID);
-    public final BarQuoteParams askBarAUDUSDParams = BarQuoteParams
+    public final BarParams askBarAUDUSDParams = BarParams
             .forInstrument(instrumentAUDUSD)
             .period(barQuotePeriod)
             .offerSide(OfferSide.ASK);
-    public final BarQuoteParams bidBarAUDUSDParams = BarQuoteParams
+    public final BarParams bidBarAUDUSDParams = BarParams
             .forInstrument(instrumentAUDUSD)
             .period(barQuotePeriod)
             .offerSide(OfferSide.BID);
-    public final BarQuoteParams askBarEURUSDCustomPeriodParams = BarQuoteParams
+    public final BarParams askBarEURUSDCustomPeriodParams = BarParams
             .forInstrument(instrumentEURUSD)
             .period(custom3MinutePeriod)
             .offerSide(OfferSide.ASK);
 
-    public final BarQuote askBarQuoteEURUSD = new BarQuote(askBarEURUSDParams, askBarEURUSD);
-    public final BarQuote bidBarQuoteEURUSD = new BarQuote(bidBarEURUSDParams, bidBarEURUSD);
-    public final BarQuote askBarQuoteAUDUSD = new BarQuote(askBarAUDUSDParams, askBarAUDUSD);
-    public final BarQuote bidBarQuoteAUDUSD = new BarQuote(bidBarAUDUSDParams, bidBarAUDUSD);
+    public final BarQuote askBarQuoteEURUSD = new BarQuote(askBarEURUSD, askBarEURUSDParams);
+    public final BarQuote bidBarQuoteEURUSD = new BarQuote(bidBarEURUSD, bidBarEURUSDParams);
+    public final BarQuote askBarQuoteAUDUSD = new BarQuote(askBarAUDUSD, askBarAUDUSDParams);
+    public final BarQuote bidBarQuoteAUDUSD = new BarQuote(bidBarAUDUSD, bidBarAUDUSDParams);
     public final BarQuote askBarQuoteEURUSDCustomPeriod =
-            new BarQuote(askBarEURUSDCustomPeriodParams, askBarEURUSD);
+            new BarQuote(askBarEURUSD, askBarEURUSDCustomPeriodParams);
 
     public void assertEqualBarQuotes(final BarQuote receivedBarQuote,
                                      final BarQuote expectedBarQuote) {

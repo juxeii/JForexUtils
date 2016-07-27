@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteHandler;
-import com.jforex.programming.quote.BarQuoteParams;
+import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
@@ -33,7 +33,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
                             askBarQuoteAUDUSD,
                             askBarQuoteEURUSDCustomPeriod,
                             bidBarQuoteEURUSD);
-    private final List<BarQuoteParams> quoteFilters = new ArrayList<>();
+    private final List<BarParams> quoteFilters = new ArrayList<>();
 
     @Before
     public void setUp() {
@@ -45,7 +45,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         quoteFilters.add(askBarAUDUSDParams);
 
         barQuoteHandler
-                .observableForFilters(quoteFilters)
+                .observableForParams(quoteFilters)
                 .subscribe(filteredQuoteSubscriber);
 
         barQuoteHandler
@@ -63,7 +63,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     }
 
     @Test
-    public void barQuoteParamsTest() {
+    public void barParamsTest() {
         assertThat(askBarEURUSDParams.instrument(), equalTo(instrumentEURUSD));
         assertThat(askBarEURUSDParams.period(), equalTo(barQuotePeriod));
         assertThat(askBarEURUSDParams.offerSide(), equalTo(OfferSide.ASK));
@@ -113,7 +113,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         quoteFilters.add(askBarEURUSDCustomPeriodParams);
 
         barQuoteHandler
-                .observableForFilters(quoteFilters)
+                .observableForParams(quoteFilters)
                 .subscribe(filteredQuoteSubscriber);
 
         verify(jforexUtilMock).subscribeToBarsFeed(askBarEURUSDCustomPeriodParams);

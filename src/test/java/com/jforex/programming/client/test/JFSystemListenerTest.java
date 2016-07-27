@@ -30,12 +30,16 @@ public class JFSystemListenerTest {
     public void setUp() {
         jfSystemListener = new JFSystemListener();
 
-        jfSystemListener.strategyRunDataObservable().subscribe(runDataSubscriber);
-        jfSystemListener.connectionStateObservable().subscribe(connectionStateSubscriber);
+        jfSystemListener
+                .strategyRunDataObservable()
+                .subscribe(runDataSubscriber);
+        jfSystemListener
+                .connectionStateObservable()
+                .subscribe(connectionStateSubscriber);
     }
 
-    private void assertSubscriber(final TestSubscriber<?> subscriber,
-                                  final int itemIndex) {
+    private void assertSubscriberCount(final TestSubscriber<?> subscriber,
+                                       final int itemIndex) {
         subscriber.assertNoErrors();
         subscriber.assertNotCompleted();
         subscriber.assertValueCount(itemIndex + 1);
@@ -45,7 +49,7 @@ public class JFSystemListenerTest {
 
         private void assertRunData(final StrategyRunState runState,
                                    final int itemIndex) {
-            assertSubscriber(runDataSubscriber, itemIndex);
+            assertSubscriberCount(runDataSubscriber, itemIndex);
 
             final StrategyRunData runData = runDataSubscriber.getOnNextEvents().get(itemIndex);
             assertThat(runData.processID(), equalTo(processID));
@@ -62,17 +66,11 @@ public class JFSystemListenerTest {
             assertRunData(StrategyRunState.STARTED, 0);
         }
 
-        public class WhenOnStop {
+        @Test
+        public void onStopRunDataIsPublishedCorrect() {
+            jfSystemListener.onStop(processID);
 
-            @Before
-            public void setUp() {
-                jfSystemListener.onStop(processID);
-            }
-
-            @Test
-            public void onStopRunDataIsPublishedCorrect() {
-                assertRunData(StrategyRunState.STOPPED, 1);
-            }
+            assertRunData(StrategyRunState.STOPPED, 1);
         }
     }
 
@@ -80,7 +78,7 @@ public class JFSystemListenerTest {
 
         private void assertConnectionState(final ConnectionState connectionState,
                                            final int itemIndex) {
-            assertSubscriber(connectionStateSubscriber, itemIndex);
+            assertSubscriberCount(connectionStateSubscriber, itemIndex);
 
             assertThat(connectionStateSubscriber.getOnNextEvents().get(itemIndex),
                        equalTo(connectionState));
@@ -96,17 +94,11 @@ public class JFSystemListenerTest {
             assertConnectionState(ConnectionState.CONNECTED, 0);
         }
 
-        public class WhenOnDisconnect {
+        @Test
+        public void onDisconnectIsPublishedCorrect() {
+            jfSystemListener.onDisconnect();
 
-            @Before
-            public void setUp() {
-                jfSystemListener.onDisconnect();
-            }
-
-            @Test
-            public void onDisConnectIsPublishedCorrect() {
-                assertConnectionState(ConnectionState.DISCONNECTED, 1);
-            }
+            assertConnectionState(ConnectionState.DISCONNECTED, 1);
         }
     }
 }

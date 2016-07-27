@@ -82,16 +82,16 @@ public class CommonUtilForTest extends BDDMockito {
     protected Optional<Exception> jfExceptionOpt = Optional.of(jfException);
     protected Optional<Exception> emptyJFExceptionOpt = Optional.empty();
     protected static final String jnlpAddress = "http://jnlp.test.address";
-    protected static final String userName = "username";
+    protected static final String username = "username";
     protected static final String password = "password";
     protected static final String pin = "1234";
     protected LoginCredentials loginCredentials =
             new LoginCredentials(jnlpAddress,
-                                 userName,
+                                 username,
                                  password);
     protected LoginCredentials loginCredentialsWithPin =
             new LoginCredentials(jnlpAddress,
-                                 userName,
+                                 username,
                                  password,
                                  pin);
     protected final RxTestUtil rxTestUtil = RxTestUtil.get();

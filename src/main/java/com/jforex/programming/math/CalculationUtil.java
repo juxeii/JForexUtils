@@ -48,8 +48,9 @@ public final class CalculationUtil {
     private final double conversionQuote(final ICurrency sourceCurrency,
                                          final ICurrency targetCurrency,
                                          final OfferSide offerSide) {
-        final Instrument conversionInstrument =
-                InstrumentBuilder.fromCurrencies(sourceCurrency, targetCurrency).get();
+        final Instrument conversionInstrument = InstrumentBuilder
+                .maybeFromCurrencies(sourceCurrency, targetCurrency)
+                .get();
         final double conversionQuote =
                 tickQuoteProvider.forOfferSide(conversionInstrument, offerSide);
         return targetCurrency.equals(conversionInstrument.getPrimaryJFCurrency())
@@ -80,17 +81,13 @@ public final class CalculationUtil {
 
     public static final double scalePipsToInstrument(final double pips,
                                                      final Instrument instrument) {
-        checkNotNull(instrument);
-
-        return roundPrice(instrument.getPipValue() * pips, instrument);
+        return roundPrice(checkNotNull(instrument).getPipValue() * pips, instrument);
     }
 
     public static final double addPips(final Instrument instrument,
                                        final double price,
                                        final double pipsToAdd) {
-        checkNotNull(instrument);
-
-        final double scaledPips = scalePipsToInstrument(pipsToAdd, instrument);
+        final double scaledPips = scalePipsToInstrument(pipsToAdd, checkNotNull(instrument));
         return roundPrice(price + scaledPips, instrument);
     }
 
