@@ -168,7 +168,7 @@ public class StreamUtilTest extends CommonUtilForTest {
     public void streamOptionalReturnsEmptyStreamWhenOptionalIsEmpty() {
         final Optional<?> emptyOptional = Optional.empty();
 
-        final Stream<?> streamOptional = StreamUtil.streamOptional(emptyOptional);
+        final Stream<?> streamOptional = StreamUtil.optionalStream(emptyOptional);
 
         assertThat(streamOptional.count(), equalTo(0L));
     }
@@ -178,7 +178,7 @@ public class StreamUtilTest extends CommonUtilForTest {
         final Optional<Long> optional = Optional.of(1L);
 
         final List<Long> streamList = StreamUtil
-                .streamOptional(optional)
+                .optionalStream(optional)
                 .collect(Collectors.toList());
 
         assertThat(streamList.size(), equalTo(1));

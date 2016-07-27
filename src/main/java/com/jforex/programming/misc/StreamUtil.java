@@ -72,7 +72,7 @@ public final class StreamUtil {
                 + " Will retry task in " + delayOnOrderFailRetry + " milliseconds...");
     }
 
-    public static <T> Stream<T> streamOptional(final Optional<T> optional) {
+    public static <T> Stream<T> optionalStream(final Optional<T> optional) {
         return checkNotNull(optional).isPresent()
                 ? Stream.of(optional.get())
                 : Stream.empty();

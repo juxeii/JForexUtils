@@ -56,7 +56,7 @@ public final class InstrumentBuilder {
                 .stream()
                 .map(ArrayList<ICurrency>::new)
                 .map(pair -> maybeFromCurrencies(pair.get(0), pair.get(1)))
-                .flatMap(StreamUtil::streamOptional)
+                .flatMap(StreamUtil::optionalStream)
                 .collect(toSet());
     }
 
@@ -68,7 +68,7 @@ public final class InstrumentBuilder {
         return partnerCurrencies
                 .stream()
                 .map(partnerCurrency -> maybeFromCurrencies(anchorCurrency, partnerCurrency))
-                .flatMap(StreamUtil::streamOptional)
+                .flatMap(StreamUtil::optionalStream)
                 .collect(toSet());
     }
 }
