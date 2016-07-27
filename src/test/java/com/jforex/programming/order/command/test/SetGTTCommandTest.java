@@ -1,8 +1,12 @@
 package com.jforex.programming.order.command.test;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import com.jforex.programming.order.command.OrderChangeCommand;
 import com.jforex.programming.order.command.SetGTTCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
@@ -25,5 +29,19 @@ public class SetGTTCommandTest extends CommonCommandForTest {
     @Test
     public void orderEventTypeDataIsCorrect() {
         assertOrderEventTypeData(OrderEventTypeData.changeGTTData);
+    }
+
+    @Test
+    public void filterIsFalseWhenNewGTTAlreadySet() {
+        orderUnderTest.setGoodTillTime(newGTT);
+
+        assertFalse(((OrderChangeCommand<?>) command).filter(orderUnderTest));
+    }
+
+    @Test
+    public void filterIsTrueWhenNewGTTDiffers() {
+        orderUnderTest.setGoodTillTime(newGTT + 1L);
+
+        assertTrue(((OrderChangeCommand<?>) command).filter(orderUnderTest));
     }
 }

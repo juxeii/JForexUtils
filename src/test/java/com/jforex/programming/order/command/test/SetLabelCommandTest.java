@@ -1,8 +1,12 @@
 package com.jforex.programming.order.command.test;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import com.jforex.programming.order.command.OrderChangeCommand;
 import com.jforex.programming.order.command.SetLabelCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
@@ -25,5 +29,19 @@ public class SetLabelCommandTest extends CommonCommandForTest {
     @Test
     public void orderEventTypeDataIsCorrect() {
         assertOrderEventTypeData(OrderEventTypeData.changeLabelData);
+    }
+
+    @Test
+    public void filterIsFalseWhenNewLabelAlreadySet() {
+        orderUnderTest.setLabel(newLabel);
+
+        assertFalse(((OrderChangeCommand<?>) command).filter(orderUnderTest));
+    }
+
+    @Test
+    public void filterIsTrueWhenNewLabelDiffers() {
+        orderUnderTest.setLabel("Other" + newLabel);
+
+        assertTrue(((OrderChangeCommand<?>) command).filter(orderUnderTest));
     }
 }

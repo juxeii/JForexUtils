@@ -1,5 +1,7 @@
 package com.jforex.programming.order.command;
 
+import static com.jforex.programming.order.OrderStaticUtil.isGTTSetTo;
+
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
@@ -13,5 +15,10 @@ public class SetGTTCommand extends OrderChangeCommand<Long> {
               orderToChangeGTT.getGoodTillTime(),
               newGTT,
               "open price");
+    }
+
+    @Override
+    public boolean filter(final IOrder order) {
+        return !isGTTSetTo(newValue).test(order);
     }
 }

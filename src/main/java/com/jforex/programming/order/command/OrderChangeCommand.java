@@ -5,8 +5,10 @@ import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class OrderChangeCommand<T> extends OrderCallCommand {
+public abstract class OrderChangeCommand<T> extends OrderCallCommand {
 
+    protected IOrder orderToChange;
+    protected T newValue;
     private final String commonLog;
 
     public OrderChangeCommand(final IOrder orderToChange,
@@ -15,11 +17,20 @@ public class OrderChangeCommand<T> extends OrderCallCommand {
                               final T currentValue,
                               final T newValue,
                               final String valueName) {
+        this.orderToChange = orderToChange;
         this.orderEventTypeData = orderEventTypeData;
+        this.newValue = newValue;
+
         callable = OrderStaticUtil.runnableToCallable(runnable, orderToChange);
         commonLog = valueName + " from " + currentValue + " to " + newValue + " for order "
                 + orderToChange.getLabel() + " and instrument " + orderToChange.getInstrument();
     }
+
+    public IOrder order() {
+        return orderToChange;
+    }
+
+    public abstract boolean filter(IOrder order);
 
     @Override
     protected String subscribeLog() {
