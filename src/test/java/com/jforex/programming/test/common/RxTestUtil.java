@@ -2,9 +2,7 @@ package com.jforex.programming.test.common;
 
 import java.util.concurrent.TimeUnit;
 
-import rx.Scheduler;
-import rx.plugins.RxJavaPlugins;
-import rx.plugins.RxJavaSchedulersHook;
+import rx.plugins.RxJavaHooks;
 import rx.schedulers.TestScheduler;
 
 public final class RxTestUtil {
@@ -12,23 +10,10 @@ public final class RxTestUtil {
     private static final RxTestUtil instance = new RxTestUtil();
     private static final TestScheduler testScheduler = new TestScheduler();
 
-    static {
-        RxJavaPlugins.getInstance().registerSchedulersHook(new RxJavaSchedulersHook() {
-            @Override
-            public Scheduler getIOScheduler() {
-                return testScheduler;
-            }
-
-            @Override
-            public Scheduler getComputationScheduler() {
-                return testScheduler;
-            }
-
-            @Override
-            public Scheduler getNewThreadScheduler() {
-                return testScheduler;
-            }
-        });
+    public RxTestUtil() {
+        RxJavaHooks.setOnIOScheduler(scheduler -> testScheduler);
+        RxJavaHooks.setOnComputationScheduler(scheduler -> testScheduler);
+        RxJavaHooks.setOnNewThreadScheduler(scheduler -> testScheduler);
     }
 
     public static final RxTestUtil get() {
