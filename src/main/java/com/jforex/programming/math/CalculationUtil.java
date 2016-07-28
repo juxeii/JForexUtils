@@ -11,7 +11,7 @@ import org.aeonbits.owner.ConfigFactory;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.instrument.InstrumentBuilder;
+import com.jforex.programming.instrument.InstrumentFactory;
 import com.jforex.programming.math.ConversionBuilder.FromSource;
 import com.jforex.programming.math.PipDistanceBuilder.To;
 import com.jforex.programming.math.PipValueBuilder.OfInstrument;
@@ -48,7 +48,7 @@ public final class CalculationUtil {
     private final double conversionQuote(final ICurrency sourceCurrency,
                                          final ICurrency targetCurrency,
                                          final OfferSide offerSide) {
-        final Instrument conversionInstrument = InstrumentBuilder
+        final Instrument conversionInstrument = InstrumentFactory
                 .maybeFromCurrencies(sourceCurrency, targetCurrency)
                 .get();
         final double conversionQuote =

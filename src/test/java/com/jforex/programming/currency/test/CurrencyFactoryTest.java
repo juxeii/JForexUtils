@@ -1,8 +1,8 @@
 package com.jforex.programming.currency.test;
 
-import static com.jforex.programming.currency.CurrencyBuilder.maybeFromName;
-import static com.jforex.programming.currency.CurrencyBuilder.fromNames;
-import static com.jforex.programming.currency.CurrencyBuilder.instanceFromName;
+import static com.jforex.programming.currency.CurrencyFactory.maybeFromName;
+import static com.jforex.programming.currency.CurrencyFactory.fromNames;
+import static com.jforex.programming.currency.CurrencyFactory.instanceFromName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -15,10 +15,10 @@ import org.junit.Test;
 
 import com.dukascopy.api.ICurrency;
 import com.google.common.collect.Sets;
-import com.jforex.programming.currency.CurrencyBuilder;
+import com.jforex.programming.currency.CurrencyFactory;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
-public class CurrencyBuilderTest extends CurrencyUtilForTest {
+public class CurrencyFactoryTest extends CurrencyUtilForTest {
 
     private final Set<String> currencyNamesAsSet = Sets.newHashSet(invalidEmptyCurrencyName,
                                                                    invalidLowerCaseCurrencyName,
@@ -40,7 +40,7 @@ public class CurrencyBuilderTest extends CurrencyUtilForTest {
 
     @Test
     public void testConstructorIsPrivate() throws Exception {
-        assertPrivateConstructor(CurrencyBuilder.class);
+        assertPrivateConstructor(CurrencyFactory.class);
     }
 
     @Test

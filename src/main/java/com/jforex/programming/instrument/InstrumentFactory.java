@@ -17,11 +17,11 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.math.MathUtil;
 import com.jforex.programming.misc.StreamUtil;
 
-public final class InstrumentBuilder {
+public final class InstrumentFactory {
 
     private static final Map<MultiKey<Object>, Instrument> instrumentByCurrencies = new ConcurrentHashMap<>();
 
-    private InstrumentBuilder() {
+    private InstrumentFactory() {
     }
 
     public static final Optional<Instrument> maybeFromName(final String instrumentName) {

@@ -14,14 +14,14 @@ import org.junit.Test;
 
 import com.dukascopy.api.ICurrency;
 import com.google.common.collect.Sets;
-import com.jforex.programming.currency.CurrencyBuilder;
+import com.jforex.programming.currency.CurrencyFactory;
 import com.jforex.programming.math.MathUtil;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 public class MathUtilTest extends CurrencyUtilForTest {
 
     private final Set<ICurrency> currenciesForkPowerSetTests =
-            CurrencyBuilder.fromNames(currencyNameEUR,
+            CurrencyFactory.fromNames(currencyNameEUR,
                                       currencyNameUSD,
                                       currencyNameAUD,
                                       currencyNameJPY);
@@ -33,13 +33,13 @@ public class MathUtilTest extends CurrencyUtilForTest {
 
     @Test
     public void testkPowerSetRetunsEmptySetForEmptySourceSet() {
-        assertThat(MathUtil.kPowerSet(Sets.newHashSet(CurrencyBuilder.fromNames("")), 2),
+        assertThat(MathUtil.kPowerSet(Sets.newHashSet(CurrencyFactory.fromNames("")), 2),
                    equalTo(Collections.<Currency> emptySet()));
     }
 
     @Test
     public void testkPowerSetRetunsEmptySetForSourceSetWithSizeOne() {
-        assertThat(MathUtil.kPowerSet(CurrencyBuilder.fromNames(currencyNameEUR), 2),
+        assertThat(MathUtil.kPowerSet(CurrencyFactory.fromNames(currencyNameEUR), 2),
                    equalTo(Sets.newHashSet()));
     }
 
@@ -61,16 +61,16 @@ public class MathUtilTest extends CurrencyUtilForTest {
     @Test
     public void testkPowerSetRetunsCorrectPowerSet() {
         final Set<Set<ICurrency>> expectedkPowerset = Sets.newHashSet();
-        expectedkPowerset.add(CurrencyBuilder.fromNames(currencyNameEUR,
+        expectedkPowerset.add(CurrencyFactory.fromNames(currencyNameEUR,
                                                         currencyNameJPY,
                                                         currencyNameUSD));
-        expectedkPowerset.add(CurrencyBuilder.fromNames(currencyNameJPY,
+        expectedkPowerset.add(CurrencyFactory.fromNames(currencyNameJPY,
                                                         currencyNameUSD,
                                                         currencyNameAUD));
-        expectedkPowerset.add(CurrencyBuilder.fromNames(currencyNameEUR,
+        expectedkPowerset.add(CurrencyFactory.fromNames(currencyNameEUR,
                                                         currencyNameUSD,
                                                         currencyNameAUD));
-        expectedkPowerset.add(CurrencyBuilder.fromNames(currencyNameEUR,
+        expectedkPowerset.add(CurrencyFactory.fromNames(currencyNameEUR,
                                                         currencyNameJPY,
                                                         currencyNameAUD));
 

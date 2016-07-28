@@ -1,9 +1,9 @@
 package com.jforex.programming.instrument.test;
 
-import static com.jforex.programming.instrument.InstrumentBuilder.combineAllFromCurrencySet;
-import static com.jforex.programming.instrument.InstrumentBuilder.combineAllWithAnchorCurrency;
-import static com.jforex.programming.instrument.InstrumentBuilder.maybeFromName;
-import static com.jforex.programming.instrument.InstrumentBuilder.maybeFromCurrencies;
+import static com.jforex.programming.instrument.InstrumentFactory.combineAllFromCurrencySet;
+import static com.jforex.programming.instrument.InstrumentFactory.combineAllWithAnchorCurrency;
+import static com.jforex.programming.instrument.InstrumentFactory.maybeFromName;
+import static com.jforex.programming.instrument.InstrumentFactory.maybeFromCurrencies;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -15,10 +15,10 @@ import org.junit.Test;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
-import com.jforex.programming.instrument.InstrumentBuilder;
+import com.jforex.programming.instrument.InstrumentFactory;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
-public class InstrumentBuilderTest extends CurrencyUtilForTest {
+public class InstrumentFactoryTest extends CurrencyUtilForTest {
 
     private final Set<Instrument> instrumentsForCombineTests =
             Sets.newHashSet(instrumentEURUSD,
@@ -46,7 +46,7 @@ public class InstrumentBuilderTest extends CurrencyUtilForTest {
 
     @Test
     public void testConstructorIsPrivate() throws Exception {
-        assertPrivateConstructor(InstrumentBuilder.class);
+        assertPrivateConstructor(InstrumentFactory.class);
     }
 
     @Test

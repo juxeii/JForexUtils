@@ -11,7 +11,7 @@ import java.util.Set;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.JFCurrency;
 
-public final class CurrencyBuilder {
+public final class CurrencyFactory {
 
     public static final ICurrency EUR = fromCode(CurrencyCode.EUR);
     public static final ICurrency CHF = fromCode(CurrencyCode.CHF);
@@ -37,11 +37,15 @@ public final class CurrencyBuilder {
     public static final ICurrency MXN = fromCode(CurrencyCode.MXN);
     public static final ICurrency ZAR = fromCode(CurrencyCode.ZAR);
 
-    private CurrencyBuilder() {
+    private CurrencyFactory() {
     }
 
     public static final ICurrency fromCode(final CurrencyCode currencyCode) {
-        return JFCurrency.getInstance(checkNotNull(currencyCode).toString());
+        return instanceFromName(checkNotNull(currencyCode).toString());
+    }
+
+    public static final ICurrency instanceFromName(final String currencyName) {
+        return JFCurrency.getInstance(checkNotNull(currencyName).toUpperCase());
     }
 
     public static final Optional<ICurrency> maybeFromName(final String currencyName) {
@@ -50,14 +54,10 @@ public final class CurrencyBuilder {
                 : Optional.empty();
     }
 
-    public static final ICurrency instanceFromName(final String currencyName) {
-        return JFCurrency.getInstance(checkNotNull(currencyName).toUpperCase());
-    }
-
     public static final Set<ICurrency> fromNames(final Collection<String> currencyNames) {
         return checkNotNull(currencyNames)
                 .stream()
-                .map(CurrencyBuilder::maybeFromName)
+                .map(CurrencyFactory::maybeFromName)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toSet());

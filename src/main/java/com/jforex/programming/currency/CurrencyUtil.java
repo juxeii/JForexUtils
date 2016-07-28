@@ -13,7 +13,7 @@ public final class CurrencyUtil {
     }
 
     public static final boolean isNameValid(final String currencyName) {
-        return CurrencyBuilder
+        return CurrencyFactory
                 .instanceFromName(checkNotNull(currencyName))
                 .getJavaCurrency() != null;
     }
@@ -32,7 +32,7 @@ public final class CurrencyUtil {
         checkNotNull(currencyName);
         checkNotNull(instrument);
 
-        return CurrencyBuilder
+        return CurrencyFactory
                 .maybeFromName(currencyName)
                 .map(currency -> isInInstrument(currency, instrument))
                 .orElse(false);
