@@ -173,7 +173,7 @@ public class CommonUtilForTest extends BDDMockito {
         OrderDirection
                 .valueOf(OrderDirection.FLAT.toString());
         AuthentificationUtil.FSMTrigger
-                .valueOf(AuthentificationUtil.FSMTrigger.CONNECTED.toString());
+                .valueOf(AuthentificationUtil.FSMTrigger.CONNECT.toString());
         PositionSwitcher.FSMTrigger
                 .valueOf(PositionSwitcher.FSMTrigger.FLAT.toString());
         PositionSwitcher.FSMState

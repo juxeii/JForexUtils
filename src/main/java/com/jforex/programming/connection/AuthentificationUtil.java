@@ -21,8 +21,8 @@ public class AuthentificationUtil {
             new StateMachine<>(LoginState.LOGGED_OUT, fsmConfig);
 
     public enum FSMTrigger {
-        CONNECTED,
-        DISCONNECTED,
+        CONNECT,
+        DISCONNECT,
         LOGOUT
     }
 
@@ -34,31 +34,32 @@ public class AuthentificationUtil {
         configureFSM();
     }
 
-    private final void
-            initConnectionStateObs(final Observable<ConnectionState> connectionStateObs) {
+    private final void initConnectionStateObs(final Observable<ConnectionState> connectionStateObs) {
         connectionStateObs.subscribe(connectionState -> {
             if (connectionState == ConnectionState.CONNECTED)
-                fsm.fire(FSMTrigger.CONNECTED);
+                fsm.fire(FSMTrigger.CONNECT);
             else
-                fsm.fire(FSMTrigger.DISCONNECTED);
+                fsm.fire(FSMTrigger.DISCONNECT);
         });
     }
 
     private final void configureFSM() {
-        fsmConfig.configure(LoginState.LOGGED_OUT)
+        fsmConfig
+                .configure(LoginState.LOGGED_OUT)
                 .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_OUT))
-                .permit(FSMTrigger.CONNECTED, LoginState.LOGGED_IN)
-                .ignore(FSMTrigger.DISCONNECTED)
+                .permit(FSMTrigger.CONNECT, LoginState.LOGGED_IN)
+                .ignore(FSMTrigger.DISCONNECT)
                 .ignore(FSMTrigger.LOGOUT);
 
-        fsmConfig.configure(LoginState.LOGGED_IN)
+        fsmConfig
+                .configure(LoginState.LOGGED_IN)
                 .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_IN))
                 .permit(FSMTrigger.LOGOUT, LoginState.LOGGED_OUT)
-                .ignore(FSMTrigger.CONNECTED)
-                .ignore(FSMTrigger.DISCONNECTED);
+                .ignore(FSMTrigger.CONNECT)
+                .ignore(FSMTrigger.DISCONNECT);
     }
 
-    public final Observable<LoginState> loginStateObs() {
+    public final Observable<LoginState> loginStateObservable() {
         return loginStateSubject.observable();
     }
 
@@ -89,12 +90,8 @@ public class AuthentificationUtil {
     }
 
     public final void logout() {
-        if (isLoggedIn())
+        if (loginState() == LoginState.LOGGED_IN)
             client.disconnect();
         fsm.fire(FSMTrigger.LOGOUT);
-    }
-
-    private boolean isLoggedIn() {
-        return loginState() == LoginState.LOGGED_IN;
     }
 }

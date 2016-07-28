@@ -35,7 +35,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     @Before
     public void setUp() {
         authentificationUtil = new AuthentificationUtil(clientMock, connectionStateObs);
-        authentificationUtil.loginStateObs().subscribe(loginStateSubscriber);
+        authentificationUtil.loginStateObservable().subscribe(loginStateSubscriber);
     }
 
     private Completable login() {

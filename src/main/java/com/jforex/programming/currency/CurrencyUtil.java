@@ -6,6 +6,7 @@ import java.util.Collection;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
+import com.dukascopy.api.JFCurrency;
 
 public final class CurrencyUtil {
 
@@ -13,8 +14,8 @@ public final class CurrencyUtil {
     }
 
     public static final boolean isNameValid(final String currencyName) {
-        return CurrencyFactory
-                .instanceFromName(checkNotNull(currencyName))
+        return JFCurrency
+                .getInstance(currencyName.toUpperCase())
                 .getJavaCurrency() != null;
     }
 

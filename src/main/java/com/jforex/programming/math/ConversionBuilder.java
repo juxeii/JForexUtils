@@ -73,13 +73,13 @@ public class ConversionBuilder {
 
         @Override
         public ToInstrument fromInstrument(final Instrument sourceInstrument) {
-            this.sourceCurrency = sourceInstrument.getPrimaryJFCurrency();
+            this.sourceCurrency = checkNotNull(sourceInstrument).getPrimaryJFCurrency();
             return this;
         }
 
         @Override
         public ToCurrency fromCurrency(final ICurrency currency) {
-            this.sourceCurrency = currency;
+            this.sourceCurrency = checkNotNull(currency);
             return this;
         }
 

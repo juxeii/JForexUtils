@@ -44,8 +44,8 @@ public final class CurrencyFactory {
         return instanceFromName(checkNotNull(currencyCode).toString());
     }
 
-    public static final ICurrency instanceFromName(final String currencyName) {
-        return JFCurrency.getInstance(checkNotNull(currencyName).toUpperCase());
+    private static final ICurrency instanceFromName(final String currencyName) {
+        return JFCurrency.getInstance(currencyName.toUpperCase());
     }
 
     public static final Optional<ICurrency> maybeFromName(final String currencyName) {

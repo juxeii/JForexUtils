@@ -103,9 +103,7 @@ public final class CalculationUtil {
 
     public static final boolean isPricePipDivisible(final Instrument instrument,
                                                     final double price) {
-        checkNotNull(instrument);
-
-        return isValueDivisibleByX(price, instrument.getPipValue() / 10);
+        return isValueDivisibleByX(price, checkNotNull(instrument).getPipValue() / 10);
     }
 
     public static final double scaleToPlatformAmount(final double amount) {

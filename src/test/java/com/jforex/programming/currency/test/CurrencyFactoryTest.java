@@ -1,7 +1,6 @@
 package com.jforex.programming.currency.test;
 
 import static com.jforex.programming.currency.CurrencyFactory.fromNames;
-import static com.jforex.programming.currency.CurrencyFactory.instanceFromName;
 import static com.jforex.programming.currency.CurrencyFactory.maybeFromName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -55,11 +54,6 @@ public class CurrencyFactoryTest extends CurrencyUtilForTest {
     @Test
     public void testFromNameReturnsCorrectCurrencyIfLowerCase() {
         assertThat(currencyForValidCurrencyName(currencyNameLowerCaseEUR), equalTo(currencyEUR));
-    }
-
-    @Test
-    public void testInstanceFromNameReturnsInstanceForInvalidCurrencyName() {
-        assertTrue(instanceFromName(unknownCurrencyName) instanceof ICurrency);
     }
 
     @Test

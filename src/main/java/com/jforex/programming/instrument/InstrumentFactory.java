@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -25,10 +24,10 @@ public final class InstrumentFactory {
     }
 
     public static final Optional<Instrument> maybeFromName(final String instrumentName) {
-        return fromString(checkNotNull(instrumentName).toUpperCase());
+        return maybeFromNotNullName(checkNotNull(instrumentName).toUpperCase());
     }
 
-    private static final Optional<Instrument> fromString(final String instrumentName) {
+    private static final Optional<Instrument> maybeFromNotNullName(final String instrumentName) {
         return Instrument.isInverted(instrumentName)
                 ? Optional.of(Instrument.fromInvertedString(instrumentName))
                 : Optional.ofNullable(Instrument.fromString(instrumentName));
@@ -47,7 +46,7 @@ public final class InstrumentFactory {
     private static Instrument fromCurrencies(final ICurrency firstCurrency,
                                              final ICurrency secondCurrency) {
         final String instrumentName = InstrumentUtil.nameFromCurrencies(firstCurrency, secondCurrency);
-        return fromString(instrumentName).get();
+        return maybeFromNotNullName(instrumentName).get();
     }
 
     public static final Set<Instrument> combineAllFromCurrencySet(final Set<ICurrency> currencies) {
@@ -61,7 +60,7 @@ public final class InstrumentFactory {
     }
 
     public static final Set<Instrument> combineAllWithAnchorCurrency(final ICurrency anchorCurrency,
-                                                                     final Collection<ICurrency> partnerCurrencies) {
+                                                                     final Set<ICurrency> partnerCurrencies) {
         checkNotNull(anchorCurrency);
         checkNotNull(partnerCurrencies);
 
