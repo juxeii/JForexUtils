@@ -1,8 +1,8 @@
 package com.jforex.programming.currency.test;
 
-import static com.jforex.programming.currency.CurrencyFactory.maybeFromName;
 import static com.jforex.programming.currency.CurrencyFactory.fromNames;
 import static com.jforex.programming.currency.CurrencyFactory.instanceFromName;
+import static com.jforex.programming.currency.CurrencyFactory.maybeFromName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -21,7 +21,6 @@ import com.jforex.programming.test.common.CurrencyUtilForTest;
 public class CurrencyFactoryTest extends CurrencyUtilForTest {
 
     private final Set<String> currencyNamesAsSet = Sets.newHashSet(invalidEmptyCurrencyName,
-                                                                   invalidLowerCaseCurrencyName,
                                                                    currencyNameLowerCaseJPY,
                                                                    currencyNameEUR);
 
@@ -46,7 +45,6 @@ public class CurrencyFactoryTest extends CurrencyUtilForTest {
     @Test
     public void testFromNameReturnsEmptyOptionalForInvalidName() {
         assertThat(maybeFromName(invalidEmptyCurrencyName), equalTo(Optional.empty()));
-        assertThat(maybeFromName(invalidLowerCaseCurrencyName), equalTo(Optional.empty()));
     }
 
     @Test
@@ -61,7 +59,7 @@ public class CurrencyFactoryTest extends CurrencyUtilForTest {
 
     @Test
     public void testInstanceFromNameReturnsInstanceForInvalidCurrencyName() {
-        assertTrue(instanceFromName(invalidCurrencyName) instanceof ICurrency);
+        assertTrue(instanceFromName(unknownCurrencyName) instanceof ICurrency);
     }
 
     @Test

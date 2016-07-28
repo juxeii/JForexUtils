@@ -2,8 +2,8 @@ package com.jforex.programming.instrument.test;
 
 import static com.jforex.programming.instrument.InstrumentFactory.combineAllFromCurrencySet;
 import static com.jforex.programming.instrument.InstrumentFactory.combineAllWithAnchorCurrency;
-import static com.jforex.programming.instrument.InstrumentFactory.maybeFromName;
 import static com.jforex.programming.instrument.InstrumentFactory.maybeFromCurrencies;
+import static com.jforex.programming.instrument.InstrumentFactory.maybeFromName;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -51,9 +51,8 @@ public class InstrumentFactoryTest extends CurrencyUtilForTest {
 
     @Test
     public void testFromNameReturnsEmptyOptionalForInvalidInstrumentName() {
-        assertFalse(maybeFromName(invalidEmptyCurrencyName).isPresent());
-        assertFalse(maybeFromName(currencyNameEUR).isPresent());
-        assertFalse(maybeFromName(currencyNameEUR).isPresent());
+        assertFalse(maybeFromName("").isPresent());
+        assertFalse(maybeFromName("EURUSD").isPresent());
         assertFalse(maybeFromName("EURUSD").isPresent());
         assertFalse(maybeFromName("eurusd").isPresent());
     }

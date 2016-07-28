@@ -76,11 +76,13 @@ public class CommonUtilForTest extends BDDMockito {
     protected BarQuoteHandler barQuoteHandlerMock;
     @Mock
     protected OrderUtilHandler orderUtilHandlerMock;
+
     protected IClientForTest clientForTest;
     protected IEngineForTest engineForTest;
     protected JFException jfException = new JFException("JFException for test");
     protected Optional<Exception> jfExceptionOpt = Optional.of(jfException);
     protected Optional<Exception> emptyJFExceptionOpt = Optional.empty();
+
     protected static final String jnlpAddress = "http://jnlp.test.address";
     protected static final String username = "username";
     protected static final String password = "password";
@@ -94,14 +96,13 @@ public class CommonUtilForTest extends BDDMockito {
                                  username,
                                  password,
                                  pin);
-    protected final RxTestUtil rxTestUtil = RxTestUtil.get();
 
-    protected static final PlatformSettings platformSettings =
-            ConfigFactory.create(PlatformSettings.class);
-    protected static final UserSettings userSettings =
-            ConfigFactory.create(UserSettings.class);
+    protected final RxTestUtil rxTestUtil = RxTestUtil.get();
+    protected static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    protected static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
     protected static final double noSL = platformSettings.noSLPrice();
     protected static final double noTP = platformSettings.noTPPrice();
+
     protected static final Logger logger = LogManager.getLogger(CommonUtilForTest.class);
 
     public CommonUtilForTest() {
@@ -155,14 +156,22 @@ public class CommonUtilForTest extends BDDMockito {
     }
 
     private void coverageOnEnumsCorrection() {
-        CurrencyCode.valueOf(CurrencyCode.EUR.toString());
-        StrategyRunState.valueOf(StrategyRunState.STARTED.toString());
-        OrderCallReason.valueOf(OrderCallReason.CHANGE_AMOUNT.toString());
-        ConnectionState.valueOf(ConnectionState.CONNECTED.toString());
-        LoginState.valueOf(LoginState.LOGGED_IN.toString());
-        OrderProcessState.valueOf(OrderProcessState.ACTIVE.toString());
-        OrderEventType.valueOf(OrderEventType.SUBMIT_OK.toString());
-        OrderDirection.valueOf(OrderDirection.FLAT.toString());
+        CurrencyCode
+                .valueOf(CurrencyCode.EUR.toString());
+        StrategyRunState
+                .valueOf(StrategyRunState.STARTED.toString());
+        OrderCallReason
+                .valueOf(OrderCallReason.CHANGE_AMOUNT.toString());
+        ConnectionState
+                .valueOf(ConnectionState.CONNECTED.toString());
+        LoginState
+                .valueOf(LoginState.LOGGED_IN.toString());
+        OrderProcessState
+                .valueOf(OrderProcessState.ACTIVE.toString());
+        OrderEventType
+                .valueOf(OrderEventType.SUBMIT_OK.toString());
+        OrderDirection
+                .valueOf(OrderDirection.FLAT.toString());
         AuthentificationUtil.FSMTrigger
                 .valueOf(AuthentificationUtil.FSMTrigger.CONNECTED.toString());
         PositionSwitcher.FSMTrigger

@@ -119,8 +119,7 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
         assertTrue(instrumentUtil.containsCurrencyCode(currencyNameEUR));
         assertTrue(instrumentUtil.containsCurrencyCode(currencyNameUSD));
         assertFalse(instrumentUtil.containsCurrencyCode(invalidEmptyCurrencyName));
-        assertFalse(instrumentUtil.containsCurrencyCode(invalidCurrencyName));
-        assertFalse(instrumentUtil.containsCurrencyCode(invalidLowerCaseCurrencyName));
+        assertFalse(instrumentUtil.containsCurrencyCode(unknownCurrencyName));
     }
 
     @Test

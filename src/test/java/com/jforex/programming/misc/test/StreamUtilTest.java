@@ -24,6 +24,7 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.test.common.CommonUtilForTest;
+import com.jforex.programming.test.common.RxTestUtil;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -100,7 +101,7 @@ public class StreamUtilTest extends CommonUtilForTest {
 
                 retryCall.run();
 
-                rxTestUtil.advanceTimeBy(maxRetriesOnOrderFail * delayOnOrderFailRetry,
+                RxTestUtil.advanceTimeBy(maxRetriesOnOrderFail * delayOnOrderFailRetry,
                                          TimeUnit.MILLISECONDS);
 
                 verify(callableMock, times(maxRetriesOnOrderFail + 1)).call();
@@ -116,7 +117,7 @@ public class StreamUtilTest extends CommonUtilForTest {
 
                 retryCall.run();
 
-                rxTestUtil.advanceTimeBy(maxRetriesOnOrderFail * delayOnOrderFailRetry,
+                RxTestUtil.advanceTimeBy(maxRetriesOnOrderFail * delayOnOrderFailRetry,
                                          TimeUnit.MILLISECONDS);
 
                 verify(callableMock, times(maxRetriesOnOrderFail + 1)).call();
@@ -149,9 +150,9 @@ public class StreamUtilTest extends CommonUtilForTest {
 
         StreamUtil.waitObservable(1000L, TimeUnit.MILLISECONDS).subscribe(subscriber);
 
-        rxTestUtil.advanceTimeBy(900L, TimeUnit.MILLISECONDS);
+        RxTestUtil.advanceTimeBy(900L, TimeUnit.MILLISECONDS);
         subscriber.assertNotCompleted();
-        rxTestUtil.advanceTimeBy(100L, TimeUnit.MILLISECONDS);
+        RxTestUtil.advanceTimeBy(100L, TimeUnit.MILLISECONDS);
         subscriber.assertCompleted();
     }
 

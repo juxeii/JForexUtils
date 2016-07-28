@@ -24,14 +24,14 @@ public final class ClientProvider {
     }
 
     public static final IClient client() {
-        return getInstance(ClientFactory::getDefaultInstance);
+        return get(ClientFactory::getDefaultInstance);
     }
 
     public static final ITesterClient testerClient() {
-        return (ITesterClient) getInstance(TesterFactory::getDefaultInstance);
+        return (ITesterClient) get(TesterFactory::getDefaultInstance);
     }
 
-    private static final IClient getInstance(final IClientSupplier clientSupplier) {
+    private static final IClient get(final IClientSupplier clientSupplier) {
         return Observable
                 .fromCallable(clientSupplier::get)
                 .doOnError(e -> logger.error("IClient retreival failed! " + e.getMessage()))

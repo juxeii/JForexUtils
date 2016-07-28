@@ -10,13 +10,12 @@ public class CurrencyUtilForTest extends InstrumentUtilForTest {
     public final ICurrency currencyAUD = instrumentGBPAUD.getSecondaryJFCurrency();
     public final ICurrency currencyGBP = instrumentGBPAUD.getPrimaryJFCurrency();
 
-    public final String currencyNameEUR = "EUR";
-    public final String currencyNameAUD = "AUD";
-    public final String currencyNameUSD = "USD";
-    public final String currencyNameJPY = "JPY";
+    public final String currencyNameEUR = currencyEUR.getCurrencyCode();
+    public final String currencyNameAUD = currencyAUD.getCurrencyCode();
+    public final String currencyNameUSD = currencyUSD.getCurrencyCode();
+    public final String currencyNameJPY = currencyJPY.getCurrencyCode();
+    public final String currencyNameLowerCaseEUR = currencyNameEUR.toLowerCase();
+    public final String currencyNameLowerCaseJPY = currencyNameJPY.toLowerCase();
     public final String invalidEmptyCurrencyName = "";
-    public final String invalidCurrencyName = "HUG";
-    public final String invalidLowerCaseCurrencyName = "hug";
-    public final String currencyNameLowerCaseEUR = "eur";
-    public final String currencyNameLowerCaseJPY = "jpy";
+    public final String unknownCurrencyName = "HUG";
 }

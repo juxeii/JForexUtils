@@ -34,13 +34,8 @@ public class CurrencyUtilTest extends CurrencyUtilForTest {
     }
 
     @Test
-    public void testLowerCaseInvalidCurrencyNameIsNotValid() {
-        assertFalse(isNameValid(invalidLowerCaseCurrencyName));
-    }
-
-    @Test
     public void testUpperCaseInvalidCurrencyNameIsNotValid() {
-        assertFalse(isNameValid(invalidCurrencyName));
+        assertFalse(isNameValid(unknownCurrencyName));
     }
 
     @Test
@@ -78,8 +73,7 @@ public class CurrencyUtilTest extends CurrencyUtilForTest {
     @Test
     public void testIsInInstrumentReturnsFalseForInvalidName() {
         assertFalse(isInInstrument(invalidEmptyCurrencyName, instrumentEURUSD));
-        assertFalse(isInInstrument(invalidCurrencyName, instrumentEURUSD));
-        assertFalse(isInInstrument(invalidLowerCaseCurrencyName, instrumentEURUSD));
+        assertFalse(isInInstrument(unknownCurrencyName, instrumentEURUSD));
     }
 
     @Test

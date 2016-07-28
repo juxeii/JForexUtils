@@ -9,8 +9,8 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.dukascopy.api.Unit;
-import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarParams;
+import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.TickQuote;
 
 public class QuoteProviderForTest extends CurrencyUtilForTest {
@@ -32,6 +32,7 @@ public class QuoteProviderForTest extends CurrencyUtilForTest {
 
     public final Period barQuotePeriod = Period.FIVE_MINS;
     public final Period custom3MinutePeriod = Period.createCustomPeriod(Unit.Minute, 3);
+
     public final BarParams askBarEURUSDParams = BarParams
             .forInstrument(instrumentEURUSD)
             .period(barQuotePeriod)
