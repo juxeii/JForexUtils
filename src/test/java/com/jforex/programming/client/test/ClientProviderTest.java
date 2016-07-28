@@ -12,12 +12,12 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.dukascopy.api.system.ClientFactory;
 import com.dukascopy.api.system.TesterFactory;
-import com.jforex.programming.client.ClientCreator;
+import com.jforex.programming.client.ClientProvider;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ClientFactory.class, TesterFactory.class })
-public class ClientCreatorTest extends CommonUtilForTest {
+public class ClientProviderTest extends CommonUtilForTest {
 
     @Before
     public void setUp() {
@@ -27,34 +27,36 @@ public class ClientCreatorTest extends CommonUtilForTest {
 
     @Test
     public void testConstructorIsPrivate() throws Exception {
-        assertPrivateConstructor(ClientCreator.class);
+        assertPrivateConstructor(ClientProvider.class);
     }
 
     @Test
     public void clientReturnsCorrectInstance() throws Exception {
         when(ClientFactory.getDefaultInstance()).thenReturn(clientMock);
 
-        assertThat(ClientCreator.client(), equalTo(clientMock));
+        assertThat(ClientProvider.client(), equalTo(clientMock));
     }
 
     @Test(expected = RuntimeException.class)
     public void exceptionIsThrownWhenClientCreationFails() throws Exception {
-        when(ClientFactory.getDefaultInstance()).thenThrow(new ClassNotFoundException());
+        when(ClientFactory.getDefaultInstance())
+                .thenThrow(new ClassNotFoundException());
 
-        ClientCreator.client();
+        ClientProvider.client();
     }
 
     @Test
     public void testerClientReturnsCorrectInstance() throws Exception {
         when(TesterFactory.getDefaultInstance()).thenReturn(testerClientMock);
 
-        assertThat(ClientCreator.testerClient(), equalTo(testerClientMock));
+        assertThat(ClientProvider.testerClient(), equalTo(testerClientMock));
     }
 
     @Test(expected = RuntimeException.class)
     public void exceptionIsThrownWhenTesterClientCreationFails() throws Exception {
-        when(TesterFactory.getDefaultInstance()).thenThrow(new ClassNotFoundException());
+        when(TesterFactory.getDefaultInstance())
+                .thenThrow(new ClassNotFoundException());
 
-        ClientCreator.testerClient();
+        ClientProvider.testerClient();
     }
 }

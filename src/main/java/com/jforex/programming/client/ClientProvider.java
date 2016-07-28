@@ -10,7 +10,7 @@ import com.dukascopy.api.system.TesterFactory;
 
 import rx.Observable;
 
-public final class ClientCreator {
+public final class ClientProvider {
 
     private interface IClientSupplier {
         public IClient get() throws ClassNotFoundException,
@@ -20,7 +20,7 @@ public final class ClientCreator {
 
     private static final Logger logger = LogManager.getLogger(ClientFactory.class);
 
-    private ClientCreator() {
+    private ClientProvider() {
     }
 
     public static final IClient client() {
@@ -34,7 +34,7 @@ public final class ClientCreator {
     private static final IClient getInstance(final IClientSupplier clientSupplier) {
         return Observable
                 .fromCallable(clientSupplier::get)
-                .doOnError(e -> logger.error("IClient retreival exception!" + e.getMessage()))
+                .doOnError(e -> logger.error("IClient retreival failed! " + e.getMessage()))
                 .toBlocking()
                 .first();
     }

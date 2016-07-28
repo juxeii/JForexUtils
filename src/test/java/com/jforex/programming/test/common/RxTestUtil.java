@@ -20,8 +20,8 @@ public final class RxTestUtil {
         return instance;
     }
 
-    public final void advanceTimeBy(final long delayTime,
-                                    final TimeUnit unit) {
-        testScheduler.advanceTimeBy(delayTime, unit);
+    public static final void advanceTimeBy(final long delayTime,
+                                           final TimeUnit timeUnit) {
+        testScheduler.advanceTimeBy(delayTime, timeUnit);
     }
 }
