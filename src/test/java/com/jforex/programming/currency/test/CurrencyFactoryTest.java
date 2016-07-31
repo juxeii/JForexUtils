@@ -1,5 +1,7 @@
 package com.jforex.programming.currency.test;
 
+import static com.jforex.programming.currency.CurrencyFactory.fromCode;
+import static com.jforex.programming.currency.CurrencyFactory.fromCodes;
 import static com.jforex.programming.currency.CurrencyFactory.fromNames;
 import static com.jforex.programming.currency.CurrencyFactory.maybeFromName;
 import static org.hamcrest.Matchers.equalTo;
@@ -14,6 +16,7 @@ import org.junit.Test;
 
 import com.dukascopy.api.ICurrency;
 import com.google.common.collect.Sets;
+import com.jforex.programming.currency.CurrencyCode;
 import com.jforex.programming.currency.CurrencyFactory;
 import com.jforex.programming.test.common.CurrencyUtilForTest;
 
@@ -23,14 +26,17 @@ public class CurrencyFactoryTest extends CurrencyUtilForTest {
                                                                    currencyNameLowerCaseJPY,
                                                                    currencyNameEUR);
 
-    private final String currencyNamesAsArray[] =
-            currencyNamesAsSet.stream().toArray(String[]::new);
+    private final Set<CurrencyCode> currencyCodesAsSet = Sets.newHashSet(CurrencyCode.EUR,
+                                                                         CurrencyCode.JPY);
+
+    private final String currencyNamesAsArray[] = currencyNamesAsSet.stream().toArray(String[]::new);
+    private final CurrencyCode currencyCodesAsArray[] = currencyCodesAsSet.stream().toArray(CurrencyCode[]::new);
 
     private ICurrency currencyForValidCurrencyName(final String currencyName) {
         return maybeFromName(currencyName).get();
     }
 
-    private void assertCurrenciesFromNames(final Set<ICurrency> currencies) {
+    private void assertCurrencies(final Set<ICurrency> currencies) {
         assertThat(currencies.size(), equalTo(2));
         assertTrue(currencies.contains(currencyEUR));
         assertTrue(currencies.contains(currencyJPY));
@@ -63,11 +69,26 @@ public class CurrencyFactoryTest extends CurrencyUtilForTest {
 
     @Test
     public void testFromNamesWithCollection() {
-        assertCurrenciesFromNames(fromNames(currencyNamesAsSet));
+        assertCurrencies(fromNames(currencyNamesAsSet));
     }
 
     @Test
     public void testFromNamesWithEllipsis() {
-        assertCurrenciesFromNames(fromNames(currencyNamesAsArray));
+        assertCurrencies(fromNames(currencyNamesAsArray));
+    }
+
+    @Test
+    public void testFromCodeIsCorrect() {
+        assertThat(fromCode(CurrencyCode.EUR), equalTo(currencyEUR));
+    }
+
+    @Test
+    public void testFromCodesWithCollection() {
+        assertCurrencies(fromCodes(currencyCodesAsSet));
+    }
+
+    @Test
+    public void testFromCodesWithEllipsis() {
+        assertCurrencies(fromCodes(currencyCodesAsArray));
     }
 }
