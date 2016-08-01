@@ -1,10 +1,9 @@
 package com.jforex.programming.order.command;
 
-import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.event.OrderEventTypeData;
-
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SubmitCommand extends OrderCallCommand {
 
@@ -35,9 +34,9 @@ public class SubmitCommand extends OrderCallCommand {
     }
 
     @Override
-    protected String errorLog(final Throwable e) {
+    protected String errorLog(final Throwable t) {
         return "Submit task with label " + orderLabel + " for "
-                + instrument + " failed! Exception: " + e.getMessage();
+                + instrument + " failed!Exception: " + t.getMessage();
     }
 
     @Override

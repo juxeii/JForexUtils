@@ -22,11 +22,10 @@ import com.jforex.programming.settings.PlatformSettings;
 
 public final class OrderStaticUtil {
 
-    private static final PlatformSettings platformSettings =
-            ConfigFactory.create(PlatformSettings.class);
-
     private OrderStaticUtil() {
     }
+
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
     public static final ImmutableBiMap<OrderCommand, OrderCommand> orderCommands =
             new ImmutableBiMap.Builder<OrderCommand, OrderCommand>()
@@ -177,9 +176,7 @@ public final class OrderStaticUtil {
     public static final double tpPriceWithPips(final IOrder order,
                                                final double price,
                                                final double pips) {
-        return slPriceWithPips(checkNotNull(order),
-                               price,
-                               -pips);
+        return slPriceWithPips(checkNotNull(order), price, -pips);
     }
 
     public static Callable<IOrder> runnableToCallable(final JFRunnable runnable,

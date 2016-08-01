@@ -38,8 +38,8 @@ public abstract class OrderChangeCommand<T> extends OrderCallCommand {
     }
 
     @Override
-    protected String errorLog(final Throwable e) {
-        return "Failed to change " + commonLog + "!Excpetion: " + e.getMessage();
+    protected String errorLog(final Throwable t) {
+        return "Failed to change " + commonLog + "!Excpetion: " + t.getMessage();
     }
 
     @Override

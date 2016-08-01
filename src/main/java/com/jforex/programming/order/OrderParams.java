@@ -15,7 +15,6 @@ public final class OrderParams implements Cloneable {
     private final Instrument instrument;
     private final OrderCommand orderCommand;
     private final double amount;
-
     private final double price;
     private final double slippage;
     private final double stopLossPrice;
@@ -138,11 +137,11 @@ public final class OrderParams implements Cloneable {
     }
 
     private static class Builder implements
-            WithOrderCommand,
-            WithAmount,
-            WithLabel,
-            WithOptions,
-            Clone {
+                                 WithOrderCommand,
+                                 WithAmount,
+                                 WithLabel,
+                                 WithOptions,
+                                 Clone {
 
         private String label;
         private Instrument instrument;

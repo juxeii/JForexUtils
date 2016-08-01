@@ -28,9 +28,9 @@ public class MergeCommand extends OrderCallCommand {
     }
 
     @Override
-    protected String errorLog(final Throwable e) {
+    protected String errorLog(final Throwable t) {
         return "Merging with label " + mergeOrderLabel
-                + " for position " + instrument + " failed! Exception: " + e.getMessage();
+                + " for position " + instrument + " failed! Exception: " + t.getMessage();
     }
 
     @Override

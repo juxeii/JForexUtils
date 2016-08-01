@@ -14,7 +14,6 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.event.ChangeEventMapper;
 import com.jforex.programming.order.event.OrderEventMapper;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeSets;
@@ -72,7 +71,6 @@ public class OrderEventMapperTest extends CommonUtilForTest {
     public void helperMapperClassesHavePrivateConstructors() throws Exception {
         assertPrivateConstructor(OrderEventTypeSets.class);
         assertPrivateConstructor(ReasonEventMapper.class);
-        assertPrivateConstructor(ChangeEventMapper.class);
         assertPrivateConstructor(TypeEventMapper.class);
     }
 
