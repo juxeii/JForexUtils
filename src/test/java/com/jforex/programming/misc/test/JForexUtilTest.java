@@ -15,6 +15,7 @@ import com.dukascopy.api.IMessage;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.quote.BarQuote;
@@ -69,6 +70,11 @@ public class JForexUtilTest extends QuoteProviderForTest {
     @Test
     public void returnedCalculationUtilIsValid() {
         assertNotNull(jForexUtil.calculationUtil());
+    }
+
+    @Test
+    public void returnedPositionSwitcherIsValid() {
+        assertNotNull(jForexUtil.positionSwitcher(instrumentEURUSD, mock(OrderParamsSupplier.class)));
     }
 
     @Test

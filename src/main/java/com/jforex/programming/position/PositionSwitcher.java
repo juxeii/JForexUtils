@@ -1,7 +1,5 @@
 package com.jforex.programming.position;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 
 import org.aeonbits.owner.ConfigFactory;
@@ -27,13 +25,12 @@ public final class PositionSwitcher {
     private final PositionOrders positionOrders;
     private final Instrument instrument;
     private final OrderParamsSupplier orderParamsSupplier;
-    private final StateMachineConfig<FSMState, FSMTrigger> fsmConfig =
-            new StateMachineConfig<>();
-    private final StateMachine<FSMState, FSMTrigger> fsm =
-            new StateMachine<>(FSMState.FLAT, fsmConfig);
+    private final StateMachineConfig<FSMState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
+    private final StateMachine<FSMState, FSMTrigger> fsm = new StateMachine<>(FSMState.FLAT, fsmConfig);
     private Map<OrderDirection, FSMState> nextStatesByDirection;
 
     public enum FSMState {
+
         FLAT,
         LONG,
         SHORT,
@@ -41,6 +38,7 @@ public final class PositionSwitcher {
     }
 
     public enum FSMTrigger {
+
         FLAT,
         BUY,
         SELL,
@@ -52,53 +50,53 @@ public final class PositionSwitcher {
     private static final String defaultMergePrefix = userSettings.defaultMergePrefix();
 
     public PositionSwitcher(final Instrument instrument,
-                            final OrderUtil orderUtil,
-                            final OrderParamsSupplier orderParamsSupplier) {
-        this.instrument = checkNotNull(instrument);
-        this.orderUtil = checkNotNull(orderUtil);
-        this.orderParamsSupplier = checkNotNull(orderParamsSupplier);
+                            final OrderParamsSupplier orderParamsSupplier,
+                            final OrderUtil orderUtil) {
+        this.instrument = instrument;
+        this.orderParamsSupplier = orderParamsSupplier;
+        this.orderUtil = orderUtil;
 
         positionOrders = orderUtil.positionOrders(instrument);
         configureFSM();
     }
 
     private final void configureFSM() {
-        nextStatesByDirection = ImmutableMap.<OrderDirection, FSMState> builder()
+        nextStatesByDirection = ImmutableMap
+                .<OrderDirection, FSMState> builder()
                 .put(OrderDirection.FLAT, FSMState.FLAT)
                 .put(OrderDirection.LONG, FSMState.LONG)
                 .put(OrderDirection.SHORT, FSMState.SHORT)
                 .build();
 
-        fsmConfig.configure(FSMState.FLAT)
+        fsmConfig
+                .configure(FSMState.FLAT)
                 .permit(FSMTrigger.BUY, FSMState.BUSY)
                 .permit(FSMTrigger.SELL, FSMState.BUSY)
                 .ignore(FSMTrigger.FLAT)
                 .ignore(FSMTrigger.CLOSE_DONE)
                 .ignore(FSMTrigger.MERGE_DONE);
 
-        fsmConfig.configure(FSMState.LONG)
+        fsmConfig
+                .configure(FSMState.LONG)
                 .permit(FSMTrigger.FLAT, FSMState.BUSY)
                 .permit(FSMTrigger.SELL, FSMState.BUSY)
                 .ignore(FSMTrigger.BUY)
                 .ignore(FSMTrigger.CLOSE_DONE)
                 .ignore(FSMTrigger.MERGE_DONE);
 
-        fsmConfig.configure(FSMState.SHORT)
+        fsmConfig
+                .configure(FSMState.SHORT)
                 .permit(FSMTrigger.FLAT, FSMState.BUSY)
                 .permit(FSMTrigger.BUY, FSMState.BUSY)
                 .ignore(FSMTrigger.SELL)
                 .ignore(FSMTrigger.CLOSE_DONE)
                 .ignore(FSMTrigger.MERGE_DONE);
 
-        fsmConfig.configure(FSMState.BUSY)
+        fsmConfig
+                .configure(FSMState.BUSY)
                 .onEntryFrom(FSMTrigger.BUY, () -> executeOrderCommandSignal(OrderDirection.LONG))
                 .onEntryFrom(FSMTrigger.SELL, () -> executeOrderCommandSignal(OrderDirection.SHORT))
-                .onEntryFrom(FSMTrigger.FLAT,
-                             () -> orderUtil
-                                     .closePosition(instrument)
-                                     .retryWhen(StreamUtil::retryObservable)
-                                     .doOnTerminate(() -> fsm.fire(FSMTrigger.CLOSE_DONE))
-                                     .subscribe())
+                .onEntryFrom(FSMTrigger.FLAT, this::closePosition)
                 .permitDynamic(FSMTrigger.MERGE_DONE,
                                () -> nextStatesByDirection.get(positionOrders.direction()))
                 .permit(FSMTrigger.CLOSE_DONE, FSMState.FLAT)
@@ -119,6 +117,14 @@ public final class PositionSwitcher {
         fsm.fire(FSMTrigger.FLAT);
     }
 
+    private void closePosition() {
+        orderUtil
+                .closePosition(instrument)
+                .retryWhen(StreamUtil::retryObservable)
+                .doOnTerminate(() -> fsm.fire(FSMTrigger.CLOSE_DONE))
+                .subscribe();
+    }
+
     private final void executeOrderCommandSignal(final OrderDirection desiredDirection) {
         final OrderCommand newOrderCommand = OrderStaticUtil.directionToCommand(desiredDirection);
         final OrderParams adaptedOrderParams = adaptedOrderParams(newOrderCommand);
@@ -126,8 +132,7 @@ public final class PositionSwitcher {
 
         orderUtil
                 .submitOrder(adaptedOrderParams)
-                .concatWith(Observable.defer(() -> orderUtil.mergePositionOrders(mergeLabel,
-                                                                                 instrument)))
+                .concatWith(Observable.defer(() -> orderUtil.mergePositionOrders(mergeLabel, instrument)))
                 .retryWhen(StreamUtil::retryObservable)
                 .doOnTerminate(() -> fsm.fire(FSMTrigger.MERGE_DONE))
                 .subscribe();

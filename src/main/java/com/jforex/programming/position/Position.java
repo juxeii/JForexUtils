@@ -69,8 +69,7 @@ public class Position implements PositionOrders {
     private synchronized void removeOrder(final IOrder order) {
         orderRepository.remove(order);
         logger.debug("Removed order " + order.getLabel() + " from position " + instrument
-                + " Orderstate: "
-                + order.getState() + " repo size " + orderRepository.size());
+                + " Orderstate: " + order.getState() + " repo size " + orderRepository.size());
     }
 
     @Override

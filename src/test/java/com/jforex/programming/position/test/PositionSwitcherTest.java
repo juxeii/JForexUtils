@@ -48,8 +48,8 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
         setPositionOrderDirection(OrderDirection.FLAT);
 
         positionSwitcher = new PositionSwitcher(instrumentEURUSD,
-                                                orderUtilMock,
-                                                orderParamsSupplierMock);
+                                                orderParamsSupplierMock,
+                                                orderUtilMock);
     }
 
     private void setUpMocks() {
@@ -89,7 +89,8 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
 
         @Test
         public void testSendedOrderParamsAreCorrect() {
-            final OrderParams paramsWithWrongCommand = orderParamsBUY.clone()
+            final OrderParams paramsWithWrongCommand = orderParamsBUY
+                    .clone()
                     .withOrderCommand(OrderCommand.SELL)
                     .build();
 
