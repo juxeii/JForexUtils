@@ -5,17 +5,45 @@ import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IMessage.Reason;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.jforex.programming.order.call.OrderCallReason;
 
-public final class TypeEventMapper {
+public final class OrderEventMapperData {
 
-    private TypeEventMapper() {
+    private OrderEventMapperData() {
     }
+
+    private static final Map<OrderCallReason, OrderEventType> changeRejectEventByReason =
+            Maps.immutableEnumMap(ImmutableMap
+                    .<OrderCallReason, OrderEventType> builder()
+                    .put(OrderCallReason.CHANGE_AMOUNT, OrderEventType.CHANGE_AMOUNT_REJECTED)
+                    .put(OrderCallReason.CHANGE_LABEL, OrderEventType.CHANGE_LABEL_REJECTED)
+                    .put(OrderCallReason.CHANGE_GTT, OrderEventType.CHANGE_GTT_REJECTED)
+                    .put(OrderCallReason.CHANGE_PRICE, OrderEventType.CHANGE_PRICE_REJECTED)
+                    .put(OrderCallReason.CHANGE_SL, OrderEventType.CHANGE_SL_REJECTED)
+                    .put(OrderCallReason.CHANGE_TP, OrderEventType.CHANGE_TP_REJECTED)
+                    .build());
+
+    private static final Map<IMessage.Reason, OrderEventType> orderEventByReason =
+            Maps.immutableEnumMap(ImmutableMap.<IMessage.Reason, OrderEventType> builder()
+                    .put(IMessage.Reason.ORDER_FULLY_FILLED, OrderEventType.FULLY_FILLED)
+                    .put(IMessage.Reason.ORDER_CLOSED_BY_MERGE, OrderEventType.CLOSED_BY_MERGE)
+                    .put(IMessage.Reason.ORDER_CLOSED_BY_SL, OrderEventType.CLOSED_BY_SL)
+                    .put(IMessage.Reason.ORDER_CLOSED_BY_TP, OrderEventType.CLOSED_BY_TP)
+                    .put(IMessage.Reason.ORDER_CHANGED_SL, OrderEventType.CHANGED_SL)
+                    .put(IMessage.Reason.ORDER_CHANGED_TP, OrderEventType.CHANGED_TP)
+                    .put(IMessage.Reason.ORDER_CHANGED_AMOUNT, OrderEventType.CHANGED_AMOUNT)
+                    .put(IMessage.Reason.ORDER_CHANGED_PRICE, OrderEventType.CHANGED_PRICE)
+                    .put(IMessage.Reason.ORDER_CHANGED_GTT, OrderEventType.CHANGED_GTT)
+                    .put(IMessage.Reason.ORDER_CHANGED_LABEL, OrderEventType.CHANGED_LABEL)
+                    .build());
 
     private static final Function<IOrder, OrderEventType> submitEvaluator =
             order -> isConditional.test(order)
@@ -63,8 +91,16 @@ public final class TypeEventMapper {
                          order -> OrderEventType.MERGE_REJECTED)
                     .build());
 
-    public static final OrderEventType map(final IOrder order,
-                                           final IMessage.Type type) {
+    public static final OrderEventType mapByType(final IOrder order,
+                                                 final IMessage.Type type) {
         return orderEventByType.get(type).apply(order);
+    }
+
+    public static final OrderEventType mapByReason(final Set<Reason> reasons) {
+        return orderEventByReason.get(reasons.iterator().next());
+    }
+
+    public static final OrderEventType mapByChangeReject(final OrderCallReason orderCallReason) {
+        return changeRejectEventByReason.get(orderCallReason);
     }
 }

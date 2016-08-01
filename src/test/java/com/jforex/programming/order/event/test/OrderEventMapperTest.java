@@ -17,8 +17,7 @@ import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEventMapper;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeSets;
-import com.jforex.programming.order.event.ReasonEventMapper;
-import com.jforex.programming.order.event.TypeEventMapper;
+import com.jforex.programming.order.event.OrderEventMapperData;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
 
@@ -70,8 +69,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
     @Test
     public void helperMapperClassesHavePrivateConstructors() throws Exception {
         assertPrivateConstructor(OrderEventTypeSets.class);
-        assertPrivateConstructor(ReasonEventMapper.class);
-        assertPrivateConstructor(TypeEventMapper.class);
+        assertPrivateConstructor(OrderEventMapperData.class);
     }
 
     @Test
