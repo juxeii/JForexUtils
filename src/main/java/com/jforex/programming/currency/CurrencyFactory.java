@@ -40,23 +40,8 @@ public final class CurrencyFactory {
     private CurrencyFactory() {
     }
 
-    public static final ICurrency fromCode(final CurrencyCode currencyCode) {
-        return instanceFromName(checkNotNull(currencyCode).toString());
-    }
-
-    public static final Set<ICurrency> fromCodes(final Collection<CurrencyCode> currencyCodes) {
-        return checkNotNull(currencyCodes)
-                .stream()
-                .map(CurrencyFactory::fromCode)
-                .collect(toSet());
-    }
-
-    public static final Set<ICurrency> fromCodes(final CurrencyCode... currencyCodes) {
-        return fromCodes(asList(checkNotNull(currencyCodes)));
-    }
-
-    private static final ICurrency instanceFromName(final String currencyName) {
-        return JFCurrency.getInstance(currencyName.toUpperCase());
+    private static final ICurrency fromCode(final CurrencyCode currencyCode) {
+        return instanceFromName(currencyCode.toString());
     }
 
     public static final Optional<ICurrency> maybeFromName(final String currencyName) {
@@ -76,5 +61,9 @@ public final class CurrencyFactory {
 
     public static final Set<ICurrency> fromNames(final String... currencyNames) {
         return fromNames(asList(checkNotNull(currencyNames)));
+    }
+
+    private static final ICurrency instanceFromName(final String currencyName) {
+        return JFCurrency.getInstance(currencyName.toUpperCase());
     }
 }
