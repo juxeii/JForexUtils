@@ -38,8 +38,7 @@ public class OrderUtil {
     private final PositionFactory positionFactory;
     private final OrderUtilHandler orderUtilHandler;
 
-    private static final PlatformSettings platformSettings =
-            ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     private static final Logger logger = LogManager.getLogger(OrderUtil.class);
 
     public OrderUtil(final IEngine engine,

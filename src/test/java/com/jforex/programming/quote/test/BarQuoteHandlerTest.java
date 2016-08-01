@@ -45,7 +45,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         quoteFilters.add(askBarAUDUSDParams);
 
         barQuoteHandler
-                .observableForParams(quoteFilters)
+                .observableForParamsList(quoteFilters)
                 .subscribe(filteredQuoteSubscriber);
 
         barQuoteHandler
@@ -113,7 +113,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         quoteFilters.add(askBarEURUSDCustomPeriodParams);
 
         barQuoteHandler
-                .observableForParams(quoteFilters)
+                .observableForParamsList(quoteFilters)
                 .subscribe(filteredQuoteSubscriber);
 
         verify(jforexUtilMock).subscribeToBarsFeed(askBarEURUSDCustomPeriodParams);

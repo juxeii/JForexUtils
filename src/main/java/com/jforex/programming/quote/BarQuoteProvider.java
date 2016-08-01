@@ -10,7 +10,7 @@ public interface BarQuoteProvider {
 
     public IBar bar(BarParams barParams);
 
-    public Observable<BarQuote> observableForParams(final List<BarParams> params);
+    public Observable<BarQuote> observableForParamsList(List<BarParams> barParamsList);
 
     public Observable<BarQuote> observable();
 }

@@ -10,16 +10,16 @@ import rx.Observable;
 
 public interface TickQuoteProvider {
 
-    public ITick tick(final Instrument instrument);
+    public ITick tick(Instrument instrument);
 
-    public double ask(final Instrument instrument);
+    public double ask(Instrument instrument);
 
-    public double bid(final Instrument instrument);
+    public double bid(Instrument instrument);
 
-    public double forOfferSide(final Instrument instrument,
-                               final OfferSide offerSide);
+    public double forOfferSide(Instrument instrument,
+                               OfferSide offerSide);
 
-    public Observable<TickQuote> observableForInstruments(final Set<Instrument> instruments);
+    public Observable<TickQuote> observableForInstruments(Set<Instrument> instruments);
 
     public Observable<TickQuote> observable();
 }

@@ -13,7 +13,7 @@ public interface PositionOrders {
 
     public int size();
 
-    public boolean contains(final IOrder order);
+    public boolean contains(IOrder order);
 
     public OrderDirection direction();
 
@@ -25,5 +25,5 @@ public interface PositionOrders {
 
     public Set<IOrder> filledOrOpened();
 
-    public Set<IOrder> filter(final Predicate<IOrder> orderPredicate);
+    public Set<IOrder> filter(Predicate<IOrder> orderPredicate);
 }

@@ -33,7 +33,7 @@ public class BarQuoteHandler implements BarQuoteProvider {
 
     @Override
     public Observable<BarQuote>
-           observableForParams(final List<BarParams> barParamsList) {
+           observableForParamsList(final List<BarParams> barParamsList) {
         final List<Observable<BarQuote>> paramsObservables = checkNotNull(barParamsList)
                 .stream()
                 .map(params -> {

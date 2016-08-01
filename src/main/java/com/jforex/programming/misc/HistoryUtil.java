@@ -8,10 +8,6 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.quote.BarParams;
-import com.jforex.programming.quote.QuoteProviderException;
-import com.jforex.programming.quote.TickQuote;
-
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.ITick;
@@ -19,6 +15,9 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.jforex.programming.quote.BarParams;
+import com.jforex.programming.quote.QuoteProviderException;
+import com.jforex.programming.quote.TickQuote;
 
 import rx.Observable;
 
@@ -46,9 +45,8 @@ public class HistoryUtil {
     public ITick tickQuote(final Instrument instrument) {
         return Observable
                 .fromCallable(() -> latestHistoryTick(instrument))
-                .doOnError(e -> logger.warn("Get last tick for " + instrument +
-                        " from history failed with exception: " + e.getMessage()
-                        + "! Will retry now..."))
+                .doOnError(e -> logger.error(e.getMessage()
+                        + "! Will retry latest tick from history now..."))
                 .retry(maxBarTickRetries)
                 .toBlocking()
                 .single();
@@ -57,7 +55,8 @@ public class HistoryUtil {
     private ITick latestHistoryTick(final Instrument instrument) throws JFException {
         final ITick tick = history.getLastTick(instrument);
         if (tick == null)
-            throw new QuoteProviderException("Last history tick for " + instrument + " returned null!");
+            throw new QuoteProviderException("Latest tick from history for " + instrument
+                    + " returned null!");
         return tick;
     }
 
@@ -68,10 +67,8 @@ public class HistoryUtil {
 
         return Observable
                 .fromCallable(() -> latestHistoryBar(instrument, period, offerSide))
-                .doOnError(e -> logger.error("Last bar for " + instrument
-                        + " and period " + period + " and offerside " + offerSide
-                        + " from history failed with exception: " + e.getMessage()
-                        + "! Will retry now..."))
+                .doOnError(e -> logger.error(e.getMessage()
+                        + "! Will retry latest bar from history now..."))
                 .retry(maxBarTickRetries)
                 .toBlocking()
                 .single();
@@ -85,7 +82,8 @@ public class HistoryUtil {
                                         offerSide,
                                         1);
         if (bar == null)
-            throw new QuoteProviderException("Last history bar for " + instrument + " returned null!");
+            throw new QuoteProviderException("Latest bar from history for " + instrument
+                    + " " + period + " " + offerSide + " returned null!");
         return bar;
     }
 }

@@ -23,6 +23,58 @@ public final class OrderParams implements Cloneable {
     private final long goodTillTime;
     private final String comment;
 
+    public interface WithOrderCommand {
+        public WithAmount withOrderCommand(OrderCommand orderCommand);
+    }
+
+    public interface WithAmount {
+        public WithLabel withAmount(double amount);
+    }
+
+    public interface WithLabel {
+        public WithOptions withLabel(String label);
+    }
+
+    public interface WithOptions {
+        public WithOptions price(double price);
+
+        public WithOptions slippage(double slippage);
+
+        public WithOptions stopLossPrice(double stopLossPrice);
+
+        public WithOptions takeProfitPrice(double takeProfitPrice);
+
+        public WithOptions goodTillTime(long goodTillTime);
+
+        public WithOptions comment(String comment);
+
+        public OrderParams build();
+    }
+
+    public interface Clone {
+        public Clone withLabel(final String label);
+
+        public Clone forInstrument(Instrument instrument);
+
+        public Clone withOrderCommand(OrderCommand orderCommand);
+
+        public Clone withAmount(double amount);
+
+        public Clone price(double price);
+
+        public Clone slippage(double slippage);
+
+        public Clone stopLossPrice(double stopLossPrice);
+
+        public Clone takeProfitPrice(double takeProfitPrice);
+
+        public Clone goodTillTime(long goodTillTime);
+
+        public Clone comment(String comment);
+
+        public OrderParams build();
+    }
+
     private OrderParams(final Builder builder) {
         label = builder.label;
         instrument = builder.instrument;
@@ -77,64 +129,12 @@ public final class OrderParams implements Cloneable {
     }
 
     @Override
-    public Clone clone() {
+    public final Clone clone() {
         return new Builder(this);
     }
 
-    public static WithOrderCommand forInstrument(final Instrument instrument) {
+    public static final WithOrderCommand forInstrument(final Instrument instrument) {
         return new Builder(checkNotNull(instrument));
-    }
-
-    public interface WithOrderCommand {
-        public WithAmount withOrderCommand(OrderCommand orderCommand);
-    }
-
-    public interface WithAmount {
-        public WithLabel withAmount(double amount);
-    }
-
-    public interface WithLabel {
-        public WithOptions withLabel(String label);
-    }
-
-    public interface WithOptions {
-        public WithOptions price(double price);
-
-        public WithOptions slippage(double slippage);
-
-        public WithOptions stopLossPrice(double stopLossPrice);
-
-        public WithOptions takeProfitPrice(double takeProfitPrice);
-
-        public WithOptions goodTillTime(long goodTillTime);
-
-        public WithOptions comment(String comment);
-
-        public OrderParams build();
-    }
-
-    public interface Clone {
-        public Clone withLabel(final String label);
-
-        public Clone forInstrument(Instrument instrument);
-
-        public Clone withOrderCommand(OrderCommand orderCommand);
-
-        public Clone withAmount(double amount);
-
-        public Clone price(double price);
-
-        public Clone slippage(double slippage);
-
-        public Clone stopLossPrice(double stopLossPrice);
-
-        public Clone takeProfitPrice(double takeProfitPrice);
-
-        public Clone goodTillTime(long goodTillTime);
-
-        public Clone comment(String comment);
-
-        public OrderParams build();
     }
 
     private static class Builder implements
