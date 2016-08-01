@@ -19,7 +19,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'biz.aQute.bnd.builder'
 
 group= 'com.jforex.programming'
-version = '0.9.5'
+version = '0.9.6'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
