@@ -19,29 +19,23 @@ public class OrderMessageDataTest extends CommonUtilForTest {
 
     private OrderMessageData orderMessageData;
 
-    private final IOrderForTest testOrder = IOrderForTest.buyOrderEURUSD();
-    private final IOrder.State orderState = IOrder.State.FILLED;
+    private final IOrderForTest orderForTest = IOrderForTest.buyOrderEURUSD();
     private final IMessage.Type messageType = IMessage.Type.ORDER_CHANGED_OK;
     private final Set<IMessage.Reason> messageReasons = Sets.newHashSet();
-    private final IMessage message = mockForIMessage(testOrder,
+    private final IMessage message = mockForIMessage(orderForTest,
                                                      messageType,
                                                      messageReasons);
 
     @Before
     public void setUp() {
-        testOrder.setState(IOrder.State.FILLED);
+        orderForTest.setState(IOrder.State.FILLED);
 
         orderMessageData = new OrderMessageData(message);
     }
 
     @Test
     public void testOrderReturnsCorrectOrderInstance() {
-        assertThat(orderMessageData.order(), equalTo(testOrder));
-    }
-
-    @Test
-    public void testOrderStateReturnsCorrectState() {
-        assertThat(orderMessageData.orderState(), equalTo(orderState));
+        assertThat(orderMessageData.order(), equalTo(orderForTest));
     }
 
     @Test
