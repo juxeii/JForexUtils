@@ -11,10 +11,6 @@ public class PipDistanceBuilder {
     private Builder builder;
     protected final Function<PipDistanceBuilder, Double> consumer;
 
-    public PipDistanceBuilder(final Function<PipDistanceBuilder, Double> consumer) {
-        this.consumer = consumer;
-    }
-
     public interface To {
         public ForInstrument to(double toPrice);
     }
@@ -23,20 +19,24 @@ public class PipDistanceBuilder {
         public double forInstrument(Instrument instrument);
     }
 
-    public To pipDistanceFrom(final double fromPrice) {
+    public PipDistanceBuilder(final Function<PipDistanceBuilder, Double> consumer) {
+        this.consumer = consumer;
+    }
+
+    public final To pipDistanceFrom(final double fromPrice) {
         builder = new Builder(fromPrice);
         return builder;
     }
 
-    public double priceFrom() {
+    public final double priceFrom() {
         return this.builder.fromPrice;
     }
 
-    public double priceTo() {
+    public final double priceTo() {
         return this.builder.toPrice;
     }
 
-    public Instrument instrument() {
+    public final Instrument instrument() {
         return this.builder.instrument;
     }
 

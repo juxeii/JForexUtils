@@ -13,10 +13,6 @@ public class ConversionBuilder {
     private Builder builder;
     protected final Function<ConversionBuilder, Double> consumer;
 
-    public ConversionBuilder(final Function<ConversionBuilder, Double> consumer) {
-        this.consumer = consumer;
-    }
-
     public interface FromSource {
         public ToInstrument fromInstrument(Instrument instrument);
 
@@ -35,24 +31,28 @@ public class ConversionBuilder {
         public ForOfferSide toCurrency(ICurrency currency);
     }
 
-    public FromSource convertAmount(final double amount) {
+    public ConversionBuilder(final Function<ConversionBuilder, Double> consumer) {
+        this.consumer = consumer;
+    }
+
+    public final FromSource convertAmount(final double amount) {
         builder = new Builder(amount);
         return builder;
     }
 
-    public double amount() {
+    public final double amount() {
         return this.builder.amount;
     }
 
-    public ICurrency sourceCurrency() {
+    public final ICurrency sourceCurrency() {
         return this.builder.sourceCurrency;
     }
 
-    public ICurrency targetCurrency() {
+    public final ICurrency targetCurrency() {
         return this.builder.targetCurrency;
     }
 
-    public OfferSide offerSide() {
+    public final OfferSide offerSide() {
         return this.builder.offerSide;
     }
 

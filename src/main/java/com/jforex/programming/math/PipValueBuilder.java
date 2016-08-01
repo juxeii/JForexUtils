@@ -13,10 +13,6 @@ public class PipValueBuilder {
     private Builder builder;
     protected final Function<PipValueBuilder, Double> consumer;
 
-    public PipValueBuilder(final Function<PipValueBuilder, Double> consumer) {
-        this.consumer = consumer;
-    }
-
     public interface OfInstrument {
         public WithAmount ofInstrument(Instrument instrument);
     }
@@ -29,24 +25,28 @@ public class PipValueBuilder {
         public double andOfferSide(OfferSide offerSide);
     }
 
-    public OfInstrument pipValueInCurrency(final ICurrency currency) {
+    public PipValueBuilder(final Function<PipValueBuilder, Double> consumer) {
+        this.consumer = consumer;
+    }
+
+    public final OfInstrument pipValueInCurrency(final ICurrency currency) {
         builder = new Builder(checkNotNull(currency));
         return builder;
     }
 
-    public double amount() {
+    public final double amount() {
         return this.builder.amount;
     }
 
-    public ICurrency targetCurrency() {
+    public final ICurrency targetCurrency() {
         return this.builder.targetCurrency;
     }
 
-    public Instrument instrument() {
+    public final Instrument instrument() {
         return this.builder.instrument;
     }
 
-    public OfferSide offerSide() {
+    public final OfferSide offerSide() {
         return this.builder.offerSide;
     }
 
