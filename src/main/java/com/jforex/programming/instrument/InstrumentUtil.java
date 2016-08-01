@@ -9,6 +9,7 @@ import com.dukascopy.api.IBar;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.currency.CurrencyCode;
 import com.jforex.programming.currency.CurrencyFactory;
 import com.jforex.programming.currency.CurrencyUtil;
 import com.jforex.programming.math.CalculationUtil;
@@ -31,8 +32,8 @@ public final class InstrumentUtil {
     private static final String pairsSeparator = Instrument.getPairsSeparator();
 
     public InstrumentUtil(final Instrument instrument,
-                          final TickQuoteHandler tickQuoteProvider,
-                          final BarQuoteHandler barQuoteProvider) {
+            final TickQuoteHandler tickQuoteProvider,
+            final BarQuoteHandler barQuoteProvider) {
         this.instrument = instrument;
         this.tickQuoteProvider = tickQuoteProvider;
         this.barQuoteProvider = barQuoteProvider;
@@ -97,8 +98,8 @@ public final class InstrumentUtil {
         return CurrencyUtil.isInInstrument(checkNotNull(currency), instrument);
     }
 
-    public final boolean containsCurrencyCode(final String currencyCode) {
-        return CurrencyUtil.isInInstrument(checkNotNull(currencyCode), instrument);
+    public final boolean containsCurrencyCode(final CurrencyCode currencyCode) {
+        return CurrencyUtil.isInInstrument(checkNotNull(currencyCode).toString(), instrument);
     }
 
     public static final int numberOfDigits(final Instrument instrument) {

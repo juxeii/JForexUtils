@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.dukascopy.api.ICurrency;
+import com.jforex.programming.currency.CurrencyCode;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.test.common.QuoteProviderForTest;
@@ -113,11 +114,9 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
     }
 
     @Test
-    public void testContainsCurrencyForNameIsCorrect() {
-        assertTrue(instrumentUtil.containsCurrencyCode(currencyNameEUR));
-        assertTrue(instrumentUtil.containsCurrencyCode(currencyNameUSD));
-        assertFalse(instrumentUtil.containsCurrencyCode(invalidEmptyCurrencyName));
-        assertFalse(instrumentUtil.containsCurrencyCode(unknownCurrencyName));
+    public void testContainsCurrencyCodeIsCorrect() {
+        assertTrue(instrumentUtil.containsCurrencyCode(CurrencyCode.EUR));
+        assertTrue(instrumentUtil.containsCurrencyCode(CurrencyCode.USD));
     }
 
     @Test
