@@ -63,11 +63,6 @@ public class JForexUtilTest extends QuoteProviderForTest {
     }
 
     @Test
-    public void returnedRiskPercentMMIsValid() {
-        assertNotNull(jForexUtil.riskPercentMM());
-    }
-
-    @Test
     public void returnedCalculationUtilIsValid() {
         assertNotNull(jForexUtil.calculationUtil());
     }

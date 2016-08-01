@@ -18,7 +18,6 @@ import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.mm.RiskPercentMM;
 import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -61,16 +60,13 @@ public class JForexUtil {
     private final OrderEventMapper orderEventMapper = new OrderEventMapper();
 
     private final CalculationUtil calculationUtil;
-    private final RiskPercentMM riskPercentMM;
 
     private final JFHotSubject<TickQuote> tickQuoteSubject = new JFHotSubject<>();
     private final JFHotSubject<BarQuote> barQuoteSubject = new JFHotSubject<>();
     private final JFHotSubject<IMessage> messageSubject = new JFHotSubject<>();
 
-    private static final PlatformSettings platformSettings =
-            ConfigFactory.create(PlatformSettings.class);
-    private static final UserSettings userSettings =
-            ConfigFactory.create(UserSettings.class);
+    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
     public JForexUtil(final IContext context) {
         this.context = checkNotNull(context);
@@ -81,7 +77,6 @@ public class JForexUtil {
         initOrderRelated();
 
         calculationUtil = new CalculationUtil(tickQuoteHandler);
-        riskPercentMM = new RiskPercentMM(account, calculationUtil);
     }
 
     private void initContextRelated() {
@@ -172,10 +167,6 @@ public class JForexUtil {
         positionFactory
                 .all()
                 .forEach(position -> orderUtil.closePosition(position.instrument()).subscribe());
-    }
-
-    public RiskPercentMM riskPercentMM() {
-        return riskPercentMM;
     }
 
     public void onStop() {
