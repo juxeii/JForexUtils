@@ -18,7 +18,7 @@ public class SetOpenPriceCommand extends OrderChangeCommand<Double> {
     }
 
     @Override
-    public boolean filter(final IOrder order) {
-        return !isOpenPriceSetTo(newValue).test(order);
+    public boolean filter() {
+        return !isOpenPriceSetTo(newValue).test(orderToChange);
     }
 }

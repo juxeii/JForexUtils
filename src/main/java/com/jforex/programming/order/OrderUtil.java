@@ -189,9 +189,9 @@ public class OrderUtil {
 
     private Observable<OrderEvent> changeObservable(final OrderChangeCommand<?> command) {
         return Observable
-                .just(checkNotNull(command.order()))
-                .filter(command::filter)
-                .flatMap(order -> orderUtilObservable(command));
+                .just(command)
+                .filter(OrderChangeCommand::filter)
+                .flatMap(this::orderUtilObservable);
     }
 
     private Observable<OrderEvent> orderUtilObservable(final OrderCallCommand command) {

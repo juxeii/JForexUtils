@@ -30,7 +30,7 @@ public abstract class OrderChangeCommand<T> extends OrderCallCommand {
         return orderToChange;
     }
 
-    public abstract boolean filter(IOrder order);
+    public abstract boolean filter();
 
     @Override
     protected String subscribeLog() {

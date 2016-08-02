@@ -17,7 +17,7 @@ public class CloseCommand extends OrderChangeCommand<IOrder.State> {
     }
 
     @Override
-    public boolean filter(final IOrder order) {
-        return !isClosed.test(order);
+    public boolean filter() {
+        return !isClosed.test(orderToChange);
     }
 }

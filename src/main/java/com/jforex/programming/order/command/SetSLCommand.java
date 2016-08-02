@@ -18,7 +18,7 @@ public class SetSLCommand extends OrderChangeCommand<Double> {
     }
 
     @Override
-    public boolean filter(final IOrder order) {
-        return !isSLSetTo(newValue).test(order);
+    public boolean filter() {
+        return !isSLSetTo(newValue).test(orderToChange);
     }
 }

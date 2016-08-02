@@ -18,7 +18,7 @@ public class SetLabelCommand extends OrderChangeCommand<String> {
     }
 
     @Override
-    public boolean filter(final IOrder order) {
-        return !isLabelSetTo(newValue).test(order);
+    public boolean filter() {
+        return !isLabelSetTo(newValue).test(orderToChange);
     }
 }

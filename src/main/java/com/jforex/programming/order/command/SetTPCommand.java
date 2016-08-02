@@ -18,7 +18,7 @@ public class SetTPCommand extends OrderChangeCommand<Double> {
     }
 
     @Override
-    public boolean filter(final IOrder order) {
-        return !isTPSetTo(newValue).test(order);
+    public boolean filter() {
+        return !isTPSetTo(newValue).test(orderToChange);
     }
 }

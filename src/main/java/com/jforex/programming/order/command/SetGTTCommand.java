@@ -18,7 +18,7 @@ public class SetGTTCommand extends OrderChangeCommand<Long> {
     }
 
     @Override
-    public boolean filter(final IOrder order) {
-        return !isGTTSetTo(newValue).test(order);
+    public boolean filter() {
+        return !isGTTSetTo(newValue).test(orderToChange);
     }
 }

@@ -18,7 +18,7 @@ public class SetAmountCommand extends OrderChangeCommand<Double> {
     }
 
     @Override
-    public boolean filter(final IOrder order) {
-        return !isAmountSetTo(newValue).test(order);
+    public boolean filter() {
+        return !isAmountSetTo(newValue).test(orderToChange);
     }
 }
