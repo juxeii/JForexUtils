@@ -47,6 +47,10 @@ import java.util.function.Predicate;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.dukascopy.api.IEngine.OrderCommand;
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
+import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.misc.JFRunnable;
@@ -54,11 +58,6 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.fakes.IOrderForTest;
-
-import com.dukascopy.api.IEngine.OrderCommand;
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
-import com.dukascopy.api.OfferSide;
 
 public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
@@ -510,10 +509,8 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         assertThat(switchCommand(OrderCommand.BUYLIMIT), equalTo(OrderCommand.SELLLIMIT));
         assertThat(switchCommand(OrderCommand.SELLLIMIT), equalTo(OrderCommand.BUYLIMIT));
 
-        assertThat(switchCommand(OrderCommand.BUYLIMIT_BYBID),
-                   equalTo(OrderCommand.SELLLIMIT_BYASK));
-        assertThat(switchCommand(OrderCommand.SELLLIMIT_BYASK),
-                   equalTo(OrderCommand.BUYLIMIT_BYBID));
+        assertThat(switchCommand(OrderCommand.BUYLIMIT_BYBID), equalTo(OrderCommand.SELLLIMIT_BYASK));
+        assertThat(switchCommand(OrderCommand.SELLLIMIT_BYASK), equalTo(OrderCommand.BUYLIMIT_BYBID));
 
         assertThat(switchCommand(OrderCommand.BUYSTOP), equalTo(OrderCommand.SELLSTOP));
         assertThat(switchCommand(OrderCommand.SELLSTOP), equalTo(OrderCommand.BUYSTOP));

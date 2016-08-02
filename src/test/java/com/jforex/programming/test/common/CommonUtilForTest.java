@@ -193,6 +193,10 @@ public class CommonUtilForTest extends BDDMockito {
         return Observable.empty();
     }
 
+    public Observable<OrderEvent> neverObservable() {
+        return Observable.never();
+    }
+
     public Observable<OrderEvent> eventObservable(final OrderEvent orderEvent) {
         return Observable.just(orderEvent);
     }

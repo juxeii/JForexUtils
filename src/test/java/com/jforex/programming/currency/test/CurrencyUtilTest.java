@@ -20,8 +20,7 @@ import com.jforex.programming.test.common.CurrencyUtilForTest;
 
 public class CurrencyUtilTest extends CurrencyUtilForTest {
 
-    private final Set<Instrument> instrumentsTestSet = Sets.newHashSet(instrumentEURUSD,
-                                                                       instrumentUSDJPY);
+    private final Set<Instrument> instrumentsForTest = Sets.newHashSet(instrumentEURUSD, instrumentUSDJPY);
 
     @Test
     public void testConstructorIsPrivate() throws Exception {
@@ -103,11 +102,11 @@ public class CurrencyUtilTest extends CurrencyUtilForTest {
 
     @Test
     public void testIsInInstrumentsIsTrueForContainingCurrency() {
-        assertTrue(isInInstruments(currencyEUR, instrumentsTestSet));
+        assertTrue(isInInstruments(currencyEUR, instrumentsForTest));
     }
 
     @Test
     public void testIsInInstrumentsIsFalseForNotContainingCurrency() {
-        assertFalse(isInInstruments(currencyAUD, instrumentsTestSet));
+        assertFalse(isInInstruments(currencyAUD, instrumentsForTest));
     }
 }

@@ -62,11 +62,10 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
 
     @Test
     public void testSpreadCalculationIsCorrect() {
-        assertThat(instrumentUtil.spread(),
-                   equalTo(CalculationUtil
-                           .pipDistanceFrom(askEURUSD)
-                           .to(bidEURUSD)
-                           .forInstrument(instrumentEURUSD)));
+        assertThat(instrumentUtil.spread(), equalTo(CalculationUtil
+                .pipDistanceFrom(askEURUSD)
+                .to(bidEURUSD)
+                .forInstrument(instrumentEURUSD)));
     }
 
     @Test

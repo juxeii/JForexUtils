@@ -40,7 +40,8 @@ public class OrderParamsTest extends InstrumentUtilForTest {
     }
 
     private void createTestParams() {
-        orderParams = OrderParams.forInstrument(instrument)
+        orderParams = OrderParams
+                .forInstrument(instrument)
                 .withOrderCommand(orderCommand)
                 .withAmount(amount)
                 .withLabel(label)
@@ -61,7 +62,8 @@ public class OrderParamsTest extends InstrumentUtilForTest {
 
     private void fillOrderParamsWithoutOptionalValues() {
         initializeOrderParamsTestValues();
-        orderParams = OrderParams.forInstrument(instrument)
+        orderParams = OrderParams
+                .forInstrument(instrument)
                 .withOrderCommand(orderCommand)
                 .withAmount(amount)
                 .withLabel(label)

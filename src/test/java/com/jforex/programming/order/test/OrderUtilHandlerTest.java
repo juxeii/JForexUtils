@@ -62,6 +62,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     public void setUpMocks() {
         setStrategyThread();
         orderToClose.setState(IOrder.State.FILLED);
+
         when(orderCallExecutorMock.callObservable(any()))
                 .thenReturn(Observable.fromCallable(command.callable()));
     }
@@ -74,7 +75,9 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     public class CloseCallSetup {
 
         private final Runnable closeCall =
-                () -> orderUtilHandler.callObservable(command).subscribe(subscriber);
+                () -> orderUtilHandler
+                        .callObservable(command)
+                        .subscribe(subscriber);
 
         @Before
         public void setUp() {
@@ -85,7 +88,9 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() throws JFException {
-                Mockito.doThrow(jfException).when(orderToClose).close();
+                Mockito.doThrow(jfException)
+                        .when(orderToClose)
+                        .close();
 
                 closeCall.run();
             }
