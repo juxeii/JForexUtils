@@ -5,7 +5,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.util.Optional;
 import java.util.Set;
 
 import org.aeonbits.owner.ConfigFactory;
@@ -81,8 +80,6 @@ public class CommonUtilForTest extends BDDMockito {
     protected IClientForTest clientForTest;
     protected IEngineForTest engineForTest;
     protected JFException jfException = new JFException("JFException for test");
-    protected Optional<Exception> jfExceptionOpt = Optional.of(jfException);
-    protected Optional<Exception> emptyJFExceptionOpt = Optional.empty();
 
     protected static final String jnlpAddress = "http://jnlp.test.address";
     protected static final String username = "username";
@@ -159,9 +156,7 @@ public class CommonUtilForTest extends BDDMockito {
     protected OrderMessageData messageData(final IOrder order,
                                            final IMessage.Type type,
                                            final Set<Reason> reasons) {
-        final IMessage messageMock = mockForIMessage(order,
-                                                     type,
-                                                     reasons);
+        final IMessage messageMock = mockForIMessage(order, type, reasons);
         return new OrderMessageData(messageMock);
     }
 

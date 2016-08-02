@@ -34,6 +34,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     @Before
     public void setUp() {
         authentificationUtil = new AuthentificationUtil(clientMock, connectionStateObs);
+
         authentificationUtil.loginStateObservable().subscribe(loginStateSubscriber);
     }
 
@@ -83,7 +84,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     public void testLogoutAfterCreationDoesNotCallDisconnect() {
         authentificationUtil.logout();
 
-        verify(clientMock, times(0)).disconnect();
+        verify(clientMock, never()).disconnect();
     }
 
     @Test
@@ -133,7 +134,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         public void testNoLogoutPossibleYet() {
             authentificationUtil.logout();
 
-            verify(clientMock, times(0)).disconnect();
+            verify(clientMock, never()).disconnect();
         }
 
         public class AfterDisconnectedMessage {
