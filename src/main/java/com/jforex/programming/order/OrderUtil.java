@@ -82,6 +82,15 @@ public class OrderUtil {
         }
     }
 
+    public Observable<OrderEvent> submitAndMergePosition(final String mergeOrderLabel,
+                                                         final OrderParams orderParams) {
+        checkNotNull(mergeOrderLabel);
+        checkNotNull(orderParams);
+
+        return submitOrder(orderParams)
+                .concatWith(mergePositionOrders(mergeOrderLabel, orderParams.instrument()));
+    }
+
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
         checkNotNull(mergeOrderLabel);
