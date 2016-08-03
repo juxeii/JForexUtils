@@ -10,28 +10,34 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public abstract class OrderCallCommand {
 
-    protected Callable<IOrder> callable;
-    protected OrderEventTypeData orderEventTypeData;
+    private final Callable<IOrder> callable;
+    private final OrderEventTypeData orderEventTypeData;
 
     protected static final Logger logger = LogManager.getLogger(OrderCallCommand.class);
 
-    public Callable<IOrder> callable() {
+    public OrderCallCommand(final Callable<IOrder> callable,
+                            final OrderEventTypeData orderEventTypeData) {
+        this.callable = callable;
+        this.orderEventTypeData = orderEventTypeData;
+    }
+
+    public final Callable<IOrder> callable() {
         return callable;
     }
 
-    public OrderEventTypeData orderEventTypeData() {
+    public final OrderEventTypeData orderEventTypeData() {
         return orderEventTypeData;
     }
 
-    public void logOnSubscribe() {
+    public final void logOnSubscribe() {
         logger.info(subscribeLog());
     }
 
-    public void logOnError(final Throwable t) {
+    public final void logOnError(final Throwable t) {
         logger.error(errorLog(t));
     }
 
-    public void logOnCompleted() {
+    public final void logOnCompleted() {
         logger.info(completedLog());
     }
 

@@ -5,7 +5,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isLabelSetTo;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class SetLabelCommand extends OrderChangeCommand<String> {
+public final class SetLabelCommand extends OrderChangeCommand<String> {
 
     public SetLabelCommand(final IOrder orderToChangeLabel,
                            final String newLabel) {
@@ -18,7 +18,7 @@ public class SetLabelCommand extends OrderChangeCommand<String> {
     }
 
     @Override
-    public boolean filter() {
+    public final boolean filter() {
         return !isLabelSetTo(newValue).test(orderToChange);
     }
 }

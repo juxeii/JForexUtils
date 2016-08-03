@@ -5,7 +5,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class SetTPCommand extends OrderChangeCommand<Double> {
+public final class SetTPCommand extends OrderChangeCommand<Double> {
 
     public SetTPCommand(final IOrder orderToChangeTP,
                         final double newTP) {
@@ -18,7 +18,7 @@ public class SetTPCommand extends OrderChangeCommand<Double> {
     }
 
     @Override
-    public boolean filter() {
+    public final boolean filter() {
         return !isTPSetTo(newValue).test(orderToChange);
     }
 }

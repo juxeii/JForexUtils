@@ -17,33 +17,30 @@ public abstract class OrderChangeCommand<T> extends OrderCallCommand {
                               final T currentValue,
                               final T newValue,
                               final String valueName) {
+        super(OrderStaticUtil.runnableToCallable(runnable, orderToChange),
+              orderEventTypeData);
+
         this.orderToChange = orderToChange;
-        this.orderEventTypeData = orderEventTypeData;
         this.newValue = newValue;
 
-        callable = OrderStaticUtil.runnableToCallable(runnable, orderToChange);
         commonLog = valueName + " from " + currentValue + " to " + newValue + " for order "
                 + orderToChange.getLabel() + " and instrument " + orderToChange.getInstrument();
-    }
-
-    public IOrder order() {
-        return orderToChange;
     }
 
     public abstract boolean filter();
 
     @Override
-    protected String subscribeLog() {
+    protected final String subscribeLog() {
         return "Start to change " + commonLog;
     }
 
     @Override
-    protected String errorLog(final Throwable t) {
+    protected final String errorLog(final Throwable t) {
         return "Failed to change " + commonLog + "!Excpetion: " + t.getMessage();
     }
 
     @Override
-    protected String completedLog() {
+    protected final String completedLog() {
         return "Changed " + commonLog;
     }
 }

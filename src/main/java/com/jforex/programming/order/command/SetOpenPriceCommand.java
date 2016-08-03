@@ -5,7 +5,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isOpenPriceSetTo;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class SetOpenPriceCommand extends OrderChangeCommand<Double> {
+public final class SetOpenPriceCommand extends OrderChangeCommand<Double> {
 
     public SetOpenPriceCommand(final IOrder orderToChangeOpenPrice,
                                final double newOpenPrice) {
@@ -18,7 +18,7 @@ public class SetOpenPriceCommand extends OrderChangeCommand<Double> {
     }
 
     @Override
-    public boolean filter() {
+    public final boolean filter() {
         return !isOpenPriceSetTo(newValue).test(orderToChange);
     }
 }

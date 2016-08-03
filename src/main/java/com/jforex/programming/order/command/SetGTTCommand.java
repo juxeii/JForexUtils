@@ -5,7 +5,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isGTTSetTo;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class SetGTTCommand extends OrderChangeCommand<Long> {
+public final class SetGTTCommand extends OrderChangeCommand<Long> {
 
     public SetGTTCommand(final IOrder orderToChangeGTT,
                          final long newGTT) {
@@ -18,7 +18,7 @@ public class SetGTTCommand extends OrderChangeCommand<Long> {
     }
 
     @Override
-    public boolean filter() {
+    public final boolean filter() {
         return !isGTTSetTo(newValue).test(orderToChange);
     }
 }

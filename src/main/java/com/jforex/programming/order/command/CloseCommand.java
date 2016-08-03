@@ -5,7 +5,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class CloseCommand extends OrderChangeCommand<IOrder.State> {
+public final class CloseCommand extends OrderChangeCommand<IOrder.State> {
 
     public CloseCommand(final IOrder orderToClose) {
         super(orderToClose,
@@ -17,7 +17,7 @@ public class CloseCommand extends OrderChangeCommand<IOrder.State> {
     }
 
     @Override
-    public boolean filter() {
+    public final boolean filter() {
         return !isClosed.test(orderToChange);
     }
 }

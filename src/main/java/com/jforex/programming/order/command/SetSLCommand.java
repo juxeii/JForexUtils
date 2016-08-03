@@ -5,7 +5,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class SetSLCommand extends OrderChangeCommand<Double> {
+public final class SetSLCommand extends OrderChangeCommand<Double> {
 
     public SetSLCommand(final IOrder orderToChangeSL,
                         final double newSL) {
@@ -18,7 +18,7 @@ public class SetSLCommand extends OrderChangeCommand<Double> {
     }
 
     @Override
-    public boolean filter() {
+    public final boolean filter() {
         return !isSLSetTo(newValue).test(orderToChange);
     }
 }
