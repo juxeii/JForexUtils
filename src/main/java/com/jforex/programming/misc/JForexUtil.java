@@ -18,14 +18,12 @@ import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.order.OrderParamsSupplier;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventMapper;
 import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteHandler;
@@ -154,13 +152,6 @@ public class JForexUtil {
 
     public OrderUtil orderUtil() {
         return orderUtil;
-    }
-
-    public PositionSwitcher positionSwitcher(final Instrument instrument,
-                                             final OrderParamsSupplier orderParamsSupplier) {
-        return new PositionSwitcher(checkNotNull(instrument),
-                                    checkNotNull(orderParamsSupplier),
-                                    orderUtil);
     }
 
     public void closeAllPositions() {

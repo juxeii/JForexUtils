@@ -40,7 +40,6 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.OrderProcessState;
-import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.settings.PlatformSettings;
@@ -81,15 +80,13 @@ public class CommonUtilForTest extends BDDMockito {
     protected static final String username = "username";
     protected static final String password = "password";
     protected static final String pin = "1234";
-    protected static final LoginCredentials loginCredentials =
-            new LoginCredentials(jnlpAddress,
-                                 username,
-                                 password);
-    protected static final LoginCredentials loginCredentialsWithPin =
-            new LoginCredentials(jnlpAddress,
-                                 username,
-                                 password,
-                                 pin);
+    protected static final LoginCredentials loginCredentials = new LoginCredentials(jnlpAddress,
+                                                                                    username,
+                                                                                    password);
+    protected static final LoginCredentials loginCredentialsWithPin = new LoginCredentials(jnlpAddress,
+                                                                                           username,
+                                                                                           password,
+                                                                                           pin);
 
     protected static final OrderUtilForTest orderUtilForTest = new OrderUtilForTest();
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
@@ -173,10 +170,6 @@ public class CommonUtilForTest extends BDDMockito {
                 .valueOf(OrderDirection.FLAT.toString());
         AuthentificationUtil.FSMTrigger
                 .valueOf(AuthentificationUtil.FSMTrigger.CONNECT.toString());
-        PositionSwitcher.FSMTrigger
-                .valueOf(PositionSwitcher.FSMTrigger.FLAT.toString());
-        PositionSwitcher.FSMState
-                .valueOf(PositionSwitcher.FSMState.FLAT.toString());
     }
 
     public final OrderCallRejectException createRejectException(final OrderEvent orderEvent) {
