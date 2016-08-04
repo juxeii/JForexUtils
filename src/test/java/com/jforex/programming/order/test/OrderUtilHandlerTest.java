@@ -26,7 +26,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -47,7 +47,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private ArgumentCaptor<Callable<IOrder>> orderCallCaptor;
     @Captor
     private ArgumentCaptor<OrderCallRequest> callRequestCaptor;
-    private final IOrderForTest orderToClose = IOrderForTest.buyOrderEURUSD();
+    private final OrderUtilForTest orderToClose = OrderUtilForTest.buyOrderEURUSD();
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
     private final OrderCallCommand command = new CloseCommand(orderToClose);
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
@@ -181,7 +181,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void eventOfOtherOrderIsIgnored() {
-                sendOrderEvent(IOrderForTest.orderAUDUSD(), OrderEventType.CLOSE_OK);
+                sendOrderEvent(OrderUtilForTest.orderAUDUSD(), OrderEventType.CLOSE_OK);
 
                 subscriber.assertNotCompleted();
             }

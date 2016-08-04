@@ -12,14 +12,14 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
-import com.jforex.programming.test.fakes.IOrderForTest;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class MergeCommandTest extends CommonCommandForTest {
 
     private final String mergeOrderLabel = "mergeOrderLabel";
     private final Collection<IOrder> toMergeOrders =
-            Sets.newHashSet(IOrderForTest.buyOrderEURUSD(),
-                            IOrderForTest.sellOrderEURUSD());
+            Sets.newHashSet(OrderUtilForTest.buyOrderEURUSD(),
+                            OrderUtilForTest.sellOrderEURUSD());
 
     @Before
     public void setUp() {

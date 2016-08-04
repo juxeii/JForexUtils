@@ -19,7 +19,7 @@ import com.jforex.programming.order.event.OrderEventMapperData;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeSets;
 import com.jforex.programming.test.common.CommonUtilForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 
@@ -28,7 +28,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     private OrderEventMapper orderEventMapper;
 
-    private final IOrderForTest orderUnderTest = IOrderForTest.buyOrderEURUSD();
+    private final OrderUtilForTest orderUnderTest = OrderUtilForTest.buyOrderEURUSD();
 
     @Before
     public void setUp() {
@@ -267,7 +267,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
     @Test
     public void notRegisteredOrderGetsOnlyChangeRejected() {
         registerCallRequest(OrderCallReason.CHANGE_LABEL);
-        final OrderMessageData messageData = messageData(IOrderForTest.orderAUDUSD(),
+        final OrderMessageData messageData = messageData(OrderUtilForTest.orderAUDUSD(),
                                                          IMessage.Type.ORDER_CHANGED_REJECTED,
                                                          Sets.newHashSet());
 

@@ -57,12 +57,12 @@ import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
-    private final IOrderForTest buyOrderEURUSD = IOrderForTest.buyOrderEURUSD();
-    private final IOrderForTest sellOrderEURUSD = IOrderForTest.sellOrderEURUSD();
+    private final OrderUtilForTest buyOrderEURUSD = OrderUtilForTest.buyOrderEURUSD();
+    private final OrderUtilForTest sellOrderEURUSD = OrderUtilForTest.sellOrderEURUSD();
     private final double currentPriceForSLTP = 1.32165;
     private final double pipsToSLTP = 17.4;
     private final Set<IOrder> orders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
@@ -333,7 +333,7 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         final Predicate<IOrder> predicate = instrumentPredicate.apply(instrumentEURUSD);
 
         assertTrue(predicate.test(buyOrderEURUSD));
-        assertFalse(predicate.test(IOrderForTest.orderAUDUSD()));
+        assertFalse(predicate.test(OrderUtilForTest.orderAUDUSD()));
 
         assertTrue(ofInstrument(instrumentEURUSD).test(buyOrderEURUSD));
         assertFalse(ofInstrument(instrumentAUDUSD).test(buyOrderEURUSD));

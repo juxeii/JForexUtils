@@ -38,6 +38,32 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         authentificationUtil.loginStateObservable().subscribe(loginStateSubscriber);
     }
 
+    private void verifyConnectCall(final LoginCredentials loginCredentials,
+                                   final int times) throws Exception {
+        if (loginCredentials.maybePin().isPresent())
+            verify(clientMock, times(times)).connect(loginCredentials.jnlpAddress(),
+                                                     loginCredentials.username(),
+                                                     loginCredentials.password(),
+                                                     loginCredentials.maybePin().get());
+        else
+            verify(clientMock, times(times)).connect(loginCredentials.jnlpAddress(),
+                                                     loginCredentials.username(),
+                                                     loginCredentials.password());
+    }
+
+    private void setExceptionOnConnect(final LoginCredentials loginCredentials,
+                                       final Class<? extends Exception> exceptionType) throws Exception {
+        if (loginCredentials.maybePin().isPresent())
+            doThrow(exceptionType).when(clientMock).connect(loginCredentials.jnlpAddress(),
+                                                            loginCredentials.username(),
+                                                            loginCredentials.password(),
+                                                            loginCredentials.maybePin().get());
+        else
+            doThrow(exceptionType).when(clientMock).connect(loginCredentials.jnlpAddress(),
+                                                            loginCredentials.username(),
+                                                            loginCredentials.password());
+    }
+
     private Completable login() {
         return authentificationUtil.loginCompletable(loginCredentials);
     }
@@ -58,7 +84,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     private void assertLoginExceptionForLoginType(final Supplier<Completable> loginCall,
                                                   final Class<? extends Exception> exceptionType,
                                                   final LoginCredentials loginCredentials) throws Exception {
-        clientForTest.setExceptionOnConnect(loginCredentials, exceptionType);
+        setExceptionOnConnect(loginCredentials, exceptionType);
 
         final TestSubscriber<?> loginSubscriber = new TestSubscriber<>();
         loginCall.get().subscribe(loginSubscriber);
@@ -106,7 +132,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
     public void testLoginWithPinCallsClientWithPin() throws Exception {
         loginWithPin().subscribe();
 
-        clientForTest.verifyConnectCall(loginCredentialsWithPin, 1);
+        verifyConnectCall(loginCredentialsWithPin, 1);
     }
 
     public class AfterLogin {
@@ -122,7 +148,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
         @Test
         public void testLoginCallsClient() throws Exception {
-            clientForTest.verifyConnectCall(loginCredentials, 1);
+            verifyConnectCall(loginCredentials, 1);
         }
 
         @Test

@@ -1,4 +1,4 @@
-package com.jforex.programming.test.fakes;
+package com.jforex.programming.test.common;
 
 import static org.mockito.Mockito.spy;
 
@@ -16,12 +16,10 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
-public class IOrderForTest implements IOrder {
+public class OrderUtilForTest implements IOrder {
 
     private String label;
     private final Instrument instrument;
@@ -42,7 +40,7 @@ public class IOrderForTest implements IOrder {
     private static final UserSettings userSettings =
             ConfigFactory.create(UserSettings.class);
 
-    private IOrderForTest(final Builder builder) {
+    private OrderUtilForTest(final Builder builder) {
         label = builder.label;
         instrument = builder.instrument;
         orderCommand = builder.orderCommand;
@@ -343,21 +341,21 @@ public class IOrderForTest implements IOrder {
             return this;
         }
 
-        public IOrderForTest build() {
-            return spy(new IOrderForTest(this));
+        public OrderUtilForTest build() {
+            return spy(new OrderUtilForTest(this));
         }
     }
 
-    public static IOrderForTest fromOrderParams(final OrderParams orderParams) {
-        return new IOrderForTest.Builder(orderParams.label(),
-                                         orderParams.instrument(),
-                                         orderParams.orderCommand(),
-                                         orderParams.amount())
-                                                 .stopLossPrice(orderParams.stopLossPrice())
-                                                 .takeProfitPrice(orderParams.takeProfitPrice())
-                                                 .goodTillTime(orderParams.goodTillTime())
-                                                 .comment(orderParams.comment())
-                                                 .build();
+    public static OrderUtilForTest fromOrderParams(final OrderParams orderParams) {
+        return new OrderUtilForTest.Builder(orderParams.label(),
+                                            orderParams.instrument(),
+                                            orderParams.orderCommand(),
+                                            orderParams.amount())
+                                                    .stopLossPrice(orderParams.stopLossPrice())
+                                                    .takeProfitPrice(orderParams.takeProfitPrice())
+                                                    .goodTillTime(orderParams.goodTillTime())
+                                                    .comment(orderParams.comment())
+                                                    .build();
     }
 
     @Override
@@ -366,20 +364,16 @@ public class IOrderForTest implements IOrder {
         return false;
     }
 
-    public static IOrderForTest buyOrderEURUSD() {
+    public static OrderUtilForTest buyOrderEURUSD() {
         return fromOrderParams(paramsBuyEURUSD());
     }
 
-    public static IOrderForTest sellOrderEURUSD() {
+    public static OrderUtilForTest sellOrderEURUSD() {
         return fromOrderParams(paramsSellEURUSD());
     }
 
-    public static IOrderForTest orderAUDUSD() {
-        return new IOrderForTest.Builder("TestLabelAUDUSD",
-                                         Instrument.AUDUSD,
-                                         OrderCommand.SELL,
-                                         0.12)
-                                                 .build();
+    public static OrderUtilForTest orderAUDUSD() {
+        return fromOrderParams(paramsSellAUDUSD());
     }
 
     public static OrderParams paramsBuyEURUSD() {
@@ -412,11 +406,12 @@ public class IOrderForTest implements IOrder {
                 .build();
     }
 
-    public static OrderEvent notificationEvent(final IOrder order) {
-        return new OrderEvent(order, OrderEventType.NOTIFICATION);
-    }
-
-    public static OrderEvent closeRejectEvent(final IOrder order) {
-        return new OrderEvent(order, OrderEventType.CLOSE_REJECTED);
+    public static OrderParams paramsSellAUDUSD() {
+        return OrderParams
+                .forInstrument(Instrument.AUDUSD)
+                .withOrderCommand(OrderCommand.SELL)
+                .withAmount(0.12)
+                .withLabel("TestLabelAUDUSD")
+                .build();
     }
 }

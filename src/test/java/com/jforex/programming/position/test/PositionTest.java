@@ -20,7 +20,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -51,8 +51,8 @@ public class PositionTest extends InstrumentUtilForTest {
 
     public class AddingBuyOrder {
 
-        private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
-        private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
+        private final OrderUtilForTest buyOrder = OrderUtilForTest.buyOrderEURUSD();
+        private final OrderUtilForTest sellOrder = OrderUtilForTest.sellOrderEURUSD();
 
         @Before
         public void setUp() {
@@ -206,11 +206,11 @@ public class PositionTest extends InstrumentUtilForTest {
                 @Test
                 public void testMarkingOrdersActiveOnlyAffectsPassedOrders() {
                     position.markOrdersActive(Sets.newHashSet(buyOrder,
-                                                              IOrderForTest.orderAUDUSD()));
+                                                              OrderUtilForTest.orderAUDUSD()));
 
                     final Set<IOrder> notProcessingOrders =
                             position.notProcessingOrders(order -> true);
-                    assertTrue(notProcessingOrders.size() == 1);
+                    assertThat(notProcessingOrders.size(), equalTo(1));
                     assertTrue(notProcessingOrders.contains(sellOrder));
                 }
 
@@ -289,11 +289,11 @@ public class PositionTest extends InstrumentUtilForTest {
                     @Test
                     public void testMarkingOrdersIdleOnlyAffectsPassedOrders() {
                         position.markOrdersIdle(Sets.newHashSet(buyOrder,
-                                                                IOrderForTest.orderAUDUSD()));
+                                                                OrderUtilForTest.orderAUDUSD()));
 
                         final Set<IOrder> notProcessingOrders =
                                 position.notProcessingOrders(order -> true);
-                        assertTrue(notProcessingOrders.size() == 1);
+                        assertThat(notProcessingOrders.size(), equalTo(1));
                         assertTrue(notProcessingOrders.contains(buyOrder));
                     }
 

@@ -9,11 +9,11 @@ import org.junit.Test;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
-import com.jforex.programming.test.fakes.IOrderForTest;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class SubmitCommandTest extends CommonCommandForTest {
 
-    private final OrderParams orderParams = IOrderForTest.paramsBuyEURUSD();
+    private final OrderParams orderParams = OrderUtilForTest.paramsBuyEURUSD();
 
     @Before
     public void setUp() {
@@ -25,10 +25,29 @@ public class SubmitCommandTest extends CommonCommandForTest {
 
     @Test
     public void callableIsCorrect() throws Exception {
-        engineForTest.setSubmitExpectation(orderParams, orderForTest);
+        when(engineMock.submitOrder(orderParams.label(),
+                                    orderParams.instrument(),
+                                    orderParams.orderCommand(),
+                                    orderParams.amount(),
+                                    orderParams.price(),
+                                    orderParams.slippage(),
+                                    orderParams.stopLossPrice(),
+                                    orderParams.takeProfitPrice(),
+                                    orderParams.goodTillTime(),
+                                    orderParams.comment())).thenReturn(orderForTest);
 
         assertCallableOrder();
-        engineForTest.verifySubmit(orderParams, 1);
+
+        verify(engineMock).submitOrder(orderParams.label(),
+                                       orderParams.instrument(),
+                                       orderParams.orderCommand(),
+                                       orderParams.amount(),
+                                       orderParams.price(),
+                                       orderParams.slippage(),
+                                       orderParams.stopLossPrice(),
+                                       orderParams.takeProfitPrice(),
+                                       orderParams.goodTillTime(),
+                                       orderParams.comment());
     }
 
     @Test

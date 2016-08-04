@@ -13,13 +13,13 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.test.common.CommonUtilForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class OrderMessageDataTest extends CommonUtilForTest {
 
     private OrderMessageData orderMessageData;
 
-    private final IOrderForTest orderForTest = IOrderForTest.buyOrderEURUSD();
+    private final OrderUtilForTest orderForTest = OrderUtilForTest.buyOrderEURUSD();
     private final IMessage.Type messageType = IMessage.Type.ORDER_CHANGED_OK;
     private final Set<IMessage.Reason> messageReasons = Sets.newHashSet();
     private final IMessage message = mockForIMessage(orderForTest,

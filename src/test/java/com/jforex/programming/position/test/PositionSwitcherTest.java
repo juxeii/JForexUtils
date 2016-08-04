@@ -20,7 +20,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionSwitcher;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -38,8 +38,8 @@ public class PositionSwitcherTest extends InstrumentUtilForTest {
     private OrderParamsSupplier orderParamsSupplierMock;
     @Captor
     private ArgumentCaptor<OrderParams> paramsCaptor;
-    private final OrderParams orderParamsBUY = IOrderForTest.paramsBuyEURUSD();
-    private final OrderParams orderParamsSELL = IOrderForTest.paramsSellEURUSD();
+    private final OrderParams orderParamsBUY = OrderUtilForTest.paramsBuyEURUSD();
+    private final OrderParams orderParamsSELL = OrderUtilForTest.paramsSellEURUSD();
     private final String buyLabel = orderParamsBUY.label();
     private final String sellLabel = orderParamsSELL.label();
 

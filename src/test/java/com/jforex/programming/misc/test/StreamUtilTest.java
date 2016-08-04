@@ -22,10 +22,11 @@ import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.test.common.CommonUtilForTest;
+import com.jforex.programming.test.common.OrderUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
-import com.jforex.programming.test.fakes.IOrderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -44,8 +45,8 @@ public class StreamUtilTest extends CommonUtilForTest {
 
     public class RetryObservableSetup {
 
-        private final IOrderForTest orderForTest = IOrderForTest.buyOrderEURUSD();
-        private final OrderEvent rejectEvent = IOrderForTest.closeRejectEvent(orderForTest);
+        private final OrderUtilForTest orderForTest = OrderUtilForTest.buyOrderEURUSD();
+        private final OrderEvent rejectEvent = new OrderEvent(orderForTest, OrderEventType.CLOSE_REJECTED);
         private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
         private final OrderCallRejectException rejectException =
                 new OrderCallRejectException("Reject exception for test", rejectEvent);

@@ -45,8 +45,6 @@ import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
-import com.jforex.programming.test.fakes.IClientForTest;
-import com.jforex.programming.test.fakes.IEngineForTest;
 
 import rx.Observable;
 
@@ -77,8 +75,6 @@ public class CommonUtilForTest extends BDDMockito {
     @Mock
     protected OrderUtilHandler orderUtilHandlerMock;
 
-    protected IClientForTest clientForTest;
-    protected IEngineForTest engineForTest;
     protected JFException jfException = new JFException("JFException for test");
 
     protected static final String jnlpAddress = "http://jnlp.test.address";
@@ -105,9 +101,6 @@ public class CommonUtilForTest extends BDDMockito {
 
     public CommonUtilForTest() {
         initMocks(this);
-
-        clientForTest = new IClientForTest(clientMock);
-        engineForTest = new IEngineForTest(engineMock);
 
         when(contextMock.getEngine()).thenReturn(engineMock);
         when(contextMock.getAccount()).thenReturn(accountMock);

@@ -34,7 +34,7 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.fakes.IOrderForTest;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -56,9 +56,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Captor
     private ArgumentCaptor<OrderCallCommand> callCommandCaptor;
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
-    private final IOrderForTest orderForTest = IOrderForTest.buyOrderEURUSD();
-    private final IOrderForTest buyOrder = IOrderForTest.buyOrderEURUSD();
-    private final IOrderForTest sellOrder = IOrderForTest.sellOrderEURUSD();
+    private final OrderUtilForTest orderForTest = OrderUtilForTest.buyOrderEURUSD();
+    private final OrderUtilForTest buyOrder = OrderUtilForTest.buyOrderEURUSD();
+    private final OrderUtilForTest sellOrder = OrderUtilForTest.sellOrderEURUSD();
+    private final OrderEvent notificationEvent =
+            new OrderEvent(orderForTest, OrderEventType.NOTIFICATION);
 
     @Before
     public void setUp() {
@@ -95,8 +97,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     private void assertChangeCallCallsOnOrderUtilHandler(final Class<? extends OrderCallCommand> clazz,
                                                          final Observable<OrderEvent> observable) {
-        final OrderEvent event = IOrderForTest.notificationEvent(orderForTest);
-        setOrderUtilHandlerExpectation(clazz, event);
+        setOrderUtilHandlerExpectation(clazz, notificationEvent);
 
         observable.subscribe(orderEventSubscriber);
 
@@ -104,13 +105,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         orderEventSubscriber.assertNoErrors();
         orderEventSubscriber.assertValueCount(1);
         orderEventSubscriber.assertCompleted();
-        assertThat(orderEventSubscriber.getOnNextEvents().get(0), equalTo(event));
+        assertThat(orderEventSubscriber.getOnNextEvents().get(0), equalTo(notificationEvent));
     }
 
     private void assertNoCallOnOrderUtilHandler(final Class<? extends OrderCallCommand> clazz,
                                                 final Observable<OrderEvent> observable) {
-        final OrderEvent event = IOrderForTest.notificationEvent(orderForTest);
-        setOrderUtilHandlerExpectation(clazz, event);
+        setOrderUtilHandlerExpectation(clazz, notificationEvent);
 
         observable.subscribe(orderEventSubscriber);
 
@@ -128,7 +128,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     public class SubmitSetup {
 
-        private final OrderParams orderParams = IOrderForTest.paramsBuyEURUSD();
+        private final OrderParams orderParams = OrderUtilForTest.paramsBuyEURUSD();
 
         private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
             when(orderUtilHandlerMock.callObservable(isA(SubmitCommand.class)))
