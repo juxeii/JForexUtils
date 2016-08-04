@@ -1,63 +1,70 @@
 package com.jforex.programming.test.common;
 
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
+import org.aeonbits.owner.ConfigFactory;
+
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
+import com.jforex.programming.settings.UserSettings;
 
-public final class OrderUtilForTest extends CommonUtilForTest {
+public class OrderUtilForTest {
 
+    private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
     private static final double defaultOpenPrice = userSettings.defaultOpenPrice();
     private static final double defaultSlippage = userSettings.defaultSlippage();
 
-    public static final void setState(final IOrder orderMock,
-                                      final IOrder.State orderState) {
+    public final void setState(final IOrder orderMock,
+                               final IOrder.State orderState) {
         when(orderMock.getState()).thenReturn(orderState);
     }
 
-    public static final void setAmount(final IOrder orderMock,
-                                       final double amount) {
+    public final void setAmount(final IOrder orderMock,
+                                final double amount) {
         when(orderMock.getAmount()).thenReturn(amount);
     }
 
-    public static final void setRequestedAmount(final IOrder orderMock,
-                                                final double requestedAmount) {
+    public final void setRequestedAmount(final IOrder orderMock,
+                                         final double requestedAmount) {
         when(orderMock.getRequestedAmount()).thenReturn(requestedAmount);
     }
 
-    public static final void setGTT(final IOrder orderMock,
-                                    final long gtt) {
+    public final void setGTT(final IOrder orderMock,
+                             final long gtt) {
         when(orderMock.getGoodTillTime()).thenReturn(gtt);
     }
 
-    public static final void setSL(final IOrder orderMock,
-                                   final double sl) {
+    public final void setSL(final IOrder orderMock,
+                            final double sl) {
         when(orderMock.getStopLossPrice()).thenReturn(sl);
     }
 
-    public static final void setTP(final IOrder orderMock,
-                                   final double tp) {
+    public final void setTP(final IOrder orderMock,
+                            final double tp) {
         when(orderMock.getTakeProfitPrice()).thenReturn(tp);
     }
 
-    public static final void setOpenPrice(final IOrder orderMock,
-                                          final double openPrice) {
+    public final void setOpenPrice(final IOrder orderMock,
+                                   final double openPrice) {
         when(orderMock.getOpenPrice()).thenReturn(openPrice);
     }
 
-    public static void setLabel(final IOrder orderMock,
-                                final String label) {
+    public void setLabel(final IOrder orderMock,
+                         final String label) {
         when(orderMock.getLabel()).thenReturn(label);
     }
 
-    public static final void setOrderCommand(final IOrder orderMock,
-                                             final OrderCommand orderCommand) {
+    public final void setOrderCommand(final IOrder orderMock,
+                                      final OrderCommand orderCommand) {
         when(orderMock.getOrderCommand()).thenReturn(orderCommand);
         adaptIsLong(orderMock, orderCommand);
     }
 
-    public static final IOrder spyFromParams(final OrderParams orderParams) {
+    public final IOrder spyFromParams(final OrderParams orderParams) {
         final IOrder orderMock = spy(IOrder.class);
 
         setState(orderMock, IOrder.State.CREATED);
@@ -82,19 +89,19 @@ public final class OrderUtilForTest extends CommonUtilForTest {
             when(orderMock.isLong()).thenReturn(false);
     }
 
-    public static final IOrder buyOrderEURUSD() {
+    public final IOrder buyOrderEURUSD() {
         return spyFromParams(paramsBuyEURUSD());
     }
 
-    public static final IOrder sellOrderEURUSD() {
+    public final IOrder sellOrderEURUSD() {
         return spyFromParams(paramsSellEURUSD());
     }
 
-    public static final IOrder orderAUDUSD() {
+    public final IOrder orderAUDUSD() {
         return spyFromParams(paramsSellAUDUSD());
     }
 
-    public static final OrderParams paramsBuyEURUSD() {
+    public final OrderParams paramsBuyEURUSD() {
         return OrderParams
                 .forInstrument(Instrument.EURUSD)
                 .withOrderCommand(OrderCommand.BUY)
@@ -109,7 +116,7 @@ public final class OrderUtilForTest extends CommonUtilForTest {
                 .build();
     }
 
-    public static final OrderParams paramsSellEURUSD() {
+    public final OrderParams paramsSellEURUSD() {
         return OrderParams
                 .forInstrument(Instrument.EURUSD)
                 .withOrderCommand(OrderCommand.SELL)
@@ -124,7 +131,7 @@ public final class OrderUtilForTest extends CommonUtilForTest {
                 .build();
     }
 
-    public static OrderParams paramsSellAUDUSD() {
+    public OrderParams paramsSellAUDUSD() {
         return OrderParams
                 .forInstrument(Instrument.AUDUSD)
                 .withOrderCommand(OrderCommand.SELL)

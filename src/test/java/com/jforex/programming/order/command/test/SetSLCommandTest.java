@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
-import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class SetSLCommandTest extends CommonCommandForTest {
 
@@ -30,14 +29,14 @@ public class SetSLCommandTest extends CommonCommandForTest {
 
     @Test
     public void filterIsFalseWhenNewSLAlreadySet() {
-        OrderUtilForTest.setSL(orderForTest, newSL);
+        orderUtilForTest.setSL(orderForTest, newSL);
 
         assertFilterNotSet();
     }
 
     @Test
     public void filterIsTrueWhenNewSLDiffers() {
-        OrderUtilForTest.setSL(orderForTest, newSL + 0.1);
+        orderUtilForTest.setSL(orderForTest, newSL + 0.1);
 
         assertFilterIsSet();
     }

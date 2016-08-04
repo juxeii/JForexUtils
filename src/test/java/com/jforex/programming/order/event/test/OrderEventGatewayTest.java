@@ -17,7 +17,6 @@ import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventMapper;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
-import com.jforex.programming.test.common.OrderUtilForTest;
 
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
@@ -29,7 +28,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Mock
     private OrderEventMapper orderEventMapperMock;
-    private final IOrder orderUnderTest = OrderUtilForTest.buyOrderEURUSD();
+    private final IOrder orderUnderTest = orderUtilForTest.buyOrderEURUSD();
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
     private final Subject<IMessage, IMessage> messageSubject = PublishSubject.create();
     private final IMessage message = mockForIMessage(orderUnderTest,

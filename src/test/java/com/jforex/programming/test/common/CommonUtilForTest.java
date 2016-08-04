@@ -91,6 +91,7 @@ public class CommonUtilForTest extends BDDMockito {
                                  password,
                                  pin);
 
+    protected static final OrderUtilForTest orderUtilForTest = new OrderUtilForTest();
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
     protected static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     protected static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);

@@ -34,7 +34,6 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.common.OrderUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -57,9 +56,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private ArgumentCaptor<OrderCallCommand> callCommandCaptor;
     private final String mergeOrderLabel = "MergeLabel";
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
-    private final IOrder orderForTest = OrderUtilForTest.buyOrderEURUSD();
-    private final IOrder buyOrder = OrderUtilForTest.buyOrderEURUSD();
-    private final IOrder sellOrder = OrderUtilForTest.sellOrderEURUSD();
+    private final IOrder orderForTest = orderUtilForTest.buyOrderEURUSD();
+    private final IOrder buyOrder = orderUtilForTest.buyOrderEURUSD();
+    private final IOrder sellOrder = orderUtilForTest.sellOrderEURUSD();
     private final OrderEvent notificationEvent = new OrderEvent(orderForTest, OrderEventType.NOTIFICATION);
 
     @Before
@@ -128,7 +127,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     public class SubmitSetup {
 
-        private final OrderParams orderParams = OrderUtilForTest.paramsBuyEURUSD();
+        private final OrderParams orderParams = orderUtilForTest.paramsBuyEURUSD();
         private final OrderEvent submitOKEvent = new OrderEvent(orderForTest, OrderEventType.SUBMIT_OK);
 
         private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
@@ -432,8 +431,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            OrderUtilForTest.setState(buyOrder, IOrder.State.FILLED);
-            OrderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
+            orderUtilForTest.setState(buyOrder, IOrder.State.FILLED);
+            orderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
 
             when(positionMock.filledOrOpened()).thenReturn(ordersToClose);
         }
@@ -549,7 +548,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void closeCallDoesNotCallOrderUtilHandlerWhenOrderAlreadyClosed() {
-                OrderUtilForTest.setState(orderForTest, newState);
+                orderUtilForTest.setState(orderForTest, newState);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -572,7 +571,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setLabelCallDoesNotCallOrderUtilHandlerWhenLabelAlreadySet() {
-                OrderUtilForTest.setLabel(orderForTest, newLabel);
+                orderUtilForTest.setLabel(orderForTest, newLabel);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -595,7 +594,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setGTTCallDoesNotCallOrderUtilHandlerWhenGTTAlreadySet() {
-                OrderUtilForTest.setGTT(orderForTest, newGTT);
+                orderUtilForTest.setGTT(orderForTest, newGTT);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -618,7 +617,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setAmountCallDoesNotCallOrderUtilHandlerWhenAmountAlreadySet() {
-                OrderUtilForTest.setRequestedAmount(orderForTest, newAmount);
+                orderUtilForTest.setRequestedAmount(orderForTest, newAmount);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -641,7 +640,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setOpenPriceCallDoesNotCallOrderUtilHandlerWhenOpenPriceAlreadySet() {
-                OrderUtilForTest.setOpenPrice(orderForTest, newOpenPrice);
+                orderUtilForTest.setOpenPrice(orderForTest, newOpenPrice);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -664,7 +663,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setTakeProfitPriceDoesNotCallOrderUtilHandlerWhenTPAlreadySet() {
-                OrderUtilForTest.setTP(orderForTest, newTP);
+                orderUtilForTest.setTP(orderForTest, newTP);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -687,7 +686,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setStopLossPriceDoesNotCallOrderUtilHandlerWhenSLAlreadySet() {
-                OrderUtilForTest.setSL(orderForTest, newSL);
+                orderUtilForTest.setSL(orderForTest, newSL);
 
                 assertNoOrderUtilHandlerCall();
             }

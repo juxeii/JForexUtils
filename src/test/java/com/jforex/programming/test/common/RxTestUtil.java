@@ -11,9 +11,7 @@ public final class RxTestUtil {
     private static final TestScheduler testScheduler = new TestScheduler();
 
     public RxTestUtil() {
-        RxJavaHooks.setOnIOScheduler(scheduler -> testScheduler);
         RxJavaHooks.setOnComputationScheduler(scheduler -> testScheduler);
-        RxJavaHooks.setOnNewThreadScheduler(scheduler -> testScheduler);
     }
 
     public static final RxTestUtil get() {

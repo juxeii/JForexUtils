@@ -12,13 +12,12 @@ import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.command.OrderChangeCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.CommonUtilForTest;
-import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class CommonCommandForTest extends CommonUtilForTest {
 
     protected OrderCallCommand command;
 
-    protected final IOrder orderForTest = OrderUtilForTest.buyOrderEURUSD();
+    protected final IOrder orderForTest = orderUtilForTest.buyOrderEURUSD();
 
     protected void assertCallableOrder() throws Exception {
         final Callable<IOrder> callable = command.callable();

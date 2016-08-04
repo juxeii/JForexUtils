@@ -19,7 +19,6 @@ import com.jforex.programming.order.event.OrderEventMapperData;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeSets;
 import com.jforex.programming.test.common.CommonUtilForTest;
-import com.jforex.programming.test.common.OrderUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 
@@ -28,7 +27,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     private OrderEventMapper orderEventMapper;
 
-    private final IOrder orderForTest = OrderUtilForTest.buyOrderEURUSD();
+    private final IOrder orderForTest = orderUtilForTest.buyOrderEURUSD();
 
     @Before
     public void setUp() {
@@ -161,7 +160,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     @Test
     public void testConditionalSubmitOKIsMappedCorrect() {
-        OrderUtilForTest.setOrderCommand(orderForTest, OrderCommand.BUYLIMIT);
+        orderUtilForTest.setOrderCommand(orderForTest, OrderCommand.BUYLIMIT);
 
         assertCorrectMapping(OrderEventType.SUBMIT_CONDITIONAL_OK,
                              IMessage.Type.ORDER_SUBMIT_OK);
@@ -175,8 +174,8 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     @Test
     public void testPartialFillIsMappedCorrect() {
-        OrderUtilForTest.setRequestedAmount(orderForTest, 0.2);
-        OrderUtilForTest.setAmount(orderForTest, 0.1);
+        orderUtilForTest.setRequestedAmount(orderForTest, 0.2);
+        orderUtilForTest.setAmount(orderForTest, 0.1);
 
         assertCorrectMapping(OrderEventType.PARTIAL_FILL_OK,
                              IMessage.Type.ORDER_FILL_OK);
@@ -210,7 +209,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     @Test
     public void testMergeCloseOKIsMappedCorrect() {
-        OrderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+        orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
 
         assertCorrectMapping(OrderEventType.MERGE_CLOSE_OK,
                              IMessage.Type.ORDERS_MERGE_OK);
@@ -224,7 +223,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     @Test
     public void testPartialCloseOKIsMappedCorrect() {
-        OrderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+        orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
         assertCorrectMapping(OrderEventType.PARTIAL_CLOSE_OK,
                              IMessage.Type.ORDER_CLOSE_OK);
     }
@@ -268,7 +267,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
     @Test
     public void notRegisteredOrderGetsOnlyChangeRejected() {
         registerCallRequest(OrderCallReason.CHANGE_LABEL);
-        final OrderMessageData messageData = messageData(OrderUtilForTest.orderAUDUSD(),
+        final OrderMessageData messageData = messageData(orderUtilForTest.orderAUDUSD(),
                                                          IMessage.Type.ORDER_CHANGED_REJECTED,
                                                          Sets.newHashSet());
 

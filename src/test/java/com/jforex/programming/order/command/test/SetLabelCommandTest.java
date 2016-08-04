@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import com.jforex.programming.order.command.SetLabelCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
-import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class SetLabelCommandTest extends CommonCommandForTest {
 
@@ -30,14 +29,14 @@ public class SetLabelCommandTest extends CommonCommandForTest {
 
     @Test
     public void filterIsFalseWhenNewLabelAlreadySet() {
-        OrderUtilForTest.setLabel(orderForTest, newLabel);
+        orderUtilForTest.setLabel(orderForTest, newLabel);
 
         assertFilterNotSet();
     }
 
     @Test
     public void filterIsTrueWhenNewLabelDiffers() {
-        OrderUtilForTest.setLabel(orderForTest, "Other" + newLabel);
+        orderUtilForTest.setLabel(orderForTest, "Other" + newLabel);
 
         assertFilterIsSet();
     }

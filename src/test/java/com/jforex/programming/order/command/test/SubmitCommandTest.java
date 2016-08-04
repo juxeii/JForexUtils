@@ -9,11 +9,10 @@ import org.junit.Test;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
-import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class SubmitCommandTest extends CommonCommandForTest {
 
-    private final OrderParams orderParams = OrderUtilForTest.paramsBuyEURUSD();
+    private final OrderParams orderParams = orderUtilForTest.paramsBuyEURUSD();
 
     @Before
     public void setUp() {

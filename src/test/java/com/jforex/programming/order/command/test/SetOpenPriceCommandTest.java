@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import com.jforex.programming.order.command.SetOpenPriceCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
-import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class SetOpenPriceCommandTest extends CommonCommandForTest {
 
@@ -30,14 +29,14 @@ public class SetOpenPriceCommandTest extends CommonCommandForTest {
 
     @Test
     public void filterIsFalseWhenOpenPriceAlreadySet() {
-        OrderUtilForTest.setOpenPrice(orderForTest, newOpenPrice);
+        orderUtilForTest.setOpenPrice(orderForTest, newOpenPrice);
 
         assertFilterNotSet();
     }
 
     @Test
     public void filterIsTrueWhenNewOpenPriceDiffers() {
-        OrderUtilForTest.setOpenPrice(orderForTest, newOpenPrice + 0.1);
+        orderUtilForTest.setOpenPrice(orderForTest, newOpenPrice + 0.1);
 
         assertFilterIsSet();
     }

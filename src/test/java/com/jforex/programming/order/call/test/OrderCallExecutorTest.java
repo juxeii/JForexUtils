@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
-import com.jforex.programming.test.common.OrderUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.observers.TestSubscriber;
@@ -30,7 +29,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
     @Mock
     private Future<IOrder> futureMock;
     private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
-    private final IOrder orderForTest = OrderUtilForTest.buyOrderEURUSD();
+    private final IOrder orderForTest = orderUtilForTest.buyOrderEURUSD();
     private final Runnable executorCall =
             () -> orderCallExecutor
                     .callObservable(orderCallMock)

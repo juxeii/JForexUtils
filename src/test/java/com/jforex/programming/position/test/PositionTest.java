@@ -20,7 +20,6 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
-import com.jforex.programming.test.common.OrderUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.subjects.PublishSubject;
@@ -40,8 +39,8 @@ public class PositionTest extends InstrumentUtilForTest {
 
     public class AddingBuyOrder {
 
-        private final IOrder buyOrder = OrderUtilForTest.buyOrderEURUSD();
-        private final IOrder sellOrder = OrderUtilForTest.sellOrderEURUSD();
+        private final IOrder buyOrder = orderUtilForTest.buyOrderEURUSD();
+        private final IOrder sellOrder = orderUtilForTest.sellOrderEURUSD();
 
         private void sendOrderEvent(final IOrder order,
                                     final OrderEventType orderEventType) {
@@ -51,7 +50,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            OrderUtilForTest.setState(buyOrder, IOrder.State.OPENED);
+            orderUtilForTest.setState(buyOrder, IOrder.State.OPENED);
 
             position.addOrder(buyOrder);
         }
@@ -117,7 +116,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                OrderUtilForTest.setState(buyOrder, IOrder.State.FILLED);
+                orderUtilForTest.setState(buyOrder, IOrder.State.FILLED);
             }
 
             @Test
@@ -146,7 +145,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                 @Before
                 public void setUp() {
-                    OrderUtilForTest.setState(sellOrder, IOrder.State.FILLED);
+                    orderUtilForTest.setState(sellOrder, IOrder.State.FILLED);
 
                     position.addOrder(sellOrder);
                 }
@@ -206,7 +205,7 @@ public class PositionTest extends InstrumentUtilForTest {
                 @Test
                 public void testMarkingOrdersActiveOnlyAffectsPassedOrders() {
                     position.markOrdersActive(Sets.newHashSet(buyOrder,
-                                                              OrderUtilForTest.orderAUDUSD()));
+                                                              orderUtilForTest.orderAUDUSD()));
 
                     final Set<IOrder> notProcessingOrders =
                             position.notProcessingOrders(order -> true);
@@ -272,7 +271,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testCloseOnTPRemovesOrderAlsoWhenMarkedActive() {
-                        OrderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
+                        orderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
                         sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_TP);
 
                         assertFalse(position.contains(sellOrder));
@@ -280,7 +279,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testCloseOnSLRemovesOrderAlsoWhenMarkedActive() {
-                        OrderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
+                        orderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
                         sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_SL);
 
                         assertFalse(position.contains(sellOrder));
@@ -289,7 +288,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     @Test
                     public void testMarkingOrdersIdleOnlyAffectsPassedOrders() {
                         position.markOrdersIdle(Sets.newHashSet(buyOrder,
-                                                                OrderUtilForTest.orderAUDUSD()));
+                                                                orderUtilForTest.orderAUDUSD()));
 
                         final Set<IOrder> notProcessingOrders =
                                 position.notProcessingOrders(order -> true);
@@ -358,7 +357,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         @Test
                         public void testCloseOnTPRemovesOrderAlsoWhenMarkedActive() {
-                            OrderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
+                            orderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
                             sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_TP);
 
                             assertFalse(position.contains(sellOrder));
@@ -366,7 +365,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         @Test
                         public void testCloseOnSLRemovesOrderAlsoWhenMarkedActive() {
-                            OrderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
+                            orderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
                             sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_SL);
 
                             assertFalse(position.contains(sellOrder));
@@ -398,7 +397,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Before
                     public void setUp() {
-                        OrderUtilForTest.setState(buyOrder, IOrder.State.CLOSED);
+                        orderUtilForTest.setState(buyOrder, IOrder.State.CLOSED);
                     }
 
                     @Test
@@ -429,7 +428,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                 @Test
                 public void RemovingEventsWhenOrderIsCanceledIsCloseOK() {
-                    OrderUtilForTest.setState(buyOrder, IOrder.State.CANCELED);
+                    orderUtilForTest.setState(buyOrder, IOrder.State.CANCELED);
 
                     assertBuyOrderRemoval(OrderEventType.FILL_REJECTED);
                 }
