@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import com.jforex.programming.order.command.SetGTTCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class SetGTTCommandTest extends CommonCommandForTest {
 
@@ -29,14 +30,14 @@ public class SetGTTCommandTest extends CommonCommandForTest {
 
     @Test
     public void filterIsFalseWhenNewGTTAlreadySet() {
-        orderForTest.setGoodTillTime(newGTT);
+        OrderUtilForTest.setGTT(orderForTest, newGTT);
 
         assertFilterNotSet();
     }
 
     @Test
     public void filterIsTrueWhenNewGTTDiffers() {
-        orderForTest.setGoodTillTime(newGTT + 1L);
+        OrderUtilForTest.setGTT(orderForTest, newGTT + 1L);
 
         assertFilterIsSet();
     }

@@ -81,17 +81,17 @@ public class CommonUtilForTest extends BDDMockito {
     protected static final String username = "username";
     protected static final String password = "password";
     protected static final String pin = "1234";
-    protected LoginCredentials loginCredentials =
+    protected static final LoginCredentials loginCredentials =
             new LoginCredentials(jnlpAddress,
                                  username,
                                  password);
-    protected LoginCredentials loginCredentialsWithPin =
+    protected static final LoginCredentials loginCredentialsWithPin =
             new LoginCredentials(jnlpAddress,
                                  username,
                                  password,
                                  pin);
 
-    protected final RxTestUtil rxTestUtil = RxTestUtil.get();
+    protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
     protected static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     protected static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
     protected static final double noSL = platformSettings.noSLPrice();
@@ -116,15 +116,15 @@ public class CommonUtilForTest extends BDDMockito {
         coverageOnEnumsCorrection();
     }
 
-    public static void setStrategyThread() {
+    public static final void setStrategyThread() {
         setThreadName(platformSettings.strategyThreadPrefix());
     }
 
-    public static void setNotStrategyThread() {
+    public static final void setNotStrategyThread() {
         setThreadName("Not" + platformSettings.strategyThreadPrefix());
     }
 
-    public static void setThreadName(final String threadName) {
+    public static final void setThreadName(final String threadName) {
         Thread.currentThread().setName(threadName);
     }
 
@@ -135,9 +135,9 @@ public class CommonUtilForTest extends BDDMockito {
         constructor.newInstance();
     }
 
-    protected IMessage mockForIMessage(final IOrder order,
-                                       final IMessage.Type type,
-                                       final Set<Reason> reasons) {
+    protected final IMessage mockForIMessage(final IOrder order,
+                                             final IMessage.Type type,
+                                             final Set<Reason> reasons) {
         final IMessage messageMock = spy(IMessage.class);
         when(messageMock.getOrder()).thenReturn(order);
         when(messageMock.getType()).thenReturn(type);
@@ -146,14 +146,14 @@ public class CommonUtilForTest extends BDDMockito {
         return messageMock;
     }
 
-    protected OrderMessageData messageData(final IOrder order,
-                                           final IMessage.Type type,
-                                           final Set<Reason> reasons) {
+    protected final OrderMessageData messageData(final IOrder order,
+                                                 final IMessage.Type type,
+                                                 final Set<Reason> reasons) {
         final IMessage messageMock = mockForIMessage(order, type, reasons);
         return new OrderMessageData(messageMock);
     }
 
-    private void coverageOnEnumsCorrection() {
+    private final void coverageOnEnumsCorrection() {
         CurrencyCode
                 .valueOf(CurrencyCode.EUR.toString());
         StrategyRunState
@@ -178,23 +178,23 @@ public class CommonUtilForTest extends BDDMockito {
                 .valueOf(PositionSwitcher.FSMState.FLAT.toString());
     }
 
-    public OrderCallRejectException createRejectException(final OrderEvent orderEvent) {
+    public final OrderCallRejectException createRejectException(final OrderEvent orderEvent) {
         return new OrderCallRejectException("", orderEvent);
     }
 
-    public Observable<OrderEvent> emptyObservable() {
+    public final Observable<OrderEvent> emptyObservable() {
         return Observable.empty();
     }
 
-    public Observable<OrderEvent> neverObservable() {
+    public final Observable<OrderEvent> neverObservable() {
         return Observable.never();
     }
 
-    public Observable<OrderEvent> eventObservable(final OrderEvent orderEvent) {
+    public final Observable<OrderEvent> eventObservable(final OrderEvent orderEvent) {
         return Observable.just(orderEvent);
     }
 
-    public Observable<OrderEvent> rejectObservable(final OrderEvent orderEvent) {
+    public final Observable<OrderEvent> rejectObservable(final OrderEvent orderEvent) {
         return Observable.error(createRejectException(orderEvent));
     }
 }

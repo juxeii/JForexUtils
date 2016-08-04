@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class SetTPCommandTest extends CommonCommandForTest {
 
@@ -29,14 +30,14 @@ public class SetTPCommandTest extends CommonCommandForTest {
 
     @Test
     public void filterIsFalseWhenNewTPAlreadySet() {
-        orderForTest.setTakeProfitPrice(newTP);
+        OrderUtilForTest.setTP(orderForTest, newTP);
 
         assertFilterNotSet();
     }
 
     @Test
     public void filterIsTrueWhenNewTPDiffers() {
-        orderForTest.setTakeProfitPrice(newTP + 0.1);
+        OrderUtilForTest.setTP(orderForTest, newTP + 0.1);
 
         assertFilterIsSet();
     }

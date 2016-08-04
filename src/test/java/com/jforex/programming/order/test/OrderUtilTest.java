@@ -56,11 +56,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Captor
     private ArgumentCaptor<OrderCallCommand> callCommandCaptor;
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
-    private final OrderUtilForTest orderForTest = OrderUtilForTest.buyOrderEURUSD();
-    private final OrderUtilForTest buyOrder = OrderUtilForTest.buyOrderEURUSD();
-    private final OrderUtilForTest sellOrder = OrderUtilForTest.sellOrderEURUSD();
-    private final OrderEvent notificationEvent =
-            new OrderEvent(orderForTest, OrderEventType.NOTIFICATION);
+    private final IOrder orderForTest = OrderUtilForTest.buyOrderEURUSD();
+    private final IOrder buyOrder = OrderUtilForTest.buyOrderEURUSD();
+    private final IOrder sellOrder = OrderUtilForTest.sellOrderEURUSD();
+    private final OrderEvent notificationEvent = new OrderEvent(orderForTest, OrderEventType.NOTIFICATION);
 
     @Before
     public void setUp() {
@@ -422,8 +421,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            buyOrder.setState(IOrder.State.FILLED);
-            sellOrder.setState(IOrder.State.CLOSED);
+            OrderUtilForTest.setState(buyOrder, IOrder.State.FILLED);
+            OrderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
 
             when(positionMock.filledOrOpened()).thenReturn(ordersToClose);
         }
@@ -539,7 +538,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void closeCallDoesNotCallOrderUtilHandlerWhenOrderAlreadyClosed() {
-                orderForTest.setState(newState);
+                OrderUtilForTest.setState(orderForTest, newState);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -562,7 +561,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setLabelCallDoesNotCallOrderUtilHandlerWhenLabelAlreadySet() {
-                orderForTest.setLabel(newLabel);
+                OrderUtilForTest.setLabel(orderForTest, newLabel);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -585,7 +584,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setGTTCallDoesNotCallOrderUtilHandlerWhenGTTAlreadySet() {
-                orderForTest.setGoodTillTime(newGTT);
+                OrderUtilForTest.setGTT(orderForTest, newGTT);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -608,7 +607,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setAmountCallDoesNotCallOrderUtilHandlerWhenAmountAlreadySet() {
-                orderForTest.setRequestedAmount(newAmount);
+                OrderUtilForTest.setRequestedAmount(orderForTest, newAmount);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -631,7 +630,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setOpenPriceCallDoesNotCallOrderUtilHandlerWhenOpenPriceAlreadySet() {
-                orderForTest.setOpenPrice(newOpenPrice);
+                OrderUtilForTest.setOpenPrice(orderForTest, newOpenPrice);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -654,7 +653,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setTakeProfitPriceDoesNotCallOrderUtilHandlerWhenTPAlreadySet() {
-                orderForTest.setTakeProfitPrice(newTP);
+                OrderUtilForTest.setTP(orderForTest, newTP);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -677,7 +676,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setStopLossPriceDoesNotCallOrderUtilHandlerWhenSLAlreadySet() {
-                orderForTest.setStopLossPrice(newSL);
+                OrderUtilForTest.setSL(orderForTest, newSL);
 
                 assertNoOrderUtilHandlerCall();
             }

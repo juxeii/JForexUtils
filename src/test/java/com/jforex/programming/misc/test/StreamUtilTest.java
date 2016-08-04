@@ -45,7 +45,7 @@ public class StreamUtilTest extends CommonUtilForTest {
 
     public class RetryObservableSetup {
 
-        private final OrderUtilForTest orderForTest = OrderUtilForTest.buyOrderEURUSD();
+        private final IOrder orderForTest = OrderUtilForTest.buyOrderEURUSD();
         private final OrderEvent rejectEvent = new OrderEvent(orderForTest, OrderEventType.CLOSE_REJECTED);
         private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
         private final OrderCallRejectException rejectException =

@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -28,7 +29,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Mock
     private OrderEventMapper orderEventMapperMock;
-    private final OrderUtilForTest orderUnderTest = OrderUtilForTest.buyOrderEURUSD();
+    private final IOrder orderUnderTest = OrderUtilForTest.buyOrderEURUSD();
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
     private final Subject<IMessage, IMessage> messageSubject = PublishSubject.create();
     private final IMessage message = mockForIMessage(orderUnderTest,

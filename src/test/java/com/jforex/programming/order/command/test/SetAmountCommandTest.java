@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import com.jforex.programming.order.command.SetAmountCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
+import com.jforex.programming.test.common.OrderUtilForTest;
 
 public class SetAmountCommandTest extends CommonCommandForTest {
 
@@ -29,14 +30,14 @@ public class SetAmountCommandTest extends CommonCommandForTest {
 
     @Test
     public void filterIsFalseWhenNewAmountAlreadySet() {
-        orderForTest.setRequestedAmount(newAmount);
+        OrderUtilForTest.setRequestedAmount(orderForTest, newAmount);
 
         assertFilterNotSet();
     }
 
     @Test
     public void filterIsTrueWhenNewAmountDiffers() {
-        orderForTest.setRequestedAmount(newAmount + 0.1);
+        OrderUtilForTest.setRequestedAmount(orderForTest, newAmount + 0.1);
 
         assertFilterIsSet();
     }

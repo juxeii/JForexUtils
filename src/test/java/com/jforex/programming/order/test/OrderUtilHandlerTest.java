@@ -47,7 +47,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private ArgumentCaptor<Callable<IOrder>> orderCallCaptor;
     @Captor
     private ArgumentCaptor<OrderCallRequest> callRequestCaptor;
-    private final OrderUtilForTest orderToClose = OrderUtilForTest.buyOrderEURUSD();
+    private final IOrder orderToClose = OrderUtilForTest.buyOrderEURUSD();
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
     private final OrderCallCommand command = new CloseCommand(orderToClose);
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
@@ -61,7 +61,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
     public void setUpMocks() {
         setStrategyThread();
-        orderToClose.setState(IOrder.State.FILLED);
+        OrderUtilForTest.setState(orderToClose, IOrder.State.FILLED);
 
         when(orderCallExecutorMock.callObservable(any()))
                 .thenReturn(Observable.fromCallable(command.callable()));

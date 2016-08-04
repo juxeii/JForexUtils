@@ -19,7 +19,7 @@ public class OrderMessageDataTest extends CommonUtilForTest {
 
     private OrderMessageData orderMessageData;
 
-    private final OrderUtilForTest orderForTest = OrderUtilForTest.buyOrderEURUSD();
+    private final IOrder orderForTest = OrderUtilForTest.buyOrderEURUSD();
     private final IMessage.Type messageType = IMessage.Type.ORDER_CHANGED_OK;
     private final Set<IMessage.Reason> messageReasons = Sets.newHashSet();
     private final IMessage message = mockForIMessage(orderForTest,
@@ -28,7 +28,7 @@ public class OrderMessageDataTest extends CommonUtilForTest {
 
     @Before
     public void setUp() {
-        orderForTest.setState(IOrder.State.FILLED);
+        OrderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
 
         orderMessageData = new OrderMessageData(message);
     }

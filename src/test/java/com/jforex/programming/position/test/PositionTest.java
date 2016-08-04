@@ -38,27 +38,27 @@ public class PositionTest extends InstrumentUtilForTest {
         position = new Position(instrumentEURUSD, orderEventSubject);
     }
 
-    private void sendOrderEvent(final IOrder order,
-                                final OrderEventType orderEventType) {
-        final OrderEvent orderEvent = new OrderEvent(order, orderEventType);
-        orderEventSubject.onNext(orderEvent);
-    }
-
-    @Test
-    public void positionInstrumentIsCorrect() {
-        assertThat(position.instrument(), equalTo(instrumentEURUSD));
-    }
-
     public class AddingBuyOrder {
 
-        private final OrderUtilForTest buyOrder = OrderUtilForTest.buyOrderEURUSD();
-        private final OrderUtilForTest sellOrder = OrderUtilForTest.sellOrderEURUSD();
+        private final IOrder buyOrder = OrderUtilForTest.buyOrderEURUSD();
+        private final IOrder sellOrder = OrderUtilForTest.sellOrderEURUSD();
+
+        private void sendOrderEvent(final IOrder order,
+                                    final OrderEventType orderEventType) {
+            final OrderEvent orderEvent = new OrderEvent(order, orderEventType);
+            orderEventSubject.onNext(orderEvent);
+        }
 
         @Before
         public void setUp() {
-            buyOrder.setState(IOrder.State.OPENED);
+            OrderUtilForTest.setState(buyOrder, IOrder.State.OPENED);
 
             position.addOrder(buyOrder);
+        }
+
+        @Test
+        public void positionInstrumentIsCorrect() {
+            assertThat(position.instrument(), equalTo(instrumentEURUSD));
         }
 
         @Test
@@ -117,7 +117,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                buyOrder.setState(IOrder.State.FILLED);
+                OrderUtilForTest.setState(buyOrder, IOrder.State.FILLED);
             }
 
             @Test
@@ -146,7 +146,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                 @Before
                 public void setUp() {
-                    sellOrder.setState(IOrder.State.FILLED);
+                    OrderUtilForTest.setState(sellOrder, IOrder.State.FILLED);
 
                     position.addOrder(sellOrder);
                 }
@@ -272,7 +272,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testCloseOnTPRemovesOrderAlsoWhenMarkedActive() {
-                        sellOrder.setState(IOrder.State.CLOSED);
+                        OrderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
                         sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_TP);
 
                         assertFalse(position.contains(sellOrder));
@@ -280,7 +280,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testCloseOnSLRemovesOrderAlsoWhenMarkedActive() {
-                        sellOrder.setState(IOrder.State.CLOSED);
+                        OrderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
                         sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_SL);
 
                         assertFalse(position.contains(sellOrder));
@@ -358,7 +358,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         @Test
                         public void testCloseOnTPRemovesOrderAlsoWhenMarkedActive() {
-                            sellOrder.setState(IOrder.State.CLOSED);
+                            OrderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
                             sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_TP);
 
                             assertFalse(position.contains(sellOrder));
@@ -366,7 +366,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         @Test
                         public void testCloseOnSLRemovesOrderAlsoWhenMarkedActive() {
-                            sellOrder.setState(IOrder.State.CLOSED);
+                            OrderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
                             sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_SL);
 
                             assertFalse(position.contains(sellOrder));
@@ -398,7 +398,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Before
                     public void setUp() {
-                        buyOrder.setState(IOrder.State.CLOSED);
+                        OrderUtilForTest.setState(buyOrder, IOrder.State.CLOSED);
                     }
 
                     @Test
@@ -427,17 +427,11 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
                 }
 
-                public class RemovingEventsWhenOrderIsCanceled {
+                @Test
+                public void RemovingEventsWhenOrderIsCanceledIsCloseOK() {
+                    OrderUtilForTest.setState(buyOrder, IOrder.State.CANCELED);
 
-                    @Before
-                    public void setUp() {
-                        buyOrder.setState(IOrder.State.CANCELED);
-                    }
-
-                    @Test
-                    public void testCloseOK() {
-                        assertBuyOrderRemoval(OrderEventType.FILL_REJECTED);
-                    }
+                    assertBuyOrderRemoval(OrderEventType.FILL_REJECTED);
                 }
             }
         }

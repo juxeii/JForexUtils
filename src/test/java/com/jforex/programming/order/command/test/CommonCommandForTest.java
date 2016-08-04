@@ -18,7 +18,7 @@ public class CommonCommandForTest extends CommonUtilForTest {
 
     protected OrderCallCommand command;
 
-    protected final OrderUtilForTest orderForTest = OrderUtilForTest.buyOrderEURUSD();
+    protected final IOrder orderForTest = OrderUtilForTest.buyOrderEURUSD();
 
     protected void assertCallableOrder() throws Exception {
         final Callable<IOrder> callable = command.callable();
