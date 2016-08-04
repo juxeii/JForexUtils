@@ -56,11 +56,11 @@ public class ConversionBuilder {
         return this.builder.offerSide;
     }
 
-    private class Builder implements
-            FromSource,
-            ToInstrument,
-            ToCurrency,
-            ForOfferSide {
+    private final class Builder implements
+                                FromSource,
+                                ToInstrument,
+                                ToCurrency,
+                                ForOfferSide {
 
         private final double amount;
         private ICurrency sourceCurrency;
@@ -72,31 +72,31 @@ public class ConversionBuilder {
         }
 
         @Override
-        public ToInstrument fromInstrument(final Instrument sourceInstrument) {
+        public final ToInstrument fromInstrument(final Instrument sourceInstrument) {
             this.sourceCurrency = checkNotNull(sourceInstrument).getPrimaryJFCurrency();
             return this;
         }
 
         @Override
-        public ToCurrency fromCurrency(final ICurrency currency) {
+        public final ToCurrency fromCurrency(final ICurrency currency) {
             this.sourceCurrency = checkNotNull(currency);
             return this;
         }
 
         @Override
-        public ForOfferSide toInstrument(final Instrument targetInstrument) {
+        public final ForOfferSide toInstrument(final Instrument targetInstrument) {
             this.targetCurrency = checkNotNull(targetInstrument).getPrimaryJFCurrency();
             return this;
         }
 
         @Override
-        public ForOfferSide toCurrency(final ICurrency currency) {
+        public final ForOfferSide toCurrency(final ICurrency currency) {
             this.targetCurrency = checkNotNull(currency);
             return this;
         }
 
         @Override
-        public double forOfferSide(final OfferSide offerSide) {
+        public final double forOfferSide(final OfferSide offerSide) {
             this.offerSide = checkNotNull(offerSide);
             return consumer.apply(ConversionBuilder.this);
         }

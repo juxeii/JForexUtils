@@ -55,6 +55,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private Position positionMock;
     @Captor
     private ArgumentCaptor<OrderCallCommand> callCommandCaptor;
+    private final String mergeOrderLabel = "MergeLabel";
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
     private final IOrder orderForTest = OrderUtilForTest.buyOrderEURUSD();
     private final IOrder buyOrder = OrderUtilForTest.buyOrderEURUSD();
@@ -128,6 +129,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public class SubmitSetup {
 
         private final OrderParams orderParams = OrderUtilForTest.paramsBuyEURUSD();
+        private final OrderEvent submitOKEvent = new OrderEvent(orderForTest, OrderEventType.SUBMIT_OK);
 
         private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
             when(orderUtilHandlerMock.callObservable(isA(SubmitCommand.class)))
@@ -135,9 +137,19 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
 
         @Test
+        public void onSubmitAndMergeBothAreCalledInternal() {
+            setOrderUtilHandlerMockResult(eventObservable(submitOKEvent));
+
+            orderUtil
+                    .submitAndMergePosition(mergeOrderLabel, orderParams)
+                    .subscribe(orderEventSubscriber);
+
+            verify(orderUtil).submitOrder(orderParams);
+            verify(orderUtil).mergeOrders(eq(mergeOrderLabel), any());
+        }
+
+        @Test
         public void noOrderIsAddedWhenNoDoneEvent() {
-            final OrderEvent submitOKEvent =
-                    new OrderEvent(orderForTest, OrderEventType.SUBMIT_OK);
             setOrderUtilHandlerMockResult(eventObservable(submitOKEvent));
 
             orderUtil
@@ -185,7 +197,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     public class MergeSetup {
 
-        private final String mergeOrderLabel = "MergeLabel";
         private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrder, sellOrder);
         private final OrderEvent mergeEvent =
                 new OrderEvent(orderForTest, OrderEventType.MERGE_OK);

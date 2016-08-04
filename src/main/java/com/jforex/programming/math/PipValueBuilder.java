@@ -50,10 +50,10 @@ public class PipValueBuilder {
         return this.builder.offerSide;
     }
 
-    private class Builder implements
-            OfInstrument,
-            WithAmount,
-            AndOfferSide {
+    private final class Builder implements
+                                OfInstrument,
+                                WithAmount,
+                                AndOfferSide {
 
         private final ICurrency targetCurrency;
         private double amount;
@@ -65,19 +65,19 @@ public class PipValueBuilder {
         }
 
         @Override
-        public AndOfferSide withAmount(final double amount) {
+        public final AndOfferSide withAmount(final double amount) {
             this.amount = amount;
             return this;
         }
 
         @Override
-        public WithAmount ofInstrument(final Instrument instrument) {
+        public final WithAmount ofInstrument(final Instrument instrument) {
             this.instrument = checkNotNull(instrument);
             return this;
         }
 
         @Override
-        public double andOfferSide(final OfferSide offerSide) {
+        public final double andOfferSide(final OfferSide offerSide) {
             this.offerSide = checkNotNull(offerSide);
             return consumer.apply(PipValueBuilder.this);
         }

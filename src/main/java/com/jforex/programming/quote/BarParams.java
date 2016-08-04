@@ -43,8 +43,8 @@ public final class BarParams {
     }
 
     private static class Builder implements
-            AndPeriod,
-            AndOfferSide {
+                                 AndPeriod,
+                                 AndOfferSide {
 
         private final Instrument instrument;
         private Period period;
@@ -55,13 +55,13 @@ public final class BarParams {
         }
 
         @Override
-        public AndOfferSide period(final Period period) {
+        public final AndOfferSide period(final Period period) {
             this.period = checkNotNull(period);
             return this;
         }
 
         @Override
-        public BarParams offerSide(final OfferSide offerSide) {
+        public final BarParams offerSide(final OfferSide offerSide) {
             this.offerSide = checkNotNull(offerSide);
             return new BarParams(this);
         }

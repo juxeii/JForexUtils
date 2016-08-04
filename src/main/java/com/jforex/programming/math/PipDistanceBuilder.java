@@ -40,9 +40,9 @@ public class PipDistanceBuilder {
         return this.builder.instrument;
     }
 
-    private class Builder implements
-            To,
-            ForInstrument {
+    private final class Builder implements
+                                To,
+                                ForInstrument {
 
         private final double fromPrice;
         private double toPrice;
@@ -53,13 +53,13 @@ public class PipDistanceBuilder {
         }
 
         @Override
-        public ForInstrument to(final double toPrice) {
+        public final ForInstrument to(final double toPrice) {
             this.toPrice = toPrice;
             return this;
         }
 
         @Override
-        public double forInstrument(final Instrument instrument) {
+        public final double forInstrument(final Instrument instrument) {
             this.instrument = checkNotNull(instrument);
             return consumer.apply(PipDistanceBuilder.this);
         }
