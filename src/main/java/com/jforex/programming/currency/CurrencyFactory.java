@@ -2,7 +2,6 @@ package com.jforex.programming.currency;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.collectingAndThen;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.Collection;
@@ -13,7 +12,6 @@ import java.util.stream.Stream;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFCurrency;
-import com.google.common.collect.ImmutableSet;
 
 public final class CurrencyFactory {
 
@@ -73,7 +71,7 @@ public final class CurrencyFactory {
         return Stream
                 .of(instrument.getPrimaryJFCurrency(),
                     instrument.getSecondaryJFCurrency())
-                .collect(collectingAndThen(toSet(), ImmutableSet::copyOf));
+                .collect(toSet());
     }
 
     public static final Set<ICurrency> fromInstruments(final Collection<Instrument> instruments) {
@@ -81,7 +79,7 @@ public final class CurrencyFactory {
                 .stream()
                 .map(CurrencyFactory::fromInstrument)
                 .flatMap(Set::stream)
-                .collect(collectingAndThen(toSet(), ImmutableSet::copyOf));
+                .collect(toSet());
     }
 
     public static final Set<ICurrency> fromInstruments(final Instrument... instruments) {

@@ -54,10 +54,10 @@ public class OrderUtil {
     }
 
     private Position position(final Collection<IOrder> orders) {
-        return position(instrumentFromCollection(orders));
+        return position(instrumentFromOrders(orders));
     }
 
-    private Instrument instrumentFromCollection(final Collection<IOrder> orders) {
+    private Instrument instrumentFromOrders(final Collection<IOrder> orders) {
         return orders
                 .iterator()
                 .next()
@@ -124,7 +124,7 @@ public class OrderUtil {
     }
 
     private Observable<OrderEvent> removeTPSLObservable(final Collection<IOrder> filledOrders) {
-        final Instrument instrument = instrumentFromCollection(filledOrders);
+        final Instrument instrument = instrumentFromOrders(filledOrders);
 
         return Observable
                 .from(filledOrders)

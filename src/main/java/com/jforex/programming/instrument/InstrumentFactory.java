@@ -24,13 +24,10 @@ public final class InstrumentFactory {
     }
 
     public static final Optional<Instrument> maybeFromName(final String instrumentName) {
-        return maybeFromNotNullName(checkNotNull(instrumentName).toUpperCase());
-    }
-
-    private static final Optional<Instrument> maybeFromNotNullName(final String instrumentName) {
-        return Instrument.isInverted(instrumentName)
-                ? Optional.of(Instrument.fromInvertedString(instrumentName))
-                : Optional.ofNullable(Instrument.fromString(instrumentName));
+        final String upperCaseName = checkNotNull(instrumentName).toUpperCase();
+        return Instrument.isInverted(upperCaseName)
+                ? Optional.of(Instrument.fromInvertedString(upperCaseName))
+                : Optional.ofNullable(Instrument.fromString(upperCaseName));
     }
 
     public static final Optional<Instrument> maybeFromCurrencies(final ICurrency firstCurrency,
@@ -46,7 +43,7 @@ public final class InstrumentFactory {
     private static Instrument fromCurrencies(final ICurrency firstCurrency,
                                              final ICurrency secondCurrency) {
         final String instrumentName = InstrumentUtil.nameFromCurrencies(firstCurrency, secondCurrency);
-        return maybeFromNotNullName(instrumentName).get();
+        return maybeFromName(instrumentName).get();
     }
 
     public static final Set<Instrument> combineAllFromCurrencySet(final Set<ICurrency> currencies) {
