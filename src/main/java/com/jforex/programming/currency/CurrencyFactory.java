@@ -7,11 +7,11 @@ import static java.util.stream.Collectors.toSet;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFCurrency;
+import com.google.common.collect.Sets;
 
 public final class CurrencyFactory {
 
@@ -54,11 +54,11 @@ public final class CurrencyFactory {
 
     public static final Set<ICurrency> fromNames(final Collection<String> currencyNames) {
         return checkNotNull(currencyNames)
-                .stream()
-                .map(CurrencyFactory::maybeFromName)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toSet());
+            .stream()
+            .map(CurrencyFactory::maybeFromName)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(toSet());
     }
 
     public static final Set<ICurrency> fromNames(final String... currencyNames) {
@@ -68,18 +68,16 @@ public final class CurrencyFactory {
     public static final Set<ICurrency> fromInstrument(final Instrument instrument) {
         checkNotNull(instrument);
 
-        return Stream
-                .of(instrument.getPrimaryJFCurrency(),
-                    instrument.getSecondaryJFCurrency())
-                .collect(toSet());
+        return Sets.newHashSet(instrument.getPrimaryJFCurrency(),
+                               instrument.getSecondaryJFCurrency());
     }
 
     public static final Set<ICurrency> fromInstruments(final Collection<Instrument> instruments) {
         return checkNotNull(instruments)
-                .stream()
-                .map(CurrencyFactory::fromInstrument)
-                .flatMap(Set::stream)
-                .collect(toSet());
+            .stream()
+            .map(CurrencyFactory::fromInstrument)
+            .flatMap(Set::stream)
+            .collect(toSet());
     }
 
     public static final Set<ICurrency> fromInstruments(final Instrument... instruments) {

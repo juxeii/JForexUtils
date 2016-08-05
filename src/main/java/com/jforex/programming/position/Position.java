@@ -39,11 +39,11 @@ public class Position implements PositionOrders {
         this.instrument = instrument;
 
         orderEventObservable
-                .map(OrderEvent::order)
-                .filter(this::contains)
-                .filter(isClosed.or(isCanceled)::test)
-                .doOnNext(this::removeOrder)
-                .subscribe();
+            .map(OrderEvent::order)
+            .filter(this::contains)
+            .filter(isClosed.or(isCanceled)::test)
+            .doOnNext(this::removeOrder)
+            .subscribe();
     }
 
     public synchronized void addOrder(final IOrder order) {
@@ -95,9 +95,9 @@ public class Position implements PositionOrders {
     @Override
     public double signedExposure() {
         return filter(isFilled)
-                .stream()
-                .mapToDouble(OrderStaticUtil::signedAmount)
-                .sum();
+            .stream()
+            .mapToDouble(OrderStaticUtil::signedAmount)
+            .sum();
     }
 
     @Override
@@ -108,10 +108,10 @@ public class Position implements PositionOrders {
     @Override
     public Set<IOrder> filter(final Predicate<IOrder> orderPredicate) {
         return orderRepository
-                .keySet()
-                .stream()
-                .filter(orderPredicate)
-                .collect(toSet());
+            .keySet()
+            .stream()
+            .filter(orderPredicate)
+            .collect(toSet());
     }
 
     @Override
@@ -126,11 +126,11 @@ public class Position implements PositionOrders {
 
     public Set<IOrder> notProcessingOrders(final Predicate<IOrder> orderPredicate) {
         return orderRepository
-                .entrySet()
-                .stream()
-                .filter(entry -> orderPredicate.test(entry.getKey()))
-                .filter(entry -> entry.getValue() == OrderProcessState.IDLE)
-                .collect(Collectors.toMap(Entry::getKey, Entry::getValue))
-                .keySet();
+            .entrySet()
+            .stream()
+            .filter(entry -> orderPredicate.test(entry.getKey()))
+            .filter(entry -> entry.getValue() == OrderProcessState.IDLE)
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue))
+            .keySet();
     }
 }

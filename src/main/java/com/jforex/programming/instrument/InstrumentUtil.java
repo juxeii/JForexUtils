@@ -32,8 +32,8 @@ public final class InstrumentUtil {
     private static final String pairsSeparator = Instrument.getPairsSeparator();
 
     public InstrumentUtil(final Instrument instrument,
-            final TickQuoteHandler tickQuoteProvider,
-            final BarQuoteHandler barQuoteProvider) {
+                          final TickQuoteHandler tickQuoteProvider,
+                          final BarQuoteHandler barQuoteProvider) {
         this.instrument = instrument;
         this.tickQuoteProvider = tickQuoteProvider;
         this.barQuoteProvider = barQuoteProvider;
@@ -65,9 +65,9 @@ public final class InstrumentUtil {
 
     public final double spread() {
         return CalculationUtil
-                .pipDistanceFrom(askQuote())
-                .to(bidQuote())
-                .forInstrument(instrument);
+            .pipDistanceFrom(askQuote())
+            .to(bidQuote())
+            .forInstrument(instrument);
     }
 
     public final Currency baseJavaCurrency() {
@@ -108,21 +108,21 @@ public final class InstrumentUtil {
 
     public static final String toStringNoSeparator(final Instrument instrument) {
         return checkNotNull(instrument)
-                .getPrimaryJFCurrency()
-                .toString()
-                .concat(instrument.getSecondaryJFCurrency().toString());
+            .getPrimaryJFCurrency()
+            .toString()
+            .concat(instrument.getSecondaryJFCurrency().toString());
     }
 
     public static final Currency baseJavaCurrency(final Instrument instrument) {
         return checkNotNull(instrument)
-                .getPrimaryJFCurrency()
-                .getJavaCurrency();
+            .getPrimaryJFCurrency()
+            .getJavaCurrency();
     }
 
     public static final Currency quoteJavaCurrency(final Instrument instrument) {
         return checkNotNull(instrument)
-                .getSecondaryJFCurrency()
-                .getJavaCurrency();
+            .getSecondaryJFCurrency()
+            .getJavaCurrency();
     }
 
     public static final String nameFromCurrencies(final ICurrency baseCurrency,
@@ -131,8 +131,8 @@ public final class InstrumentUtil {
         checkNotNull(quoteCurrency);
 
         return baseCurrency
-                .toString()
-                .concat(pairsSeparator)
-                .concat(quoteCurrency.toString());
+            .toString()
+            .concat(pairsSeparator)
+            .concat(quoteCurrency.toString());
     }
 }
