@@ -58,7 +58,7 @@ public class StreamUtilTest extends CommonUtilForTest {
         public void setUp() {
             retryCall = () -> Observable
                     .fromCallable(callableMock)
-                    .retryWhen(StreamUtil::retryObservable)
+                    .retryWhen(StreamUtil::retryOnRejectObservable)
                     .subscribe(orderSubscriber);
         }
 

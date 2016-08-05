@@ -41,9 +41,11 @@ public class BarQuoteRepository {
     }
 
     private BarQuote quoteFromHistory(final BarParams barParams) {
-        final IBar historyBar = historyUtil.barQuote(barParams);
+        final IBar historyBar = historyUtil
+                .latestBarObservable(barParams)
+                .toBlocking()
+                .first();
         final BarQuote barQuote = new BarQuote(historyBar, barParams);
-
         onBarQuote(barQuote);
 
         return barQuote;

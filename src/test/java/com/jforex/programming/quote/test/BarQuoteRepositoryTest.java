@@ -9,6 +9,7 @@ import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import rx.Observable;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
@@ -28,24 +29,24 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
 
         @Test
         public void askQuoteForEURUSDComesFromHistory() {
-            when(historyUtilMock.barQuote(askBarEURUSDParams))
-                    .thenReturn(askBarEURUSD);
+            when(historyUtilMock.latestBarObservable(askBarEURUSDParams))
+                    .thenReturn(Observable.just(askBarEURUSD));
 
             final BarQuote receivedQuoteEURUSD = barQuoteRepository.get(askBarEURUSDParams);
 
             assertEqualBarQuotes(receivedQuoteEURUSD, askBarQuoteEURUSD);
-            verify(historyUtilMock).barQuote(askBarEURUSDParams);
+            verify(historyUtilMock).latestBarObservable(askBarEURUSDParams);
         }
 
         @Test
         public void bidQuoteForAUDUSDComesFromHistory() {
-            when(historyUtilMock.barQuote(bidBarAUDUSDParams))
-                    .thenReturn(bidBarAUDUSD);
+            when(historyUtilMock.latestBarObservable(bidBarAUDUSDParams))
+                    .thenReturn(Observable.just(bidBarAUDUSD));
 
             final BarQuote receivedQuoteAUDUSD = barQuoteRepository.get(bidBarAUDUSDParams);
 
             assertEqualBarQuotes(receivedQuoteAUDUSD, bidBarQuoteAUDUSD);
-            verify(historyUtilMock).barQuote(bidBarAUDUSDParams);
+            verify(historyUtilMock).latestBarObservable(bidBarAUDUSDParams);
         }
 
         public class AfterReceivedBars {

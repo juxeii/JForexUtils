@@ -3,8 +3,6 @@ package com.jforex.programming.quote.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -18,6 +16,7 @@ import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import rx.Observable;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
@@ -26,7 +25,6 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
 
     private TickQuoteRepository tickQuoteRepository;
 
-    private final Map<Instrument, TickQuote> historyQuotes = new HashMap<>();
     private final Subject<TickQuote, TickQuote> quoteObservable = PublishSubject.create();
     private final Set<Instrument> subscribedInstruments = Sets.newHashSet(instrumentEURUSD,
                                                                           instrumentAUDUSD);
@@ -34,8 +32,6 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
     @Before
     public void setUp() {
         setUpMocks();
-        historyQuotes.put(instrumentEURUSD, tickQuoteEURUSD);
-        historyQuotes.put(instrumentAUDUSD, tickQuoteAUDUSD);
 
         tickQuoteRepository = new TickQuoteRepository(quoteObservable,
                                                       historyUtilMock,
@@ -43,15 +39,15 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
     }
 
     private void setUpMocks() {
-        when(historyUtilMock.tickQuotes(subscribedInstruments))
-                .thenReturn(historyQuotes);
+        when(historyUtilMock.tickQuotesObservable(subscribedInstruments))
+                .thenReturn(Observable.just(tickQuoteEURUSD, tickQuoteAUDUSD));
     }
 
     public class BeforeTicksReceived {
 
         @Test
         public void quotesForSubscribedInstrumentsComeFromHistory() {
-            verify(historyUtilMock).tickQuotes(subscribedInstruments);
+            verify(historyUtilMock).tickQuotesObservable(subscribedInstruments);
         }
 
         @Test

@@ -27,9 +27,9 @@ public final class StreamUtil {
     private static final int maxRetriesOnOrderFail = platformSettings.maxRetriesOnOrderFail();
     private static final Logger logger = LogManager.getLogger(StreamUtil.class);
 
-    public static final Observable<Long> retryObservable(final Observable<? extends Throwable> errors) {
+    public static final Observable<Long> retryOnRejectObservable(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
-                .flatMap(StreamUtil::filterErrorType)
+                .flatMap(StreamUtil::filterCallErrorType)
                 .zipWith(retryCounterObservable(maxRetriesOnOrderFail), Pair::of)
                 .flatMap(retryPair -> evaluateRetryPair(retryPair,
                                                         delayOnOrderFailRetry,
@@ -37,7 +37,7 @@ public final class StreamUtil {
                                                         maxRetriesOnOrderFail));
     }
 
-    private static final Observable<? extends Throwable> filterErrorType(final Throwable error) {
+    private static final Observable<? extends Throwable> filterCallErrorType(final Throwable error) {
         if (error instanceof OrderCallRejectException) {
             logPositionTaskRetry((OrderCallRejectException) error);
             return Observable.just(error);
@@ -59,8 +59,8 @@ public final class StreamUtil {
         return Observable.range(1, maxRetries + 1);
     }
 
-    public static Observable<Long> waitObservable(final long delay,
-                                                  final TimeUnit timeUnit) {
+    public static final Observable<Long> waitObservable(final long delay,
+                                                        final TimeUnit timeUnit) {
         return Observable
                 .interval(delay, timeUnit)
                 .take(1);
@@ -72,7 +72,7 @@ public final class StreamUtil {
                 + " Will retry task in " + delayOnOrderFailRetry + " milliseconds...");
     }
 
-    public static <T> Stream<T> optionalStream(final Optional<T> optional) {
+    public static final <T> Stream<T> optionalStream(final Optional<T> optional) {
         return checkNotNull(optional).isPresent()
                 ? Stream.of(optional.get())
                 : Stream.empty();
@@ -85,5 +85,14 @@ public final class StreamUtil {
             jfRunnable.run();
             return null;
         });
+    }
+
+    public static final Observable<Long> retryOnHistoryFailObservable(final Observable<? extends Throwable> errors) {
+        return checkNotNull(errors)
+                .zipWith(retryCounterObservable(5), Pair::of)
+                .flatMap(retryPair -> evaluateRetryPair(retryPair,
+                                                        500L,
+                                                        TimeUnit.MILLISECONDS,
+                                                        5));
     }
 }

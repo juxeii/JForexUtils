@@ -2,21 +2,23 @@ package com.jforex.programming.quote;
 
 import java.util.Map;
 import java.util.Set;
-
-import com.jforex.programming.misc.HistoryUtil;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.misc.HistoryUtil;
 
 import rx.Observable;
 
 public class TickQuoteRepository {
 
-    private final Map<Instrument, TickQuote> quotesByInstrument;
+    private final Map<Instrument, TickQuote> quotesByInstrument = new ConcurrentHashMap<>();
 
     public TickQuoteRepository(final Observable<TickQuote> tickQuoteObservable,
                                final HistoryUtil historyUtil,
                                final Set<Instrument> subscribedInstruments) {
-        quotesByInstrument = historyUtil.tickQuotes(subscribedInstruments);
+        historyUtil
+                .tickQuotesObservable(subscribedInstruments)
+                .subscribe(quote -> quotesByInstrument.put(quote.instrument(), quote));
 
         tickQuoteObservable.subscribe(this::onTickQuote);
     }

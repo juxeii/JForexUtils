@@ -1,9 +1,6 @@
 package com.jforex.programming.misc;
 
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +21,6 @@ import rx.Observable;
 public class HistoryUtil {
 
     private final IHistory history;
-    private final int maxBarTickRetries = 10;
 
     private static final Logger logger = LogManager.getLogger(HistoryUtil.class);
 
@@ -32,24 +28,21 @@ public class HistoryUtil {
         this.history = history;
     }
 
-    public Map<Instrument, TickQuote> tickQuotes(final Set<Instrument> instruments) {
-        return instruments
-                .stream()
-                .map(instrument -> {
-                    final TickQuote tickQuote = new TickQuote(instrument, tickQuote(instrument));
-                    return new SimpleEntry<>(instrument, tickQuote);
-                })
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    public Observable<TickQuote> tickQuotesObservable(final Set<Instrument> instruments) {
+        return Observable
+                .from(instruments)
+                .flatMap(this::lastestTickObservable)
+                .zipWith(instruments,
+                         (tick, instrument) -> new TickQuote(instrument, tick));
     }
 
-    public ITick tickQuote(final Instrument instrument) {
+    public Observable<ITick> lastestTickObservable(final Instrument instrument) {
         return Observable
                 .fromCallable(() -> latestHistoryTick(instrument))
                 .doOnError(e -> logger.error(e.getMessage()
                         + "! Will retry latest tick from history now..."))
-                .retry(maxBarTickRetries)
-                .toBlocking()
-                .single();
+                .retryWhen(StreamUtil::retryOnHistoryFailObservable)
+                .take(1);
     }
 
     private ITick latestHistoryTick(final Instrument instrument) throws JFException {
@@ -60,7 +53,7 @@ public class HistoryUtil {
         return tick;
     }
 
-    public IBar barQuote(final BarParams barParams) {
+    public Observable<IBar> latestBarObservable(final BarParams barParams) {
         final Instrument instrument = barParams.instrument();
         final Period period = barParams.period();
         final OfferSide offerSide = barParams.offerSide();
@@ -69,9 +62,8 @@ public class HistoryUtil {
                 .fromCallable(() -> latestHistoryBar(instrument, period, offerSide))
                 .doOnError(e -> logger.error(e.getMessage()
                         + "! Will retry latest bar from history now..."))
-                .retry(maxBarTickRetries)
-                .toBlocking()
-                .single();
+                .retryWhen(StreamUtil::retryOnHistoryFailObservable)
+                .take(1);
     }
 
     private IBar latestHistoryBar(final Instrument instrument,
