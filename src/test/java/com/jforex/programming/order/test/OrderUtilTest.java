@@ -1,5 +1,6 @@
 package com.jforex.programming.order.test;
 
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -12,6 +13,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
@@ -54,12 +56,13 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private Position positionMock;
     @Captor
     private ArgumentCaptor<OrderCallCommand> callCommandCaptor;
+    @Captor
+    private ArgumentCaptor<OrderParams> paramsCaptor;
+    private final OrderParams orderParams = orderUtilForTest.paramsBuyEURUSD();
     private final String mergeOrderLabel = "MergeLabel";
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
-    private final IOrder orderForTest = orderUtilForTest.buyOrderEURUSD();
-    private final IOrder buyOrder = orderUtilForTest.buyOrderEURUSD();
-    private final IOrder sellOrder = orderUtilForTest.sellOrderEURUSD();
-    private final OrderEvent notificationEvent = new OrderEvent(orderForTest, OrderEventType.NOTIFICATION);
+    private final OrderEvent submitOKEvent = new OrderEvent(buyOrderEURUSD, OrderEventType.SUBMIT_OK);
+    private final OrderEvent notificationEvent = new OrderEvent(buyOrderEURUSD, OrderEventType.NOTIFICATION);
 
     @Before
     public void setUp() {
@@ -127,24 +130,41 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     public class SubmitSetup {
 
-        private final OrderParams orderParams = orderUtilForTest.paramsBuyEURUSD();
-        private final OrderEvent submitOKEvent = new OrderEvent(orderForTest, OrderEventType.SUBMIT_OK);
-
         private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
             when(orderUtilHandlerMock.callObservable(isA(SubmitCommand.class)))
                     .thenReturn(observable);
         }
 
-        @Test
-        public void onSubmitAndMergeBothAreCalledInternal() {
-            setOrderUtilHandlerMockResult(eventObservable(submitOKEvent));
+        public class SubmitAndMergeSetup {
 
-            orderUtil
-                    .submitAndMergePosition(mergeOrderLabel, orderParams)
-                    .subscribe(orderEventSubscriber);
+            private Runnable submitAndMergeCall;
 
-            verify(orderUtil).submitOrder(orderParams);
-            verify(orderUtil).mergeOrders(eq(mergeOrderLabel), any());
+            @Before
+            public void setUp() {
+                submitAndMergeCall = () -> orderUtil
+                        .submitAndMergePosition(mergeOrderLabel, orderParams)
+                        .subscribe(orderEventSubscriber);
+            }
+
+            @Test
+            public void theMergeCallIsDeferred() {
+                setOrderUtilHandlerMockResult(neverObservable());
+
+                submitAndMergeCall.run();
+
+                verify(orderUtil).submitOrder(orderParams);
+                verify(orderUtil, never()).mergeOrders(eq(mergeOrderLabel), any());
+            }
+
+            @Test
+            public void submitAndMergeAreBothCalledWhenSubmitIsOK() {
+                setOrderUtilHandlerMockResult(eventObservable(submitOKEvent));
+
+                submitAndMergeCall.run();
+
+                verify(orderUtil).submitOrder(orderParams);
+                verify(orderUtil).mergeOrders(eq(mergeOrderLabel), any());
+            }
         }
 
         @Test
@@ -161,7 +181,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         public class SubmitDone {
 
             private final OrderEvent submitDoneEvent =
-                    new OrderEvent(orderForTest, OrderEventType.FULLY_FILLED);
+                    new OrderEvent(buyOrderEURUSD, OrderEventType.FULLY_FILLED);
 
             @Before
             public void setUp() {
@@ -189,16 +209,72 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void orderHasBeenAddedToPosition() {
-                verify(positionMock).addOrder(orderForTest);
+                verify(positionMock).addOrder(buyOrderEURUSD);
             }
+        }
+    }
+
+    public class SubmitAndMergeToParamsSetup {
+
+        private OrderParams adaptedOrderParams;
+
+        private void callAndVerifyMergeInvocation(final double positionExposure) {
+            when(positionMock.signedExposure()).thenReturn(positionExposure);
+            when(orderUtilHandlerMock.callObservable(isA(SubmitCommand.class)))
+                    .thenReturn(eventObservable(submitOKEvent));
+
+            orderUtil
+                    .submitAndMergePositionToParams(mergeOrderLabel, orderParams)
+                    .subscribe(orderEventSubscriber);
+
+            verify(orderUtil).submitAndMergePosition(eq(mergeOrderLabel),
+                                                     paramsCaptor.capture());
+            adaptedOrderParams = paramsCaptor.getValue();
+        }
+
+        private void assertAdaptedOrderParams(final OrderCommand orderCommand,
+                                              final double amount) {
+            assertThat(adaptedOrderParams.orderCommand(),
+                       equalTo(orderCommand));
+            assertThat(adaptedOrderParams.amount(),
+                       closeTo(amount, 0.0001));
+        }
+
+        @Test
+        public void returnedObservableIsCorrectInstance() {
+            callAndVerifyMergeInvocation(0.0);
+
+            orderEventSubscriber.assertNoErrors();
+            orderEventSubscriber.assertValueCount(1);
+            assertThat(orderEventSubscriber.getOnNextEvents().get(0), equalTo(submitOKEvent));
+        }
+
+        @Test
+        public void whenPositionHasNoExposureOrderParamsAreTaken() {
+            callAndVerifyMergeInvocation(0.0);
+
+            assertAdaptedOrderParams(orderParams.orderCommand(), orderParams.amount());
+        }
+
+        @Test
+        public void whenPositionHasPositiveExposureOrderParamsAreSHORT() {
+            callAndVerifyMergeInvocation(0.12);
+
+            assertAdaptedOrderParams(OrderCommand.SELL, 0.02);
+        }
+
+        @Test
+        public void whenPositionHasNegativeExposureOrderParamsAreLONG() {
+            callAndVerifyMergeInvocation(-0.12);
+
+            assertAdaptedOrderParams(OrderCommand.BUY, 0.22);
         }
     }
 
     public class MergeSetup {
 
-        private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrder, sellOrder);
-        private final OrderEvent mergeEvent =
-                new OrderEvent(orderForTest, OrderEventType.MERGE_OK);
+        private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+        private final OrderEvent mergeEvent = new OrderEvent(buyOrderEURUSD, OrderEventType.MERGE_OK);
         private Runnable mergeCall;
 
         private void setOrderUtilHandlerResult(final Class<? extends OrderCallCommand> clazz,
@@ -278,7 +354,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             public class RemoveTPCallFail {
 
                 private final OrderEvent rejectTPEvent =
-                        new OrderEvent(buyOrder, OrderEventType.CHANGE_TP_REJECTED);
+                        new OrderEvent(buyOrderEURUSD, OrderEventType.CHANGE_TP_REJECTED);
 
                 @Before
                 public void setUp() {
@@ -302,7 +378,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             public class RemoveTPOKCall {
 
                 private final OrderEvent setTPEvent =
-                        new OrderEvent(buyOrder, OrderEventType.CHANGED_TP);
+                        new OrderEvent(buyOrderEURUSD, OrderEventType.CHANGED_TP);
 
                 @Before
                 public void setUp() {
@@ -321,7 +397,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 public class RemoveSLCallFail {
 
                     private final OrderEvent rejectSLEvent =
-                            new OrderEvent(buyOrder, OrderEventType.CHANGE_SL_REJECTED);
+                            new OrderEvent(buyOrderEURUSD, OrderEventType.CHANGE_SL_REJECTED);
 
                     @Before
                     public void setUp() {
@@ -345,7 +421,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 public class RemoveSLOKCall {
 
                     private final OrderEvent setSLEvent =
-                            new OrderEvent(buyOrder, OrderEventType.CHANGED_SL);
+                            new OrderEvent(buyOrderEURUSD, OrderEventType.CHANGED_SL);
 
                     @Before
                     public void setUp() {
@@ -364,7 +440,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                     public class MergeCallFail {
 
                         private final OrderEvent rejectEvent =
-                                new OrderEvent(orderForTest, OrderEventType.MERGE_REJECTED);
+                                new OrderEvent(buyOrderEURUSD, OrderEventType.MERGE_REJECTED);
 
                         @Before
                         public void setUp() {
@@ -403,7 +479,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                         @Test
                         public void testOrderHasBeenAddedToPosition() {
-                            verify(positionMock).addOrder(orderForTest);
+                            verify(positionMock).addOrder(buyOrderEURUSD);
                         }
 
                         @Test
@@ -423,7 +499,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     public class ClosePositionSetup {
 
-        private final Set<IOrder> ordersToClose = Sets.newHashSet(buyOrder, sellOrder);
+        private final Set<IOrder> ordersToClose = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
         private final Runnable closeCompletableCall =
                 () -> orderUtil
                         .closePosition(instrumentEURUSD)
@@ -431,8 +507,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            orderUtilForTest.setState(buyOrder, IOrder.State.FILLED);
-            orderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
+            orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.FILLED);
+            orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.CLOSED);
 
             when(positionMock.filledOrOpened()).thenReturn(ordersToClose);
         }
@@ -496,12 +572,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 final OrderCallCommand command = callCommandCaptor.getValue();
                 command.callable().call();
 
-                verify(buyOrder).close();
+                verify(buyOrderEURUSD).close();
             }
 
             @Test
             public void closeForSellOrderIsNotCalledSinceAlreadyClosed() throws Exception {
-                verify(sellOrder, never()).close();
+                verify(sellOrderEURUSD, never()).close();
             }
 
             @Test
@@ -538,7 +614,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 commandClass = CloseCommand.class;
-                observable = orderUtil.close(orderForTest);
+                observable = orderUtil.close(buyOrderEURUSD);
             }
 
             @Test
@@ -548,7 +624,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void closeCallDoesNotCallOrderUtilHandlerWhenOrderAlreadyClosed() {
-                orderUtilForTest.setState(orderForTest, newState);
+                orderUtilForTest.setState(buyOrderEURUSD, newState);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -561,7 +637,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 commandClass = SetLabelCommand.class;
-                observable = orderUtil.setLabel(orderForTest, newLabel);
+                observable = orderUtil.setLabel(buyOrderEURUSD, newLabel);
             }
 
             @Test
@@ -571,7 +647,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setLabelCallDoesNotCallOrderUtilHandlerWhenLabelAlreadySet() {
-                orderUtilForTest.setLabel(orderForTest, newLabel);
+                orderUtilForTest.setLabel(buyOrderEURUSD, newLabel);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -584,7 +660,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 commandClass = SetGTTCommand.class;
-                observable = orderUtil.setGoodTillTime(orderForTest, newGTT);
+                observable = orderUtil.setGoodTillTime(buyOrderEURUSD, newGTT);
             }
 
             @Test
@@ -594,7 +670,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setGTTCallDoesNotCallOrderUtilHandlerWhenGTTAlreadySet() {
-                orderUtilForTest.setGTT(orderForTest, newGTT);
+                orderUtilForTest.setGTT(buyOrderEURUSD, newGTT);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -607,7 +683,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 commandClass = SetAmountCommand.class;
-                observable = orderUtil.setRequestedAmount(orderForTest, newAmount);
+                observable = orderUtil.setRequestedAmount(buyOrderEURUSD, newAmount);
             }
 
             @Test
@@ -617,7 +693,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setAmountCallDoesNotCallOrderUtilHandlerWhenAmountAlreadySet() {
-                orderUtilForTest.setRequestedAmount(orderForTest, newAmount);
+                orderUtilForTest.setRequestedAmount(buyOrderEURUSD, newAmount);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -630,7 +706,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 commandClass = SetOpenPriceCommand.class;
-                observable = orderUtil.setOpenPrice(orderForTest, newOpenPrice);
+                observable = orderUtil.setOpenPrice(buyOrderEURUSD, newOpenPrice);
             }
 
             @Test
@@ -640,7 +716,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setOpenPriceCallDoesNotCallOrderUtilHandlerWhenOpenPriceAlreadySet() {
-                orderUtilForTest.setOpenPrice(orderForTest, newOpenPrice);
+                orderUtilForTest.setOpenPrice(buyOrderEURUSD, newOpenPrice);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -653,7 +729,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 commandClass = SetTPCommand.class;
-                observable = orderUtil.setTakeProfitPrice(orderForTest, newTP);
+                observable = orderUtil.setTakeProfitPrice(buyOrderEURUSD, newTP);
             }
 
             @Test
@@ -663,7 +739,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setTakeProfitPriceDoesNotCallOrderUtilHandlerWhenTPAlreadySet() {
-                orderUtilForTest.setTP(orderForTest, newTP);
+                orderUtilForTest.setTP(buyOrderEURUSD, newTP);
 
                 assertNoOrderUtilHandlerCall();
             }
@@ -676,7 +752,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 commandClass = SetSLCommand.class;
-                observable = orderUtil.setStopLossPrice(orderForTest, newSL);
+                observable = orderUtil.setStopLossPrice(buyOrderEURUSD, newSL);
             }
 
             @Test
@@ -686,7 +762,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void setStopLossPriceDoesNotCallOrderUtilHandlerWhenSLAlreadySet() {
-                orderUtilForTest.setSL(orderForTest, newSL);
+                orderUtilForTest.setSL(buyOrderEURUSD, newSL);
 
                 assertNoOrderUtilHandlerCall();
             }

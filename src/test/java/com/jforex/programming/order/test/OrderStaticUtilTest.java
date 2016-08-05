@@ -1,10 +1,12 @@
 package com.jforex.programming.order.test;
 
+import static com.jforex.programming.order.OrderStaticUtil.adaptedOrderParamsForSignedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.amountPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.buyOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.combinedDirection;
 import static com.jforex.programming.order.OrderStaticUtil.combinedSignedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.direction;
+import static com.jforex.programming.order.OrderStaticUtil.directionForSignedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.directionToCommand;
 import static com.jforex.programming.order.OrderStaticUtil.gttPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.instrumentPredicate;
@@ -35,6 +37,7 @@ import static com.jforex.programming.order.OrderStaticUtil.switchCommand;
 import static com.jforex.programming.order.OrderStaticUtil.switchDirection;
 import static com.jforex.programming.order.OrderStaticUtil.tpPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.tpPriceWithPips;
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -46,6 +49,7 @@ import java.util.function.Predicate;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
@@ -55,13 +59,15 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderDirection;
+import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
+import de.bechte.junit.runners.context.HierarchicalContextRunner;
+
+@RunWith(HierarchicalContextRunner.class)
 public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
-    private final IOrder buyOrderEURUSD = orderUtilForTest.buyOrderEURUSD();
-    private final IOrder sellOrderEURUSD = orderUtilForTest.sellOrderEURUSD();
     private final double currentPriceForSLTP = 1.32165;
     private final double pipsToSLTP = 17.4;
     private final Set<IOrder> orders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
@@ -344,6 +350,13 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
+    public void testOrderDirectionIsFlatWhenOrderIsNotFilled() {
+        orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.CREATED);
+
+        assertThat(direction(buyOrderEURUSD), equalTo(OrderDirection.FLAT));
+    }
+
+    @Test
     public void testOrderDirectionIsLongForBuyCommand() {
         orderUtilForTest.setOrderCommand(buyOrderEURUSD, OrderCommand.BUY);
 
@@ -416,6 +429,20 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
         assertThat(signedAmount(buyOrderEURUSD), equalTo(buyAmount));
         assertThat(signedAmount(buyAmount, OrderCommand.BUY), equalTo(buyAmount));
+    }
+
+    @Test
+    public void testSignedAmountForPositiveParamsAmount() {
+        final OrderParams orderParams = orderUtilForTest.paramsBuyEURUSD();
+
+        assertThat(signedAmount(orderParams), equalTo(orderParams.amount()));
+    }
+
+    @Test
+    public void testSignedAmountForNegativeParamsAmount() {
+        final OrderParams orderParams = orderUtilForTest.paramsSellEURUSD();
+
+        assertThat(signedAmount(orderParams), equalTo(-orderParams.amount()));
     }
 
     @Test
@@ -526,6 +553,21 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
+    public void directionForSignedAmountIsLONGForPositiveAmount() {
+        assertThat(directionForSignedAmount(0.12), equalTo(OrderDirection.LONG));
+    }
+
+    @Test
+    public void directionForSignedAmountIsSHORTForNegativeAmount() {
+        assertThat(directionForSignedAmount(-0.12), equalTo(OrderDirection.SHORT));
+    }
+
+    @Test
+    public void directionForSignedAmountIsFLATForZeroAmount() {
+        assertThat(directionForSignedAmount(0.0), equalTo(OrderDirection.FLAT));
+    }
+
+    @Test
     public void testCalculateSLPriceWithPipsIsCorrectForBuyOrder() {
         final double slPrice = slPriceWithPips(buyOrderEURUSD, currentPriceForSLTP, pipsToSLTP);
 
@@ -562,5 +604,33 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
         assertThat(order, equalTo(buyOrderEURUSD));
         verify(buyOrderEURUSD).getLabel();
+    }
+
+    public class AdaptedOrderParams {
+
+        private final OrderParams orderParams = orderUtilForTest.paramsBuyEURUSD();
+        private OrderParams adaptedOrderParams;
+
+        private void assertAdaptedOrderParams(final OrderCommand orderCommand,
+                                              final double amount) {
+            assertThat(adaptedOrderParams.orderCommand(),
+                       equalTo(orderCommand));
+            assertThat(adaptedOrderParams.amount(),
+                       closeTo(amount, 0.0001));
+        }
+
+        @Test
+        public void adaptedOrderParamsForPositiveAmountIsCorrect() {
+            adaptedOrderParams = adaptedOrderParamsForSignedAmount(orderParams, 0.12);
+
+            assertAdaptedOrderParams(OrderCommand.BUY, 0.12);
+        }
+
+        @Test
+        public void adaptedOrderParamsForNegativeAmountIsCorrect() {
+            adaptedOrderParams = adaptedOrderParamsForSignedAmount(orderParams, -0.12);
+
+            assertAdaptedOrderParams(OrderCommand.SELL, 0.12);
+        }
     }
 }

@@ -42,8 +42,8 @@ public class OrderUtil {
     private static final Logger logger = LogManager.getLogger(OrderUtil.class);
 
     public OrderUtil(final IEngine engine,
-            final PositionFactory positionFactory,
-            final OrderUtilHandler orderUtilHandler) {
+                     final PositionFactory positionFactory,
+                     final OrderUtilHandler orderUtilHandler) {
         this.engine = engine;
         this.positionFactory = positionFactory;
         this.orderUtilHandler = orderUtilHandler;
@@ -90,6 +90,20 @@ public class OrderUtil {
         return submitOrder(orderParams)
                 .concatWith(Observable
                         .defer(() -> mergePositionOrders(mergeOrderLabel, orderParams.instrument())));
+    }
+
+    public Observable<OrderEvent> submitAndMergePositionToParams(final String mergeOrderLabel,
+                                                                 final OrderParams orderParams) {
+        checkNotNull(mergeOrderLabel);
+        checkNotNull(orderParams);
+
+        final double signedPostionAmount = position(orderParams.instrument()).signedExposure();
+        final double signedParamsAmount = OrderStaticUtil.signedAmount(orderParams);
+        final double signedNeededAmount = signedParamsAmount - signedPostionAmount;
+        final OrderParams adaptedOrderParams =
+                OrderStaticUtil.adaptedOrderParamsForSignedAmount(orderParams, signedNeededAmount);
+
+        return submitAndMergePosition(mergeOrderLabel, adaptedOrderParams);
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,

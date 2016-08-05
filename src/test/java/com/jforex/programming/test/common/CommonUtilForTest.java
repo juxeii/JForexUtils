@@ -89,6 +89,8 @@ public class CommonUtilForTest extends BDDMockito {
                                                                                            pin);
 
     protected static final OrderUtilForTest orderUtilForTest = new OrderUtilForTest();
+    protected final IOrder buyOrderEURUSD = orderUtilForTest.buyOrderEURUSD();
+    protected final IOrder sellOrderEURUSD = orderUtilForTest.sellOrderEURUSD();
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
     protected static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     protected static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
@@ -174,10 +176,6 @@ public class CommonUtilForTest extends BDDMockito {
 
     public final OrderCallRejectException createRejectException(final OrderEvent orderEvent) {
         return new OrderCallRejectException("", orderEvent);
-    }
-
-    public final Observable<OrderEvent> emptyObservable() {
-        return Observable.empty();
     }
 
     public final Observable<OrderEvent> neverObservable() {

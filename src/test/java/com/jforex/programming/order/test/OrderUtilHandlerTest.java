@@ -46,7 +46,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private ArgumentCaptor<Callable<IOrder>> orderCallCaptor;
     @Captor
     private ArgumentCaptor<OrderCallRequest> callRequestCaptor;
-    private final IOrder orderToClose = orderUtilForTest.buyOrderEURUSD();
+    private final IOrder orderToClose = buyOrderEURUSD;
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
     private final OrderCallCommand command = new CloseCommand(orderToClose);
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
