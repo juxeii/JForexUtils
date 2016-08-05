@@ -39,9 +39,6 @@ public class PositionTest extends InstrumentUtilForTest {
 
     public class AddingBuyOrder {
 
-        private final IOrder buyOrder = orderUtilForTest.buyOrderEURUSD();
-        private final IOrder sellOrder = orderUtilForTest.sellOrderEURUSD();
-
         private void sendOrderEvent(final IOrder order,
                                     final OrderEventType orderEventType) {
             final OrderEvent orderEvent = new OrderEvent(order, orderEventType);
@@ -50,9 +47,9 @@ public class PositionTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            orderUtilForTest.setState(buyOrder, IOrder.State.OPENED);
+            orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.OPENED);
 
-            position.addOrder(buyOrder);
+            position.addOrder(buyOrderEURUSD);
         }
 
         @Test
@@ -62,7 +59,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
         @Test
         public void testPositionHasBuyOrder() {
-            assertTrue(position.contains(buyOrder));
+            assertTrue(position.contains(buyOrderEURUSD));
         }
 
         @Test
@@ -83,21 +80,21 @@ public class PositionTest extends InstrumentUtilForTest {
         @Test
         public void testOrdersHasBuyOrder() {
             final Set<IOrder> orders = position.all();
-            assertTrue(orders.contains(buyOrder));
+            assertTrue(orders.contains(buyOrderEURUSD));
         }
 
         @Test
         public void testFilterWorksCorrect() {
             final Set<IOrder> orderFilter =
-                    position.filter(order -> order.getLabel().equals(buyOrder.getLabel()));
-            assertTrue(orderFilter.contains(buyOrder));
+                    position.filter(order -> order.getLabel().equals(buyOrderEURUSD.getLabel()));
+            assertTrue(orderFilter.contains(buyOrderEURUSD));
         }
 
         @Test
         public void testBuyOrderIsNotProcessing() {
             final Set<IOrder> notProcessingOrders =
                     position.notProcessingOrders(order -> true);
-            assertTrue(notProcessingOrders.contains(buyOrder));
+            assertTrue(notProcessingOrders.contains(buyOrderEURUSD));
         }
 
         @Test
@@ -109,14 +106,14 @@ public class PositionTest extends InstrumentUtilForTest {
         @Test
         public void testNoFilledOrOpenedOrdersHasBuyOrder() {
             final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
-            assertTrue(filledOrOpenedOrders.contains(buyOrder));
+            assertTrue(filledOrOpenedOrders.contains(buyOrderEURUSD));
         }
 
         public class BuyOrderIsFilled {
 
             @Before
             public void setUp() {
-                orderUtilForTest.setState(buyOrder, IOrder.State.FILLED);
+                orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.FILLED);
             }
 
             @Test
@@ -126,34 +123,34 @@ public class PositionTest extends InstrumentUtilForTest {
 
             @Test
             public void testSignedExposureIsPlus() {
-                assertThat(position.signedExposure(), equalTo(buyOrder.getAmount()));
+                assertThat(position.signedExposure(), equalTo(buyOrderEURUSD.getAmount()));
             }
 
             @Test
             public void testFilledOrdersHasBuyOrder() {
                 final Set<IOrder> filledOrders = position.filled();
-                assertTrue(filledOrders.contains(buyOrder));
+                assertTrue(filledOrders.contains(buyOrderEURUSD));
             }
 
             @Test
             public void testFilledOrOpenedOrdersHasBuyOrder() {
                 final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
-                assertTrue(filledOrOpenedOrders.contains(buyOrder));
+                assertTrue(filledOrOpenedOrders.contains(buyOrderEURUSD));
             }
 
             public class AddingSellOrder {
 
                 @Before
                 public void setUp() {
-                    orderUtilForTest.setState(sellOrder, IOrder.State.FILLED);
+                    orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.FILLED);
 
-                    position.addOrder(sellOrder);
+                    position.addOrder(sellOrderEURUSD);
                 }
 
                 @Test
                 public void testPositionHasBuyAndSellOrder() {
-                    assertTrue(position.contains(buyOrder));
-                    assertTrue(position.contains(sellOrder));
+                    assertTrue(position.contains(buyOrderEURUSD));
+                    assertTrue(position.contains(sellOrderEURUSD));
                 }
 
                 @Test
@@ -168,62 +165,61 @@ public class PositionTest extends InstrumentUtilForTest {
 
                 @Test
                 public void testExposureIsSignedAmount() {
-                    final double buyAmount = OrderStaticUtil.signedAmount(buyOrder);
-                    final double sellAmount = OrderStaticUtil.signedAmount(sellOrder);
+                    final double buyAmount = OrderStaticUtil.signedAmount(buyOrderEURUSD);
+                    final double sellAmount = OrderStaticUtil.signedAmount(sellOrderEURUSD);
                     assertThat(position.signedExposure(), equalTo(buyAmount + sellAmount));
                 }
 
                 @Test
                 public void testOrdersHasBuyAndSellOrder() {
                     final Set<IOrder> orders = position.all();
-                    assertTrue(orders.contains(buyOrder));
-                    assertTrue(orders.contains(sellOrder));
+                    assertTrue(orders.contains(buyOrderEURUSD));
+                    assertTrue(orders.contains(sellOrderEURUSD));
                 }
 
                 @Test
                 public void testOrdersAreNotProcessing() {
                     final Set<IOrder> notProcessingOrders =
                             position.notProcessingOrders(order -> true);
-                    assertTrue(notProcessingOrders.contains(buyOrder));
-                    assertTrue(notProcessingOrders.contains(sellOrder));
+                    assertTrue(notProcessingOrders.contains(buyOrderEURUSD));
+                    assertTrue(notProcessingOrders.contains(sellOrderEURUSD));
                 }
 
                 @Test
                 public void testFilledOrdersHasBuyAndSellOrder() {
                     final Set<IOrder> filledOrders = position.filled();
-                    assertTrue(filledOrders.contains(buyOrder));
-                    assertTrue(filledOrders.contains(sellOrder));
+                    assertTrue(filledOrders.contains(buyOrderEURUSD));
+                    assertTrue(filledOrders.contains(sellOrderEURUSD));
                 }
 
                 @Test
                 public void testFilledOrOpenedOrdersHasBuyAndSellOrder() {
                     final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
-                    assertTrue(filledOrOpenedOrders.contains(buyOrder));
-                    assertTrue(filledOrOpenedOrders.contains(sellOrder));
+                    assertTrue(filledOrOpenedOrders.contains(buyOrderEURUSD));
+                    assertTrue(filledOrOpenedOrders.contains(sellOrderEURUSD));
                 }
 
                 @Test
                 public void testMarkingOrdersActiveOnlyAffectsPassedOrders() {
-                    position.markOrdersActive(Sets.newHashSet(buyOrder,
-                                                              orderUtilForTest.orderAUDUSD()));
+                    position.markOrdersActive(Sets.newHashSet(buyOrderEURUSD, sellOrderAUDUSD));
 
                     final Set<IOrder> notProcessingOrders =
                             position.notProcessingOrders(order -> true);
                     assertThat(notProcessingOrders.size(), equalTo(1));
-                    assertTrue(notProcessingOrders.contains(sellOrder));
+                    assertTrue(notProcessingOrders.contains(sellOrderEURUSD));
                 }
 
                 public class MarkingOrdersActive {
 
                     @Before
                     public void setUp() {
-                        position.markOrdersActive(Sets.newHashSet(buyOrder, sellOrder));
+                        position.markOrdersActive(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
                     }
 
                     @Test
                     public void testPositionHasBuyAndSellOrder() {
-                        assertTrue(position.contains(buyOrder));
-                        assertTrue(position.contains(sellOrder));
+                        assertTrue(position.contains(buyOrderEURUSD));
+                        assertTrue(position.contains(sellOrderEURUSD));
                     }
 
                     @Test
@@ -238,16 +234,16 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testExposureIsSignedAmount() {
-                        final double buyAmount = OrderStaticUtil.signedAmount(buyOrder);
-                        final double sellAmount = OrderStaticUtil.signedAmount(sellOrder);
+                        final double buyAmount = OrderStaticUtil.signedAmount(buyOrderEURUSD);
+                        final double sellAmount = OrderStaticUtil.signedAmount(sellOrderEURUSD);
                         assertThat(position.signedExposure(), equalTo(buyAmount + sellAmount));
                     }
 
                     @Test
                     public void testOrdersHasBuyAndSellOrder() {
                         final Set<IOrder> orders = position.all();
-                        assertTrue(orders.contains(buyOrder));
-                        assertTrue(orders.contains(sellOrder));
+                        assertTrue(orders.contains(buyOrderEURUSD));
+                        assertTrue(orders.contains(sellOrderEURUSD));
                     }
 
                     @Test
@@ -271,42 +267,41 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testCloseOnTPRemovesOrderAlsoWhenMarkedActive() {
-                        orderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
-                        sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_TP);
+                        orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.CLOSED);
+                        sendOrderEvent(sellOrderEURUSD, OrderEventType.CLOSED_BY_TP);
 
-                        assertFalse(position.contains(sellOrder));
+                        assertFalse(position.contains(sellOrderEURUSD));
                     }
 
                     @Test
                     public void testCloseOnSLRemovesOrderAlsoWhenMarkedActive() {
-                        orderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
-                        sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_SL);
+                        orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.CLOSED);
+                        sendOrderEvent(sellOrderEURUSD, OrderEventType.CLOSED_BY_SL);
 
-                        assertFalse(position.contains(sellOrder));
+                        assertFalse(position.contains(sellOrderEURUSD));
                     }
 
                     @Test
                     public void testMarkingOrdersIdleOnlyAffectsPassedOrders() {
-                        position.markOrdersIdle(Sets.newHashSet(buyOrder,
-                                                                orderUtilForTest.orderAUDUSD()));
+                        position.markOrdersIdle(Sets.newHashSet(buyOrderEURUSD, sellOrderAUDUSD));
 
                         final Set<IOrder> notProcessingOrders =
                                 position.notProcessingOrders(order -> true);
                         assertThat(notProcessingOrders.size(), equalTo(1));
-                        assertTrue(notProcessingOrders.contains(buyOrder));
+                        assertTrue(notProcessingOrders.contains(buyOrderEURUSD));
                     }
 
                     public class MarkingOrdersIDLE {
 
                         @Before
                         public void setUp() {
-                            position.markOrdersIdle(Sets.newHashSet(buyOrder, sellOrder));
+                            position.markOrdersIdle(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
                         }
 
                         @Test
                         public void testPositionHasBuyAndSellOrder() {
-                            assertTrue(position.contains(buyOrder));
-                            assertTrue(position.contains(sellOrder));
+                            assertTrue(position.contains(buyOrderEURUSD));
+                            assertTrue(position.contains(sellOrderEURUSD));
                         }
 
                         @Test
@@ -321,83 +316,83 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         @Test
                         public void testExposureIsSignedAmount() {
-                            final double buyAmount = OrderStaticUtil.signedAmount(buyOrder);
-                            final double sellAmount = OrderStaticUtil.signedAmount(sellOrder);
+                            final double buyAmount = OrderStaticUtil.signedAmount(buyOrderEURUSD);
+                            final double sellAmount = OrderStaticUtil.signedAmount(sellOrderEURUSD);
                             assertThat(position.signedExposure(), equalTo(buyAmount + sellAmount));
                         }
 
                         @Test
                         public void testOrdersHasBuyAndSellOrder() {
                             final Set<IOrder> orders = position.all();
-                            assertTrue(orders.contains(buyOrder));
-                            assertTrue(orders.contains(sellOrder));
+                            assertTrue(orders.contains(buyOrderEURUSD));
+                            assertTrue(orders.contains(sellOrderEURUSD));
                         }
 
                         @Test
                         public void testOrdersAreIDLE() {
                             final Set<IOrder> notProcessingOrders =
                                     position.notProcessingOrders(order -> true);
-                            assertTrue(notProcessingOrders.contains(buyOrder));
-                            assertTrue(notProcessingOrders.contains(sellOrder));
+                            assertTrue(notProcessingOrders.contains(buyOrderEURUSD));
+                            assertTrue(notProcessingOrders.contains(sellOrderEURUSD));
                         }
 
                         @Test
                         public void filledOrdersContainsBuyAndSellOrderSinceAllAreIDLE() {
                             final Set<IOrder> filledOrders = position.filled();
-                            assertTrue(filledOrders.contains(buyOrder));
-                            assertTrue(filledOrders.contains(sellOrder));
+                            assertTrue(filledOrders.contains(buyOrderEURUSD));
+                            assertTrue(filledOrders.contains(sellOrderEURUSD));
                         }
 
                         @Test
                         public void filledOrOpenedOrdersContainsBuyAndSellOrderSinceAllAreIDLE() {
                             final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
-                            assertTrue(filledOrOpenedOrders.contains(buyOrder));
-                            assertTrue(filledOrOpenedOrders.contains(sellOrder));
+                            assertTrue(filledOrOpenedOrders.contains(buyOrderEURUSD));
+                            assertTrue(filledOrOpenedOrders.contains(sellOrderEURUSD));
                         }
 
                         @Test
                         public void testCloseOnTPRemovesOrderAlsoWhenMarkedActive() {
-                            orderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
-                            sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_TP);
+                            orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.CLOSED);
+                            sendOrderEvent(sellOrderEURUSD, OrderEventType.CLOSED_BY_TP);
 
-                            assertFalse(position.contains(sellOrder));
+                            assertFalse(position.contains(sellOrderEURUSD));
                         }
 
                         @Test
                         public void testCloseOnSLRemovesOrderAlsoWhenMarkedActive() {
-                            orderUtilForTest.setState(sellOrder, IOrder.State.CLOSED);
-                            sendOrderEvent(sellOrder, OrderEventType.CLOSED_BY_SL);
+                            orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.CLOSED);
+                            sendOrderEvent(sellOrderEURUSD, OrderEventType.CLOSED_BY_SL);
 
-                            assertFalse(position.contains(sellOrder));
+                            assertFalse(position.contains(sellOrderEURUSD));
                         }
                     }
                 }
 
                 private void assertBuyOrderRemoval(final OrderEventType orderEventType) {
-                    sendOrderEvent(buyOrder, orderEventType);
+                    sendOrderEvent(buyOrderEURUSD, orderEventType);
 
-                    assertFalse(position.contains(buyOrder));
+                    assertFalse(position.contains(buyOrderEURUSD));
                     assertThat(position.size(), equalTo(1));
                     assertThat(position.direction(), equalTo(OrderDirection.SHORT));
 
-                    final double sellAmount = OrderStaticUtil.signedAmount(sellOrder);
+                    final double sellAmount = OrderStaticUtil.signedAmount(sellOrderEURUSD);
                     assertThat(position.signedExposure(), equalTo(sellAmount));
 
                     final Set<IOrder> orders = position.all();
-                    assertTrue(orders.contains(sellOrder));
+                    assertTrue(orders.contains(sellOrderEURUSD));
 
                     final Set<IOrder> filledOrders = position.filled();
-                    assertTrue(filledOrders.contains(sellOrder));
+                    assertTrue(filledOrders.contains(sellOrderEURUSD));
 
                     final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
-                    assertTrue(filledOrOpenedOrders.contains(sellOrder));
+                    assertTrue(filledOrOpenedOrders.contains(sellOrderEURUSD));
                 }
 
                 public class RemovingEventsWhenOrderIsClosed {
 
                     @Before
                     public void setUp() {
-                        orderUtilForTest.setState(buyOrder, IOrder.State.CLOSED);
+                        orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.CLOSED);
                     }
 
                     @Test
@@ -428,7 +423,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                 @Test
                 public void RemovingEventsWhenOrderIsCanceledIsCloseOK() {
-                    orderUtilForTest.setState(buyOrder, IOrder.State.CANCELED);
+                    orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.CANCELED);
 
                     assertBuyOrderRemoval(OrderEventType.FILL_REJECTED);
                 }

@@ -17,8 +17,7 @@ public class MergeCommandTest extends CommonCommandForTest {
 
     private final String mergeOrderLabel = "mergeOrderLabel";
     private final Collection<IOrder> toMergeOrders =
-            Sets.newHashSet(orderUtilForTest.buyOrderEURUSD(),
-                            orderUtilForTest.sellOrderEURUSD());
+            Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Before
     public void setUp() {

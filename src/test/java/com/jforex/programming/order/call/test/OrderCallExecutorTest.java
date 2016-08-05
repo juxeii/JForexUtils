@@ -29,7 +29,6 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
     @Mock
     private Future<IOrder> futureMock;
     private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
-    private final IOrder orderForTest = orderUtilForTest.buyOrderEURUSD();
     private final Runnable executorCall =
             () -> orderCallExecutor
                     .callObservable(orderCallMock)
@@ -43,9 +42,9 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
     }
 
     private void setUpMocks() throws Exception {
-        when(orderCallMock.call()).thenReturn(orderForTest);
+        when(orderCallMock.call()).thenReturn(buyOrderEURUSD);
 
-        when(futureMock.get()).thenReturn(orderForTest);
+        when(futureMock.get()).thenReturn(buyOrderEURUSD);
 
         when(contextMock.executeTask(orderCallMock)).thenReturn(futureMock);
     }
@@ -63,7 +62,7 @@ public class OrderCallExecutorTest extends CommonUtilForTest {
         orderSubscriber.assertNoErrors();
         orderSubscriber.assertValueCount(1);
 
-        assertThat(orderSubscriber.getOnNextEvents().get(0), equalTo(orderForTest));
+        assertThat(orderSubscriber.getOnNextEvents().get(0), equalTo(buyOrderEURUSD));
     }
 
     public class OnStrategyThread {

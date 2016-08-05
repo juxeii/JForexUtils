@@ -338,7 +338,7 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         final Predicate<IOrder> predicate = instrumentPredicate.apply(instrumentEURUSD);
 
         assertTrue(predicate.test(buyOrderEURUSD));
-        assertFalse(predicate.test(orderUtilForTest.orderAUDUSD()));
+        assertFalse(predicate.test(orderUtilForTest.sellOrderAUDUSD()));
 
         assertTrue(ofInstrument(instrumentEURUSD).test(buyOrderEURUSD));
         assertFalse(ofInstrument(instrumentAUDUSD).test(buyOrderEURUSD));
@@ -433,16 +433,12 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void testSignedAmountForPositiveParamsAmount() {
-        final OrderParams orderParams = orderUtilForTest.paramsBuyEURUSD();
-
-        assertThat(signedAmount(orderParams), equalTo(orderParams.amount()));
+        assertThat(signedAmount(buyParamsEURUSD), equalTo(buyParamsEURUSD.amount()));
     }
 
     @Test
     public void testSignedAmountForNegativeParamsAmount() {
-        final OrderParams orderParams = orderUtilForTest.paramsSellEURUSD();
-
-        assertThat(signedAmount(orderParams), equalTo(-orderParams.amount()));
+        assertThat(signedAmount(sellParamsEURUSD), equalTo(-sellParamsEURUSD.amount()));
     }
 
     @Test
@@ -608,7 +604,6 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
     public class AdaptedOrderParams {
 
-        private final OrderParams orderParams = orderUtilForTest.paramsBuyEURUSD();
         private OrderParams adaptedOrderParams;
 
         private void assertAdaptedOrderParams(final OrderCommand orderCommand,
@@ -621,14 +616,14 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
         @Test
         public void adaptedOrderParamsForPositiveAmountIsCorrect() {
-            adaptedOrderParams = adaptedOrderParamsForSignedAmount(orderParams, 0.12);
+            adaptedOrderParams = adaptedOrderParamsForSignedAmount(buyParamsEURUSD, 0.12);
 
             assertAdaptedOrderParams(OrderCommand.BUY, 0.12);
         }
 
         @Test
         public void adaptedOrderParamsForNegativeAmountIsCorrect() {
-            adaptedOrderParams = adaptedOrderParamsForSignedAmount(orderParams, -0.12);
+            adaptedOrderParams = adaptedOrderParamsForSignedAmount(buyParamsEURUSD, -0.12);
 
             assertAdaptedOrderParams(OrderCommand.SELL, 0.12);
         }

@@ -180,7 +180,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void eventOfOtherOrderIsIgnored() {
-                sendOrderEvent(orderUtilForTest.orderAUDUSD(), OrderEventType.CLOSE_OK);
+                sendOrderEvent(orderUtilForTest.sellOrderAUDUSD(), OrderEventType.CLOSE_OK);
 
                 subscriber.assertNotCompleted();
             }

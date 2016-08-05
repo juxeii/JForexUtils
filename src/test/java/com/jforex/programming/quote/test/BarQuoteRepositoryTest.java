@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.dukascopy.api.IBar;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
@@ -51,25 +50,17 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
 
         public class AfterReceivedBars {
 
-            private final IBar newEURUSDBar = mock(IBar.class);
-            private final BarQuote newEURUSDQuote = new BarQuote(newEURUSDBar,
-                                                                 askBarEURUSDParams);
-
-            private final IBar newAUDUSDBar = mock(IBar.class);
-            private final BarQuote newAUDUSDQuote = new BarQuote(newAUDUSDBar,
-                                                                 askBarAUDUSDParams);
-
             @Before
             public void setUp() {
-                quoteObservable.onNext(newEURUSDQuote);
-                quoteObservable.onNext(newAUDUSDQuote);
+                quoteObservable.onNext(askBarQuoteEURUSD);
+                quoteObservable.onNext(askBarQuoteAUDUSD);
             }
 
             @Test
             public void quoteForEURUSDComesFromObservable() {
                 final BarQuote receivedQuoteEURUSD = barQuoteRepository.get(askBarEURUSDParams);
 
-                assertEqualBarQuotes(receivedQuoteEURUSD, newEURUSDQuote);
+                assertEqualBarQuotes(receivedQuoteEURUSD, askBarQuoteEURUSD);
                 verifyNoMoreInteractions(historyMock);
             }
 
@@ -77,7 +68,7 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
             public void quoteForAUDUSDComesFromObservable() {
                 final BarQuote receivedQuoteAUDUSD = barQuoteRepository.get(askBarAUDUSDParams);
 
-                assertEqualBarQuotes(receivedQuoteAUDUSD, newAUDUSDQuote);
+                assertEqualBarQuotes(receivedQuoteAUDUSD, askBarQuoteAUDUSD);
                 verifyNoMoreInteractions(historyMock);
             }
         }

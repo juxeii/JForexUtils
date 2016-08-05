@@ -90,18 +90,18 @@ public class OrderUtilForTest {
     }
 
     public final IOrder buyOrderEURUSD() {
-        return spyFromParams(paramsBuyEURUSD());
+        return spyFromParams(buyParamsEURUSD());
     }
 
     public final IOrder sellOrderEURUSD() {
-        return spyFromParams(paramsSellEURUSD());
+        return spyFromParams(sellParamsEURUSD());
     }
 
-    public final IOrder orderAUDUSD() {
-        return spyFromParams(paramsSellAUDUSD());
+    public final IOrder sellOrderAUDUSD() {
+        return spyFromParams(sellParamsAUDUSD());
     }
 
-    public final OrderParams paramsBuyEURUSD() {
+    public final OrderParams buyParamsEURUSD() {
         return OrderParams
                 .forInstrument(Instrument.EURUSD)
                 .withOrderCommand(OrderCommand.BUY)
@@ -116,7 +116,7 @@ public class OrderUtilForTest {
                 .build();
     }
 
-    public final OrderParams paramsSellEURUSD() {
+    public final OrderParams sellParamsEURUSD() {
         return OrderParams
                 .forInstrument(Instrument.EURUSD)
                 .withOrderCommand(OrderCommand.SELL)
@@ -131,7 +131,7 @@ public class OrderUtilForTest {
                 .build();
     }
 
-    public OrderParams paramsSellAUDUSD() {
+    public OrderParams sellParamsAUDUSD() {
         return OrderParams
                 .forInstrument(Instrument.AUDUSD)
                 .withOrderCommand(OrderCommand.SELL)

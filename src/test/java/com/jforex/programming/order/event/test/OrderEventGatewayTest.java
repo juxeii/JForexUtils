@@ -28,7 +28,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Mock
     private OrderEventMapper orderEventMapperMock;
-    private final IOrder orderUnderTest = orderUtilForTest.buyOrderEURUSD();
+    private final IOrder orderUnderTest = buyOrderEURUSD;
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
     private final Subject<IMessage, IMessage> messageSubject = PublishSubject.create();
     private final IMessage message = mockForIMessage(orderUnderTest,

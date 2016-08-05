@@ -28,8 +28,8 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
 
     private final Map<Instrument, TickQuote> historyQuotes = new HashMap<>();
     private final Subject<TickQuote, TickQuote> quoteObservable = PublishSubject.create();
-    private final Set<Instrument> subscribedInstruments =
-            Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD);
+    private final Set<Instrument> subscribedInstruments = Sets.newHashSet(instrumentEURUSD,
+                                                                          instrumentAUDUSD);
 
     @Before
     public void setUp() {

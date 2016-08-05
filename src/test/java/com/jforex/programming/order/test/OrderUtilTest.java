@@ -58,7 +58,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private ArgumentCaptor<OrderCallCommand> callCommandCaptor;
     @Captor
     private ArgumentCaptor<OrderParams> paramsCaptor;
-    private final OrderParams orderParams = orderUtilForTest.paramsBuyEURUSD();
     private final String mergeOrderLabel = "MergeLabel";
     private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
     private final OrderEvent submitOKEvent = new OrderEvent(buyOrderEURUSD, OrderEventType.SUBMIT_OK);
@@ -142,7 +141,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 submitAndMergeCall = () -> orderUtil
-                        .submitAndMergePosition(mergeOrderLabel, orderParams)
+                        .submitAndMergePosition(mergeOrderLabel, buyParamsEURUSD)
                         .subscribe(orderEventSubscriber);
             }
 
@@ -152,7 +151,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 submitAndMergeCall.run();
 
-                verify(orderUtil).submitOrder(orderParams);
+                verify(orderUtil).submitOrder(buyParamsEURUSD);
                 verify(orderUtil, never()).mergeOrders(eq(mergeOrderLabel), any());
             }
 
@@ -162,7 +161,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 submitAndMergeCall.run();
 
-                verify(orderUtil).submitOrder(orderParams);
+                verify(orderUtil).submitOrder(buyParamsEURUSD);
                 verify(orderUtil).mergeOrders(eq(mergeOrderLabel), any());
             }
         }
@@ -172,7 +171,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             setOrderUtilHandlerMockResult(eventObservable(submitOKEvent));
 
             orderUtil
-                    .submitOrder(orderParams)
+                    .submitOrder(buyParamsEURUSD)
                     .subscribe(orderEventSubscriber);
 
             verifyZeroInteractions(positionMock);
@@ -188,7 +187,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 setOrderUtilHandlerMockResult(eventObservable(submitDoneEvent));
 
                 orderUtil
-                        .submitOrder(orderParams)
+                        .submitOrder(buyParamsEURUSD)
                         .subscribe(orderEventSubscriber);
             }
 
@@ -224,7 +223,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                     .thenReturn(eventObservable(submitOKEvent));
 
             orderUtil
-                    .submitAndMergePositionToParams(mergeOrderLabel, orderParams)
+                    .submitAndMergePositionToParams(mergeOrderLabel, buyParamsEURUSD)
                     .subscribe(orderEventSubscriber);
 
             verify(orderUtil).submitAndMergePosition(eq(mergeOrderLabel),
@@ -253,7 +252,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         public void whenPositionHasNoExposureOrderParamsAreTaken() {
             callAndVerifyMergeInvocation(0.0);
 
-            assertAdaptedOrderParams(orderParams.orderCommand(), orderParams.amount());
+            assertAdaptedOrderParams(buyParamsEURUSD.orderCommand(), buyParamsEURUSD.amount());
         }
 
         @Test

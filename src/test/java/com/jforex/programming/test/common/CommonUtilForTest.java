@@ -34,6 +34,7 @@ import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderMessageData;
+import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -89,8 +90,11 @@ public class CommonUtilForTest extends BDDMockito {
                                                                                            pin);
 
     protected static final OrderUtilForTest orderUtilForTest = new OrderUtilForTest();
+    protected final OrderParams buyParamsEURUSD = orderUtilForTest.buyParamsEURUSD();
+    protected final OrderParams sellParamsEURUSD = orderUtilForTest.sellParamsEURUSD();
     protected final IOrder buyOrderEURUSD = orderUtilForTest.buyOrderEURUSD();
     protected final IOrder sellOrderEURUSD = orderUtilForTest.sellOrderEURUSD();
+    protected final IOrder sellOrderAUDUSD = orderUtilForTest.sellOrderAUDUSD();
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
     protected static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     protected static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);

@@ -6,17 +6,14 @@ import static org.junit.Assert.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SubmitCommandTest extends CommonCommandForTest {
 
-    private final OrderParams orderParams = orderUtilForTest.paramsBuyEURUSD();
-
     @Before
     public void setUp() {
-        command = new SubmitCommand(orderParams, engineMock);
+        command = new SubmitCommand(buyParamsEURUSD, engineMock);
         command.logOnSubscribe();
         command.logOnError(jfException);
         command.logOnCompleted();
@@ -24,29 +21,29 @@ public class SubmitCommandTest extends CommonCommandForTest {
 
     @Test
     public void callableIsCorrect() throws Exception {
-        when(engineMock.submitOrder(orderParams.label(),
-                                    orderParams.instrument(),
-                                    orderParams.orderCommand(),
-                                    orderParams.amount(),
-                                    orderParams.price(),
-                                    orderParams.slippage(),
-                                    orderParams.stopLossPrice(),
-                                    orderParams.takeProfitPrice(),
-                                    orderParams.goodTillTime(),
-                                    orderParams.comment())).thenReturn(orderForTest);
+        when(engineMock.submitOrder(buyParamsEURUSD.label(),
+                                    buyParamsEURUSD.instrument(),
+                                    buyParamsEURUSD.orderCommand(),
+                                    buyParamsEURUSD.amount(),
+                                    buyParamsEURUSD.price(),
+                                    buyParamsEURUSD.slippage(),
+                                    buyParamsEURUSD.stopLossPrice(),
+                                    buyParamsEURUSD.takeProfitPrice(),
+                                    buyParamsEURUSD.goodTillTime(),
+                                    buyParamsEURUSD.comment())).thenReturn(orderForTest);
 
         assertCallableOrder();
 
-        verify(engineMock).submitOrder(orderParams.label(),
-                                       orderParams.instrument(),
-                                       orderParams.orderCommand(),
-                                       orderParams.amount(),
-                                       orderParams.price(),
-                                       orderParams.slippage(),
-                                       orderParams.stopLossPrice(),
-                                       orderParams.takeProfitPrice(),
-                                       orderParams.goodTillTime(),
-                                       orderParams.comment());
+        verify(engineMock).submitOrder(buyParamsEURUSD.label(),
+                                       buyParamsEURUSD.instrument(),
+                                       buyParamsEURUSD.orderCommand(),
+                                       buyParamsEURUSD.amount(),
+                                       buyParamsEURUSD.price(),
+                                       buyParamsEURUSD.slippage(),
+                                       buyParamsEURUSD.stopLossPrice(),
+                                       buyParamsEURUSD.takeProfitPrice(),
+                                       buyParamsEURUSD.goodTillTime(),
+                                       buyParamsEURUSD.comment());
     }
 
     @Test

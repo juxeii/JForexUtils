@@ -27,7 +27,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
     private OrderEventMapper orderEventMapper;
 
-    private final IOrder orderForTest = orderUtilForTest.buyOrderEURUSD();
+    private final IOrder orderForTest = buyOrderEURUSD;
 
     @Before
     public void setUp() {
@@ -267,7 +267,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
     @Test
     public void notRegisteredOrderGetsOnlyChangeRejected() {
         registerCallRequest(OrderCallReason.CHANGE_LABEL);
-        final OrderMessageData messageData = messageData(orderUtilForTest.orderAUDUSD(),
+        final OrderMessageData messageData = messageData(orderUtilForTest.sellOrderAUDUSD(),
                                                          IMessage.Type.ORDER_CHANGED_REJECTED,
                                                          Sets.newHashSet());
 
