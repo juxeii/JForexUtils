@@ -29,7 +29,7 @@ public class OrderUtilHandler {
     public Observable<OrderEvent> callObservable(final OrderCallCommand command) {
         final OrderEventTypeData orderEventTypeData = command.orderEventTypeData();
         return taskExecutor
-            .onStrategyThreadIfNeeded(command.callable())
+            .onStrategyThread(command.callable())
             .doOnSubscribe(command::logOnSubscribe)
             .doOnNext(order -> registerOrder(order, orderEventTypeData.callReason()))
             .flatMap(order -> gatewayObservable(order, orderEventTypeData))

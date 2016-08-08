@@ -14,14 +14,10 @@ public class TaskExecutor {
         this.context = context;
     }
 
-    public <T> Observable<T> onStrategyThreadIfNeeded(final Callable<T> callable) {
+    public <T> Observable<T> onStrategyThread(final Callable<T> callable) {
         return JForexUtil.isStrategyThread()
                 ? onCurrentThread(callable)
-                : onStrategyThread(callable);
-    }
-
-    public <T> Observable<T> onStrategyThread(final Callable<T> callable) {
-        return Observable.defer(() -> Observable.from(context.executeTask(callable)));
+                : Observable.defer(() -> Observable.from(context.executeTask(callable)));
     }
 
     public <T> Observable<T> onCurrentThread(final Callable<T> callable) {

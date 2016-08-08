@@ -62,7 +62,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         setStrategyThread();
         orderUtilForTest.setState(orderToClose, IOrder.State.FILLED);
 
-        when(taskExecutorMock.onStrategyThreadIfNeeded(any()))
+        when(taskExecutorMock.onStrategyThread(any()))
             .thenReturn(Observable.fromCallable(command.callable()));
     }
 
