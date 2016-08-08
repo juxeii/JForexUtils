@@ -15,8 +15,8 @@ import org.mockito.Mockito;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
+import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.call.OrderCallExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -39,7 +39,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private OrderUtilHandler orderUtilHandler;
 
     @Mock
-    private OrderCallExecutor orderCallExecutorMock;
+    private TaskExecutor taskExecutorMock;
     @Mock
     private OrderEventGateway orderEventGatewayMock;
     @Captor
@@ -55,15 +55,15 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        orderUtilHandler = new OrderUtilHandler(orderCallExecutorMock, orderEventGatewayMock);
+        orderUtilHandler = new OrderUtilHandler(taskExecutorMock, orderEventGatewayMock);
     }
 
     public void setUpMocks() {
         setStrategyThread();
         orderUtilForTest.setState(orderToClose, IOrder.State.FILLED);
 
-        when(orderCallExecutorMock.callObservable(any()))
-                .thenReturn(Observable.fromCallable(command.callable()));
+        when(taskExecutorMock.onStrategyThreadIfNeeded(any()))
+            .thenReturn(Observable.fromCallable(command.callable()));
     }
 
     private void sendOrderEvent(final IOrder order,
@@ -75,8 +75,8 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
         private final Runnable closeCall =
                 () -> orderUtilHandler
-                        .callObservable(command)
-                        .subscribe(subscriber);
+                    .callObservable(command)
+                    .subscribe(subscriber);
 
         @Before
         public void setUp() {
@@ -87,9 +87,10 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() throws JFException {
-                Mockito.doThrow(jfException)
-                        .when(orderToClose)
-                        .close();
+                Mockito
+                    .doThrow(jfException)
+                    .when(orderToClose)
+                    .close();
 
                 closeCall.run();
             }
@@ -103,7 +104,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             @Test
             public void testOrderIsNotRegisteredAtGateway() {
                 verify(orderEventGatewayMock, never())
-                        .registerOrderCallRequest(any());
+                    .registerOrderCallRequest(any());
             }
         }
 
@@ -144,7 +145,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             @Test
             public void testOrderRegisteredAtGateway() throws Exception {
                 verify(orderEventGatewayMock)
-                        .registerOrderCallRequest(callRequestCaptor.capture());
+                    .registerOrderCallRequest(callRequestCaptor.capture());
 
                 final OrderCallRequest callRequest = callRequestCaptor.getValue();
                 assertThat(callRequest.order(), equalTo(orderToClose));
