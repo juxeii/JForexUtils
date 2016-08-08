@@ -137,11 +137,11 @@ public final class OrderParams implements Cloneable {
     }
 
     private static class Builder implements
-                                 WithOrderCommand,
-                                 WithAmount,
-                                 WithLabel,
-                                 WithOptions,
-                                 Clone {
+            WithOrderCommand,
+            WithAmount,
+            WithLabel,
+            WithOptions,
+            Clone {
 
         private String label;
         private Instrument instrument;
@@ -184,67 +184,67 @@ public final class OrderParams implements Cloneable {
         }
 
         @Override
-        public Builder withLabel(final String label) {
+        public final Builder withLabel(final String label) {
             this.label = checkNotNull(label);
             return this;
         }
 
         @Override
-        public Builder forInstrument(final Instrument instrument) {
+        public final Builder forInstrument(final Instrument instrument) {
             this.instrument = checkNotNull(instrument);
             return this;
         }
 
         @Override
-        public Builder withOrderCommand(final OrderCommand orderCommand) {
+        public final Builder withOrderCommand(final OrderCommand orderCommand) {
             this.orderCommand = checkNotNull(orderCommand);
             return this;
         }
 
         @Override
-        public Builder withAmount(final double amount) {
+        public final Builder withAmount(final double amount) {
             this.amount = amount;
             return this;
         }
 
         @Override
-        public Builder price(final double price) {
+        public final Builder price(final double price) {
             this.price = price;
             return this;
         }
 
         @Override
-        public Builder slippage(final double slippage) {
+        public final Builder slippage(final double slippage) {
             this.slippage = slippage;
             return this;
         }
 
         @Override
-        public Builder stopLossPrice(final double stopLossPrice) {
+        public final Builder stopLossPrice(final double stopLossPrice) {
             this.stopLossPrice = stopLossPrice;
             return this;
         }
 
         @Override
-        public Builder takeProfitPrice(final double takeProfitPrice) {
+        public final Builder takeProfitPrice(final double takeProfitPrice) {
             this.takeProfitPrice = takeProfitPrice;
             return this;
         }
 
         @Override
-        public Builder goodTillTime(final long goodTillTime) {
+        public final Builder goodTillTime(final long goodTillTime) {
             this.goodTillTime = goodTillTime;
             return this;
         }
 
         @Override
-        public Builder comment(final String comment) {
+        public final Builder comment(final String comment) {
             this.comment = checkNotNull(comment);
             return this;
         }
 
         @Override
-        public OrderParams build() {
+        public final OrderParams build() {
             return new OrderParams(this);
         }
     }
