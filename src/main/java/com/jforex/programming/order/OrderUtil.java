@@ -131,8 +131,7 @@ public class OrderUtil {
             .doOnSubscribe(() -> logger.info("Starting position merge for " +
                     instrument + " with label " + mergeOrderLabel))
             .doOnError(e -> logger.error("Position merge for " + instrument
-                    + "  with label " + mergeOrderLabel + " failed!" +
-                    "Exception: " + e.getMessage()))
+                    + "  with label " + mergeOrderLabel + " failed!" + "Exception: " + e.getMessage()))
             .doOnCompleted(() -> logger.info("Position merge for " + instrument
                     + "  with label " + mergeOrderLabel + " was successful."));
     }
@@ -173,37 +172,51 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        return changeObservable(new CloseCommand(orderToClose));
+        final OrderChangeCommand<?> command =
+                new CloseCommand(checkNotNull(orderToClose));
+        return changeObservable(command);
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
                                            final String newLabel) {
-        return changeObservable(new SetLabelCommand(orderToChangeLabel, newLabel));
+        final OrderChangeCommand<?> command =
+                new SetLabelCommand(checkNotNull(orderToChangeLabel), newLabel);
+        return changeObservable(command);
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
                                                   final long newGTT) {
-        return changeObservable(new SetGTTCommand(orderToChangeGTT, newGTT));
+        final OrderChangeCommand<?> command =
+                new SetGTTCommand(checkNotNull(orderToChangeGTT), newGTT);
+        return changeObservable(command);
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
-        return changeObservable(new SetOpenPriceCommand(orderToChangeOpenPrice, newOpenPrice));
+        final OrderChangeCommand<?> command =
+                new SetOpenPriceCommand(checkNotNull(orderToChangeOpenPrice), newOpenPrice);
+        return changeObservable(command);
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
                                                      final double newRequestedAmount) {
-        return changeObservable(new SetAmountCommand(orderToChangeAmount, newRequestedAmount));
+        final OrderChangeCommand<?> command =
+                new SetAmountCommand(checkNotNull(orderToChangeAmount), newRequestedAmount);
+        return changeObservable(command);
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
                                                    final double newSL) {
-        return changeObservable(new SetSLCommand(orderToChangeSL, newSL));
+        final OrderChangeCommand<?> command =
+                new SetSLCommand(checkNotNull(orderToChangeSL), newSL);
+        return changeObservable(command);
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
                                                      final double newTP) {
-        return changeObservable(new SetTPCommand(orderToChangeTP, newTP));
+        final OrderChangeCommand<?> command =
+                new SetTPCommand(checkNotNull(orderToChangeTP), newTP);
+        return changeObservable(command);
     }
 
     private Observable<OrderEvent> changeObservable(final OrderChangeCommand<?> command) {
