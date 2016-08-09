@@ -57,16 +57,4 @@ public interface PlatformSettings extends Config {
     @Key("order.labelregex")
     @DefaultValue("\\w{1,256}")
     public String labelRegex();
-
-    @Key("order.maxretriesonfail")
-    @DefaultValue("3")
-    public int maxRetriesOnOrderFail();
-
-    @Key("order.retrydelayonfail")
-    @DefaultValue("1500")
-    public long delayOnOrderFailRetry();
-
-    @Key("env.logintimeoutseconds")
-    @DefaultValue("20")
-    public int logintimeoutseconds();
 }

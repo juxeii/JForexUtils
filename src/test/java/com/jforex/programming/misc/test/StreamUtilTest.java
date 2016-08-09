@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.aeonbits.owner.ConfigFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +22,6 @@ import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
@@ -50,16 +48,15 @@ public class StreamUtilTest extends CommonUtilForTest {
                 new OrderCallRejectException("Reject exception for test", rejectEvent);
         private Runnable retryCall;
 
-        private final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-        private final long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
-        private final int maxRetriesOnOrderFail = platformSettings.maxRetriesOnOrderFail();
+        private final long delayOnOrderFailRetry = userSettings.delayOnOrderFailRetry();
+        private final int maxRetriesOnOrderFail = userSettings.maxRetriesOnOrderFail();
 
         @Before
         public void setUp() {
             retryCall = () -> Observable
-                    .fromCallable(callableMock)
-                    .retryWhen(StreamUtil::retryOnRejectObservable)
-                    .subscribe(orderSubscriber);
+                .fromCallable(callableMock)
+                .retryWhen(StreamUtil::retryOnRejectObservable)
+                .subscribe(orderSubscriber);
         }
 
         @Test
@@ -80,8 +77,8 @@ public class StreamUtilTest extends CommonUtilForTest {
                 }
 
                 when(callableMock.call())
-                        .thenThrow(throwables)
-                        .thenReturn(buyOrderEURUSD);
+                    .thenThrow(throwables)
+                    .thenReturn(buyOrderEURUSD);
             }
 
             private void exceeAllRetries() throws Exception {
@@ -91,7 +88,7 @@ public class StreamUtilTest extends CommonUtilForTest {
                 }
 
                 when(callableMock.call())
-                        .thenThrow(throwables);
+                    .thenThrow(throwables);
             }
 
             @Test
@@ -129,7 +126,7 @@ public class StreamUtilTest extends CommonUtilForTest {
     @Test
     public void retryCounterObservableCountsCorrect() {
         final int maxRetries = 3;
-        final TestSubscriber<Integer> subscriber = new TestSubscriber<Integer>();
+        final TestSubscriber<Integer> subscriber = new TestSubscriber<>();
 
         StreamUtil.retryCounterObservable(maxRetries).subscribe(subscriber);
 
@@ -145,7 +142,7 @@ public class StreamUtilTest extends CommonUtilForTest {
 
     @Test
     public void waitObservableIsCorrect() {
-        final TestSubscriber<Long> subscriber = new TestSubscriber<Long>();
+        final TestSubscriber<Long> subscriber = new TestSubscriber<>();
 
         StreamUtil.waitObservable(1000L, TimeUnit.MILLISECONDS).subscribe(subscriber);
 
@@ -159,7 +156,7 @@ public class StreamUtilTest extends CommonUtilForTest {
     public void completableFromJFRunnableIsCorrect() throws Exception {
         final JFRunnable jfRunnableMock = mock(JFRunnable.class);
 
-        StreamUtil.CompletableFromJFRunnable(jfRunnableMock).subscribe();
+        StreamUtil.completableForJFRunnable(jfRunnableMock).subscribe();
 
         verify(jfRunnableMock).run();
     }
@@ -178,8 +175,8 @@ public class StreamUtilTest extends CommonUtilForTest {
         final Optional<Long> optional = Optional.of(1L);
 
         final List<Long> streamList = StreamUtil
-                .optionalStream(optional)
-                .collect(Collectors.toList());
+            .optionalStream(optional)
+            .collect(Collectors.toList());
 
         assertThat(streamList.size(), equalTo(1));
         assertThat(streamList.get(0), equalTo(1L));

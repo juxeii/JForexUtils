@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.jforex.programming.order.call.OrderCallRejectException;
-import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.settings.UserSettings;
 
 import rx.Completable;
 import rx.Observable;
@@ -22,19 +22,21 @@ public final class StreamUtil {
     private StreamUtil() {
     }
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    private static final long delayOnOrderFailRetry = platformSettings.delayOnOrderFailRetry();
-    private static final int maxRetriesOnOrderFail = platformSettings.maxRetriesOnOrderFail();
+    private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    private static final long delayOnOrderFailRetry = userSettings.delayOnOrderFailRetry();
+    private static final int maxRetriesOnOrderFail = userSettings.maxRetriesOnOrderFail();
+    private static final long delayOnHistoryFailRetry = userSettings.delayOnHistoryFailRetry();
+    private static final int maxRetriesOnHistoryFail = userSettings.maxRetriesOnHistoryFail();
     private static final Logger logger = LogManager.getLogger(StreamUtil.class);
 
     public static final Observable<Long> retryOnRejectObservable(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
-                .flatMap(StreamUtil::filterCallErrorType)
-                .zipWith(retryCounterObservable(maxRetriesOnOrderFail), Pair::of)
-                .flatMap(retryPair -> evaluateRetryPair(retryPair,
-                                                        delayOnOrderFailRetry,
-                                                        TimeUnit.MILLISECONDS,
-                                                        maxRetriesOnOrderFail));
+            .flatMap(StreamUtil::filterCallErrorType)
+            .zipWith(retryCounterObservable(maxRetriesOnOrderFail), Pair::of)
+            .flatMap(retryPair -> evaluateRetryPair(retryPair,
+                                                    delayOnOrderFailRetry,
+                                                    TimeUnit.MILLISECONDS,
+                                                    maxRetriesOnOrderFail));
     }
 
     private static final Observable<? extends Throwable> filterCallErrorType(final Throwable error) {
@@ -62,8 +64,8 @@ public final class StreamUtil {
     public static final Observable<Long> waitObservable(final long delay,
                                                         final TimeUnit timeUnit) {
         return Observable
-                .interval(delay, timeUnit)
-                .take(1);
+            .interval(delay, timeUnit)
+            .take(1);
     }
 
     private static final void logPositionTaskRetry(final OrderCallRejectException rejectException) {
@@ -78,7 +80,7 @@ public final class StreamUtil {
                 : Stream.empty();
     }
 
-    public static final Completable CompletableFromJFRunnable(final JFRunnable jfRunnable) {
+    public static final Completable completableForJFRunnable(final JFRunnable jfRunnable) {
         checkNotNull(jfRunnable);
 
         return Completable.fromCallable(() -> {
@@ -89,10 +91,10 @@ public final class StreamUtil {
 
     public static final Observable<Long> retryOnHistoryFailObservable(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
-                .zipWith(retryCounterObservable(5), Pair::of)
-                .flatMap(retryPair -> evaluateRetryPair(retryPair,
-                                                        500L,
-                                                        TimeUnit.MILLISECONDS,
-                                                        5));
+            .zipWith(retryCounterObservable(5), Pair::of)
+            .flatMap(retryPair -> evaluateRetryPair(retryPair,
+                                                    delayOnHistoryFailRetry,
+                                                    TimeUnit.MILLISECONDS,
+                                                    maxRetriesOnHistoryFail));
     }
 }

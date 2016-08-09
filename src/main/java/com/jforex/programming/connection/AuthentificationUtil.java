@@ -72,7 +72,7 @@ public class AuthentificationUtil {
                 ? loginRunnableWithPin(loginCredentials)
                 : loginRunnableNoPin(loginCredentials);
 
-        return StreamUtil.CompletableFromJFRunnable(connectRunnable);
+        return StreamUtil.completableForJFRunnable(connectRunnable);
     }
 
     private JFRunnable loginRunnableWithPin(final LoginCredentials loginCredentials) {
