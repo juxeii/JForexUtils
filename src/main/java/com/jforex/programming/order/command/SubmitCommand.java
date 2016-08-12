@@ -30,19 +30,16 @@ public final class SubmitCommand extends OrderCallCommand {
 
     @Override
     protected final String subscribeLog() {
-        return "Start submit task with label "
-                + orderLabel + " for " + instrument;
+        return "Start submit task with label " + orderLabel + " for " + instrument;
     }
 
     @Override
     protected final String errorLog(final Throwable t) {
-        return "Submit task with label " + orderLabel + " for "
-                + instrument + " failed!Exception: " + t.getMessage();
+        return "Submit task with label " + orderLabel + " for " + instrument + " failed!Exception: " + t.getMessage();
     }
 
     @Override
     protected final String completedLog() {
-        return "Submit task with label " + orderLabel + " for "
-                + instrument + " was successful.";
+        return "Submit task with label " + orderLabel + " for " + instrument + " was successful.";
     }
 }

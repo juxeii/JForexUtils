@@ -60,6 +60,7 @@ dependencies {
    testCompile 'org.mockito:mockito-all:1.10.19'
    testCompile 'info.solidsoft.mockito:mockito-java8:1.0.0-beta'
    testCompile 'junit:junit:4.12'
+   testCompile 'nl.jqno.equalsverifier:equalsverifier:2.1.5'
 }
 
 gradle.projectsEvaluated {

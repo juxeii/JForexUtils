@@ -248,4 +248,65 @@ public final class OrderParams implements Cloneable {
             return new OrderParams(this);
         }
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        long temp;
+        temp = Double.doubleToLongBits(amount);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
+        result = prime * result + (int) (goodTillTime ^ (goodTillTime >>> 32));
+        result = prime * result + ((instrument == null) ? 0 : instrument.hashCode());
+        result = prime * result + ((label == null) ? 0 : label.hashCode());
+        result = prime * result + ((orderCommand == null) ? 0 : orderCommand.hashCode());
+        temp = Double.doubleToLongBits(price);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(slippage);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(stopLossPrice);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(takeProfitPrice);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final OrderParams other = (OrderParams) obj;
+        if (Double.doubleToLongBits(amount) != Double.doubleToLongBits(other.amount))
+            return false;
+        if (comment == null) {
+            if (other.comment != null)
+                return false;
+        } else if (!comment.equals(other.comment))
+            return false;
+        if (goodTillTime != other.goodTillTime)
+            return false;
+        if (instrument != other.instrument)
+            return false;
+        if (label == null) {
+            if (other.label != null)
+                return false;
+        } else if (!label.equals(other.label))
+            return false;
+        if (orderCommand != other.orderCommand)
+            return false;
+        if (Double.doubleToLongBits(price) != Double.doubleToLongBits(other.price))
+            return false;
+        if (Double.doubleToLongBits(slippage) != Double.doubleToLongBits(other.slippage))
+            return false;
+        if (Double.doubleToLongBits(stopLossPrice) != Double.doubleToLongBits(other.stopLossPrice))
+            return false;
+        if (Double.doubleToLongBits(takeProfitPrice) != Double.doubleToLongBits(other.takeProfitPrice))
+            return false;
+        return true;
+    }
 }

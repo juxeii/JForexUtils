@@ -35,21 +35,15 @@ public class BarQuoteHandler implements BarQuoteProvider {
     public Observable<BarQuote> observableForParamsList(final List<BarParams> barParamsList) {
         final List<Observable<BarQuote>> paramsObservables = checkNotNull(barParamsList)
             .stream()
-            .map(params -> {
-                if (params.period().name() == null)
-                    jforexUtil.subscribeToBarsFeed(params);
-                return observableForFilter(params);
+            .map(barParams -> {
+                if (barParams.period().name() == null)
+                    jforexUtil.subscribeToBarsFeed(barParams);
+                return barQuoteObservable
+                    .filter(barQuote -> barQuote.barParams().equals(barParams));
             })
             .collect(Collectors.toList());
 
         return Observable.merge(paramsObservables);
-    }
-
-    private Observable<BarQuote> observableForFilter(final BarParams barParams) {
-        return barQuoteObservable
-            .filter(barQuote -> barQuote.instrument() == barParams.instrument())
-            .filter(barQuote -> barParams.period().compareTo(barQuote.period()) == 0)
-            .filter(barQuote -> barQuote.offerSide() == barParams.offerSide());
     }
 
     @Override

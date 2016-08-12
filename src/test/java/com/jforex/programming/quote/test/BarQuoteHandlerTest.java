@@ -11,12 +11,13 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteHandler;
-import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 
@@ -24,8 +25,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     private BarQuoteHandler barQuoteHandler;
 
-    @Mock
-    private BarQuoteRepository barQuoteRepositoryMock;
+    @Mock private BarQuoteRepository barQuoteRepositoryMock;
     private final TestSubscriber<BarQuote> filteredQuoteSubscriber = new TestSubscriber<>();
     private final TestSubscriber<BarQuote> unFilteredQuoteSubscriber = new TestSubscriber<>();
     private final Observable<BarQuote> quoteObservable =
@@ -45,12 +45,12 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         quoteFilters.add(askBarAUDUSDParams);
 
         barQuoteHandler
-                .observableForParamsList(quoteFilters)
-                .subscribe(filteredQuoteSubscriber);
+            .observableForParamsList(quoteFilters)
+            .subscribe(filteredQuoteSubscriber);
 
         barQuoteHandler
-                .observable()
-                .subscribe(unFilteredQuoteSubscriber);
+            .observable()
+            .subscribe(unFilteredQuoteSubscriber);
     }
 
     private void assertCommonEmittedBars(final TestSubscriber<BarQuote> subscriber) {
@@ -72,7 +72,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     @Test
     public void returnedEURUSDBarIsCorrect() {
         when(barQuoteRepositoryMock.get(askBarEURUSDParams))
-                .thenReturn(askBarQuoteEURUSD);
+            .thenReturn(askBarQuoteEURUSD);
 
         assertThat(barQuoteHandler.bar(askBarEURUSDParams),
                    equalTo(askBarEURUSD));
@@ -81,7 +81,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     @Test
     public void returnedAUDUSDBarIsCorrect() {
         when(barQuoteRepositoryMock.get(askBarAUDUSDParams))
-                .thenReturn(askBarQuoteAUDUSD);
+            .thenReturn(askBarQuoteAUDUSD);
 
         assertThat(barQuoteHandler.bar(askBarAUDUSDParams),
                    equalTo(askBarAUDUSD));
@@ -113,9 +113,16 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         quoteFilters.add(askBarEURUSDCustomPeriodParams);
 
         barQuoteHandler
-                .observableForParamsList(quoteFilters)
-                .subscribe(filteredQuoteSubscriber);
+            .observableForParamsList(quoteFilters)
+            .subscribe(filteredQuoteSubscriber);
 
         verify(jforexUtilMock).subscribeToBarsFeed(askBarEURUSDCustomPeriodParams);
+    }
+
+    @Test
+    public void testEqualsContractForBarParams() {
+        EqualsVerifier
+            .forClass(BarParams.class)
+            .verify();
     }
 }

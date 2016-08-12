@@ -10,6 +10,8 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
+import nl.jqno.equalsverifier.EqualsVerifier;
+
 public class OrderParamsTest extends InstrumentUtilForTest {
 
     private OrderParams orderParams;
@@ -41,17 +43,17 @@ public class OrderParamsTest extends InstrumentUtilForTest {
 
     private void createTestParams() {
         orderParams = OrderParams
-                .forInstrument(instrument)
-                .withOrderCommand(orderCommand)
-                .withAmount(amount)
-                .withLabel(label)
-                .price(price)
-                .slippage(slippage)
-                .stopLossPrice(stopLossPrice)
-                .takeProfitPrice(takeProfitPrice)
-                .goodTillTime(goodTillTime)
-                .comment(comment)
-                .build();
+            .forInstrument(instrument)
+            .withOrderCommand(orderCommand)
+            .withAmount(amount)
+            .withLabel(label)
+            .price(price)
+            .slippage(slippage)
+            .stopLossPrice(stopLossPrice)
+            .takeProfitPrice(takeProfitPrice)
+            .goodTillTime(goodTillTime)
+            .comment(comment)
+            .build();
     }
 
     private void fillOrderParamsWithOptionalValues() {
@@ -63,11 +65,11 @@ public class OrderParamsTest extends InstrumentUtilForTest {
     private void fillOrderParamsWithoutOptionalValues() {
         initializeOrderParamsTestValues();
         orderParams = OrderParams
-                .forInstrument(instrument)
-                .withOrderCommand(orderCommand)
-                .withAmount(amount)
-                .withLabel(label)
-                .build();
+            .forInstrument(instrument)
+            .withOrderCommand(orderCommand)
+            .withAmount(amount)
+            .withLabel(label)
+            .build();
     }
 
     public void assertMandatoryValues(final OrderParams orderParams) {
@@ -107,9 +109,9 @@ public class OrderParamsTest extends InstrumentUtilForTest {
     public void testCloneGivesCorrectValues() {
         fillOrderParamsWithOptionalValues();
         orderParamsClone = orderParams
-                .clone()
-                .forInstrument(instrumentAUDUSD)
-                .build();
+            .clone()
+            .forInstrument(instrumentAUDUSD)
+            .build();
 
         assertThat(orderParamsClone.label(), equalTo(label));
         assertThat(orderParamsClone.instrument(), equalTo(instrumentAUDUSD));
@@ -121,5 +123,12 @@ public class OrderParamsTest extends InstrumentUtilForTest {
         assertThat(orderParamsClone.takeProfitPrice(), equalTo(takeProfitPrice));
         assertThat(orderParamsClone.goodTillTime(), equalTo(goodTillTime));
         assertThat(orderParamsClone.comment(), equalTo(comment));
+    }
+
+    @Test
+    public void testEqualsContract() {
+        EqualsVerifier
+            .forClass(OrderParams.class)
+            .verify();
     }
 }
