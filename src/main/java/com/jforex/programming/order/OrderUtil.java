@@ -96,9 +96,9 @@ public class OrderUtil {
         checkNotNull(mergeOrderLabel);
         checkNotNull(orderParams);
 
-        final double signedPostionAmount = position(orderParams.instrument()).signedExposure();
+        final double signedPositionAmount = position(orderParams.instrument()).signedExposure();
         final double signedParamsAmount = OrderStaticUtil.signedAmount(orderParams);
-        final double signedNeededAmount = signedParamsAmount - signedPostionAmount;
+        final double signedNeededAmount = signedParamsAmount - signedPositionAmount;
         final OrderParams adaptedOrderParams =
                 OrderStaticUtil.adaptedOrderParamsForSignedAmount(orderParams, signedNeededAmount);
 
