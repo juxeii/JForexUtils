@@ -3,12 +3,10 @@ package com.jforex.programming.order.event;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.misc.JFHotSubject;
-import com.jforex.programming.order.OrderMessageData;
-import com.jforex.programming.order.call.OrderCallRequest;
-
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.misc.JFHotSubject;
+import com.jforex.programming.order.call.OrderCallRequest;
 
 import rx.Observable;
 
@@ -24,9 +22,8 @@ public class OrderEventGateway {
         this.orderEventMapper = orderEventMapper;
 
         messageObservable
-                .filter(message -> message.getOrder() != null)
-                .map(OrderMessageData::new)
-                .subscribe(this::onOrderMessageData);
+            .filter(message -> message.getOrder() != null)
+            .subscribe(this::onOrderMessage);
     }
 
     public Observable<OrderEvent> observable() {
@@ -37,9 +34,9 @@ public class OrderEventGateway {
         orderEventMapper.registerOrderCallRequest(orderCallRequest);
     }
 
-    private void onOrderMessageData(final OrderMessageData orderMessageData) {
-        final IOrder order = orderMessageData.order();
-        final OrderEventType orderEventType = orderEventMapper.get(orderMessageData);
+    private void onOrderMessage(final IMessage message) {
+        final IOrder order = message.getOrder();
+        final OrderEventType orderEventType = orderEventMapper.get(message);
         logger.debug("Received order event for " + order.getLabel()
                 + " type " + orderEventType + " state " + order.getState());
         orderEventPublisher.onNext(new OrderEvent(order, orderEventType));

@@ -11,7 +11,6 @@ import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEventMapper;
@@ -34,20 +33,19 @@ public class OrderEventMapperTest extends CommonUtilForTest {
         orderEventMapper = new OrderEventMapper();
     }
 
-    private OrderMessageData orderMessageData(final IMessage.Type messageType,
-                                              final IMessage.Reason... messageReasons) {
-        final IMessage message = mockForIMessage(orderForTest,
-                                                 messageType,
-                                                 Sets.newHashSet(messageReasons));
-        return new OrderMessageData(message);
+    private IMessage createMessage(final IMessage.Type messageType,
+                                   final IMessage.Reason... messageReasons) {
+        return mockForIMessage(orderForTest,
+                               messageType,
+                               Sets.newHashSet(messageReasons));
     }
 
     private void assertCorrectMapping(final OrderEventType expectedType,
                                       final IMessage.Type messageType,
                                       final IMessage.Reason... messageReasons) {
-        final OrderMessageData orderMessageData = orderMessageData(messageType, messageReasons);
+        final IMessage message = createMessage(messageType, messageReasons);
 
-        final OrderEventType actualType = orderEventMapper.get(orderMessageData);
+        final OrderEventType actualType = orderEventMapper.get(message);
 
         assertThat(actualType, equalTo(expectedType));
     }
@@ -56,13 +54,13 @@ public class OrderEventMapperTest extends CommonUtilForTest {
             assertCorrectMappingForChangeRejectRefinement(final OrderCallReason orderCallReason,
                                                           final OrderEventType expectedType) {
         orderEventMapper
-                .registerOrderCallRequest(new OrderCallRequest(orderForTest, orderCallReason));
+            .registerOrderCallRequest(new OrderCallRequest(orderForTest, orderCallReason));
         assertCorrectMapping(expectedType, IMessage.Type.ORDER_CHANGED_REJECTED);
     }
 
     private void registerCallRequest(final OrderCallReason orderCallReason) {
         orderEventMapper
-                .registerOrderCallRequest(new OrderCallRequest(orderForTest, orderCallReason));
+            .registerOrderCallRequest(new OrderCallRequest(orderForTest, orderCallReason));
     }
 
     @Test
@@ -267,11 +265,11 @@ public class OrderEventMapperTest extends CommonUtilForTest {
     @Test
     public void notRegisteredOrderGetsOnlyChangeRejected() {
         registerCallRequest(OrderCallReason.CHANGE_LABEL);
-        final OrderMessageData messageData = messageData(orderUtilForTest.sellOrderAUDUSD(),
-                                                         IMessage.Type.ORDER_CHANGED_REJECTED,
-                                                         Sets.newHashSet());
+        final IMessage message = mockForIMessage(orderUtilForTest.sellOrderAUDUSD(),
+                                                 IMessage.Type.ORDER_CHANGED_REJECTED,
+                                                 Sets.newHashSet());
 
-        final OrderEventType actualType = orderEventMapper.get(messageData);
+        final OrderEventType actualType = orderEventMapper.get(message);
 
         assertThat(actualType, equalTo(OrderEventType.CHANGED_REJECTED));
     }
@@ -280,7 +278,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
         private OrderEventType getType(final IMessage.Type messageType,
                                        final IMessage.Reason... messageReasons) {
-            return orderEventMapper.get(orderMessageData(messageType, messageReasons));
+            return orderEventMapper.get(createMessage(messageType, messageReasons));
         }
 
         @Before

@@ -33,7 +33,6 @@ import com.jforex.programming.currency.CurrencyCode;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.OrderDirection;
-import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -150,32 +149,25 @@ public class CommonUtilForTest extends BDDMockito {
         return messageMock;
     }
 
-    protected final OrderMessageData messageData(final IOrder order,
-                                                 final IMessage.Type type,
-                                                 final Set<Reason> reasons) {
-        final IMessage messageMock = mockForIMessage(order, type, reasons);
-        return new OrderMessageData(messageMock);
-    }
-
     private final void coverageOnEnumsCorrection() {
         CurrencyCode
-                .valueOf(CurrencyCode.EUR.toString());
+            .valueOf(CurrencyCode.EUR.toString());
         StrategyRunState
-                .valueOf(StrategyRunState.STARTED.toString());
+            .valueOf(StrategyRunState.STARTED.toString());
         OrderCallReason
-                .valueOf(OrderCallReason.CHANGE_AMOUNT.toString());
+            .valueOf(OrderCallReason.CHANGE_AMOUNT.toString());
         ConnectionState
-                .valueOf(ConnectionState.CONNECTED.toString());
+            .valueOf(ConnectionState.CONNECTED.toString());
         LoginState
-                .valueOf(LoginState.LOGGED_IN.toString());
+            .valueOf(LoginState.LOGGED_IN.toString());
         OrderProcessState
-                .valueOf(OrderProcessState.ACTIVE.toString());
+            .valueOf(OrderProcessState.ACTIVE.toString());
         OrderEventType
-                .valueOf(OrderEventType.SUBMIT_OK.toString());
+            .valueOf(OrderEventType.SUBMIT_OK.toString());
         OrderDirection
-                .valueOf(OrderDirection.FLAT.toString());
+            .valueOf(OrderDirection.FLAT.toString());
         AuthentificationUtil.FSMTrigger
-                .valueOf(AuthentificationUtil.FSMTrigger.CONNECT.toString());
+            .valueOf(AuthentificationUtil.FSMTrigger.CONNECT.toString());
     }
 
     public final OrderCallRejectException createRejectException(final OrderEvent orderEvent) {

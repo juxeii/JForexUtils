@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IMessage.Reason;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.OrderMessageData;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 
@@ -32,31 +31,31 @@ public class OrderEventMapper {
             changeRequestQueue.add(orderCallRequest);
     }
 
-    public OrderEventType get(final OrderMessageData orderMessageData) {
-        return isNotForChangeReason(orderMessageData)
-                ? evaluate(orderMessageData)
-                : getForChangeReason(orderMessageData, changeRequestQueue.poll().reason());
+    public OrderEventType get(final IMessage message) {
+        return isNotForChangeReason(message)
+                ? evaluate(message)
+                : getForChangeReason(message, changeRequestQueue.poll().reason());
     }
 
-    private final boolean isNotForChangeReason(final OrderMessageData orderMessageData) {
+    private final boolean isNotForChangeReason(final IMessage message) {
         return changeRequestQueue.isEmpty()
-                || changeRequestQueue.peek().order() != orderMessageData.order()
-                || !changeEventTypes.contains(orderMessageData.messageType());
+                || changeRequestQueue.peek().order() != message.getOrder()
+                || !changeEventTypes.contains(message.getType());
     }
 
-    private final OrderEventType getForChangeReason(final OrderMessageData orderEventData,
+    private final OrderEventType getForChangeReason(final IMessage message,
                                                     final OrderCallReason orderCallReason) {
-        final OrderEventType orderEventType = evaluate(orderEventData);
+        final OrderEventType orderEventType = evaluate(message);
         return orderEventType == OrderEventType.CHANGED_REJECTED
                 ? OrderEventMapperData.mapByChangeReject(orderCallReason)
                 : orderEventType;
     }
 
-    private final OrderEventType evaluate(final OrderMessageData orderEventData) {
-        final Set<Reason> reasons = orderEventData.messageReasons();
+    private final OrderEventType evaluate(final IMessage message) {
+        final Set<Reason> reasons = message.getReasons();
         return isEventByReason(reasons)
                 ? OrderEventMapperData.mapByReason(reasons)
-                : OrderEventMapperData.mapByType(orderEventData.order(), orderEventData.messageType());
+                : OrderEventMapperData.mapByType(message.getOrder(), message.getType());
     }
 
     private final boolean isEventByReason(final Set<Reason> reasons) {
