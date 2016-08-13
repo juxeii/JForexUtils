@@ -22,28 +22,28 @@ public final class OrderEventMapperData {
 
     private static final Map<OrderCallReason, OrderEventType> changeRejectEventByReason =
             Maps.immutableEnumMap(ImmutableMap
-                    .<OrderCallReason, OrderEventType> builder()
-                    .put(OrderCallReason.CHANGE_AMOUNT, OrderEventType.CHANGE_AMOUNT_REJECTED)
-                    .put(OrderCallReason.CHANGE_LABEL, OrderEventType.CHANGE_LABEL_REJECTED)
-                    .put(OrderCallReason.CHANGE_GTT, OrderEventType.CHANGE_GTT_REJECTED)
-                    .put(OrderCallReason.CHANGE_PRICE, OrderEventType.CHANGE_PRICE_REJECTED)
-                    .put(OrderCallReason.CHANGE_SL, OrderEventType.CHANGE_SL_REJECTED)
-                    .put(OrderCallReason.CHANGE_TP, OrderEventType.CHANGE_TP_REJECTED)
-                    .build());
+                .<OrderCallReason, OrderEventType> builder()
+                .put(OrderCallReason.CHANGE_AMOUNT, OrderEventType.CHANGE_AMOUNT_REJECTED)
+                .put(OrderCallReason.CHANGE_LABEL, OrderEventType.CHANGE_LABEL_REJECTED)
+                .put(OrderCallReason.CHANGE_GTT, OrderEventType.CHANGE_GTT_REJECTED)
+                .put(OrderCallReason.CHANGE_PRICE, OrderEventType.CHANGE_PRICE_REJECTED)
+                .put(OrderCallReason.CHANGE_SL, OrderEventType.CHANGE_SL_REJECTED)
+                .put(OrderCallReason.CHANGE_TP, OrderEventType.CHANGE_TP_REJECTED)
+                .build());
 
     private static final Map<IMessage.Reason, OrderEventType> orderEventByReason =
             Maps.immutableEnumMap(ImmutableMap.<IMessage.Reason, OrderEventType> builder()
-                    .put(IMessage.Reason.ORDER_FULLY_FILLED, OrderEventType.FULLY_FILLED)
-                    .put(IMessage.Reason.ORDER_CLOSED_BY_MERGE, OrderEventType.CLOSED_BY_MERGE)
-                    .put(IMessage.Reason.ORDER_CLOSED_BY_SL, OrderEventType.CLOSED_BY_SL)
-                    .put(IMessage.Reason.ORDER_CLOSED_BY_TP, OrderEventType.CLOSED_BY_TP)
-                    .put(IMessage.Reason.ORDER_CHANGED_SL, OrderEventType.CHANGED_SL)
-                    .put(IMessage.Reason.ORDER_CHANGED_TP, OrderEventType.CHANGED_TP)
-                    .put(IMessage.Reason.ORDER_CHANGED_AMOUNT, OrderEventType.CHANGED_AMOUNT)
-                    .put(IMessage.Reason.ORDER_CHANGED_PRICE, OrderEventType.CHANGED_PRICE)
-                    .put(IMessage.Reason.ORDER_CHANGED_GTT, OrderEventType.CHANGED_GTT)
-                    .put(IMessage.Reason.ORDER_CHANGED_LABEL, OrderEventType.CHANGED_LABEL)
-                    .build());
+                .put(IMessage.Reason.ORDER_FULLY_FILLED, OrderEventType.FULLY_FILLED)
+                .put(IMessage.Reason.ORDER_CLOSED_BY_MERGE, OrderEventType.CLOSED_BY_MERGE)
+                .put(IMessage.Reason.ORDER_CLOSED_BY_SL, OrderEventType.CLOSED_BY_SL)
+                .put(IMessage.Reason.ORDER_CLOSED_BY_TP, OrderEventType.CLOSED_BY_TP)
+                .put(IMessage.Reason.ORDER_CHANGED_SL, OrderEventType.CHANGED_SL)
+                .put(IMessage.Reason.ORDER_CHANGED_TP, OrderEventType.CHANGED_TP)
+                .put(IMessage.Reason.ORDER_CHANGED_AMOUNT, OrderEventType.CHANGED_AMOUNT)
+                .put(IMessage.Reason.ORDER_CHANGED_PRICE, OrderEventType.CHANGED_PRICE)
+                .put(IMessage.Reason.ORDER_CHANGED_GTT, OrderEventType.CHANGED_GTT)
+                .put(IMessage.Reason.ORDER_CHANGED_LABEL, OrderEventType.CHANGED_LABEL)
+                .build());
 
     private static final Function<IOrder, OrderEventType> submitEvaluator =
             order -> isConditional.test(order)
@@ -67,29 +67,29 @@ public final class OrderEventMapperData {
 
     private static final Map<IMessage.Type, Function<IOrder, OrderEventType>> orderEventByType =
             Maps.immutableEnumMap(ImmutableMap.<IMessage.Type, Function<IOrder, OrderEventType>> builder()
-                    .put(IMessage.Type.NOTIFICATION,
-                         order -> OrderEventType.NOTIFICATION)
-                    .put(IMessage.Type.ORDER_SUBMIT_REJECTED,
-                         order -> OrderEventType.SUBMIT_REJECTED)
-                    .put(IMessage.Type.ORDER_SUBMIT_OK,
-                         submitEvaluator)
-                    .put(IMessage.Type.ORDER_FILL_REJECTED,
-                         order -> OrderEventType.FILL_REJECTED)
-                    .put(IMessage.Type.ORDER_FILL_OK,
-                         fillEvaluator)
-                    .put(IMessage.Type.ORDER_CHANGED_OK,
-                         order -> OrderEventType.PARTIAL_FILL_OK)
-                    .put(IMessage.Type.ORDER_CHANGED_REJECTED,
-                         order -> OrderEventType.CHANGED_REJECTED)
-                    .put(IMessage.Type.ORDER_CLOSE_OK,
-                         closeEvaluator)
-                    .put(IMessage.Type.ORDER_CLOSE_REJECTED,
-                         order -> OrderEventType.CLOSE_REJECTED)
-                    .put(IMessage.Type.ORDERS_MERGE_OK,
-                         mergeEvaluator)
-                    .put(IMessage.Type.ORDERS_MERGE_REJECTED,
-                         order -> OrderEventType.MERGE_REJECTED)
-                    .build());
+                .put(IMessage.Type.NOTIFICATION,
+                     order -> OrderEventType.NOTIFICATION)
+                .put(IMessage.Type.ORDER_SUBMIT_REJECTED,
+                     order -> OrderEventType.SUBMIT_REJECTED)
+                .put(IMessage.Type.ORDER_SUBMIT_OK,
+                     submitEvaluator)
+                .put(IMessage.Type.ORDER_FILL_REJECTED,
+                     order -> OrderEventType.FILL_REJECTED)
+                .put(IMessage.Type.ORDER_FILL_OK,
+                     fillEvaluator)
+                .put(IMessage.Type.ORDER_CHANGED_OK,
+                     order -> OrderEventType.PARTIAL_FILL_OK)
+                .put(IMessage.Type.ORDER_CHANGED_REJECTED,
+                     order -> OrderEventType.CHANGED_REJECTED)
+                .put(IMessage.Type.ORDER_CLOSE_OK,
+                     closeEvaluator)
+                .put(IMessage.Type.ORDER_CLOSE_REJECTED,
+                     order -> OrderEventType.CLOSE_REJECTED)
+                .put(IMessage.Type.ORDERS_MERGE_OK,
+                     mergeEvaluator)
+                .put(IMessage.Type.ORDERS_MERGE_REJECTED,
+                     order -> OrderEventType.MERGE_REJECTED)
+                .build());
 
     public static final OrderEventType mapByType(final IOrder order,
                                                  final IMessage.Type type) {

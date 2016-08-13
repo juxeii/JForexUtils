@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IMessage.Reason;
+import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -28,28 +29,28 @@ public class OrderEventFactory {
     }
 
     public OrderEvent fromMessage(final IMessage message) {
-        OrderEventType orderEventType = evaluateType(message);
-        if (isForChangeReason(message, orderEventType))
-            orderEventType = OrderEventMapperData.mapByChangeReject(changeRequestQueue.poll().reason());
-
-        return new OrderEvent(message.getOrder(), orderEventType);
+        return new OrderEvent(message.getOrder(), calculateType(message));
     }
 
-    private final boolean isForChangeReason(final IMessage message,
-                                            final OrderEventType orderEventType) {
-        return !changeRequestQueue.isEmpty()
-                && changeRequestQueue.peek().order() == message.getOrder()
-                && orderEventType == OrderEventType.CHANGED_REJECTED;
-    }
-
-    private final OrderEventType evaluateType(final IMessage message) {
+    private final OrderEventType calculateType(final IMessage message) {
         final Set<Reason> reasons = message.getReasons();
-        return isEventByReason(reasons)
+        return reasons.size() == 1
                 ? OrderEventMapperData.mapByReason(reasons)
-                : OrderEventMapperData.mapByType(message.getOrder(), message.getType());
+                : calculateTypeByMessageType(message);
     }
 
-    private final boolean isEventByReason(final Set<Reason> reasons) {
-        return reasons.size() == 1;
+    private final OrderEventType calculateTypeByMessageType(final IMessage message) {
+        final IOrder order = message.getOrder();
+        final OrderEventType orderEventType = OrderEventMapperData.mapByType(order, message.getType());
+        return isTypeForChangeReason(order, orderEventType)
+                ? OrderEventMapperData.mapByChangeReject(changeRequestQueue.poll().reason())
+                : orderEventType;
+    }
+
+    private final boolean isTypeForChangeReason(final IOrder order,
+                                                final OrderEventType orderEventType) {
+        return !changeRequestQueue.isEmpty()
+                && changeRequestQueue.peek().order() == order
+                && orderEventType == OrderEventType.CHANGED_REJECTED;
     }
 }
