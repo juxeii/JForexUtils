@@ -88,16 +88,16 @@ public final class OrderEventTypeMapper {
                      order -> OrderEventType.MERGE_REJECTED)
                 .build());
 
-    public static final OrderEventType mapByType(final IOrder order,
-                                                 final IMessage.Type type) {
+    public static final OrderEventType byMessageType(final IMessage.Type type,
+                                                     final IOrder order) {
         return orderEventByType.get(type).apply(order);
     }
 
-    public static final OrderEventType mapByReason(final IMessage.Reason reason) {
+    public static final OrderEventType byMessageReason(final IMessage.Reason reason) {
         return orderEventByReason.get(reason);
     }
 
-    public static final OrderEventType mapByChangeReject(final OrderCallReason orderCallReason) {
+    public static final OrderEventType byCallReason(final OrderCallReason orderCallReason) {
         return changeRejectEventByReason.get(orderCallReason);
     }
 }
