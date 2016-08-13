@@ -11,7 +11,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 
-public class OrderEventFactory {
+public class MessageToOrderEvent {
 
     private final Queue<OrderCallRequest> changeRequestQueue = new ConcurrentLinkedQueue<>();
 

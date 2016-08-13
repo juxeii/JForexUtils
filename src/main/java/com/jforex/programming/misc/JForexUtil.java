@@ -21,7 +21,7 @@ import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.event.OrderEventGateway;
-import com.jforex.programming.order.event.OrderEventFactory;
+import com.jforex.programming.order.event.MessageToOrderEvent;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
@@ -54,7 +54,7 @@ public class JForexUtil {
     private TaskExecutor orderCallExecutor;
     private OrderUtilHandler orderUtilHandler;
     private OrderUtil orderUtil;
-    private final OrderEventFactory orderEventMapper = new OrderEventFactory();
+    private final MessageToOrderEvent messageToOrderEvent = new MessageToOrderEvent();
 
     private final CalculationUtil calculationUtil;
 
@@ -86,7 +86,7 @@ public class JForexUtil {
     }
 
     private void initInfrastructure() {
-        orderEventGateway = new OrderEventGateway(messageSubject.observable(), orderEventMapper);
+        orderEventGateway = new OrderEventGateway(messageSubject.observable(), messageToOrderEvent);
     }
 
     private void initQuoteProvider() {

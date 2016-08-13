@@ -309,4 +309,12 @@ public final class OrderParams implements Cloneable {
             return false;
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "OrderParams [label=" + label + ", instrument=" + instrument + ", orderCommand=" + orderCommand
+                + ", amount=" + amount + ", price=" + price + ", slippage=" + slippage + ", stopLossPrice="
+                + stopLossPrice + ", takeProfitPrice=" + takeProfitPrice + ", goodTillTime=" + goodTillTime
+                + ", comment=" + comment + "]";
+    }
 }

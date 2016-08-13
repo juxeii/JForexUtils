@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.JFHotSubject;
 import com.jforex.programming.order.call.OrderCallRequest;
 
@@ -13,13 +12,13 @@ import rx.Observable;
 public class OrderEventGateway {
 
     private final JFHotSubject<OrderEvent> orderEventPublisher = new JFHotSubject<>();
-    private final OrderEventFactory orderEventMapper;
+    private final MessageToOrderEvent messageToOrderEvent;
 
     private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);
 
     public OrderEventGateway(final Observable<IMessage> messageObservable,
-                             final OrderEventFactory orderEventMapper) {
-        this.orderEventMapper = orderEventMapper;
+                             final MessageToOrderEvent orderEventMapper) {
+        this.messageToOrderEvent = orderEventMapper;
 
         messageObservable
             .filter(message -> message.getOrder() != null)
@@ -31,14 +30,12 @@ public class OrderEventGateway {
     }
 
     public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
-        orderEventMapper.registerOrderCallRequest(orderCallRequest);
+        messageToOrderEvent.registerOrderCallRequest(orderCallRequest);
     }
 
     private void onOrderMessage(final IMessage message) {
-        final IOrder order = message.getOrder();
-        final OrderEvent orderEvent = orderEventMapper.fromMessage(message);
-        logger.debug("Received order event for " + order.getLabel()
-                + " type " + orderEvent.type() + " state " + order.getState());
+        final OrderEvent orderEvent = messageToOrderEvent.fromMessage(message);
+        logger.debug("Received: " + orderEvent);
         orderEventPublisher.onNext(orderEvent);
     }
 }

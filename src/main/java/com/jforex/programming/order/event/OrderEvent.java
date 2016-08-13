@@ -20,4 +20,9 @@ public final class OrderEvent {
     public final OrderEventType type() {
         return type;
     }
+
+    @Override
+    public String toString() {
+        return "OrderEvent [order=" + order.getLabel() + " " + order + ", type=" + type + "]";
+    }
 }

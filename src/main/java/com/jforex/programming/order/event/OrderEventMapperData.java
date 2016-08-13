@@ -21,8 +21,7 @@ public final class OrderEventMapperData {
     }
 
     private static final Map<OrderCallReason, OrderEventType> changeRejectEventByReason =
-            Maps.immutableEnumMap(ImmutableMap
-                .<OrderCallReason, OrderEventType> builder()
+            Maps.immutableEnumMap(ImmutableMap.<OrderCallReason, OrderEventType> builder()
                 .put(OrderCallReason.CHANGE_AMOUNT, OrderEventType.CHANGE_AMOUNT_REJECTED)
                 .put(OrderCallReason.CHANGE_LABEL, OrderEventType.CHANGE_LABEL_REJECTED)
                 .put(OrderCallReason.CHANGE_GTT, OrderEventType.CHANGE_GTT_REJECTED)

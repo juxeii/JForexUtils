@@ -14,7 +14,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventFactory;
+import com.jforex.programming.order.event.MessageToOrderEvent;
 import com.jforex.programming.order.event.OrderEventMapperData;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeSets;
@@ -25,13 +25,13 @@ import de.bechte.junit.runners.context.HierarchicalContextRunner;
 @RunWith(HierarchicalContextRunner.class)
 public class OrderEventMapperTest extends CommonUtilForTest {
 
-    private OrderEventFactory orderEventMapper;
+    private MessageToOrderEvent orderEventMapper;
 
     private final IOrder orderForTest = buyOrderEURUSD;
 
     @Before
     public void setUp() {
-        orderEventMapper = new OrderEventFactory();
+        orderEventMapper = new MessageToOrderEvent();
     }
 
     private IMessage createMessage(final IMessage.Type messageType,

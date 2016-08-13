@@ -54,6 +54,8 @@ public class OrderParamsTest extends InstrumentUtilForTest {
             .goodTillTime(goodTillTime)
             .comment(comment)
             .build();
+
+        logger.info(orderParams);
     }
 
     private void fillOrderParamsWithOptionalValues() {
