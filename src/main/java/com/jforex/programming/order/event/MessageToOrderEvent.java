@@ -35,15 +35,15 @@ public class MessageToOrderEvent {
     private final OrderEventType calculateType(final IMessage message) {
         final Set<Reason> reasons = message.getReasons();
         return reasons.size() == 1
-                ? OrderEventMapperData.mapByReason(reasons)
+                ? OrderEventTypeMapper.mapByReason(reasons.iterator().next())
                 : calculateTypeByMessageType(message);
     }
 
     private final OrderEventType calculateTypeByMessageType(final IMessage message) {
         final IOrder order = message.getOrder();
-        final OrderEventType orderEventType = OrderEventMapperData.mapByType(order, message.getType());
+        final OrderEventType orderEventType = OrderEventTypeMapper.mapByType(order, message.getType());
         return isTypeForChangeReason(order, orderEventType)
-                ? OrderEventMapperData.mapByChangeReject(changeRequestQueue.poll().reason())
+                ? OrderEventTypeMapper.mapByChangeReject(changeRequestQueue.poll().reason())
                 : orderEventType;
     }
 

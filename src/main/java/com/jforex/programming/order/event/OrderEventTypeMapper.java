@@ -5,19 +5,17 @@ import static com.jforex.programming.order.OrderStaticUtil.isConditional;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IMessage.Reason;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jforex.programming.order.call.OrderCallReason;
 
-public final class OrderEventMapperData {
+public final class OrderEventTypeMapper {
 
-    private OrderEventMapperData() {
+    private OrderEventTypeMapper() {
     }
 
     private static final Map<OrderCallReason, OrderEventType> changeRejectEventByReason =
@@ -95,8 +93,8 @@ public final class OrderEventMapperData {
         return orderEventByType.get(type).apply(order);
     }
 
-    public static final OrderEventType mapByReason(final Set<Reason> reasons) {
-        return orderEventByReason.get(reasons.iterator().next());
+    public static final OrderEventType mapByReason(final IMessage.Reason reason) {
+        return orderEventByReason.get(reason);
     }
 
     public static final OrderEventType mapByChangeReject(final OrderCallReason orderCallReason) {
