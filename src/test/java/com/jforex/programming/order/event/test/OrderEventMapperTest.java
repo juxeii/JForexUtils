@@ -13,7 +13,8 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.event.OrderEventMapper;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventMapperData;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeSets;
@@ -24,13 +25,13 @@ import de.bechte.junit.runners.context.HierarchicalContextRunner;
 @RunWith(HierarchicalContextRunner.class)
 public class OrderEventMapperTest extends CommonUtilForTest {
 
-    private OrderEventMapper orderEventMapper;
+    private OrderEventFactory orderEventMapper;
 
     private final IOrder orderForTest = buyOrderEURUSD;
 
     @Before
     public void setUp() {
-        orderEventMapper = new OrderEventMapper();
+        orderEventMapper = new OrderEventFactory();
     }
 
     private IMessage createMessage(final IMessage.Type messageType,
@@ -45,9 +46,9 @@ public class OrderEventMapperTest extends CommonUtilForTest {
                                       final IMessage.Reason... messageReasons) {
         final IMessage message = createMessage(messageType, messageReasons);
 
-        final OrderEventType actualType = orderEventMapper.get(message);
+        final OrderEvent orderEvent = orderEventMapper.fromMessage(message);
 
-        assertThat(actualType, equalTo(expectedType));
+        assertThat(orderEvent.type(), equalTo(expectedType));
     }
 
     private void
@@ -269,16 +270,16 @@ public class OrderEventMapperTest extends CommonUtilForTest {
                                                  IMessage.Type.ORDER_CHANGED_REJECTED,
                                                  Sets.newHashSet());
 
-        final OrderEventType actualType = orderEventMapper.get(message);
+        final OrderEvent actualEvent = orderEventMapper.fromMessage(message);
 
-        assertThat(actualType, equalTo(OrderEventType.CHANGED_REJECTED));
+        assertThat(actualEvent.type(), equalTo(OrderEventType.CHANGED_REJECTED));
     }
 
     public class MultipleCallRequestsRegistered {
 
-        private OrderEventType getType(final IMessage.Type messageType,
-                                       final IMessage.Reason... messageReasons) {
-            return orderEventMapper.get(createMessage(messageType, messageReasons));
+        private OrderEvent getEvent(final IMessage.Type messageType,
+                                    final IMessage.Reason... messageReasons) {
+            return orderEventMapper.fromMessage(createMessage(messageType, messageReasons));
         }
 
         @Before
@@ -292,75 +293,75 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
         public class OnSubmitOK {
 
-            private OrderEventType submitType;
+            private OrderEvent submitEvent;
 
             @Before
             public void setUp() {
-                submitType = getType(IMessage.Type.ORDER_FILL_OK,
-                                     IMessage.Reason.ORDER_FULLY_FILLED);
+                submitEvent = getEvent(IMessage.Type.ORDER_FILL_OK,
+                                       IMessage.Reason.ORDER_FULLY_FILLED);
             }
 
             @Test
             public void eventTypeIsFullyFilled() {
-                assertThat(submitType, equalTo(OrderEventType.FULLY_FILLED));
+                assertThat(submitEvent.type(), equalTo(OrderEventType.FULLY_FILLED));
             }
 
             public class OnChangeLabelRejected {
 
-                private OrderEventType changeLabelType;
+                private OrderEvent changeLabelEvent;
 
                 @Before
                 public void setUp() {
-                    changeLabelType = getType(IMessage.Type.ORDER_CHANGED_REJECTED);
+                    changeLabelEvent = getEvent(IMessage.Type.ORDER_CHANGED_REJECTED);
                 }
 
                 @Test
                 public void eventTypeIsLabelRejected() {
-                    assertThat(changeLabelType, equalTo(OrderEventType.CHANGE_LABEL_REJECTED));
+                    assertThat(changeLabelEvent.type(), equalTo(OrderEventType.CHANGE_LABEL_REJECTED));
                 }
 
                 public class OnChangeOpenPriceRejected {
 
-                    private OrderEventType changeOpenPriceType;
+                    private OrderEvent changeOpenPriceEvent;
 
                     @Before
                     public void setUp() {
-                        changeOpenPriceType = getType(IMessage.Type.ORDER_CHANGED_REJECTED);
+                        changeOpenPriceEvent = getEvent(IMessage.Type.ORDER_CHANGED_REJECTED);
                     }
 
                     @Test
                     public void eventTypeIsOpenPriceRejected() {
-                        assertThat(changeOpenPriceType,
+                        assertThat(changeOpenPriceEvent.type(),
                                    equalTo(OrderEventType.CHANGE_PRICE_REJECTED));
                     }
 
                     public class OnChangeSL {
 
-                        private OrderEventType changeSLType;
+                        private OrderEvent changeSLEvent;
 
                         @Before
                         public void setUp() {
-                            changeSLType = getType(IMessage.Type.ORDER_CHANGED_OK,
-                                                   IMessage.Reason.ORDER_CHANGED_SL);
+                            changeSLEvent = getEvent(IMessage.Type.ORDER_CHANGED_OK,
+                                                     IMessage.Reason.ORDER_CHANGED_SL);
                         }
 
                         @Test
                         public void eventTypeChangeSL() {
-                            assertThat(changeSLType, equalTo(OrderEventType.CHANGED_SL));
+                            assertThat(changeSLEvent.type(), equalTo(OrderEventType.CHANGED_SL));
                         }
 
                         public class OnClose {
 
-                            private OrderEventType closeType;
+                            private OrderEvent closeEvent;
 
                             @Before
                             public void setUp() {
-                                closeType = getType(IMessage.Type.ORDER_CLOSE_OK);
+                                closeEvent = getEvent(IMessage.Type.ORDER_CLOSE_OK);
                             }
 
                             @Test
                             public void eventClose() {
-                                assertThat(closeType, equalTo(OrderEventType.CLOSE_OK));
+                                assertThat(closeEvent.type(), equalTo(OrderEventType.CLOSE_OK));
                             }
                         }
                     }

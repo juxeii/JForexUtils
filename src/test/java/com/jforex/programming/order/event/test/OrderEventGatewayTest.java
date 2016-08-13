@@ -13,8 +13,8 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
-import com.jforex.programming.order.event.OrderEventMapper;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
@@ -27,7 +27,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
     private OrderEventGateway orderEventGateway;
 
     @Mock
-    private OrderEventMapper orderEventMapperMock;
+    private OrderEventFactory orderEventMapperMock;
     private final IOrder orderUnderTest = buyOrderEURUSD;
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
     private final Subject<IMessage, IMessage> messageSubject = PublishSubject.create();
@@ -65,8 +65,10 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Test
     public void subscriberIsNotifiedOnOrderMessageData() {
-        when(orderEventMapperMock.get(any()))
-                .thenReturn(OrderEventType.CHANGED_REJECTED);
+        final OrderEvent orderEventMock = new OrderEvent(orderUnderTest, OrderEventType.CHANGED_REJECTED);
+
+        when(orderEventMapperMock.fromMessage(any()))
+            .thenReturn(orderEventMock);
 
         orderEventGateway.observable().subscribe(subscriber);
         messageSubject.onNext(message);

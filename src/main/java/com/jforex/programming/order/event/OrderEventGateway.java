@@ -13,12 +13,12 @@ import rx.Observable;
 public class OrderEventGateway {
 
     private final JFHotSubject<OrderEvent> orderEventPublisher = new JFHotSubject<>();
-    private final OrderEventMapper orderEventMapper;
+    private final OrderEventFactory orderEventMapper;
 
     private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);
 
     public OrderEventGateway(final Observable<IMessage> messageObservable,
-                             final OrderEventMapper orderEventMapper) {
+                             final OrderEventFactory orderEventMapper) {
         this.orderEventMapper = orderEventMapper;
 
         messageObservable
@@ -36,9 +36,9 @@ public class OrderEventGateway {
 
     private void onOrderMessage(final IMessage message) {
         final IOrder order = message.getOrder();
-        final OrderEventType orderEventType = orderEventMapper.get(message);
+        final OrderEvent orderEvent = orderEventMapper.fromMessage(message);
         logger.debug("Received order event for " + order.getLabel()
-                + " type " + orderEventType + " state " + order.getState());
-        orderEventPublisher.onNext(new OrderEvent(order, orderEventType));
+                + " type " + orderEvent.type() + " state " + order.getState());
+        orderEventPublisher.onNext(orderEvent);
     }
 }
