@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.command.SetOpenPriceCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetOpenPriceCommandTest extends CommonCommandForTest {
 
@@ -20,11 +19,6 @@ public class SetOpenPriceCommandTest extends CommonCommandForTest {
         assertCallableOrder();
 
         verify(orderForTest).setOpenPrice(newOpenPrice);
-    }
-
-    @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertOrderEventTypeData(OrderEventTypeData.changeOpenPriceData);
     }
 
     @Test

@@ -3,7 +3,6 @@ package com.jforex.programming.order.command;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderStaticUtil;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public abstract class OrderChangeCommand<T> extends OrderCallCommand {
 
@@ -13,12 +12,10 @@ public abstract class OrderChangeCommand<T> extends OrderCallCommand {
 
     public OrderChangeCommand(final IOrder orderToChange,
                               final JFRunnable runnable,
-                              final OrderEventTypeData orderEventTypeData,
                               final T currentValue,
                               final T newValue,
                               final String valueName) {
-        super(OrderStaticUtil.runnableToCallable(runnable, orderToChange),
-              orderEventTypeData);
+        super(OrderStaticUtil.runnableToCallable(runnable, orderToChange));
 
         this.orderToChange = orderToChange;
         this.newValue = newValue;

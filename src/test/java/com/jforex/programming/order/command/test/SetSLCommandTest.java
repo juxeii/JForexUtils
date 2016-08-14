@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.command.SetSLCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetSLCommandTest extends CommonCommandForTest {
 
@@ -20,11 +19,6 @@ public class SetSLCommandTest extends CommonCommandForTest {
         assertCallableOrder();
 
         verify(orderForTest).setStopLossPrice(newSL);
-    }
-
-    @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertOrderEventTypeData(OrderEventTypeData.changeSLData);
     }
 
     @Test

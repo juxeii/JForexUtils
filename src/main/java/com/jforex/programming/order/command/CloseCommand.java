@@ -6,17 +6,29 @@ import static com.jforex.programming.order.event.OrderEventType.CLOSE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 import static com.jforex.programming.order.event.OrderEventType.PARTIAL_CLOSE_OK;
 
+import java.util.Set;
+
 import com.dukascopy.api.IOrder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEventTypeData;
+import com.jforex.programming.order.event.OrderEventType;
 
 public final class CloseCommand extends OrderChangeCommand<IOrder.State> {
+
+    private static final ImmutableSet<OrderEventType> doneEventTypes =
+            Sets.immutableEnumSet(CLOSE_OK);
+    private static final ImmutableSet<OrderEventType> rejectEventTypes =
+            Sets.immutableEnumSet(CLOSE_REJECTED);
+    private static final ImmutableSet<OrderEventType> infoEventTypes =
+            Sets.immutableEnumSet(NOTIFICATION, PARTIAL_CLOSE_OK);
+    private static final ImmutableSet<OrderEventType> allEventTypes =
+            Sets.immutableEnumSet(Sets.union(infoEventTypes,
+                                             Sets.union(doneEventTypes, rejectEventTypes)));
 
     public CloseCommand(final IOrder orderToClose) {
         super(orderToClose,
               () -> orderToClose.close(),
-              OrderEventTypeData.closeData,
               orderToClose.getState(),
               IOrder.State.CLOSED,
               "order state");
@@ -33,17 +45,17 @@ public final class CloseCommand extends OrderChangeCommand<IOrder.State> {
     }
 
     @Override
-    protected void initDoneEvents() {
-        doneEventTypes = Sets.immutableEnumSet(CLOSE_OK);
+    public Set<OrderEventType> allEventTypes() {
+        return allEventTypes;
     }
 
     @Override
-    protected void initRejectEvents() {
-        rejectEventTypes = Sets.immutableEnumSet(CLOSE_REJECTED);
+    public Set<OrderEventType> doneEventTypes() {
+        return doneEventTypes;
     }
 
     @Override
-    protected void initInfoEvents() {
-        infoEventTypes = Sets.immutableEnumSet(NOTIFICATION, PARTIAL_CLOSE_OK);
+    public Set<OrderEventType> rejectEventTypes() {
+        return rejectEventTypes;
     }
 }

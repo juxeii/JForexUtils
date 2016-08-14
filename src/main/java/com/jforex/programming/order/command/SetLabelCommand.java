@@ -5,18 +5,30 @@ import static com.jforex.programming.order.event.OrderEventType.CHANGED_LABEL;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_LABEL_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
+import java.util.Set;
+
 import com.dukascopy.api.IOrder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEventTypeData;
+import com.jforex.programming.order.event.OrderEventType;
 
 public final class SetLabelCommand extends OrderChangeCommand<String> {
+
+    private static final ImmutableSet<OrderEventType> doneEventTypes =
+            Sets.immutableEnumSet(CHANGED_LABEL);
+    private static final ImmutableSet<OrderEventType> rejectEventTypes =
+            Sets.immutableEnumSet(CHANGE_LABEL_REJECTED);
+    private static final ImmutableSet<OrderEventType> infoEventTypes =
+            Sets.immutableEnumSet(NOTIFICATION);
+    private static final ImmutableSet<OrderEventType> allEventTypes =
+            Sets.immutableEnumSet(Sets.union(infoEventTypes,
+                                             Sets.union(doneEventTypes, rejectEventTypes)));
 
     public SetLabelCommand(final IOrder orderToChangeLabel,
                            final String newLabel) {
         super(orderToChangeLabel,
               () -> orderToChangeLabel.setLabel(newLabel),
-              OrderEventTypeData.changeLabelData,
               orderToChangeLabel.getLabel(),
               newLabel,
               "label");
@@ -33,17 +45,17 @@ public final class SetLabelCommand extends OrderChangeCommand<String> {
     }
 
     @Override
-    protected void initDoneEvents() {
-        doneEventTypes = Sets.immutableEnumSet(CHANGED_LABEL);
+    public Set<OrderEventType> allEventTypes() {
+        return allEventTypes;
     }
 
     @Override
-    protected void initRejectEvents() {
-        rejectEventTypes = Sets.immutableEnumSet(CHANGE_LABEL_REJECTED);
+    public Set<OrderEventType> doneEventTypes() {
+        return doneEventTypes;
     }
 
     @Override
-    protected void initInfoEvents() {
-        infoEventTypes = Sets.immutableEnumSet(NOTIFICATION);
+    public Set<OrderEventType> rejectEventTypes() {
+        return rejectEventTypes;
     }
 }

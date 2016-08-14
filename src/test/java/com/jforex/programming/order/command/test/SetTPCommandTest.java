@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.command.SetTPCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetTPCommandTest extends CommonCommandForTest {
 
@@ -20,11 +19,6 @@ public class SetTPCommandTest extends CommonCommandForTest {
         assertCallableOrder();
 
         verify(orderForTest).setTakeProfitPrice(newTP);
-    }
-
-    @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertOrderEventTypeData(OrderEventTypeData.changeTPData);
     }
 
     @Test

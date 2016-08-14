@@ -10,7 +10,6 @@ import java.util.concurrent.Callable;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.command.OrderChangeCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class CommonCommandForTest extends CommonUtilForTest {
@@ -24,10 +23,6 @@ public class CommonCommandForTest extends CommonUtilForTest {
         final IOrder order = callable.call();
 
         assertThat(order, equalTo(orderForTest));
-    }
-
-    protected void assertOrderEventTypeData(final OrderEventTypeData orderEventTypeData) {
-        assertThat(command.orderEventTypeData(), equalTo(orderEventTypeData));
     }
 
     protected void assertFilterNotSet() {

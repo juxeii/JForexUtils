@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.command.SetGTTCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetGTTCommandTest extends CommonCommandForTest {
 
@@ -20,11 +19,6 @@ public class SetGTTCommandTest extends CommonCommandForTest {
         assertCallableOrder();
 
         verify(orderForTest).setGoodTillTime(newGTT);
-    }
-
-    @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertOrderEventTypeData(OrderEventTypeData.changeGTTData);
     }
 
     @Test

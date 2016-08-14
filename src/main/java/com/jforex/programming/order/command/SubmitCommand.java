@@ -8,17 +8,30 @@ import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITION
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 
+import java.util.Set;
+
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.Instrument;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEventTypeData;
+import com.jforex.programming.order.event.OrderEventType;
 
 public final class SubmitCommand extends OrderCallCommand {
 
     private final String orderLabel;
     private final Instrument instrument;
+
+    private static final ImmutableSet<OrderEventType> doneEventTypes =
+            Sets.immutableEnumSet(FULLY_FILLED, SUBMIT_CONDITIONAL_OK);
+    private static final ImmutableSet<OrderEventType> rejectEventTypes =
+            Sets.immutableEnumSet(FILL_REJECTED, SUBMIT_REJECTED);
+    private static final ImmutableSet<OrderEventType> infoEventTypes =
+            Sets.immutableEnumSet(NOTIFICATION, SUBMIT_OK, PARTIAL_FILL_OK);
+    private static final ImmutableSet<OrderEventType> allEventTypes =
+            Sets.immutableEnumSet(Sets.union(infoEventTypes,
+                                             Sets.union(doneEventTypes, rejectEventTypes)));
 
     public SubmitCommand(final OrderParams orderParams,
                          final IEngine engine) {
@@ -31,8 +44,7 @@ public final class SubmitCommand extends OrderCallCommand {
                                        orderParams.stopLossPrice(),
                                        orderParams.takeProfitPrice(),
                                        orderParams.goodTillTime(),
-                                       orderParams.comment()),
-              OrderEventTypeData.submitData);
+                                       orderParams.comment()));
 
         orderLabel = orderParams.label();
         instrument = orderParams.instrument();
@@ -59,17 +71,17 @@ public final class SubmitCommand extends OrderCallCommand {
     }
 
     @Override
-    protected void initDoneEvents() {
-        doneEventTypes = Sets.immutableEnumSet(FULLY_FILLED, SUBMIT_CONDITIONAL_OK);
+    public Set<OrderEventType> allEventTypes() {
+        return allEventTypes;
     }
 
     @Override
-    protected void initRejectEvents() {
-        rejectEventTypes = Sets.immutableEnumSet(FILL_REJECTED, SUBMIT_REJECTED);
+    public Set<OrderEventType> doneEventTypes() {
+        return doneEventTypes;
     }
 
     @Override
-    protected void initInfoEvents() {
-        infoEventTypes = Sets.immutableEnumSet(NOTIFICATION, SUBMIT_OK, PARTIAL_FILL_OK);
+    public Set<OrderEventType> rejectEventTypes() {
+        return rejectEventTypes;
     }
 }

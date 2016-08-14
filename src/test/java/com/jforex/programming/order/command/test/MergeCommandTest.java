@@ -1,8 +1,5 @@
 package com.jforex.programming.order.command.test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import java.util.Collection;
 
 import org.junit.Before;
@@ -11,7 +8,6 @@ import org.junit.Test;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class MergeCommandTest extends CommonCommandForTest {
 
@@ -30,14 +26,9 @@ public class MergeCommandTest extends CommonCommandForTest {
     @Test
     public void callableIsCorrect() throws Exception {
         when(engineMock.mergeOrders(mergeOrderLabel, toMergeOrders))
-                .thenReturn(orderForTest);
+            .thenReturn(orderForTest);
 
         assertCallableOrder();
         verify(engineMock).mergeOrders(mergeOrderLabel, toMergeOrders);
-    }
-
-    @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertThat(command.orderEventTypeData(), equalTo(OrderEventTypeData.mergeData));
     }
 }

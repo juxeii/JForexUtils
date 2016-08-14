@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.command.SetLabelCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetLabelCommandTest extends CommonCommandForTest {
 
@@ -20,11 +19,6 @@ public class SetLabelCommandTest extends CommonCommandForTest {
         assertCallableOrder();
 
         verify(orderForTest).setLabel(newLabel);
-    }
-
-    @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertOrderEventTypeData(OrderEventTypeData.changeLabelData);
     }
 
     @Test
