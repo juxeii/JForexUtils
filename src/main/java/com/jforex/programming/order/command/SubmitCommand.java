@@ -1,7 +1,16 @@
 package com.jforex.programming.order.command;
 
+import static com.jforex.programming.order.event.OrderEventType.FILL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.FULLY_FILLED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+import static com.jforex.programming.order.event.OrderEventType.PARTIAL_FILL_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITIONAL_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
+
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.Instrument;
+import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventTypeData;
@@ -47,5 +56,20 @@ public final class SubmitCommand extends OrderCallCommand {
     @Override
     public OrderCallReason callReason() {
         return OrderCallReason.SUBMIT;
+    }
+
+    @Override
+    protected void initDoneEvents() {
+        doneEventTypes = Sets.immutableEnumSet(FULLY_FILLED, SUBMIT_CONDITIONAL_OK);
+    }
+
+    @Override
+    protected void initRejectEvents() {
+        rejectEventTypes = Sets.immutableEnumSet(FILL_REJECTED, SUBMIT_REJECTED);
+    }
+
+    @Override
+    protected void initInfoEvents() {
+        infoEventTypes = Sets.immutableEnumSet(NOTIFICATION, SUBMIT_OK, PARTIAL_FILL_OK);
     }
 }
