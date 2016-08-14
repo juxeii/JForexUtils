@@ -8,16 +8,37 @@ import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITION
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 
+import java.util.Set;
+import java.util.concurrent.Callable;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.dukascopy.api.IEngine;
+import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.event.OrderEventType;
 
-public final class SubmitCommand extends OrderCallCommand {
+public final class SubmitCommand implements OrderCallCommand {
 
     private final String orderLabel;
     private final Instrument instrument;
+    private final Callable<IOrder> callable;
+
+    private static final OrderCallReason callReason = OrderCallReason.SUBMIT;
+    private static final ImmutableSet<OrderEventType> doneEventTypes =
+            Sets.immutableEnumSet(FULLY_FILLED, SUBMIT_CONDITIONAL_OK);
+    private static final ImmutableSet<OrderEventType> rejectEventTypes =
+            Sets.immutableEnumSet(FILL_REJECTED, SUBMIT_REJECTED);
+    private static final ImmutableSet<OrderEventType> infoEventTypes =
+            Sets.immutableEnumSet(NOTIFICATION, SUBMIT_OK, PARTIAL_FILL_OK);
+    private static final ImmutableSet<OrderEventType> allEventTypes =
+            Sets.immutableEnumSet(Sets.union(infoEventTypes, Sets.union(doneEventTypes, rejectEventTypes)));
+    private static final Logger logger = LogManager.getLogger(SubmitCommand.class);
 
     public SubmitCommand(final OrderParams orderParams,
                          final IEngine engine) {
@@ -33,31 +54,46 @@ public final class SubmitCommand extends OrderCallCommand {
                                             orderParams.takeProfitPrice(),
                                             orderParams.goodTillTime(),
                                             orderParams.comment());
-        callReason = OrderCallReason.SUBMIT;
     }
 
     @Override
-    protected void initAttributes() {
-        doneEventTypes =
-                Sets.immutableEnumSet(FULLY_FILLED, SUBMIT_CONDITIONAL_OK);
-        rejectEventTypes =
-                Sets.immutableEnumSet(FILL_REJECTED, SUBMIT_REJECTED);
-        infoEventTypes =
-                Sets.immutableEnumSet(NOTIFICATION, SUBMIT_OK, PARTIAL_FILL_OK);
+    public Set<OrderEventType> allEventTypes() {
+        return allEventTypes;
     }
 
     @Override
-    protected final String subscribeLog() {
-        return "Start submit task with label " + orderLabel + " for " + instrument;
+    public Set<OrderEventType> doneEventTypes() {
+        return doneEventTypes;
     }
 
     @Override
-    protected final String errorLog(final Throwable t) {
-        return "Submit task with label " + orderLabel + " for " + instrument + " failed!Exception: " + t.getMessage();
+    public Set<OrderEventType> rejectEventTypes() {
+        return rejectEventTypes;
     }
 
     @Override
-    protected final String completedLog() {
-        return "Submit task with label " + orderLabel + " for " + instrument + " was successful.";
+    public Callable<IOrder> callable() {
+        return callable;
+    }
+
+    @Override
+    public OrderCallReason callReason() {
+        return callReason;
+    }
+
+    @Override
+    public void logOnSubscribe() {
+        logger.info("Start submit task with label " + orderLabel + " for " + instrument);
+    }
+
+    @Override
+    public void logOnError(final Throwable t) {
+        logger.error("Submit task with label " + orderLabel + " for " + instrument
+                + " failed!Exception: " + t.getMessage());
+    }
+
+    @Override
+    public void logOnCompleted() {
+        logger.info("Submit task with label " + orderLabel + " for " + instrument + " was successful.");
     }
 }

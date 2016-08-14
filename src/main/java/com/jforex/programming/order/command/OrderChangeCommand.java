@@ -1,14 +1,19 @@
 package com.jforex.programming.order.command;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.dukascopy.api.IOrder;
 
-public abstract class OrderChangeCommand<T> extends OrderCallCommand {
+public abstract class OrderChangeCommand<T> implements OrderCallCommand {
 
     protected IOrder orderToChange;
     protected T currentValue;
     protected T newValue;
     protected String valueName;
     private String commonLog;
+
+    private static final Logger logger = LogManager.getLogger(OrderChangeCommand.class);
 
     protected void createCommonLog() {
         commonLog = valueName + " from " + currentValue + " to " + newValue + " for order "
@@ -18,17 +23,17 @@ public abstract class OrderChangeCommand<T> extends OrderCallCommand {
     public abstract boolean filter();
 
     @Override
-    protected final String subscribeLog() {
-        return "Start to change " + commonLog;
+    public void logOnSubscribe() {
+        logger.info("Start to change " + commonLog);
     }
 
     @Override
-    protected final String errorLog(final Throwable t) {
-        return "Failed to change " + commonLog + "!Excpetion: " + t.getMessage();
+    public void logOnError(final Throwable t) {
+        logger.error("Failed to change " + commonLog + "!Excpetion: " + t.getMessage());
     }
 
     @Override
-    protected final String completedLog() {
-        return "Changed " + commonLog;
+    public void logOnCompleted() {
+        logger.info("Changed " + commonLog);
     }
 }
