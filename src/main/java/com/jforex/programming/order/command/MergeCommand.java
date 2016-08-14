@@ -5,6 +5,7 @@ import java.util.Collection;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
 public final class MergeCommand extends OrderCallCommand {
@@ -38,5 +39,10 @@ public final class MergeCommand extends OrderCallCommand {
     protected final String completedLog() {
         return "Merging with label " + mergeOrderLabel
                 + " for position " + instrument + " was successful.";
+    }
+
+    @Override
+    public OrderCallReason callReason() {
+        return OrderCallReason.MERGE;
     }
 }

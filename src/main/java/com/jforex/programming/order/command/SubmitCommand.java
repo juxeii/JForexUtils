@@ -3,6 +3,7 @@ package com.jforex.programming.order.command;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
 public final class SubmitCommand extends OrderCallCommand {
@@ -41,5 +42,10 @@ public final class SubmitCommand extends OrderCallCommand {
     @Override
     protected final String completedLog() {
         return "Submit task with label " + orderLabel + " for " + instrument + " was successful.";
+    }
+
+    @Override
+    public OrderCallReason callReason() {
+        return OrderCallReason.SUBMIT;
     }
 }

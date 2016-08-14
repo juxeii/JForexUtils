@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
 public abstract class OrderCallCommand {
@@ -24,6 +25,8 @@ public abstract class OrderCallCommand {
     public final Callable<IOrder> callable() {
         return callable;
     }
+
+    public abstract OrderCallReason callReason();
 
     public final OrderEventTypeData orderEventTypeData() {
         return orderEventTypeData;
