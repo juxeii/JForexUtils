@@ -13,15 +13,17 @@ public final class SetSLCommand extends OrderChangeCommand<Double> {
 
     public SetSLCommand(final IOrder orderToChangeSL,
                         final double newSL) {
-        super(orderToChangeSL,
-              () -> orderToChangeSL.setStopLossPrice(newSL),
-              orderToChangeSL.getStopLossPrice(),
-              newSL,
-              "SL");
+        orderToChange = orderToChangeSL;
+        callable = initCallable(() -> orderToChangeSL.setStopLossPrice(newSL), orderToChangeSL);
+        callReason = OrderCallReason.CHANGE_SL;
+        currentValue = orderToChangeSL.getStopLossPrice();
+        newValue = newSL;
+        valueName = "SL";
+        createCommonLog();
     }
 
     @Override
-    protected void initEventTypes() {
+    protected void initAttributes() {
         doneEventTypes =
                 Sets.immutableEnumSet(CHANGED_SL);
         rejectEventTypes =
@@ -33,10 +35,5 @@ public final class SetSLCommand extends OrderChangeCommand<Double> {
     @Override
     public final boolean filter() {
         return !isSLSetTo(newValue).test(orderToChange);
-    }
-
-    @Override
-    public OrderCallReason callReason() {
-        return OrderCallReason.CHANGE_SL;
     }
 }

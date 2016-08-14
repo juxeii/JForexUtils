@@ -21,14 +21,14 @@ public final class MergeCommand extends OrderCallCommand {
     public MergeCommand(final String mergeOrderLabel,
                         final Collection<IOrder> toMergeOrders,
                         final IEngine engine) {
-        super(() -> engine.mergeOrders(mergeOrderLabel, toMergeOrders));
-
         this.mergeOrderLabel = mergeOrderLabel;
         instrument = toMergeOrders.iterator().next().getInstrument();
+        callable = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
+        callReason = OrderCallReason.MERGE;
     }
 
     @Override
-    protected void initEventTypes() {
+    protected void initAttributes() {
         doneEventTypes =
                 Sets.immutableEnumSet(MERGE_OK, MERGE_CLOSE_OK);
         rejectEventTypes =
@@ -53,10 +53,5 @@ public final class MergeCommand extends OrderCallCommand {
     protected final String completedLog() {
         return "Merging with label " + mergeOrderLabel
                 + " for position " + instrument + " was successful.";
-    }
-
-    @Override
-    public OrderCallReason callReason() {
-        return OrderCallReason.MERGE;
     }
 }

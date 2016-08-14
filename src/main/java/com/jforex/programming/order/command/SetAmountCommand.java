@@ -13,15 +13,17 @@ public final class SetAmountCommand extends OrderChangeCommand<Double> {
 
     public SetAmountCommand(final IOrder orderToChangeAmount,
                             final double newAmount) {
-        super(orderToChangeAmount,
-              () -> orderToChangeAmount.setRequestedAmount(newAmount),
-              orderToChangeAmount.getRequestedAmount(),
-              newAmount,
-              "amount");
+        orderToChange = orderToChangeAmount;
+        callable = initCallable(() -> orderToChangeAmount.setRequestedAmount(newAmount), orderToChangeAmount);
+        callReason = OrderCallReason.CHANGE_AMOUNT;
+        currentValue = orderToChangeAmount.getRequestedAmount();
+        newValue = newAmount;
+        valueName = "amount";
+        createCommonLog();
     }
 
     @Override
-    protected void initEventTypes() {
+    protected void initAttributes() {
         doneEventTypes =
                 Sets.immutableEnumSet(CHANGED_AMOUNT);
         rejectEventTypes =
@@ -33,10 +35,5 @@ public final class SetAmountCommand extends OrderChangeCommand<Double> {
     @Override
     public final boolean filter() {
         return !isAmountSetTo(newValue).test(orderToChange);
-    }
-
-    @Override
-    public OrderCallReason callReason() {
-        return OrderCallReason.CHANGE_AMOUNT;
     }
 }

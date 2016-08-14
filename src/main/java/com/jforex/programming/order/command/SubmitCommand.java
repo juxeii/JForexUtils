@@ -21,23 +21,23 @@ public final class SubmitCommand extends OrderCallCommand {
 
     public SubmitCommand(final OrderParams orderParams,
                          final IEngine engine) {
-        super(() -> engine.submitOrder(orderParams.label(),
-                                       orderParams.instrument(),
-                                       orderParams.orderCommand(),
-                                       orderParams.amount(),
-                                       orderParams.price(),
-                                       orderParams.slippage(),
-                                       orderParams.stopLossPrice(),
-                                       orderParams.takeProfitPrice(),
-                                       orderParams.goodTillTime(),
-                                       orderParams.comment()));
-
         orderLabel = orderParams.label();
         instrument = orderParams.instrument();
+        callable = () -> engine.submitOrder(orderParams.label(),
+                                            orderParams.instrument(),
+                                            orderParams.orderCommand(),
+                                            orderParams.amount(),
+                                            orderParams.price(),
+                                            orderParams.slippage(),
+                                            orderParams.stopLossPrice(),
+                                            orderParams.takeProfitPrice(),
+                                            orderParams.goodTillTime(),
+                                            orderParams.comment());
+        callReason = OrderCallReason.SUBMIT;
     }
 
     @Override
-    protected void initEventTypes() {
+    protected void initAttributes() {
         doneEventTypes =
                 Sets.immutableEnumSet(FULLY_FILLED, SUBMIT_CONDITIONAL_OK);
         rejectEventTypes =
@@ -59,10 +59,5 @@ public final class SubmitCommand extends OrderCallCommand {
     @Override
     protected final String completedLog() {
         return "Submit task with label " + orderLabel + " for " + instrument + " was successful.";
-    }
-
-    @Override
-    public OrderCallReason callReason() {
-        return OrderCallReason.SUBMIT;
     }
 }

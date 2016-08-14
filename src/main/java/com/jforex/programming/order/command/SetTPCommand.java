@@ -13,15 +13,17 @@ public final class SetTPCommand extends OrderChangeCommand<Double> {
 
     public SetTPCommand(final IOrder orderToChangeTP,
                         final double newTP) {
-        super(orderToChangeTP,
-              () -> orderToChangeTP.setTakeProfitPrice(newTP),
-              orderToChangeTP.getTakeProfitPrice(),
-              newTP,
-              "TP");
+        orderToChange = orderToChangeTP;
+        callable = initCallable(() -> orderToChangeTP.setTakeProfitPrice(newTP), orderToChangeTP);
+        callReason = OrderCallReason.CHANGE_TP;
+        currentValue = orderToChangeTP.getTakeProfitPrice();
+        newValue = newTP;
+        valueName = "TP";
+        createCommonLog();
     }
 
     @Override
-    protected void initEventTypes() {
+    protected void initAttributes() {
         doneEventTypes =
                 Sets.immutableEnumSet(CHANGED_TP);
         rejectEventTypes =
@@ -33,10 +35,5 @@ public final class SetTPCommand extends OrderChangeCommand<Double> {
     @Override
     public final boolean filter() {
         return !isTPSetTo(newValue).test(orderToChange);
-    }
-
-    @Override
-    public OrderCallReason callReason() {
-        return OrderCallReason.CHANGE_TP;
     }
 }

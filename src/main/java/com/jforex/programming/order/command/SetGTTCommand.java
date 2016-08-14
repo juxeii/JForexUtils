@@ -13,15 +13,17 @@ public final class SetGTTCommand extends OrderChangeCommand<Long> {
 
     public SetGTTCommand(final IOrder orderToChangeGTT,
                          final long newGTT) {
-        super(orderToChangeGTT,
-              () -> orderToChangeGTT.setGoodTillTime(newGTT),
-              orderToChangeGTT.getGoodTillTime(),
-              newGTT,
-              "open price");
+        orderToChange = orderToChangeGTT;
+        callable = initCallable(() -> orderToChangeGTT.setGoodTillTime(newGTT), orderToChangeGTT);
+        callReason = OrderCallReason.CHANGE_GTT;
+        currentValue = orderToChangeGTT.getGoodTillTime();
+        newValue = newGTT;
+        valueName = "open price";
+        createCommonLog();
     }
 
     @Override
-    protected void initEventTypes() {
+    protected void initAttributes() {
         doneEventTypes =
                 Sets.immutableEnumSet(CHANGED_GTT);
         rejectEventTypes =
@@ -33,10 +35,5 @@ public final class SetGTTCommand extends OrderChangeCommand<Long> {
     @Override
     public final boolean filter() {
         return !isGTTSetTo(newValue).test(orderToChange);
-    }
-
-    @Override
-    public OrderCallReason callReason() {
-        return OrderCallReason.CHANGE_GTT;
     }
 }

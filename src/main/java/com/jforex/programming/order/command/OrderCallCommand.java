@@ -9,12 +9,15 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.jforex.programming.misc.JFRunnable;
+import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
 
 public abstract class OrderCallCommand {
 
-    private final Callable<IOrder> callable;
+    protected Callable<IOrder> callable;
+    protected OrderCallReason callReason;
     protected ImmutableSet<OrderEventType> doneEventTypes;
     protected ImmutableSet<OrderEventType> rejectEventTypes;
     protected ImmutableSet<OrderEventType> infoEventTypes;
@@ -22,22 +25,27 @@ public abstract class OrderCallCommand {
 
     protected static final Logger logger = LogManager.getLogger(OrderCallCommand.class);
 
-    public OrderCallCommand(final Callable<IOrder> callable) {
-        this.callable = callable;
-
-        initEventTypes();
+    public OrderCallCommand() {
+        initAttributes();
         allEventTypes =
                 Sets.immutableEnumSet(Sets.union(infoEventTypes,
                                                  Sets.union(doneEventTypes, rejectEventTypes)));
     }
 
-    protected abstract void initEventTypes();
+    protected final Callable<IOrder> initCallable(final JFRunnable runnable,
+                                                  final IOrder order) {
+        return OrderStaticUtil.runnableToCallable(runnable, order);
+    }
+
+    protected abstract void initAttributes();
 
     public final Callable<IOrder> callable() {
         return callable;
     }
 
-    public abstract OrderCallReason callReason();
+    public final OrderCallReason callReason() {
+        return callReason;
+    }
 
     public final Set<OrderEventType> allEventTypes() {
         return allEventTypes;

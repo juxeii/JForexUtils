@@ -13,15 +13,17 @@ public final class SetLabelCommand extends OrderChangeCommand<String> {
 
     public SetLabelCommand(final IOrder orderToChangeLabel,
                            final String newLabel) {
-        super(orderToChangeLabel,
-              () -> orderToChangeLabel.setLabel(newLabel),
-              orderToChangeLabel.getLabel(),
-              newLabel,
-              "label");
+        orderToChange = orderToChangeLabel;
+        callable = initCallable(() -> orderToChangeLabel.setLabel(newLabel), orderToChangeLabel);
+        callReason = OrderCallReason.CHANGE_LABEL;
+        currentValue = orderToChangeLabel.getLabel();
+        newValue = newLabel;
+        valueName = "label";
+        createCommonLog();
     }
 
     @Override
-    protected void initEventTypes() {
+    protected void initAttributes() {
         doneEventTypes =
                 Sets.immutableEnumSet(CHANGED_LABEL);
         rejectEventTypes =
@@ -33,10 +35,5 @@ public final class SetLabelCommand extends OrderChangeCommand<String> {
     @Override
     public final boolean filter() {
         return !isLabelSetTo(newValue).test(orderToChange);
-    }
-
-    @Override
-    public OrderCallReason callReason() {
-        return OrderCallReason.CHANGE_LABEL;
     }
 }

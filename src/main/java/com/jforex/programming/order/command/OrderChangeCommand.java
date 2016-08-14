@@ -1,25 +1,16 @@
 package com.jforex.programming.order.command;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.JFRunnable;
-import com.jforex.programming.order.OrderStaticUtil;
 
 public abstract class OrderChangeCommand<T> extends OrderCallCommand {
 
     protected IOrder orderToChange;
+    protected T currentValue;
     protected T newValue;
-    private final String commonLog;
+    protected String valueName;
+    private String commonLog;
 
-    public OrderChangeCommand(final IOrder orderToChange,
-                              final JFRunnable runnable,
-                              final T currentValue,
-                              final T newValue,
-                              final String valueName) {
-        super(OrderStaticUtil.runnableToCallable(runnable, orderToChange));
-
-        this.orderToChange = orderToChange;
-        this.newValue = newValue;
-
+    protected void createCommonLog() {
         commonLog = valueName + " from " + currentValue + " to " + newValue + " for order "
                 + orderToChange.getLabel() + " and instrument " + orderToChange.getInstrument();
     }

@@ -13,15 +13,17 @@ public final class SetOpenPriceCommand extends OrderChangeCommand<Double> {
 
     public SetOpenPriceCommand(final IOrder orderToChangeOpenPrice,
                                final double newOpenPrice) {
-        super(orderToChangeOpenPrice,
-              () -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice),
-              orderToChangeOpenPrice.getOpenPrice(),
-              newOpenPrice,
-              "open price");
+        orderToChange = orderToChangeOpenPrice;
+        callable = initCallable(() -> orderToChangeOpenPrice.setOpenPrice(newOpenPrice), orderToChangeOpenPrice);
+        callReason = OrderCallReason.CHANGE_PRICE;
+        currentValue = orderToChangeOpenPrice.getOpenPrice();
+        newValue = newOpenPrice;
+        valueName = "open price";
+        createCommonLog();
     }
 
     @Override
-    protected void initEventTypes() {
+    protected void initAttributes() {
         doneEventTypes =
                 Sets.immutableEnumSet(CHANGED_PRICE);
         rejectEventTypes =
@@ -33,10 +35,5 @@ public final class SetOpenPriceCommand extends OrderChangeCommand<Double> {
     @Override
     public final boolean filter() {
         return !isOpenPriceSetTo(newValue).test(orderToChange);
-    }
-
-    @Override
-    public OrderCallReason callReason() {
-        return OrderCallReason.CHANGE_PRICE;
     }
 }

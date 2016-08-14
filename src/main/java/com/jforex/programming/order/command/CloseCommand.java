@@ -13,15 +13,17 @@ import com.jforex.programming.order.call.OrderCallReason;
 public final class CloseCommand extends OrderChangeCommand<IOrder.State> {
 
     public CloseCommand(final IOrder orderToClose) {
-        super(orderToClose,
-              () -> orderToClose.close(),
-              orderToClose.getState(),
-              IOrder.State.CLOSED,
-              "order state");
+        orderToChange = orderToClose;
+        callable = initCallable(() -> orderToClose.close(), orderToClose);
+        callReason = OrderCallReason.CLOSE;
+        currentValue = orderToClose.getState();
+        newValue = IOrder.State.CLOSED;
+        valueName = "open price";
+        createCommonLog();
     }
 
     @Override
-    protected void initEventTypes() {
+    protected void initAttributes() {
         doneEventTypes =
                 Sets.immutableEnumSet(CLOSE_OK);
         rejectEventTypes =
@@ -33,10 +35,5 @@ public final class CloseCommand extends OrderChangeCommand<IOrder.State> {
     @Override
     public final boolean filter() {
         return !isClosed.test(orderToChange);
-    }
-
-    @Override
-    public OrderCallReason callReason() {
-        return OrderCallReason.CLOSE;
     }
 }
