@@ -3,16 +3,25 @@ package com.jforex.programming.order.command.test;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SubmitCommand;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SubmitCommandTest extends CommonCommandForTest {
 
     @Before
     public void setUp() {
         command = new SubmitCommand(buyParamsEURUSD, engineMock);
-        command.logOnSubscribe();
-        command.logOnError(jfException);
-        command.logOnCompleted();
+    }
+
+    @Test
+    public void orderEventTypeDataIsCorrect() {
+        assertEventTypeData(OrderEventTypeData.submitEventTypeData);
+    }
+
+    @Test
+    public void orderCallReasonIsCorrect() {
+        assertCallReason(OrderCallReason.SUBMIT);
     }
 
     @Test

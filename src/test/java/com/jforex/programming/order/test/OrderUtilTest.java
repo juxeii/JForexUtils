@@ -74,7 +74,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     private void setUpMocks() {
         when(positionFactoryMock.forInstrument(instrumentEURUSD))
-                .thenReturn(positionMock);
+            .thenReturn(positionMock);
     }
 
     private void assertOrderEventNotification(final OrderEvent expectedEvent) {
@@ -93,7 +93,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private void setOrderUtilHandlerExpectation(final Class<? extends OrderCallCommand> clazz,
                                                 final OrderEvent orderEvent) {
         when(orderUtilHandlerMock.callObservable(isA(clazz)))
-                .thenReturn(eventObservable(orderEvent));
+            .thenReturn(eventObservable(orderEvent));
     }
 
     private void assertChangeCallCallsOnOrderUtilHandler(final Class<? extends OrderCallCommand> clazz,
@@ -131,7 +131,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         private void setOrderUtilHandlerMockResult(final Observable<OrderEvent> observable) {
             when(orderUtilHandlerMock.callObservable(isA(SubmitCommand.class)))
-                    .thenReturn(observable);
+                .thenReturn(observable);
         }
 
         public class SubmitAndMergeSetup {
@@ -141,8 +141,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 submitAndMergeCall = () -> orderUtil
-                        .submitAndMergePosition(mergeOrderLabel, buyParamsEURUSD)
-                        .subscribe(orderEventSubscriber);
+                    .submitAndMergePosition(mergeOrderLabel, buyParamsEURUSD)
+                    .subscribe(orderEventSubscriber);
             }
 
             @Test
@@ -171,10 +171,23 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             setOrderUtilHandlerMockResult(eventObservable(submitOKEvent));
 
             orderUtil
-                    .submitOrder(buyParamsEURUSD)
-                    .subscribe(orderEventSubscriber);
+                .submitOrder(buyParamsEURUSD)
+                .subscribe(orderEventSubscriber);
 
             verifyZeroInteractions(positionMock);
+        }
+
+        @Test
+        public void errorIsPropagated() {
+            final OrderEvent submitRejectEvent =
+                    new OrderEvent(buyOrderEURUSD, OrderEventType.SUBMIT_REJECTED);
+
+            setOrderUtilHandlerMockResult(rejectObservable(submitRejectEvent));
+            orderUtil
+                .submitOrder(buyParamsEURUSD)
+                .subscribe(orderEventSubscriber);
+
+            orderEventSubscriber.assertError(OrderCallRejectException.class);
         }
 
         public class SubmitDone {
@@ -187,8 +200,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 setOrderUtilHandlerMockResult(eventObservable(submitDoneEvent));
 
                 orderUtil
-                        .submitOrder(buyParamsEURUSD)
-                        .subscribe(orderEventSubscriber);
+                    .submitOrder(buyParamsEURUSD)
+                    .subscribe(orderEventSubscriber);
             }
 
             @Test
@@ -220,11 +233,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         private void callAndVerifyMergeInvocation(final double positionExposure) {
             when(positionMock.signedExposure()).thenReturn(positionExposure);
             when(orderUtilHandlerMock.callObservable(isA(SubmitCommand.class)))
-                    .thenReturn(eventObservable(submitOKEvent));
+                .thenReturn(eventObservable(submitOKEvent));
 
             orderUtil
-                    .submitAndMergePositionToParams(mergeOrderLabel, buyParamsEURUSD)
-                    .subscribe(orderEventSubscriber);
+                .submitAndMergePositionToParams(mergeOrderLabel, buyParamsEURUSD)
+                .subscribe(orderEventSubscriber);
 
             verify(orderUtil).submitAndMergePosition(eq(mergeOrderLabel),
                                                      paramsCaptor.capture());
@@ -279,14 +292,14 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         private void setOrderUtilHandlerResult(final Class<? extends OrderCallCommand> clazz,
                                                final Observable<OrderEvent> observable) {
             when(orderUtilHandlerMock.callObservable(isA(clazz)))
-                    .thenReturn(observable);
+                .thenReturn(observable);
         }
 
         @Before
         public void setUp() {
             mergeCall = () -> orderUtil
-                    .mergePositionOrders(mergeOrderLabel, instrumentEURUSD)
-                    .subscribe(orderEventSubscriber);
+                .mergePositionOrders(mergeOrderLabel, instrumentEURUSD)
+                .subscribe(orderEventSubscriber);
 
             setOrderUtilHandlerResult(MergeCommand.class,
                                       eventObservable(mergeEvent));
@@ -297,10 +310,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             final Observable<OrderEvent> expectedObservable = eventObservable(mergeEvent);
             when(positionMock.filled()).thenReturn(toMergeOrders);
             when(orderUtil.mergeOrders(mergeOrderLabel, toMergeOrders))
-                    .thenReturn(expectedObservable);
+                .thenReturn(expectedObservable);
 
             final Observable<OrderEvent> observable = orderUtil
-                    .mergePositionOrders(mergeOrderLabel, instrumentEURUSD);
+                .mergePositionOrders(mergeOrderLabel, instrumentEURUSD);
             observable.subscribe(orderEventSubscriber);
 
             verify(orderUtil, times(2)).mergeOrders(mergeOrderLabel, toMergeOrders);
@@ -390,7 +403,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                     mergeCall.run();
 
                     verify(orderUtilHandlerMock, times(2))
-                            .callObservable(isA(SetTPCommand.class));
+                        .callObservable(isA(SetTPCommand.class));
                 }
 
                 public class RemoveSLCallFail {
@@ -433,7 +446,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                         mergeCall.run();
 
                         verify(orderUtilHandlerMock, times(2))
-                                .callObservable(isA(SetSLCommand.class));
+                            .callObservable(isA(SetSLCommand.class));
                     }
 
                     public class MergeCallFail {
@@ -473,7 +486,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                         @Test
                         public void verifyMergeCall() {
                             verify(orderUtilHandlerMock)
-                                    .callObservable(isA(MergeCommand.class));
+                                .callObservable(isA(MergeCommand.class));
                         }
 
                         @Test
@@ -501,8 +514,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         private final Set<IOrder> ordersToClose = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
         private final Runnable closeCompletableCall =
                 () -> orderUtil
-                        .closePosition(instrumentEURUSD)
-                        .subscribe(orderEventSubscriber);
+                    .closePosition(instrumentEURUSD)
+                    .subscribe(orderEventSubscriber);
 
         @Before
         public void setUp() {
@@ -531,7 +544,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Test
             public void testNoCallToOrderUtilHandler() {
                 verify(orderUtilHandlerMock, never())
-                        .callObservable(any());
+                    .callObservable(any());
             }
 
             @Test
@@ -545,7 +558,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 when(orderUtilHandlerMock.callObservable(isA(CloseCommand.class)))
-                        .thenReturn(rejectObservable(null));
+                    .thenReturn(rejectObservable(null));
 
                 closeCompletableCall.run();
             }
@@ -566,7 +579,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Test
             public void onlyCloseForBuyOrderIsCalled() throws Exception {
                 verify(orderUtilHandlerMock)
-                        .callObservable(callCommandCaptor.capture());
+                    .callObservable(callCommandCaptor.capture());
 
                 final OrderCallCommand command = callCommandCaptor.getValue();
                 command.callable().call();

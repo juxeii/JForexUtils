@@ -3,7 +3,9 @@ package com.jforex.programming.order.command.test;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetSLCommand;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetSLCommandTest extends CommonCommandForTest {
 
@@ -12,6 +14,16 @@ public class SetSLCommandTest extends CommonCommandForTest {
     @Before
     public void setUp() {
         command = new SetSLCommand(orderForTest, newSL);
+    }
+
+    @Test
+    public void orderEventTypeDataIsCorrect() {
+        assertEventTypeData(OrderEventTypeData.changeSLEventTypeData);
+    }
+
+    @Test
+    public void orderCallReasonIsCorrect() {
+        assertCallReason(OrderCallReason.CHANGE_SL);
     }
 
     @Test

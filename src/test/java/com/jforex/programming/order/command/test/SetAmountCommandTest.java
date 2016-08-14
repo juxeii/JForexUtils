@@ -3,7 +3,9 @@ package com.jforex.programming.order.command.test;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetAmountCommand;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetAmountCommandTest extends CommonCommandForTest {
 
@@ -12,6 +14,16 @@ public class SetAmountCommandTest extends CommonCommandForTest {
     @Before
     public void setUp() {
         command = new SetAmountCommand(orderForTest, newAmount);
+    }
+
+    @Test
+    public void orderEventTypeDataIsCorrect() {
+        assertEventTypeData(OrderEventTypeData.changeAmountEventTypeData);
+    }
+
+    @Test
+    public void orderCallReasonIsCorrect() {
+        assertCallReason(OrderCallReason.CHANGE_AMOUNT);
     }
 
     @Test

@@ -1,36 +1,28 @@
 package com.jforex.programming.order.command;
 
 import static com.jforex.programming.order.OrderStaticUtil.isOpenPriceSetTo;
-import static com.jforex.programming.order.event.OrderEventType.CHANGED_PRICE;
-import static com.jforex.programming.order.event.OrderEventType.CHANGE_PRICE_REJECTED;
-import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+import static com.jforex.programming.order.event.OrderEventTypeData.changeOpenPriceEventTypeData;
 
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IOrder;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
-public final class SetOpenPriceCommand extends OrderChangeCommand<Double> {
+public final class SetOpenPriceCommand implements OrderChangeCommand<Double> {
 
+    private IOrder orderToChangeOpenPrice;
+    private double currentValue;
+    private double newValue;
+    private String valueName;
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CHANGE_PRICE;
-    private static final ImmutableSet<OrderEventType> doneEventTypes =
-            Sets.immutableEnumSet(CHANGED_PRICE);
-    private static final ImmutableSet<OrderEventType> rejectEventTypes =
-            Sets.immutableEnumSet(CHANGE_PRICE_REJECTED);
-    private static final ImmutableSet<OrderEventType> infoEventTypes =
-            Sets.immutableEnumSet(NOTIFICATION);
-    private static final ImmutableSet<OrderEventType> allEventTypes =
-            Sets.immutableEnumSet(Sets.union(infoEventTypes, Sets.union(doneEventTypes, rejectEventTypes)));
+    private static final OrderEventTypeData orderEventTypeData = changeOpenPriceEventTypeData;
 
     public SetOpenPriceCommand(final IOrder orderToChangeOpenPrice,
                                final double newOpenPrice) {
-        orderToChange = orderToChangeOpenPrice;
+        this.orderToChangeOpenPrice = orderToChangeOpenPrice;
         callable = () -> {
             orderToChangeOpenPrice.setOpenPrice(newOpenPrice);
             return orderToChangeOpenPrice;
@@ -38,22 +30,11 @@ public final class SetOpenPriceCommand extends OrderChangeCommand<Double> {
         currentValue = orderToChangeOpenPrice.getOpenPrice();
         newValue = newOpenPrice;
         valueName = "open price";
-        createCommonLog();
     }
 
     @Override
-    public Set<OrderEventType> allEventTypes() {
-        return allEventTypes;
-    }
-
-    @Override
-    public Set<OrderEventType> doneEventTypes() {
-        return doneEventTypes;
-    }
-
-    @Override
-    public Set<OrderEventType> rejectEventTypes() {
-        return rejectEventTypes;
+    public OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
     }
 
     @Override
@@ -68,6 +49,26 @@ public final class SetOpenPriceCommand extends OrderChangeCommand<Double> {
 
     @Override
     public final boolean filter() {
-        return !isOpenPriceSetTo(newValue).test(orderToChange);
+        return !isOpenPriceSetTo(newValue).test(orderToChangeOpenPrice);
+    }
+
+    @Override
+    public IOrder order() {
+        return orderToChangeOpenPrice;
+    }
+
+    @Override
+    public Double currentValue() {
+        return currentValue;
+    }
+
+    @Override
+    public Double newValue() {
+        return newValue;
+    }
+
+    @Override
+    public String valueName() {
+        return valueName;
     }
 }

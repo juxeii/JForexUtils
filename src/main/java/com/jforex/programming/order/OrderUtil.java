@@ -70,9 +70,16 @@ public class OrderUtil {
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
         checkNotNull(orderParams);
+        final Instrument instrument = orderParams.instrument();
+        final String orderLabel = orderParams.label();
 
         return orderUtilObservable(new SubmitCommand(orderParams, engine))
-            .doOnNext(this::addCreatedOrderToPosition);
+            .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
+            .doOnError(e -> logger.error("Submit task with label " + orderLabel
+                    + " for " + instrument + " failed!Exception: " + e.getMessage()))
+            .doOnNext(this::addCreatedOrderToPosition)
+            .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
+                    + " for " + instrument + " was successful."));
     }
 
     private void addCreatedOrderToPosition(final OrderEvent orderEvent) {
@@ -114,12 +121,20 @@ public class OrderUtil {
                 ? Observable.empty()
                 : Observable
                     .just(toMergeOrders)
-                    .doOnSubscribe(() -> position(toMergeOrders).markOrdersActive(toMergeOrders))
+                    .doOnSubscribe(() -> {
+                        logger.info("Starting to merge with label " + mergeOrderLabel
+                                + " for position " + instrumentFromOrders(toMergeOrders) + ".");
+                        position(toMergeOrders).markOrdersActive(toMergeOrders);
+                    })
                     .flatMap(this::removeTPSLObservable)
                     .toCompletable()
                     .andThen(orderUtilObservable(new MergeCommand(mergeOrderLabel, toMergeOrders, engine)))
                     .doOnNext(this::addCreatedOrderToPosition)
-                    .doOnTerminate(() -> position(toMergeOrders).markOrdersIdle(toMergeOrders));
+                    .doOnTerminate(() -> position(toMergeOrders).markOrdersIdle(toMergeOrders))
+                    .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
+                            + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
+                    .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
+                            + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
     }
 
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
@@ -220,10 +235,18 @@ public class OrderUtil {
     }
 
     private Observable<OrderEvent> changeObservable(final OrderChangeCommand<?> command) {
+        final IOrder orderToChange = command.order();
+        final String commonLog = command.valueName() + " from " + command.currentValue() + " to "
+                + command.newValue() + " for order " + orderToChange.getLabel() + " and instrument "
+                + orderToChange.getInstrument();
+
         return Observable
             .just(command)
             .filter(OrderChangeCommand::filter)
-            .flatMap(this::orderUtilObservable);
+            .doOnSubscribe(() -> logger.info("Start to change " + commonLog))
+            .flatMap(this::orderUtilObservable)
+            .doOnError(e -> logger.error("Failed to change " + commonLog + "!Excpetion: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Changed " + commonLog));
     }
 
     private Observable<OrderEvent> orderUtilObservable(final OrderCallCommand command) {

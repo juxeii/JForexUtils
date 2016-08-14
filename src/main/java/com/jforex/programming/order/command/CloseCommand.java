@@ -1,36 +1,27 @@
 package com.jforex.programming.order.command;
 
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
-import static com.jforex.programming.order.event.OrderEventType.CLOSE_OK;
-import static com.jforex.programming.order.event.OrderEventType.CLOSE_REJECTED;
-import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
-import static com.jforex.programming.order.event.OrderEventType.PARTIAL_CLOSE_OK;
+import static com.jforex.programming.order.event.OrderEventTypeData.closeEventTypeData;
 
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IOrder;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
-public final class CloseCommand extends OrderChangeCommand<IOrder.State> {
+public final class CloseCommand implements OrderChangeCommand<IOrder.State> {
 
+    private IOrder orderToClose;
+    private IOrder.State currentValue;
+    private IOrder.State newValue;
+    private String valueName;
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CLOSE;
-    private static final ImmutableSet<OrderEventType> doneEventTypes =
-            Sets.immutableEnumSet(CLOSE_OK);
-    private static final ImmutableSet<OrderEventType> rejectEventTypes =
-            Sets.immutableEnumSet(CLOSE_REJECTED);
-    private static final ImmutableSet<OrderEventType> infoEventTypes =
-            Sets.immutableEnumSet(NOTIFICATION, PARTIAL_CLOSE_OK);
-    private static final ImmutableSet<OrderEventType> allEventTypes =
-            Sets.immutableEnumSet(Sets.union(infoEventTypes, Sets.union(doneEventTypes, rejectEventTypes)));
+    private static final OrderEventTypeData orderEventTypeData = closeEventTypeData;
 
     public CloseCommand(final IOrder orderToClose) {
-        orderToChange = orderToClose;
+        this.orderToClose = orderToClose;
         callable = () -> {
             orderToClose.close();
             return orderToClose;
@@ -38,27 +29,16 @@ public final class CloseCommand extends OrderChangeCommand<IOrder.State> {
         currentValue = orderToClose.getState();
         newValue = IOrder.State.CLOSED;
         valueName = "open price";
-        createCommonLog();
     }
 
     @Override
     public final boolean filter() {
-        return !isClosed.test(orderToChange);
+        return !isClosed.test(orderToClose);
     }
 
     @Override
-    public Set<OrderEventType> allEventTypes() {
-        return allEventTypes;
-    }
-
-    @Override
-    public Set<OrderEventType> doneEventTypes() {
-        return doneEventTypes;
-    }
-
-    @Override
-    public Set<OrderEventType> rejectEventTypes() {
-        return rejectEventTypes;
+    public OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
     }
 
     @Override
@@ -69,5 +49,25 @@ public final class CloseCommand extends OrderChangeCommand<IOrder.State> {
     @Override
     public OrderCallReason callReason() {
         return callReason;
+    }
+
+    @Override
+    public IOrder order() {
+        return orderToClose;
+    }
+
+    @Override
+    public IOrder.State currentValue() {
+        return currentValue;
+    }
+
+    @Override
+    public IOrder.State newValue() {
+        return newValue;
+    }
+
+    @Override
+    public String valueName() {
+        return valueName;
     }
 }

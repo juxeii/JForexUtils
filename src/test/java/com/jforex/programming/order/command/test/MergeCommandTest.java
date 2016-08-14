@@ -7,7 +7,9 @@ import org.junit.Test;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class MergeCommandTest extends CommonCommandForTest {
 
@@ -18,9 +20,16 @@ public class MergeCommandTest extends CommonCommandForTest {
     @Before
     public void setUp() {
         command = new MergeCommand(mergeOrderLabel, toMergeOrders, engineMock);
-        command.logOnSubscribe();
-        command.logOnError(jfException);
-        command.logOnCompleted();
+    }
+
+    @Test
+    public void orderEventTypeDataIsCorrect() {
+        assertEventTypeData(OrderEventTypeData.mergeEventTypeData);
+    }
+
+    @Test
+    public void orderCallReasonIsCorrect() {
+        assertCallReason(OrderCallReason.MERGE);
     }
 
     @Test
