@@ -11,10 +11,10 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public final class SetTPCommand implements OrderChangeCommand<Double> {
 
-    private IOrder orderToChangeTP;
-    private double currentValue;
-    private double newValue;
-    private String valueName;
+    private final IOrder orderToChangeTP;
+    private final double currentValue;
+    private final double newValue;
+    private final String valueName;
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CHANGE_TP;
@@ -33,7 +33,7 @@ public final class SetTPCommand implements OrderChangeCommand<Double> {
     }
 
     @Override
-    public OrderEventTypeData orderEventTypeData() {
+    public final OrderEventTypeData orderEventTypeData() {
         return orderEventTypeData;
     }
 
@@ -43,32 +43,32 @@ public final class SetTPCommand implements OrderChangeCommand<Double> {
     }
 
     @Override
-    public Callable<IOrder> callable() {
+    public final Callable<IOrder> callable() {
         return callable;
     }
 
     @Override
-    public OrderCallReason callReason() {
+    public final OrderCallReason callReason() {
         return callReason;
     }
 
     @Override
-    public IOrder order() {
+    public final IOrder order() {
         return orderToChangeTP;
     }
 
     @Override
-    public Double currentValue() {
+    public final Double currentValue() {
         return currentValue;
     }
 
     @Override
-    public Double newValue() {
+    public final Double newValue() {
         return newValue;
     }
 
     @Override
-    public String valueName() {
+    public final String valueName() {
         return valueName;
     }
 }

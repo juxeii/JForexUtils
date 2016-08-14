@@ -11,10 +11,10 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public final class SetAmountCommand implements OrderChangeCommand<Double> {
 
-    private IOrder orderToChangeAmount;
-    private double currentValue;
-    private double newValue;
-    private String valueName;
+    private final IOrder orderToChangeAmount;
+    private final double currentValue;
+    private final double newValue;
+    private final String valueName;
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CHANGE_AMOUNT;
@@ -33,17 +33,17 @@ public final class SetAmountCommand implements OrderChangeCommand<Double> {
     }
 
     @Override
-    public OrderEventTypeData orderEventTypeData() {
+    public final OrderEventTypeData orderEventTypeData() {
         return orderEventTypeData;
     }
 
     @Override
-    public Callable<IOrder> callable() {
+    public final Callable<IOrder> callable() {
         return callable;
     }
 
     @Override
-    public OrderCallReason callReason() {
+    public final OrderCallReason callReason() {
         return callReason;
     }
 
@@ -53,22 +53,22 @@ public final class SetAmountCommand implements OrderChangeCommand<Double> {
     }
 
     @Override
-    public IOrder order() {
+    public final IOrder order() {
         return orderToChangeAmount;
     }
 
     @Override
-    public Double currentValue() {
+    public final Double currentValue() {
         return currentValue;
     }
 
     @Override
-    public Double newValue() {
+    public final Double newValue() {
         return newValue;
     }
 
     @Override
-    public String valueName() {
+    public final String valueName() {
         return valueName;
     }
 }

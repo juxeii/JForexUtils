@@ -11,10 +11,10 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public final class CloseCommand implements OrderChangeCommand<IOrder.State> {
 
-    private IOrder orderToClose;
-    private IOrder.State currentValue;
-    private IOrder.State newValue;
-    private String valueName;
+    private final IOrder orderToClose;
+    private final IOrder.State currentValue;
+    private final IOrder.State newValue;
+    private final String valueName;
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CLOSE;
@@ -37,27 +37,27 @@ public final class CloseCommand implements OrderChangeCommand<IOrder.State> {
     }
 
     @Override
-    public OrderEventTypeData orderEventTypeData() {
+    public final OrderEventTypeData orderEventTypeData() {
         return orderEventTypeData;
     }
 
     @Override
-    public Callable<IOrder> callable() {
+    public final Callable<IOrder> callable() {
         return callable;
     }
 
     @Override
-    public OrderCallReason callReason() {
+    public final OrderCallReason callReason() {
         return callReason;
     }
 
     @Override
-    public IOrder order() {
+    public final IOrder order() {
         return orderToClose;
     }
 
     @Override
-    public IOrder.State currentValue() {
+    public final IOrder.State currentValue() {
         return currentValue;
     }
 
