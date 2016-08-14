@@ -32,23 +32,13 @@ public final class CloseCommand implements OrderChangeCommand<IOrder.State> {
     }
 
     @Override
-    public final boolean filter() {
-        return !isClosed.test(orderToClose);
-    }
-
-    @Override
-    public final OrderEventTypeData orderEventTypeData() {
-        return orderEventTypeData;
-    }
-
-    @Override
     public final Callable<IOrder> callable() {
         return callable;
     }
 
     @Override
-    public final OrderCallReason callReason() {
-        return callReason;
+    public final boolean filter() {
+        return !isClosed.test(orderToClose);
     }
 
     @Override
@@ -69,5 +59,15 @@ public final class CloseCommand implements OrderChangeCommand<IOrder.State> {
     @Override
     public String valueName() {
         return valueName;
+    }
+
+    @Override
+    public final OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
+    }
+
+    @Override
+    public final OrderCallReason callReason() {
+        return callReason;
     }
 }

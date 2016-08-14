@@ -24,13 +24,13 @@ public final class MergeCommand implements OrderCallCommand {
     }
 
     @Override
-    public final OrderEventTypeData orderEventTypeData() {
-        return orderEventTypeData;
+    public final Callable<IOrder> callable() {
+        return callable;
     }
 
     @Override
-    public final Callable<IOrder> callable() {
-        return callable;
+    public final OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
     }
 
     @Override

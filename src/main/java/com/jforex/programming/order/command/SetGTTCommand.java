@@ -33,23 +33,13 @@ public final class SetGTTCommand implements OrderChangeCommand<Long> {
     }
 
     @Override
-    public final OrderEventTypeData orderEventTypeData() {
-        return orderEventTypeData;
-    }
-
-    @Override
-    public final boolean filter() {
-        return !isGTTSetTo(newValue).test(orderToChange);
-    }
-
-    @Override
     public final Callable<IOrder> callable() {
         return callable;
     }
 
     @Override
-    public final OrderCallReason callReason() {
-        return callReason;
+    public final boolean filter() {
+        return !isGTTSetTo(newValue).test(orderToChange);
     }
 
     @Override
@@ -70,5 +60,15 @@ public final class SetGTTCommand implements OrderChangeCommand<Long> {
     @Override
     public final String valueName() {
         return valueName;
+    }
+
+    @Override
+    public final OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
+    }
+
+    @Override
+    public final OrderCallReason callReason() {
+        return callReason;
     }
 }

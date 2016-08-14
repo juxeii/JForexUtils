@@ -33,18 +33,8 @@ public final class SetOpenPriceCommand implements OrderChangeCommand<Double> {
     }
 
     @Override
-    public final OrderEventTypeData orderEventTypeData() {
-        return orderEventTypeData;
-    }
-
-    @Override
     public final Callable<IOrder> callable() {
         return callable;
-    }
-
-    @Override
-    public final OrderCallReason callReason() {
-        return callReason;
     }
 
     @Override
@@ -70,5 +60,15 @@ public final class SetOpenPriceCommand implements OrderChangeCommand<Double> {
     @Override
     public final String valueName() {
         return valueName;
+    }
+
+    @Override
+    public final OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
+    }
+
+    @Override
+    public final OrderCallReason callReason() {
+        return callReason;
     }
 }

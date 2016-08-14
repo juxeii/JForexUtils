@@ -33,23 +33,13 @@ public final class SetTPCommand implements OrderChangeCommand<Double> {
     }
 
     @Override
-    public final OrderEventTypeData orderEventTypeData() {
-        return orderEventTypeData;
-    }
-
-    @Override
-    public final boolean filter() {
-        return !isTPSetTo(newValue).test(orderToChangeTP);
-    }
-
-    @Override
     public final Callable<IOrder> callable() {
         return callable;
     }
 
     @Override
-    public final OrderCallReason callReason() {
-        return callReason;
+    public final boolean filter() {
+        return !isTPSetTo(newValue).test(orderToChangeTP);
     }
 
     @Override
@@ -70,5 +60,15 @@ public final class SetTPCommand implements OrderChangeCommand<Double> {
     @Override
     public final String valueName() {
         return valueName;
+    }
+
+    @Override
+    public final OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
+    }
+
+    @Override
+    public final OrderCallReason callReason() {
+        return callReason;
     }
 }
