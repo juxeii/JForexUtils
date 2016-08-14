@@ -12,9 +12,7 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 public final class SetOpenPriceCommand implements OrderChangeCommand<Double> {
 
     private final IOrder orderToChangeOpenPrice;
-    private final double currentValue;
-    private final double newValue;
-    private final String valueName;
+    private final double newOpenPrice;
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CHANGE_PRICE;
@@ -23,13 +21,11 @@ public final class SetOpenPriceCommand implements OrderChangeCommand<Double> {
     public SetOpenPriceCommand(final IOrder orderToChangeOpenPrice,
                                final double newOpenPrice) {
         this.orderToChangeOpenPrice = orderToChangeOpenPrice;
+        this.newOpenPrice = newOpenPrice;
         callable = () -> {
             orderToChangeOpenPrice.setOpenPrice(newOpenPrice);
             return orderToChangeOpenPrice;
         };
-        currentValue = orderToChangeOpenPrice.getOpenPrice();
-        newValue = newOpenPrice;
-        valueName = "open price";
     }
 
     @Override
@@ -39,27 +35,7 @@ public final class SetOpenPriceCommand implements OrderChangeCommand<Double> {
 
     @Override
     public final boolean filter() {
-        return !isOpenPriceSetTo(newValue).test(orderToChangeOpenPrice);
-    }
-
-    @Override
-    public final IOrder order() {
-        return orderToChangeOpenPrice;
-    }
-
-    @Override
-    public final Double currentValue() {
-        return currentValue;
-    }
-
-    @Override
-    public final Double newValue() {
-        return newValue;
-    }
-
-    @Override
-    public final String valueName() {
-        return valueName;
+        return !isOpenPriceSetTo(newOpenPrice).test(orderToChangeOpenPrice);
     }
 
     @Override

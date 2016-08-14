@@ -12,9 +12,7 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 public final class SetLabelCommand implements OrderChangeCommand<String> {
 
     private final IOrder orderToChangeLabel;
-    private final String currentValue;
-    private final String newValue;
-    private final String valueName;
+    private final String newLabel;
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CHANGE_LABEL;
@@ -23,13 +21,11 @@ public final class SetLabelCommand implements OrderChangeCommand<String> {
     public SetLabelCommand(final IOrder orderToChangeLabel,
                            final String newLabel) {
         this.orderToChangeLabel = orderToChangeLabel;
+        this.newLabel = newLabel;
         callable = () -> {
             orderToChangeLabel.setLabel(newLabel);
             return orderToChangeLabel;
         };
-        currentValue = orderToChangeLabel.getLabel();
-        newValue = newLabel;
-        valueName = "label";
     }
 
     @Override
@@ -39,27 +35,7 @@ public final class SetLabelCommand implements OrderChangeCommand<String> {
 
     @Override
     public final boolean filter() {
-        return !isLabelSetTo(newValue).test(orderToChangeLabel);
-    }
-
-    @Override
-    public final IOrder order() {
-        return orderToChangeLabel;
-    }
-
-    @Override
-    public final String currentValue() {
-        return currentValue;
-    }
-
-    @Override
-    public final String newValue() {
-        return newValue;
-    }
-
-    @Override
-    public final String valueName() {
-        return valueName;
+        return !isLabelSetTo(newLabel).test(orderToChangeLabel);
     }
 
     @Override

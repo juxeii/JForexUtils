@@ -12,9 +12,7 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 public final class SetGTTCommand implements OrderChangeCommand<Long> {
 
     private final IOrder orderToChange;
-    private final Long currentValue;
-    private final Long newValue;
-    private final String valueName;
+    private final Long newGTT;
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CHANGE_GTT;
@@ -23,13 +21,11 @@ public final class SetGTTCommand implements OrderChangeCommand<Long> {
     public SetGTTCommand(final IOrder orderToChangeGTT,
                          final long newGTT) {
         orderToChange = orderToChangeGTT;
+        this.newGTT = newGTT;
         callable = () -> {
             orderToChangeGTT.setGoodTillTime(newGTT);
             return orderToChangeGTT;
         };
-        currentValue = orderToChangeGTT.getGoodTillTime();
-        newValue = newGTT;
-        valueName = "GTT";
     }
 
     @Override
@@ -39,27 +35,7 @@ public final class SetGTTCommand implements OrderChangeCommand<Long> {
 
     @Override
     public final boolean filter() {
-        return !isGTTSetTo(newValue).test(orderToChange);
-    }
-
-    @Override
-    public final IOrder order() {
-        return orderToChange;
-    }
-
-    @Override
-    public final Long currentValue() {
-        return currentValue;
-    }
-
-    @Override
-    public final Long newValue() {
-        return newValue;
-    }
-
-    @Override
-    public final String valueName() {
-        return valueName;
+        return !isGTTSetTo(newGTT).test(orderToChange);
     }
 
     @Override

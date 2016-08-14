@@ -189,57 +189,81 @@ public class OrderUtil {
     public Observable<OrderEvent> close(final IOrder orderToClose) {
         final OrderChangeCommand<?> command =
                 new CloseCommand(checkNotNull(orderToClose));
-        return changeObservable(command);
+        final String commonLog = "state" + " from " + orderToClose.getState() + " to "
+                + IOrder.State.CLOSED + " for order " + orderToClose.getLabel() + " and instrument "
+                + orderToClose.getInstrument();
+
+        return changeObservable(command, commonLog);
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
                                            final String newLabel) {
         final OrderChangeCommand<?> command =
                 new SetLabelCommand(checkNotNull(orderToChangeLabel), newLabel);
-        return changeObservable(command);
+        final String commonLog = "label" + " from " + orderToChangeLabel.getLabel() + " to "
+                + newLabel + " for order " + orderToChangeLabel.getLabel() + " and instrument "
+                + orderToChangeLabel.getInstrument();
+
+        return changeObservable(command, commonLog);
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
                                                   final long newGTT) {
         final OrderChangeCommand<?> command =
                 new SetGTTCommand(checkNotNull(orderToChangeGTT), newGTT);
-        return changeObservable(command);
+        final String commonLog = "GTT" + " from " + orderToChangeGTT.getGoodTillTime() + " to "
+                + newGTT + " for order " + orderToChangeGTT.getLabel() + " and instrument "
+                + orderToChangeGTT.getInstrument();
+
+        return changeObservable(command, commonLog);
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
         final OrderChangeCommand<?> command =
                 new SetOpenPriceCommand(checkNotNull(orderToChangeOpenPrice), newOpenPrice);
-        return changeObservable(command);
+        final String commonLog = "open price" + " from " + orderToChangeOpenPrice.getOpenPrice() + " to "
+                + newOpenPrice + " for order " + orderToChangeOpenPrice.getLabel() + " and instrument "
+                + orderToChangeOpenPrice.getInstrument();
+
+        return changeObservable(command, commonLog);
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
                                                      final double newRequestedAmount) {
         final OrderChangeCommand<?> command =
                 new SetAmountCommand(checkNotNull(orderToChangeAmount), newRequestedAmount);
-        return changeObservable(command);
+        final String commonLog = "amount" + " from " + orderToChangeAmount.getRequestedAmount() + " to "
+                + newRequestedAmount + " for order " + orderToChangeAmount.getLabel() + " and instrument "
+                + orderToChangeAmount.getInstrument();
+
+        return changeObservable(command, commonLog);
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
                                                    final double newSL) {
         final OrderChangeCommand<?> command =
                 new SetSLCommand(checkNotNull(orderToChangeSL), newSL);
-        return changeObservable(command);
+        final String commonLog = "SL" + " from " + orderToChangeSL.getStopLossPrice() + " to "
+                + newSL + " for order " + orderToChangeSL.getLabel() + " and instrument "
+                + orderToChangeSL.getInstrument();
+
+        return changeObservable(command, commonLog);
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
                                                      final double newTP) {
         final OrderChangeCommand<?> command =
                 new SetTPCommand(checkNotNull(orderToChangeTP), newTP);
-        return changeObservable(command);
+        final String commonLog = "TP" + " from " + orderToChangeTP.getTakeProfitPrice() + " to "
+                + newTP + " for order " + orderToChangeTP.getLabel() + " and instrument "
+                + orderToChangeTP.getInstrument();
+
+        return changeObservable(command, commonLog);
     }
 
-    private Observable<OrderEvent> changeObservable(final OrderChangeCommand<?> command) {
-        final IOrder orderToChange = command.order();
-        final String commonLog = command.valueName() + " from " + command.currentValue() + " to "
-                + command.newValue() + " for order " + orderToChange.getLabel() + " and instrument "
-                + orderToChange.getInstrument();
-
+    private Observable<OrderEvent> changeObservable(final OrderChangeCommand<?> command,
+                                                    final String commonLog) {
         return Observable
             .just(command)
             .filter(OrderChangeCommand::filter)

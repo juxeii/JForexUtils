@@ -12,9 +12,7 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 public final class SetTPCommand implements OrderChangeCommand<Double> {
 
     private final IOrder orderToChangeTP;
-    private final double currentValue;
-    private final double newValue;
-    private final String valueName;
+    private final double newTP;
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CHANGE_TP;
@@ -23,13 +21,11 @@ public final class SetTPCommand implements OrderChangeCommand<Double> {
     public SetTPCommand(final IOrder orderToChangeTP,
                         final double newTP) {
         this.orderToChangeTP = orderToChangeTP;
+        this.newTP = newTP;
         callable = () -> {
             orderToChangeTP.setTakeProfitPrice(newTP);
             return orderToChangeTP;
         };
-        currentValue = orderToChangeTP.getTakeProfitPrice();
-        newValue = newTP;
-        valueName = "TP";
     }
 
     @Override
@@ -39,27 +35,7 @@ public final class SetTPCommand implements OrderChangeCommand<Double> {
 
     @Override
     public final boolean filter() {
-        return !isTPSetTo(newValue).test(orderToChangeTP);
-    }
-
-    @Override
-    public final IOrder order() {
-        return orderToChangeTP;
-    }
-
-    @Override
-    public final Double currentValue() {
-        return currentValue;
-    }
-
-    @Override
-    public final Double newValue() {
-        return newValue;
-    }
-
-    @Override
-    public final String valueName() {
-        return valueName;
+        return !isTPSetTo(newTP).test(orderToChangeTP);
     }
 
     @Override

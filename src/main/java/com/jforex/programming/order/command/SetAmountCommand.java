@@ -12,9 +12,7 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 public final class SetAmountCommand implements OrderChangeCommand<Double> {
 
     private final IOrder orderToChangeAmount;
-    private final double currentValue;
-    private final double newValue;
-    private final String valueName;
+    private final double newAmount;
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CHANGE_AMOUNT;
@@ -23,13 +21,11 @@ public final class SetAmountCommand implements OrderChangeCommand<Double> {
     public SetAmountCommand(final IOrder orderToChangeAmountAmount,
                             final double newAmount) {
         this.orderToChangeAmount = orderToChangeAmountAmount;
+        this.newAmount = newAmount;
         callable = () -> {
             orderToChangeAmountAmount.setRequestedAmount(newAmount);
             return orderToChangeAmountAmount;
         };
-        currentValue = orderToChangeAmountAmount.getRequestedAmount();
-        newValue = newAmount;
-        valueName = "amount";
     }
 
     @Override
@@ -39,27 +35,7 @@ public final class SetAmountCommand implements OrderChangeCommand<Double> {
 
     @Override
     public final boolean filter() {
-        return !isAmountSetTo(newValue).test(orderToChangeAmount);
-    }
-
-    @Override
-    public final IOrder order() {
-        return orderToChangeAmount;
-    }
-
-    @Override
-    public final Double currentValue() {
-        return currentValue;
-    }
-
-    @Override
-    public final Double newValue() {
-        return newValue;
-    }
-
-    @Override
-    public final String valueName() {
-        return valueName;
+        return !isAmountSetTo(newAmount).test(orderToChangeAmount);
     }
 
     @Override

@@ -12,9 +12,7 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 public final class SetSLCommand implements OrderChangeCommand<Double> {
 
     private final IOrder orderToChangeSL;
-    private final double currentValue;
-    private final double newValue;
-    private final String valueName;
+    private final double newSL;
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CHANGE_SL;
@@ -23,13 +21,11 @@ public final class SetSLCommand implements OrderChangeCommand<Double> {
     public SetSLCommand(final IOrder orderToChangeSL,
                         final double newSL) {
         this.orderToChangeSL = orderToChangeSL;
+        this.newSL = newSL;
         callable = () -> {
             orderToChangeSL.setStopLossPrice(newSL);
             return orderToChangeSL;
         };
-        currentValue = orderToChangeSL.getStopLossPrice();
-        newValue = newSL;
-        valueName = "SL";
     }
 
     @Override
@@ -39,27 +35,7 @@ public final class SetSLCommand implements OrderChangeCommand<Double> {
 
     @Override
     public final boolean filter() {
-        return !isSLSetTo(newValue).test(orderToChangeSL);
-    }
-
-    @Override
-    public final IOrder order() {
-        return orderToChangeSL;
-    }
-
-    @Override
-    public final Double currentValue() {
-        return currentValue;
-    }
-
-    @Override
-    public final Double newValue() {
-        return newValue;
-    }
-
-    @Override
-    public final String valueName() {
-        return valueName;
+        return !isSLSetTo(newSL).test(orderToChangeSL);
     }
 
     @Override
