@@ -1,7 +1,5 @@
 package com.jforex.programming.order;
 
-import static com.jforex.programming.order.event.OrderEventTypeSets.rejectEvents;
-
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -46,12 +44,13 @@ public class OrderUtilHandler {
             .observable()
             .filter(orderEvent -> orderEvent.order().equals(order))
             .filter(orderEvent -> command.allEventTypes().contains(orderEvent.type()))
-            .flatMap(this::rejectAsErrorObservable)
+            .flatMap(orderEvent -> rejectAsErrorObservable(orderEvent, command))
             .takeUntil(orderEvent -> command.doneEventTypes().contains(orderEvent.type()));
     }
 
-    private Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
-        return rejectEvents.contains(orderEvent.type())
+    private Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent,
+                                                           final OrderCallCommand command) {
+        return command.rejectEventTypes().contains(orderEvent.type())
                 ? Observable.error(new OrderCallRejectException("", orderEvent))
                 : Observable.just(orderEvent);
     }

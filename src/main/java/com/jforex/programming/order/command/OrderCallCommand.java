@@ -7,18 +7,31 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
 
 public abstract class OrderCallCommand {
 
     private final Callable<IOrder> callable;
+    protected ImmutableSet<OrderEventType> doneEventTypes;
+    protected ImmutableSet<OrderEventType> rejectEventTypes;
+    protected ImmutableSet<OrderEventType> infoEventTypes;
+    protected ImmutableSet<OrderEventType> allEventTypes;
 
     protected static final Logger logger = LogManager.getLogger(OrderCallCommand.class);
 
     public OrderCallCommand(final Callable<IOrder> callable) {
         this.callable = callable;
+
+        initEventTypes();
+        allEventTypes =
+                Sets.immutableEnumSet(Sets.union(infoEventTypes,
+                                                 Sets.union(doneEventTypes, rejectEventTypes)));
     }
+
+    protected abstract void initEventTypes();
 
     public final Callable<IOrder> callable() {
         return callable;
@@ -26,11 +39,17 @@ public abstract class OrderCallCommand {
 
     public abstract OrderCallReason callReason();
 
-    public abstract Set<OrderEventType> allEventTypes();
+    public final Set<OrderEventType> allEventTypes() {
+        return allEventTypes;
+    }
 
-    public abstract Set<OrderEventType> doneEventTypes();
+    public final Set<OrderEventType> doneEventTypes() {
+        return doneEventTypes;
+    }
 
-    public abstract Set<OrderEventType> rejectEventTypes();
+    public final Set<OrderEventType> rejectEventTypes() {
+        return rejectEventTypes;
+    }
 
     public final void logOnSubscribe() {
         logger.info(subscribeLog());

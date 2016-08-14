@@ -8,30 +8,16 @@ import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITION
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 
-import java.util.Set;
-
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.Instrument;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEventType;
 
 public final class SubmitCommand extends OrderCallCommand {
 
     private final String orderLabel;
     private final Instrument instrument;
-
-    private static final ImmutableSet<OrderEventType> doneEventTypes =
-            Sets.immutableEnumSet(FULLY_FILLED, SUBMIT_CONDITIONAL_OK);
-    private static final ImmutableSet<OrderEventType> rejectEventTypes =
-            Sets.immutableEnumSet(FILL_REJECTED, SUBMIT_REJECTED);
-    private static final ImmutableSet<OrderEventType> infoEventTypes =
-            Sets.immutableEnumSet(NOTIFICATION, SUBMIT_OK, PARTIAL_FILL_OK);
-    private static final ImmutableSet<OrderEventType> allEventTypes =
-            Sets.immutableEnumSet(Sets.union(infoEventTypes,
-                                             Sets.union(doneEventTypes, rejectEventTypes)));
 
     public SubmitCommand(final OrderParams orderParams,
                          final IEngine engine) {
@@ -48,6 +34,16 @@ public final class SubmitCommand extends OrderCallCommand {
 
         orderLabel = orderParams.label();
         instrument = orderParams.instrument();
+    }
+
+    @Override
+    protected void initEventTypes() {
+        doneEventTypes =
+                Sets.immutableEnumSet(FULLY_FILLED, SUBMIT_CONDITIONAL_OK);
+        rejectEventTypes =
+                Sets.immutableEnumSet(FILL_REJECTED, SUBMIT_REJECTED);
+        infoEventTypes =
+                Sets.immutableEnumSet(NOTIFICATION, SUBMIT_OK, PARTIAL_FILL_OK);
     }
 
     @Override
@@ -68,20 +64,5 @@ public final class SubmitCommand extends OrderCallCommand {
     @Override
     public OrderCallReason callReason() {
         return OrderCallReason.SUBMIT;
-    }
-
-    @Override
-    public Set<OrderEventType> allEventTypes() {
-        return allEventTypes;
-    }
-
-    @Override
-    public Set<OrderEventType> doneEventTypes() {
-        return doneEventTypes;
-    }
-
-    @Override
-    public Set<OrderEventType> rejectEventTypes() {
-        return rejectEventTypes;
     }
 }
