@@ -20,7 +20,8 @@ import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.CloseCommandData;
+import com.jforex.programming.order.command.CommandData;
 import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
@@ -48,7 +49,8 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private ArgumentCaptor<OrderCallRequest> callRequestCaptor;
     private final IOrder orderToClose = buyOrderEURUSD;
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
-    private final OrderCallCommand command = new CloseCommand(orderToClose);
+    private final CommandData commandData = new CloseCommandData(orderToClose);
+    private final OrderCallCommand command = new OrderCallCommand(commandData);
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
 
     @Before
@@ -63,7 +65,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         orderUtilForTest.setState(orderToClose, IOrder.State.FILLED);
 
         when(taskExecutorMock.onStrategyThread(any()))
-            .thenReturn(Observable.fromCallable(command.callable()));
+            .thenReturn(Observable.fromCallable(commandData.callable()));
     }
 
     private void sendOrderEvent(final IOrder order,

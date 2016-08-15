@@ -10,23 +10,21 @@ import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public final class SetAmountCommand implements OrderChangeCommand<Double> {
+public final class SetAmountCommandData implements OrderChangeCommandData<Double> {
 
     private final IOrder orderToChangeAmount;
     private final double newAmount;
     private final Callable<IOrder> callable;
 
-    private static final OrderCallReason callReason = OrderCallReason.CHANGE_AMOUNT;
     private static final OrderEventTypeData orderEventTypeData =
             new OrderEventTypeData(EnumSet.of(CHANGED_AMOUNT),
                                    EnumSet.of(CHANGE_AMOUNT_REJECTED),
                                    EnumSet.of(NOTIFICATION));
 
-    public SetAmountCommand(final IOrder orderToChangeAmountAmount,
-                            final double newAmount) {
+    public SetAmountCommandData(final IOrder orderToChangeAmountAmount,
+                                final double newAmount) {
         this.orderToChangeAmount = orderToChangeAmountAmount;
         this.newAmount = newAmount;
         callable = () -> {
@@ -47,27 +45,11 @@ public final class SetAmountCommand implements OrderChangeCommand<Double> {
 
     @Override
     public final OrderCallReason callReason() {
-        return callReason;
+        return OrderCallReason.CHANGE_AMOUNT;
     }
 
     @Override
-    public boolean isEventForCommand(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .allEventTypes()
-            .contains(orderEvent.type());
-    }
-
-    @Override
-    public boolean isDoneEvent(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .doneEventTypes()
-            .contains(orderEvent.type());
-    }
-
-    @Override
-    public boolean isRejectEvent(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .rejectEventTypes()
-            .contains(orderEvent.type());
+    public OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
     }
 }

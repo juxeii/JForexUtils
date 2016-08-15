@@ -2,30 +2,32 @@ package com.jforex.programming.order.command.test;
 
 import static com.jforex.programming.order.event.OrderEventType.CHANGED_GTT;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_GTT_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.command.SetGTTCommand;
+import com.jforex.programming.order.command.SetGTTCommandData;
 
-public class SetGTTCommandTest extends CommonCommandForTest {
+public class SetGTTCommandDataTest extends CommonCommandForTest {
 
     private final long newGTT = 1234L;
 
     @Before
     public void setUp() {
-        command = new SetGTTCommand(orderForTest, newGTT);
+        commandData = new SetGTTCommandData(orderForTest, newGTT);
     }
 
     @Test
-    public void orderEventTestAreCorrect() {
-        assertIsDoneEvent(CHANGED_GTT);
+    public void orderEventTypesAreCorrect() {
+        assertDoneOrderEventTypes(CHANGED_GTT);
 
-        assertIsRejectEvent(CHANGE_GTT_REJECTED);
+        assertRejectOrderEventTypes(CHANGE_GTT_REJECTED);
 
-        assertEventIsForCommand(CHANGED_GTT,
-                                CHANGE_GTT_REJECTED);
+        assertAllOrderEventTypes(NOTIFICATION,
+                                 CHANGED_GTT,
+                                 CHANGE_GTT_REJECTED);
     }
 
     @Test

@@ -2,30 +2,32 @@ package com.jforex.programming.order.command.test;
 
 import static com.jforex.programming.order.event.OrderEventType.CHANGED_PRICE;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_PRICE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.command.SetOpenPriceCommand;
+import com.jforex.programming.order.command.SetOpenPriceCommandData;
 
-public class SetOpenPriceCommandTest extends CommonCommandForTest {
+public class SetOpenPriceCommandDataTest extends CommonCommandForTest {
 
     private final double newOpenPrice = 0.12;
 
     @Before
     public void setUp() {
-        command = new SetOpenPriceCommand(orderForTest, newOpenPrice);
+        commandData = new SetOpenPriceCommandData(orderForTest, newOpenPrice);
     }
 
     @Test
-    public void orderEventTestAreCorrect() {
-        assertIsDoneEvent(CHANGED_PRICE);
+    public void orderEventTypesAreCorrect() {
+        assertDoneOrderEventTypes(CHANGED_PRICE);
 
-        assertIsRejectEvent(CHANGE_PRICE_REJECTED);
+        assertRejectOrderEventTypes(CHANGE_PRICE_REJECTED);
 
-        assertEventIsForCommand(CHANGED_PRICE,
-                                CHANGE_PRICE_REJECTED);
+        assertAllOrderEventTypes(NOTIFICATION,
+                                 CHANGED_PRICE,
+                                 CHANGE_PRICE_REJECTED);
     }
 
     @Test

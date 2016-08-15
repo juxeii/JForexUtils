@@ -2,30 +2,32 @@ package com.jforex.programming.order.command.test;
 
 import static com.jforex.programming.order.event.OrderEventType.CHANGED_SL;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_SL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.command.SetSLCommand;
+import com.jforex.programming.order.command.SetSLCommandData;
 
-public class SetSLCommandTest extends CommonCommandForTest {
+public class SetSLCommandDataTest extends CommonCommandForTest {
 
     private final double newSL = 1.2345;
 
     @Before
     public void setUp() {
-        command = new SetSLCommand(orderForTest, newSL);
+        commandData = new SetSLCommandData(orderForTest, newSL);
     }
 
     @Test
-    public void orderEventTestAreCorrect() {
-        assertIsDoneEvent(CHANGED_SL);
+    public void orderEventTypesAreCorrect() {
+        assertDoneOrderEventTypes(CHANGED_SL);
 
-        assertIsRejectEvent(CHANGE_SL_REJECTED);
+        assertRejectOrderEventTypes(CHANGE_SL_REJECTED);
 
-        assertEventIsForCommand(CHANGED_SL,
-                                CHANGE_SL_REJECTED);
+        assertAllOrderEventTypes(NOTIFICATION,
+                                 CHANGED_SL,
+                                 CHANGE_SL_REJECTED);
     }
 
     @Test

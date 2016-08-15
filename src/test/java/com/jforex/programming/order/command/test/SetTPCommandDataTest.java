@@ -2,30 +2,32 @@ package com.jforex.programming.order.command.test;
 
 import static com.jforex.programming.order.event.OrderEventType.CHANGED_TP;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_TP_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.command.SetTPCommand;
+import com.jforex.programming.order.command.SetTPCommandData;
 
-public class SetTPCommandTest extends CommonCommandForTest {
+public class SetTPCommandDataTest extends CommonCommandForTest {
 
     private final double newTP = 1.2345;
 
     @Before
     public void setUp() {
-        command = new SetTPCommand(orderForTest, newTP);
+        commandData = new SetTPCommandData(orderForTest, newTP);
     }
 
     @Test
-    public void orderEventTestAreCorrect() {
-        assertIsDoneEvent(CHANGED_TP);
+    public void orderEventTypesAreCorrect() {
+        assertDoneOrderEventTypes(CHANGED_TP);
 
-        assertIsRejectEvent(CHANGE_TP_REJECTED);
+        assertRejectOrderEventTypes(CHANGE_TP_REJECTED);
 
-        assertEventIsForCommand(CHANGED_TP,
-                                CHANGE_TP_REJECTED);
+        assertAllOrderEventTypes(NOTIFICATION,
+                                 CHANGED_TP,
+                                 CHANGE_TP_REJECTED);
     }
 
     @Test

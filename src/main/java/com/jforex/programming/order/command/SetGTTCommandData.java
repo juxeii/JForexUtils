@@ -10,23 +10,21 @@ import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public final class SetGTTCommand implements OrderChangeCommand<Long> {
+public final class SetGTTCommandData implements OrderChangeCommandData<Long> {
 
     private final IOrder orderToChange;
     private final Long newGTT;
     private final Callable<IOrder> callable;
 
-    private static final OrderCallReason callReason = OrderCallReason.CHANGE_GTT;
     private static final OrderEventTypeData orderEventTypeData =
             new OrderEventTypeData(EnumSet.of(CHANGED_GTT),
                                    EnumSet.of(CHANGE_GTT_REJECTED),
                                    EnumSet.of(NOTIFICATION));
 
-    public SetGTTCommand(final IOrder orderToChangeGTT,
-                         final long newGTT) {
+    public SetGTTCommandData(final IOrder orderToChangeGTT,
+                             final long newGTT) {
         orderToChange = orderToChangeGTT;
         this.newGTT = newGTT;
         callable = () -> {
@@ -47,27 +45,11 @@ public final class SetGTTCommand implements OrderChangeCommand<Long> {
 
     @Override
     public final OrderCallReason callReason() {
-        return callReason;
+        return OrderCallReason.CHANGE_GTT;
     }
 
     @Override
-    public boolean isEventForCommand(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .allEventTypes()
-            .contains(orderEvent.type());
-    }
-
-    @Override
-    public boolean isDoneEvent(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .doneEventTypes()
-            .contains(orderEvent.type());
-    }
-
-    @Override
-    public boolean isRejectEvent(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .rejectEventTypes()
-            .contains(orderEvent.type());
+    public OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
     }
 }

@@ -11,21 +11,19 @@ import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public final class CloseCommand implements OrderChangeCommand<IOrder.State> {
+public final class CloseCommandData implements OrderChangeCommandData<IOrder.State> {
 
     private final IOrder orderToClose;
     private final Callable<IOrder> callable;
 
-    private static final OrderCallReason callReason = OrderCallReason.CLOSE;
     private static final OrderEventTypeData orderEventTypeData =
             new OrderEventTypeData(EnumSet.of(CLOSE_OK),
                                    EnumSet.of(CLOSE_REJECTED),
                                    EnumSet.of(NOTIFICATION, PARTIAL_CLOSE_OK));
 
-    public CloseCommand(final IOrder orderToClose) {
+    public CloseCommandData(final IOrder orderToClose) {
         this.orderToClose = orderToClose;
         callable = () -> {
             orderToClose.close();
@@ -45,27 +43,11 @@ public final class CloseCommand implements OrderChangeCommand<IOrder.State> {
 
     @Override
     public final OrderCallReason callReason() {
-        return callReason;
+        return OrderCallReason.CLOSE;
     }
 
     @Override
-    public boolean isEventForCommand(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .allEventTypes()
-            .contains(orderEvent.type());
-    }
-
-    @Override
-    public boolean isDoneEvent(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .doneEventTypes()
-            .contains(orderEvent.type());
-    }
-
-    @Override
-    public boolean isRejectEvent(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .rejectEventTypes()
-            .contains(orderEvent.type());
+    public OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
     }
 }

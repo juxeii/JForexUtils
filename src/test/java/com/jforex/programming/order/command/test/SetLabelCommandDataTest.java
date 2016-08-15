@@ -2,30 +2,32 @@ package com.jforex.programming.order.command.test;
 
 import static com.jforex.programming.order.event.OrderEventType.CHANGED_LABEL;
 import static com.jforex.programming.order.event.OrderEventType.CHANGE_LABEL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.command.SetLabelCommand;
+import com.jforex.programming.order.command.SetLabelCommandData;
 
-public class SetLabelCommandTest extends CommonCommandForTest {
+public class SetLabelCommandDataTest extends CommonCommandForTest {
 
     private final String newLabel = "newLabel";
 
     @Before
     public void setUp() {
-        command = new SetLabelCommand(orderForTest, newLabel);
+        commandData = new SetLabelCommandData(orderForTest, newLabel);
     }
 
     @Test
-    public void orderEventTestAreCorrect() {
-        assertIsDoneEvent(CHANGED_LABEL);
+    public void orderEventTypesAreCorrect() {
+        assertDoneOrderEventTypes(CHANGED_LABEL);
 
-        assertIsRejectEvent(CHANGE_LABEL_REJECTED);
+        assertRejectOrderEventTypes(CHANGE_LABEL_REJECTED);
 
-        assertEventIsForCommand(CHANGED_LABEL,
-                                CHANGE_LABEL_REJECTED);
+        assertAllOrderEventTypes(NOTIFICATION,
+                                 CHANGED_LABEL,
+                                 CHANGE_LABEL_REJECTED);
     }
 
     @Test

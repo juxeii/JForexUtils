@@ -12,22 +12,20 @@ import java.util.concurrent.Callable;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public final class MergeCommand implements OrderCallCommand {
+public final class MergeCommandData implements CommandData {
 
     private final Callable<IOrder> callable;
 
-    private static final OrderCallReason callReason = OrderCallReason.MERGE;
     private static final OrderEventTypeData orderEventTypeData =
             new OrderEventTypeData(EnumSet.of(MERGE_OK, MERGE_CLOSE_OK),
                                    EnumSet.of(MERGE_REJECTED),
                                    EnumSet.of(NOTIFICATION));
 
-    public MergeCommand(final String mergeOrderLabel,
-                        final Collection<IOrder> toMergeOrders,
-                        final IEngine engine) {
+    public MergeCommandData(final String mergeOrderLabel,
+                            final Collection<IOrder> toMergeOrders,
+                            final IEngine engine) {
         callable = () -> engine.mergeOrders(mergeOrderLabel, toMergeOrders);
     }
 
@@ -38,27 +36,11 @@ public final class MergeCommand implements OrderCallCommand {
 
     @Override
     public final OrderCallReason callReason() {
-        return callReason;
+        return OrderCallReason.MERGE;
     }
 
     @Override
-    public boolean isEventForCommand(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .allEventTypes()
-            .contains(orderEvent.type());
-    }
-
-    @Override
-    public boolean isDoneEvent(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .doneEventTypes()
-            .contains(orderEvent.type());
-    }
-
-    @Override
-    public boolean isRejectEvent(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .rejectEventTypes()
-            .contains(orderEvent.type());
+    public OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
     }
 }

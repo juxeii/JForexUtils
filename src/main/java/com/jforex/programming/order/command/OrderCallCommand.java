@@ -5,16 +5,41 @@ import java.util.concurrent.Callable;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
-public interface OrderCallCommand {
+public final class OrderCallCommand {
 
-    public Callable<IOrder> callable();
+    private final CommandData commandData;
+    private final OrderEventTypeData orderEventTypeData;
 
-    public OrderCallReason callReason();
+    public OrderCallCommand(final CommandData commandData) {
+        this.commandData = commandData;
+        orderEventTypeData = commandData.orderEventTypeData();
+    }
 
-    public boolean isEventForCommand(OrderEvent orderEvent);
+    public final Callable<IOrder> callable() {
+        return commandData.callable();
+    }
 
-    public boolean isDoneEvent(OrderEvent orderEvent);
+    public final OrderCallReason callReason() {
+        return commandData.callReason();
+    }
 
-    public boolean isRejectEvent(OrderEvent orderEvent);
+    public final boolean isEventForCommand(final OrderEvent orderEvent) {
+        return orderEventTypeData
+            .allEventTypes()
+            .contains(orderEvent.type());
+    }
+
+    public final boolean isDoneEvent(final OrderEvent orderEvent) {
+        return orderEventTypeData
+            .doneEventTypes()
+            .contains(orderEvent.type());
+    }
+
+    public final boolean isRejectEvent(final OrderEvent orderEvent) {
+        return orderEventTypeData
+            .rejectEventTypes()
+            .contains(orderEvent.type());
+    }
 }

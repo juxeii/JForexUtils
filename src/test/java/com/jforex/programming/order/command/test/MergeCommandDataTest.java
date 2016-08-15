@@ -3,6 +3,7 @@ package com.jforex.programming.order.command.test;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_CLOSE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import java.util.Collection;
 
@@ -12,9 +13,9 @@ import org.junit.Test;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.MergeCommandData;
 
-public class MergeCommandTest extends CommonCommandForTest {
+public class MergeCommandDataTest extends CommonCommandForTest {
 
     private final String mergeOrderLabel = "mergeOrderLabel";
     private final Collection<IOrder> toMergeOrders =
@@ -22,19 +23,20 @@ public class MergeCommandTest extends CommonCommandForTest {
 
     @Before
     public void setUp() {
-        command = new MergeCommand(mergeOrderLabel, toMergeOrders, engineMock);
+        commandData = new MergeCommandData(mergeOrderLabel, toMergeOrders, engineMock);
     }
 
     @Test
-    public void orderEventTestAreCorrect() {
-        assertIsDoneEvent(MERGE_OK,
-                          MERGE_CLOSE_OK);
+    public void orderEventTypesAreCorrect() {
+        assertDoneOrderEventTypes(MERGE_OK,
+                                  MERGE_CLOSE_OK);
 
-        assertIsRejectEvent(MERGE_REJECTED);
+        assertRejectOrderEventTypes(MERGE_REJECTED);
 
-        assertEventIsForCommand(MERGE_OK,
-                                MERGE_CLOSE_OK,
-                                MERGE_REJECTED);
+        assertAllOrderEventTypes(MERGE_OK,
+                                 NOTIFICATION,
+                                 MERGE_CLOSE_OK,
+                                 MERGE_REJECTED);
     }
 
     @Test

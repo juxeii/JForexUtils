@@ -10,23 +10,21 @@ import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public final class SetTPCommand implements OrderChangeCommand<Double> {
+public final class SetTPCommandData implements OrderChangeCommandData<Double> {
 
     private final IOrder orderToChangeTP;
     private final double newTP;
     private final Callable<IOrder> callable;
 
-    private static final OrderCallReason callReason = OrderCallReason.CHANGE_TP;
     private static final OrderEventTypeData orderEventTypeData =
             new OrderEventTypeData(EnumSet.of(CHANGED_TP),
                                    EnumSet.of(CHANGE_TP_REJECTED),
                                    EnumSet.of(NOTIFICATION));
 
-    public SetTPCommand(final IOrder orderToChangeTP,
-                        final double newTP) {
+    public SetTPCommandData(final IOrder orderToChangeTP,
+                            final double newTP) {
         this.orderToChangeTP = orderToChangeTP;
         this.newTP = newTP;
         callable = () -> {
@@ -47,27 +45,11 @@ public final class SetTPCommand implements OrderChangeCommand<Double> {
 
     @Override
     public final OrderCallReason callReason() {
-        return callReason;
+        return OrderCallReason.CHANGE_TP;
     }
 
     @Override
-    public boolean isEventForCommand(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .allEventTypes()
-            .contains(orderEvent.type());
-    }
-
-    @Override
-    public boolean isDoneEvent(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .doneEventTypes()
-            .contains(orderEvent.type());
-    }
-
-    @Override
-    public boolean isRejectEvent(final OrderEvent orderEvent) {
-        return orderEventTypeData
-            .rejectEventTypes()
-            .contains(orderEvent.type());
+    public OrderEventTypeData orderEventTypeData() {
+        return orderEventTypeData;
     }
 }
