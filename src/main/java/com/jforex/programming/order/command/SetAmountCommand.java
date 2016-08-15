@@ -41,7 +41,7 @@ public final class SetAmountCommand implements OrderChangeCommand<Double> {
     }
 
     @Override
-    public final boolean filter() {
+    public final boolean isValueNotSet() {
         return !isAmountSetTo(newAmount).test(orderToChangeAmount);
     }
 

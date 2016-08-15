@@ -32,11 +32,11 @@ public class CommonCommandForTest extends CommonUtilForTest {
     }
 
     protected void assertFilterNotSet() {
-        assertFalse(((OrderChangeCommand<?>) command).filter());
+        assertFalse(((OrderChangeCommand<?>) command).isValueNotSet());
     }
 
     protected void assertFilterIsSet() {
-        assertTrue(((OrderChangeCommand<?>) command).filter());
+        assertTrue(((OrderChangeCommand<?>) command).isValueNotSet());
     }
 
     protected void assertCallReason(final OrderCallReason orderCallReason) {

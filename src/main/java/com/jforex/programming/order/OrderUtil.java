@@ -266,7 +266,7 @@ public class OrderUtil {
                                                     final String commonLog) {
         return Observable
             .just(command)
-            .filter(OrderChangeCommand::filter)
+            .filter(OrderChangeCommand::isValueNotSet)
             .doOnSubscribe(() -> logger.info("Start to change " + commonLog))
             .flatMap(this::orderUtilObservable)
             .doOnError(e -> logger.error("Failed to change " + commonLog + "!Excpetion: " + e.getMessage()))

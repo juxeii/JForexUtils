@@ -41,7 +41,7 @@ public final class SetLabelCommand implements OrderChangeCommand<String> {
     }
 
     @Override
-    public final boolean filter() {
+    public final boolean isValueNotSet() {
         return !isLabelSetTo(newLabel).test(orderToChangeLabel);
     }
 

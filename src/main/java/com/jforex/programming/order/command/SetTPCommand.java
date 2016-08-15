@@ -41,7 +41,7 @@ public final class SetTPCommand implements OrderChangeCommand<Double> {
     }
 
     @Override
-    public final boolean filter() {
+    public final boolean isValueNotSet() {
         return !isTPSetTo(newTP).test(orderToChangeTP);
     }
 

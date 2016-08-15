@@ -41,7 +41,7 @@ public final class SetGTTCommand implements OrderChangeCommand<Long> {
     }
 
     @Override
-    public final boolean filter() {
+    public final boolean isValueNotSet() {
         return !isGTTSetTo(newGTT).test(orderToChange);
     }
 

@@ -39,7 +39,7 @@ public final class CloseCommand implements OrderChangeCommand<IOrder.State> {
     }
 
     @Override
-    public final boolean filter() {
+    public final boolean isValueNotSet() {
         return !isClosed.test(orderToClose);
     }
 

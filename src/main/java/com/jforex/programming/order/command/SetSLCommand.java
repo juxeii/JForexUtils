@@ -41,7 +41,7 @@ public final class SetSLCommand implements OrderChangeCommand<Double> {
     }
 
     @Override
-    public final boolean filter() {
+    public final boolean isValueNotSet() {
         return !isSLSetTo(newSL).test(orderToChangeSL);
     }
 
