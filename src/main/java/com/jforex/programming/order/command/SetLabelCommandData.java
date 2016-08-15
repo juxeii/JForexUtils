@@ -7,6 +7,7 @@ import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
+import java.util.function.BooleanSupplier;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -14,9 +15,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public final class SetLabelCommandData implements OrderChangeCommandData<String> {
 
-    private final IOrder orderToChangeLabel;
-    private final String newLabel;
     private final Callable<IOrder> callable;
+    private final BooleanSupplier isValueNotSet;
 
     private static final OrderEventTypeData orderEventTypeData =
             new OrderEventTypeData(EnumSet.of(CHANGED_LABEL),
@@ -25,12 +25,11 @@ public final class SetLabelCommandData implements OrderChangeCommandData<String>
 
     public SetLabelCommandData(final IOrder orderToChangeLabel,
                                final String newLabel) {
-        this.orderToChangeLabel = orderToChangeLabel;
-        this.newLabel = newLabel;
         callable = () -> {
             orderToChangeLabel.setLabel(newLabel);
             return orderToChangeLabel;
         };
+        isValueNotSet = () -> !isLabelSetTo(newLabel).test(orderToChangeLabel);
     }
 
     @Override
@@ -40,7 +39,7 @@ public final class SetLabelCommandData implements OrderChangeCommandData<String>
 
     @Override
     public final boolean isValueNotSet() {
-        return !isLabelSetTo(newLabel).test(orderToChangeLabel);
+        return isValueNotSet.getAsBoolean();
     }
 
     @Override

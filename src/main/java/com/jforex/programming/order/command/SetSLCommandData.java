@@ -7,6 +7,7 @@ import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
+import java.util.function.BooleanSupplier;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -14,9 +15,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public final class SetSLCommandData implements OrderChangeCommandData<Double> {
 
-    private final IOrder orderToChangeSL;
-    private final double newSL;
     private final Callable<IOrder> callable;
+    private final BooleanSupplier isValueNotSet;
 
     private static final OrderEventTypeData orderEventTypeData =
             new OrderEventTypeData(EnumSet.of(CHANGED_SL),
@@ -25,12 +25,11 @@ public final class SetSLCommandData implements OrderChangeCommandData<Double> {
 
     public SetSLCommandData(final IOrder orderToChangeSL,
                             final double newSL) {
-        this.orderToChangeSL = orderToChangeSL;
-        this.newSL = newSL;
         callable = () -> {
             orderToChangeSL.setStopLossPrice(newSL);
             return orderToChangeSL;
         };
+        isValueNotSet = () -> !isSLSetTo(newSL).test(orderToChangeSL);
     }
 
     @Override
@@ -40,7 +39,7 @@ public final class SetSLCommandData implements OrderChangeCommandData<Double> {
 
     @Override
     public final boolean isValueNotSet() {
-        return !isSLSetTo(newSL).test(orderToChangeSL);
+        return isValueNotSet.getAsBoolean();
     }
 
     @Override

@@ -7,6 +7,7 @@ import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
+import java.util.function.BooleanSupplier;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -14,9 +15,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public final class SetOpenPriceCommandData implements OrderChangeCommandData<Double> {
 
-    private final IOrder orderToChangeOpenPrice;
-    private final double newOpenPrice;
     private final Callable<IOrder> callable;
+    private final BooleanSupplier isValueNotSet;
 
     private static final OrderEventTypeData orderEventTypeData =
             new OrderEventTypeData(EnumSet.of(CHANGED_PRICE),
@@ -25,12 +25,11 @@ public final class SetOpenPriceCommandData implements OrderChangeCommandData<Dou
 
     public SetOpenPriceCommandData(final IOrder orderToChangeOpenPrice,
                                    final double newOpenPrice) {
-        this.orderToChangeOpenPrice = orderToChangeOpenPrice;
-        this.newOpenPrice = newOpenPrice;
         callable = () -> {
             orderToChangeOpenPrice.setOpenPrice(newOpenPrice);
             return orderToChangeOpenPrice;
         };
+        isValueNotSet = () -> !isOpenPriceSetTo(newOpenPrice).test(orderToChangeOpenPrice);
     }
 
     @Override
@@ -40,7 +39,7 @@ public final class SetOpenPriceCommandData implements OrderChangeCommandData<Dou
 
     @Override
     public final boolean isValueNotSet() {
-        return !isOpenPriceSetTo(newOpenPrice).test(orderToChangeOpenPrice);
+        return isValueNotSet.getAsBoolean();
     }
 
     @Override

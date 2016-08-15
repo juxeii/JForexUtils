@@ -7,6 +7,7 @@ import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
+import java.util.function.BooleanSupplier;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -14,9 +15,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public final class SetTPCommandData implements OrderChangeCommandData<Double> {
 
-    private final IOrder orderToChangeTP;
-    private final double newTP;
     private final Callable<IOrder> callable;
+    private final BooleanSupplier isValueNotSet;
 
     private static final OrderEventTypeData orderEventTypeData =
             new OrderEventTypeData(EnumSet.of(CHANGED_TP),
@@ -25,12 +25,11 @@ public final class SetTPCommandData implements OrderChangeCommandData<Double> {
 
     public SetTPCommandData(final IOrder orderToChangeTP,
                             final double newTP) {
-        this.orderToChangeTP = orderToChangeTP;
-        this.newTP = newTP;
         callable = () -> {
             orderToChangeTP.setTakeProfitPrice(newTP);
             return orderToChangeTP;
         };
+        isValueNotSet = () -> !isTPSetTo(newTP).test(orderToChangeTP);
     }
 
     @Override
@@ -40,7 +39,7 @@ public final class SetTPCommandData implements OrderChangeCommandData<Double> {
 
     @Override
     public final boolean isValueNotSet() {
-        return !isTPSetTo(newTP).test(orderToChangeTP);
+        return isValueNotSet.getAsBoolean();
     }
 
     @Override
