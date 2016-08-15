@@ -1,11 +1,13 @@
 package com.jforex.programming.order.command.test;
 
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_GTT;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_GTT_REJECTED;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetGTTCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetGTTCommandTest extends CommonCommandForTest {
 
@@ -17,8 +19,13 @@ public class SetGTTCommandTest extends CommonCommandForTest {
     }
 
     @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertEventTypeData(OrderEventTypeData.changeGTTEventTypeData);
+    public void orderEventTestAreCorrect() {
+        assertIsDoneEvent(CHANGED_GTT);
+
+        assertIsRejectEvent(CHANGE_GTT_REJECTED);
+
+        assertEventIsForCommand(CHANGED_GTT,
+                                CHANGE_GTT_REJECTED);
     }
 
     @Test

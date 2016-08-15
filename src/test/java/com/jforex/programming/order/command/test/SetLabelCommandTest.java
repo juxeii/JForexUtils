@@ -1,11 +1,13 @@
 package com.jforex.programming.order.command.test;
 
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_LABEL;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_LABEL_REJECTED;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetLabelCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetLabelCommandTest extends CommonCommandForTest {
 
@@ -17,8 +19,13 @@ public class SetLabelCommandTest extends CommonCommandForTest {
     }
 
     @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertEventTypeData(OrderEventTypeData.changeLabelEventTypeData);
+    public void orderEventTestAreCorrect() {
+        assertIsDoneEvent(CHANGED_LABEL);
+
+        assertIsRejectEvent(CHANGE_LABEL_REJECTED);
+
+        assertEventIsForCommand(CHANGED_LABEL,
+                                CHANGE_LABEL_REJECTED);
     }
 
     @Test

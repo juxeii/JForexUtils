@@ -4,7 +4,7 @@ import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEventTypeData;
+import com.jforex.programming.order.event.OrderEvent;
 
 public interface OrderCallCommand {
 
@@ -12,5 +12,9 @@ public interface OrderCallCommand {
 
     public OrderCallReason callReason();
 
-    public OrderEventTypeData orderEventTypeData();
+    public boolean isEventForCommand(OrderEvent orderEvent);
+
+    public boolean isDoneEvent(OrderEvent orderEvent);
+
+    public boolean isRejectEvent(OrderEvent orderEvent);
 }

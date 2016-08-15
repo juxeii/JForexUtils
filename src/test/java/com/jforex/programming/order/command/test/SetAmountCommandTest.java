@@ -1,11 +1,13 @@
 package com.jforex.programming.order.command.test;
 
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_AMOUNT;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_AMOUNT_REJECTED;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetAmountCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetAmountCommandTest extends CommonCommandForTest {
 
@@ -17,8 +19,13 @@ public class SetAmountCommandTest extends CommonCommandForTest {
     }
 
     @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertEventTypeData(OrderEventTypeData.changeAmountEventTypeData);
+    public void orderEventTestAreCorrect() {
+        assertIsDoneEvent(CHANGED_AMOUNT);
+
+        assertIsRejectEvent(CHANGE_AMOUNT_REJECTED);
+
+        assertEventIsForCommand(CHANGED_AMOUNT,
+                                CHANGE_AMOUNT_REJECTED);
     }
 
     @Test

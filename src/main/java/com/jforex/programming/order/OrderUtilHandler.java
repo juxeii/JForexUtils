@@ -8,7 +8,6 @@ import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 import rx.Observable;
 
@@ -38,19 +37,18 @@ public class OrderUtilHandler {
 
     private final Observable<OrderEvent> gatewayObservable(final IOrder order,
                                                            final OrderCallCommand command) {
-        final OrderEventTypeData orderEventTypeData = command.orderEventTypeData();
         return orderEventGateway
             .observable()
             .filter(orderEvent -> orderEvent.order().equals(order))
-            .filter(orderEvent -> orderEventTypeData.allEventTypes().contains(orderEvent.type()))
-            .flatMap(orderEvent -> rejectAsErrorObservable(orderEvent, orderEventTypeData))
-            .takeUntil(orderEvent -> orderEventTypeData.doneEventTypes().contains(orderEvent.type()));
+            .filter(command::isEventForCommand)
+            .flatMap(orderEvent -> rejectAsErrorObservable(orderEvent, command))
+            .takeUntil(command::isDoneEvent);
     }
 
     private Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent,
-                                                           final OrderEventTypeData orderEventTypeData) {
-        return orderEventTypeData.rejectEventTypes().contains(orderEvent.type())
-                ? Observable.error(new OrderCallRejectException("", orderEvent))
+                                                           final OrderCallCommand command) {
+        return command.isRejectEvent(orderEvent)
+                ? Observable.error(new OrderCallRejectException("Reject event", orderEvent))
                 : Observable.just(orderEvent);
     }
 }

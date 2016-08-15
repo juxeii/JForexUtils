@@ -1,12 +1,16 @@
 package com.jforex.programming.order.command;
 
 import static com.jforex.programming.order.OrderStaticUtil.isAmountSetTo;
-import static com.jforex.programming.order.event.OrderEventTypeData.changeAmountEventTypeData;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_AMOUNT;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_AMOUNT_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
+import java.util.EnumSet;
 import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
 public final class SetAmountCommand implements OrderChangeCommand<Double> {
@@ -16,7 +20,10 @@ public final class SetAmountCommand implements OrderChangeCommand<Double> {
     private final Callable<IOrder> callable;
 
     private static final OrderCallReason callReason = OrderCallReason.CHANGE_AMOUNT;
-    private static final OrderEventTypeData orderEventTypeData = changeAmountEventTypeData;
+    private static final OrderEventTypeData orderEventTypeData =
+            new OrderEventTypeData(EnumSet.of(CHANGED_AMOUNT),
+                                   EnumSet.of(CHANGE_AMOUNT_REJECTED),
+                                   EnumSet.of(NOTIFICATION));
 
     public SetAmountCommand(final IOrder orderToChangeAmountAmount,
                             final double newAmount) {
@@ -39,12 +46,28 @@ public final class SetAmountCommand implements OrderChangeCommand<Double> {
     }
 
     @Override
-    public final OrderEventTypeData orderEventTypeData() {
-        return orderEventTypeData;
+    public final OrderCallReason callReason() {
+        return callReason;
     }
 
     @Override
-    public final OrderCallReason callReason() {
-        return callReason;
+    public boolean isEventForCommand(final OrderEvent orderEvent) {
+        return orderEventTypeData
+            .allEventTypes()
+            .contains(orderEvent.type());
+    }
+
+    @Override
+    public boolean isDoneEvent(final OrderEvent orderEvent) {
+        return orderEventTypeData
+            .doneEventTypes()
+            .contains(orderEvent.type());
+    }
+
+    @Override
+    public boolean isRejectEvent(final OrderEvent orderEvent) {
+        return orderEventTypeData
+            .rejectEventTypes()
+            .contains(orderEvent.type());
     }
 }

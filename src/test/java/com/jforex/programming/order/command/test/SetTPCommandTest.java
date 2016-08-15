@@ -1,11 +1,13 @@
 package com.jforex.programming.order.command.test;
 
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_TP;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_TP_REJECTED;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetTPCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetTPCommandTest extends CommonCommandForTest {
 
@@ -17,8 +19,13 @@ public class SetTPCommandTest extends CommonCommandForTest {
     }
 
     @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertEventTypeData(OrderEventTypeData.changeTPEventTypeData);
+    public void orderEventTestAreCorrect() {
+        assertIsDoneEvent(CHANGED_TP);
+
+        assertIsRejectEvent(CHANGE_TP_REJECTED);
+
+        assertEventIsForCommand(CHANGED_TP,
+                                CHANGE_TP_REJECTED);
     }
 
     @Test

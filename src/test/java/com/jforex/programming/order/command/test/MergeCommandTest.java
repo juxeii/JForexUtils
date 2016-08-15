@@ -1,5 +1,9 @@
 package com.jforex.programming.order.command.test;
 
+import static com.jforex.programming.order.event.OrderEventType.MERGE_CLOSE_OK;
+import static com.jforex.programming.order.event.OrderEventType.MERGE_OK;
+import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
+
 import java.util.Collection;
 
 import org.junit.Before;
@@ -9,7 +13,6 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class MergeCommandTest extends CommonCommandForTest {
 
@@ -23,8 +26,15 @@ public class MergeCommandTest extends CommonCommandForTest {
     }
 
     @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertEventTypeData(OrderEventTypeData.mergeEventTypeData);
+    public void orderEventTestAreCorrect() {
+        assertIsDoneEvent(MERGE_OK,
+                          MERGE_CLOSE_OK);
+
+        assertIsRejectEvent(MERGE_REJECTED);
+
+        assertEventIsForCommand(MERGE_OK,
+                                MERGE_CLOSE_OK,
+                                MERGE_REJECTED);
     }
 
     @Test

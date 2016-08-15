@@ -1,11 +1,17 @@
 package com.jforex.programming.order.command.test;
 
+import static com.jforex.programming.order.event.OrderEventType.FILL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.FULLY_FILLED;
+import static com.jforex.programming.order.event.OrderEventType.PARTIAL_FILL_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITIONAL_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SubmitCommand;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SubmitCommandTest extends CommonCommandForTest {
 
@@ -15,8 +21,19 @@ public class SubmitCommandTest extends CommonCommandForTest {
     }
 
     @Test
-    public void orderEventTypeDataIsCorrect() {
-        assertEventTypeData(OrderEventTypeData.submitEventTypeData);
+    public void orderEventTestAreCorrect() {
+        assertIsDoneEvent(FULLY_FILLED,
+                          SUBMIT_CONDITIONAL_OK);
+
+        assertIsRejectEvent(FILL_REJECTED,
+                            SUBMIT_REJECTED);
+
+        assertEventIsForCommand(FULLY_FILLED,
+                                SUBMIT_CONDITIONAL_OK,
+                                FILL_REJECTED,
+                                SUBMIT_REJECTED,
+                                SUBMIT_OK,
+                                PARTIAL_FILL_OK);
     }
 
     @Test
