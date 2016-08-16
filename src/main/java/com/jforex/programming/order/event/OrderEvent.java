@@ -23,6 +23,6 @@ public final class OrderEvent {
 
     @Override
     public String toString() {
-        return "OrderEvent [order=" + order.getLabel() + " " + order + ", type=" + type + "]";
+        return "OrderEvent [" + order + ", type=" + type + "]";
     }
 }
