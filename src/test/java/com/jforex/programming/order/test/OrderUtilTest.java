@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +21,7 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallCommand;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
@@ -77,36 +79,34 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         assertThat(orderEvent.type(), equalTo(expectedEvent.type()));
     }
 
-    public void verifyOrderUtilMockCall(final Class<? extends OrderCallCommand> clazz) {
-        verify(orderUtilHandlerMock).callObservable(isA(clazz));
+    public void verifyAndExecuteCallableOrderUtilMockCall(final OrderCallReason callReason) throws Exception {
+        verify(orderUtilHandlerMock).callObservable(callCommandCaptor.capture());
+
+        final OrderCallCommand command = callCommandCaptor.getValue();
+        assertThat(command.callReason(), equalTo(callReason));
+        final Callable<IOrder> callable = command.callable();
+        callable.call();
     }
 
-    private void setOrderUtilHandlerExpectation(final Class<? extends OrderCallCommand> clazz,
-                                                final OrderEvent orderEvent) {
-        when(orderUtilHandlerMock.callObservable(isA(clazz)))
+    private void setOrderUtilHandlerExpectation(final OrderEvent orderEvent) {
+        when(orderUtilHandlerMock.callObservable(any()))
             .thenReturn(eventObservable(orderEvent));
     }
 
-    private void assertChangeCallCallsOnOrderUtilHandler(final Class<? extends OrderCallCommand> clazz,
-                                                         final Observable<OrderEvent> observable) {
-        setOrderUtilHandlerExpectation(clazz, notificationEvent);
-
+    private void assertChangeCallCallsOnOrderUtilHandler(final Observable<OrderEvent> observable) {
+        setOrderUtilHandlerExpectation(notificationEvent);
         observable.subscribe(orderEventSubscriber);
 
-        verify(orderUtilHandlerMock).callObservable(isA(clazz));
         orderEventSubscriber.assertNoErrors();
         orderEventSubscriber.assertValueCount(1);
         orderEventSubscriber.assertCompleted();
         assertThat(orderEventSubscriber.getOnNextEvents().get(0), equalTo(notificationEvent));
     }
 
-    private void assertNoCallOnOrderUtilHandler(final Class<? extends OrderCallCommand> clazz,
-                                                final Observable<OrderEvent> observable) {
-        setOrderUtilHandlerExpectation(clazz, notificationEvent);
-
+    private void assertNoCallOnOrderUtilHandler(final Observable<OrderEvent> observable) {
         observable.subscribe(orderEventSubscriber);
 
-        verify(orderUtilHandlerMock, never()).callObservable(isA(clazz));
+        verify(orderUtilHandlerMock, never()).callObservable(any());
         orderEventSubscriber.assertNoErrors();
         orderEventSubscriber.assertValueCount(0);
         orderEventSubscriber.assertCompleted();
@@ -196,8 +196,19 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void submitOnOrderUtilHandlerHasBeenCalled() {
-                verifyOrderUtilMockCall(OrderCallCommand.class);
+            public void submitOnOrderUtilHandlerHasBeenCalled() throws Exception {
+                verifyAndExecuteCallableOrderUtilMockCall(OrderCallReason.SUBMIT);
+
+                verify(engineMock).submitOrder(buyParamsEURUSD.label(),
+                                               buyParamsEURUSD.instrument(),
+                                               buyParamsEURUSD.orderCommand(),
+                                               buyParamsEURUSD.amount(),
+                                               buyParamsEURUSD.price(),
+                                               buyParamsEURUSD.slippage(),
+                                               buyParamsEURUSD.stopLossPrice(),
+                                               buyParamsEURUSD.takeProfitPrice(),
+                                               buyParamsEURUSD.goodTillTime(),
+                                               buyParamsEURUSD.comment());
             }
 
             @Test
@@ -475,9 +486,16 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                         }
 
                         @Test
-                        public void verifyMergeCall() {
-                            verify(orderUtilHandlerMock, times(5))
-                                .callObservable(isA(OrderCallCommand.class));
+                        public void mergeOnOrderUtilHandlerHasBeenCalled() throws Exception {
+                            mergeCall.run();
+
+                            verify(orderUtilHandlerMock, times(6)).callObservable(callCommandCaptor.capture());
+
+                            final OrderCallCommand command = callCommandCaptor.getValue();
+                            assertThat(command.callReason(), equalTo(OrderCallReason.MERGE));
+                            final Callable<IOrder> callable = command.callable();
+                            callable.call();
+                            verify(engineMock).mergeOrders(mergeOrderLabel, toMergeOrders);
                         }
 
                         @Test
@@ -598,16 +616,13 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public class ChangeCallSetup {
 
         private Observable<OrderEvent> observable;
-        private Class<? extends OrderCallCommand> commandClass;
 
         private void assertOrderUtilHandlerCall() {
-            assertChangeCallCallsOnOrderUtilHandler(commandClass,
-                                                    observable);
+            assertChangeCallCallsOnOrderUtilHandler(observable);
         }
 
         private void assertNoOrderUtilHandlerCall() {
-            assertNoCallOnOrderUtilHandler(commandClass,
-                                           observable);
+            assertNoCallOnOrderUtilHandler(observable);
         }
 
         public class CloseSetup {
@@ -616,7 +631,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                commandClass = OrderCallCommand.class;
                 observable = orderUtil.close(buyOrderEURUSD);
             }
 
@@ -631,6 +645,15 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 assertNoOrderUtilHandlerCall();
             }
+
+            @Test
+            public void closeOnOrderUtilHandlerHasBeenCalled() throws Exception {
+                observable.subscribe();
+
+                verifyAndExecuteCallableOrderUtilMockCall(OrderCallReason.CLOSE);
+
+                verify(buyOrderEURUSD).close();
+            }
         }
 
         public class SetLabelSetup {
@@ -639,7 +662,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                commandClass = OrderCallCommand.class;
                 observable = orderUtil.setLabel(buyOrderEURUSD, newLabel);
             }
 
@@ -654,6 +676,15 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 assertNoOrderUtilHandlerCall();
             }
+
+            @Test
+            public void setLabelOnOrderUtilHandlerHasBeenCalled() throws Exception {
+                observable.subscribe();
+
+                verifyAndExecuteCallableOrderUtilMockCall(OrderCallReason.CHANGE_LABEL);
+
+                verify(buyOrderEURUSD).setLabel(newLabel);
+            }
         }
 
         public class SetGTTSetup {
@@ -662,7 +693,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                commandClass = OrderCallCommand.class;
                 observable = orderUtil.setGoodTillTime(buyOrderEURUSD, newGTT);
             }
 
@@ -677,6 +707,15 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 assertNoOrderUtilHandlerCall();
             }
+
+            @Test
+            public void setGTTOnOrderUtilHandlerHasBeenCalled() throws Exception {
+                observable.subscribe();
+
+                verifyAndExecuteCallableOrderUtilMockCall(OrderCallReason.CHANGE_GTT);
+
+                verify(buyOrderEURUSD).setGoodTillTime(newGTT);
+            }
         }
 
         public class SetAmountSetup {
@@ -685,7 +724,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                commandClass = OrderCallCommand.class;
                 observable = orderUtil.setRequestedAmount(buyOrderEURUSD, newAmount);
             }
 
@@ -700,6 +738,15 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 assertNoOrderUtilHandlerCall();
             }
+
+            @Test
+            public void setAmountOnOrderUtilHandlerHasBeenCalled() throws Exception {
+                observable.subscribe();
+
+                verifyAndExecuteCallableOrderUtilMockCall(OrderCallReason.CHANGE_AMOUNT);
+
+                verify(buyOrderEURUSD).setRequestedAmount(newAmount);
+            }
         }
 
         public class SetOpenPriceSetup {
@@ -708,7 +755,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                commandClass = OrderCallCommand.class;
                 observable = orderUtil.setOpenPrice(buyOrderEURUSD, newOpenPrice);
             }
 
@@ -723,6 +769,15 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 assertNoOrderUtilHandlerCall();
             }
+
+            @Test
+            public void setOpenPriceOnOrderUtilHandlerHasBeenCalled() throws Exception {
+                observable.subscribe();
+
+                verifyAndExecuteCallableOrderUtilMockCall(OrderCallReason.CHANGE_PRICE);
+
+                verify(buyOrderEURUSD).setOpenPrice(newOpenPrice);
+            }
         }
 
         public class SetTPSetup {
@@ -731,7 +786,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                commandClass = OrderCallCommand.class;
                 observable = orderUtil.setTakeProfitPrice(buyOrderEURUSD, newTP);
             }
 
@@ -746,6 +800,15 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 assertNoOrderUtilHandlerCall();
             }
+
+            @Test
+            public void setTPOnOrderUtilHandlerHasBeenCalled() throws Exception {
+                observable.subscribe();
+
+                verifyAndExecuteCallableOrderUtilMockCall(OrderCallReason.CHANGE_TP);
+
+                verify(buyOrderEURUSD).setTakeProfitPrice(newTP);
+            }
         }
 
         public class SetSLSetup {
@@ -754,7 +817,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                commandClass = OrderCallCommand.class;
                 observable = orderUtil.setStopLossPrice(buyOrderEURUSD, newSL);
             }
 
@@ -768,6 +830,15 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                 orderUtilForTest.setSL(buyOrderEURUSD, newSL);
 
                 assertNoOrderUtilHandlerCall();
+            }
+
+            @Test
+            public void setSLOnOrderUtilHandlerHasBeenCalled() throws Exception {
+                observable.subscribe();
+
+                verifyAndExecuteCallableOrderUtilMockCall(OrderCallReason.CHANGE_SL);
+
+                verify(buyOrderEURUSD).setStopLossPrice(newSL);
             }
         }
     }
