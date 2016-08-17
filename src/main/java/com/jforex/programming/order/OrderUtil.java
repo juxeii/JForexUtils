@@ -1,10 +1,18 @@
 package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.jforex.programming.order.OrderStaticUtil.isAmountSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+import static com.jforex.programming.order.OrderStaticUtil.isGTTSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isLabelSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isOpenPriceSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
@@ -13,18 +21,8 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.command.CloseCommandData;
-import com.jforex.programming.order.command.CommandData;
-import com.jforex.programming.order.command.MergeCommandData;
-import com.jforex.programming.order.command.OrderCallCommand;
-import com.jforex.programming.order.command.OrderChangeCommandData;
-import com.jforex.programming.order.command.SetAmountCommandData;
-import com.jforex.programming.order.command.SetGTTCommandData;
-import com.jforex.programming.order.command.SetLabelCommandData;
-import com.jforex.programming.order.command.SetOpenPriceCommandData;
-import com.jforex.programming.order.command.SetSLCommandData;
-import com.jforex.programming.order.command.SetTPCommandData;
-import com.jforex.programming.order.command.SubmitCommandData;
+import com.jforex.programming.order.call.OrderCallCommand;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
@@ -71,10 +69,21 @@ public class OrderUtil {
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
         checkNotNull(orderParams);
+
         final Instrument instrument = orderParams.instrument();
         final String orderLabel = orderParams.label();
+        final Callable<IOrder> callable = () -> engine.submitOrder(orderParams.label(),
+                                                                   orderParams.instrument(),
+                                                                   orderParams.orderCommand(),
+                                                                   orderParams.amount(),
+                                                                   orderParams.price(),
+                                                                   orderParams.slippage(),
+                                                                   orderParams.stopLossPrice(),
+                                                                   orderParams.takeProfitPrice(),
+                                                                   orderParams.goodTillTime(),
+                                                                   orderParams.comment());
 
-        return orderUtilObservable(new SubmitCommandData(orderParams, engine))
+        return orderUtilObservable(new OrderCallCommand(callable, OrderCallReason.SUBMIT))
             .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
             .doOnError(e -> logger.error("Submit task with label " + orderLabel
                     + " for " + instrument + " failed!Exception: " + e.getMessage()))
@@ -129,7 +138,9 @@ public class OrderUtil {
                     })
                     .flatMap(this::removeTPSLObservable)
                     .toCompletable()
-                    .andThen(orderUtilObservable(new MergeCommandData(mergeOrderLabel, toMergeOrders, engine)))
+                    .andThen(orderUtilObservable(new OrderCallCommand(() -> engine.mergeOrders(mergeOrderLabel,
+                                                                                               toMergeOrders),
+                                                                      OrderCallReason.MERGE)))
                     .doOnNext(this::addCreatedOrderToPosition)
                     .doOnTerminate(() -> position(toMergeOrders).markOrdersIdle(toMergeOrders))
                     .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
@@ -188,93 +199,135 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        final OrderChangeCommandData<?> command =
-                new CloseCommandData(checkNotNull(orderToClose));
-        final String commonLog = "state" + " from " + orderToClose.getState() + " to "
-                + IOrder.State.CLOSED + " for order " + orderToClose.getLabel() + " and instrument "
-                + orderToClose.getInstrument();
-
-        return changeObservable(command, commonLog);
+        return Observable
+            .just(orderToClose)
+            .filter(order -> !isClosed.test(order))
+            .flatMap(order -> {
+                final Callable<IOrder> callable = () -> {
+                    order.close();
+                    return order;
+                };
+                final OrderCallCommand command = new OrderCallCommand(callable, OrderCallReason.CLOSE);
+                final String commonLog = "state" + " from " + order.getState() + " to " + IOrder.State.CLOSED +
+                        " for order " + order.getLabel() + " and instrument " + order.getInstrument();
+                return changeObservable(command, commonLog);
+            });
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
                                            final String newLabel) {
-        final OrderChangeCommandData<?> command =
-                new SetLabelCommandData(checkNotNull(orderToChangeLabel), newLabel);
-        final String commonLog = "label" + " from " + orderToChangeLabel.getLabel() + " to "
-                + newLabel + " for order " + orderToChangeLabel.getLabel() + " and instrument "
-                + orderToChangeLabel.getInstrument();
-
-        return changeObservable(command, commonLog);
+        return Observable
+            .just(orderToChangeLabel)
+            .filter(order -> !isLabelSetTo(newLabel).test(order))
+            .flatMap(order -> {
+                final Callable<IOrder> callable = () -> {
+                    order.setLabel(newLabel);
+                    return order;
+                };
+                final OrderCallCommand command = new OrderCallCommand(callable, OrderCallReason.CHANGE_LABEL);
+                final String commonLog = "label" + " from " + order.getLabel() + " to " + newLabel +
+                        " for order " + order.getLabel() + " and instrument " + order.getInstrument();
+                return changeObservable(command, commonLog);
+            });
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
                                                   final long newGTT) {
-        final OrderChangeCommandData<?> command =
-                new SetGTTCommandData(checkNotNull(orderToChangeGTT), newGTT);
-        final String commonLog = "GTT" + " from " + orderToChangeGTT.getGoodTillTime() + " to "
-                + newGTT + " for order " + orderToChangeGTT.getLabel() + " and instrument "
-                + orderToChangeGTT.getInstrument();
-
-        return changeObservable(command, commonLog);
+        return Observable
+            .just(orderToChangeGTT)
+            .filter(order -> !isGTTSetTo(newGTT).test(order))
+            .flatMap(order -> {
+                final Callable<IOrder> callable = () -> {
+                    orderToChangeGTT.setGoodTillTime(newGTT);
+                    return orderToChangeGTT;
+                };
+                final OrderCallCommand command = new OrderCallCommand(callable, OrderCallReason.CHANGE_GTT);
+                final String commonLog = "GTT" + " from " + order.getGoodTillTime() + " to " + newGTT +
+                        " for order " + order.getLabel() + " and instrument " + order.getInstrument();
+                return changeObservable(command, commonLog);
+            });
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
                                                final double newOpenPrice) {
-        final OrderChangeCommandData<?> command =
-                new SetOpenPriceCommandData(checkNotNull(orderToChangeOpenPrice), newOpenPrice);
-        final String commonLog = "open price" + " from " + orderToChangeOpenPrice.getOpenPrice() + " to "
-                + newOpenPrice + " for order " + orderToChangeOpenPrice.getLabel() + " and instrument "
-                + orderToChangeOpenPrice.getInstrument();
-
-        return changeObservable(command, commonLog);
+        return Observable
+            .just(orderToChangeOpenPrice)
+            .filter(order -> !isOpenPriceSetTo(newOpenPrice).test(order))
+            .flatMap(order -> {
+                final Callable<IOrder> callable = () -> {
+                    order.setOpenPrice(newOpenPrice);
+                    return order;
+                };
+                final OrderCallCommand command = new OrderCallCommand(callable, OrderCallReason.CHANGE_PRICE);
+                final String commonLog = "open price" + " from " + order.getOpenPrice() + " to " + newOpenPrice +
+                        " for order " + order.getLabel() + " and instrument " + order.getInstrument();
+                return changeObservable(command, commonLog);
+            });
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
                                                      final double newRequestedAmount) {
-        final OrderChangeCommandData<?> command =
-                new SetAmountCommandData(checkNotNull(orderToChangeAmount), newRequestedAmount);
-        final String commonLog = "amount" + " from " + orderToChangeAmount.getRequestedAmount() + " to "
-                + newRequestedAmount + " for order " + orderToChangeAmount.getLabel() + " and instrument "
-                + orderToChangeAmount.getInstrument();
-
-        return changeObservable(command, commonLog);
+        return Observable
+            .just(orderToChangeAmount)
+            .filter(order -> !isAmountSetTo(newRequestedAmount).test(order))
+            .flatMap(order -> {
+                final Callable<IOrder> callable = () -> {
+                    order.setRequestedAmount(newRequestedAmount);
+                    return order;
+                };
+                final OrderCallCommand command = new OrderCallCommand(callable, OrderCallReason.CHANGE_AMOUNT);
+                final String commonLog = "amount" + " from " + orderToChangeAmount.getRequestedAmount() + " to "
+                        + newRequestedAmount + " for order " + orderToChangeAmount.getLabel() + " and instrument "
+                        + orderToChangeAmount.getInstrument();
+                return changeObservable(command, commonLog);
+            });
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
                                                    final double newSL) {
-        final OrderChangeCommandData<?> command =
-                new SetSLCommandData(checkNotNull(orderToChangeSL), newSL);
-        final String commonLog = "SL" + " from " + orderToChangeSL.getStopLossPrice() + " to "
-                + newSL + " for order " + orderToChangeSL.getLabel() + " and instrument "
-                + orderToChangeSL.getInstrument();
-
-        return changeObservable(command, commonLog);
+        return Observable
+            .just(orderToChangeSL)
+            .filter(order -> !isSLSetTo(newSL).test(order))
+            .flatMap(order -> {
+                final Callable<IOrder> callable = () -> {
+                    order.setStopLossPrice(newSL);
+                    return order;
+                };
+                final OrderCallCommand command = new OrderCallCommand(callable, OrderCallReason.CHANGE_SL);
+                final String commonLog = "SL" + " from " + order.getStopLossPrice() + " to " + newSL +
+                        " for order " + order.getLabel() + " and instrument " + order.getInstrument();
+                return changeObservable(command, commonLog);
+            });
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
                                                      final double newTP) {
-        final OrderChangeCommandData<?> command =
-                new SetTPCommandData(checkNotNull(orderToChangeTP), newTP);
-        final String commonLog = "TP" + " from " + orderToChangeTP.getTakeProfitPrice() + " to "
-                + newTP + " for order " + orderToChangeTP.getLabel() + " and instrument "
-                + orderToChangeTP.getInstrument();
-
-        return changeObservable(command, commonLog);
+        return Observable
+            .just(orderToChangeTP)
+            .filter(order -> !isTPSetTo(newTP).test(order))
+            .flatMap(order -> {
+                final Callable<IOrder> callable = () -> {
+                    order.setTakeProfitPrice(newTP);
+                    return order;
+                };
+                final OrderCallCommand command = new OrderCallCommand(callable, OrderCallReason.CHANGE_TP);
+                final String commonLog = "TP" + " from " + order.getTakeProfitPrice() + " to " + newTP
+                        + " for order " + order.getLabel() + " and instrument " + order.getInstrument();
+                return changeObservable(command, commonLog);
+            });
     }
 
-    private Observable<OrderEvent> changeObservable(final OrderChangeCommandData<?> command,
+    private Observable<OrderEvent> changeObservable(final OrderCallCommand command,
                                                     final String commonLog) {
         return Observable
             .just(command)
-            .filter(OrderChangeCommandData::isValueNotSet)
             .doOnSubscribe(() -> logger.info("Start to change " + commonLog))
             .flatMap(this::orderUtilObservable)
             .doOnError(e -> logger.error("Failed to change " + commonLog + "!Excpetion: " + e.getMessage()))
             .doOnCompleted(() -> logger.info("Changed " + commonLog));
     }
 
-    private Observable<OrderEvent> orderUtilObservable(final CommandData commandData) {
-        return orderUtilHandler.callObservable(new OrderCallCommand(commandData));
+    private Observable<OrderEvent> orderUtilObservable(final OrderCallCommand orderCallCommand) {
+        return orderUtilHandler.callObservable(orderCallCommand);
     }
 }

@@ -17,12 +17,10 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.order.OrderUtilHandler;
+import com.jforex.programming.order.call.OrderCallCommand;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.command.CloseCommandData;
-import com.jforex.programming.order.command.CommandData;
-import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
@@ -49,8 +47,11 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private ArgumentCaptor<OrderCallRequest> callRequestCaptor;
     private final IOrder orderToClose = buyOrderEURUSD;
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
-    private final CommandData commandData = new CloseCommandData(orderToClose);
-    private final OrderCallCommand command = new OrderCallCommand(commandData);
+    private final OrderCallCommand command = new OrderCallCommand(() -> {
+        orderToClose.close();
+        return orderToClose;
+    },
+                                                                  OrderCallReason.CLOSE);
     private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
 
     @Before
@@ -65,7 +66,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         orderUtilForTest.setState(orderToClose, IOrder.State.FILLED);
 
         when(taskExecutorMock.onStrategyThread(any()))
-            .thenReturn(Observable.fromCallable(commandData.callable()));
+            .thenReturn(Observable.fromCallable(command.callable()));
     }
 
     private void sendOrderEvent(final IOrder order,

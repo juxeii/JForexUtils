@@ -2,10 +2,10 @@ package com.jforex.programming.order;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.TaskExecutor;
+import com.jforex.programming.order.call.OrderCallCommand;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.command.OrderCallCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 
