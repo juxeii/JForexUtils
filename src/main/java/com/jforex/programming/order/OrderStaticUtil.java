@@ -211,4 +211,11 @@ public final class OrderStaticUtil {
             .withAmount(Math.abs(signedAmount))
             .build();
     }
+
+    public static final Instrument instrumentFromOrders(final Collection<IOrder> orders) {
+        return orders
+            .iterator()
+            .next()
+            .getInstrument();
+    }
 }
