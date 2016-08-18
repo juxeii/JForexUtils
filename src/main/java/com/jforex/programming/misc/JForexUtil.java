@@ -20,8 +20,9 @@ import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.event.OrderEventGateway;
+import com.jforex.programming.order.OrderUtilImpl;
 import com.jforex.programming.order.event.MessageToOrderEvent;
+import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
@@ -106,9 +107,10 @@ public class JForexUtil {
         orderCallExecutor = new TaskExecutor(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
-        orderUtil = new OrderUtil(engine,
-                                  positionFactory,
-                                  orderUtilHandler);
+        final OrderUtilImpl orderUtilImpl = new OrderUtilImpl(engine,
+                                                              positionFactory,
+                                                              orderUtilHandler);
+        orderUtil = new OrderUtil(orderUtilImpl);
     }
 
     public IContext context() {
@@ -155,8 +157,8 @@ public class JForexUtil {
 
     public void closeAllPositions() {
         positionFactory
-                .all()
-                .forEach(position -> orderUtil.closePosition(position.instrument()).subscribe());
+            .all()
+            .forEach(position -> orderUtil.closePosition(position.instrument()).subscribe());
     }
 
     public void onStop() {
@@ -211,9 +213,9 @@ public class JForexUtil {
                                        final IBar askBar) {
         if (shouldForwardQuote(askBar.getTime())) {
             final BarParams quoteParams = BarParams
-                    .forInstrument(instrument)
-                    .period(period)
-                    .offerSide(offerside);
+                .forInstrument(instrument)
+                .period(period)
+                .offerSide(offerside);
             final BarQuote askBarQuote = new BarQuote(askBar, quoteParams);
             barQuoteSubject.onNext(askBarQuote);
         }
