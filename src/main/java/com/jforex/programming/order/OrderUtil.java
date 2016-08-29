@@ -36,11 +36,11 @@ public class OrderUtil {
         final String orderLabel = orderParams.label();
 
         return orderUtilImpl.submitOrder(orderParams)
-            .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
-            .doOnError(e -> logger.error("Submit task with label " + orderLabel
-                    + " for " + instrument + " failed!Exception: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
-                    + " for " + instrument + " was successful."));
+                .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
+                .doOnError(e -> logger.error("Submit task with label " + orderLabel
+                        + " for " + instrument + " failed!Exception: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
+                        + " for " + instrument + " was successful."));
     }
 
     public Observable<OrderEvent> submitAndMergePosition(final String mergeOrderLabel,
@@ -65,12 +65,12 @@ public class OrderUtil {
         checkNotNull(toMergeOrders);
 
         return orderUtilImpl.mergeOrders(mergeOrderLabel, toMergeOrders)
-            .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
-                    + " for position " + instrumentFromOrders(toMergeOrders) + "."))
-            .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
-                    + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
-            .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
-                    + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
+                .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
+                        + " for position " + instrumentFromOrders(toMergeOrders) + "."))
+                .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
+                        + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
+                .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
+                        + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
     }
 
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
@@ -79,20 +79,20 @@ public class OrderUtil {
         checkNotNull(instrument);
 
         return orderUtilImpl.mergePositionOrders(mergeOrderLabel, instrument)
-            .doOnSubscribe(() -> logger.info("Starting position merge for " +
-                    instrument + " with label " + mergeOrderLabel))
-            .doOnError(e -> logger.error("Position merge for " + instrument
-                    + "  with label " + mergeOrderLabel + " failed!" + "Exception: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Position merge for " + instrument
-                    + "  with label " + mergeOrderLabel + " was successful."));
+                .doOnSubscribe(() -> logger.info("Starting position merge for " +
+                        instrument + " with label " + mergeOrderLabel))
+                .doOnError(e -> logger.error("Position merge for " + instrument
+                        + "  with label " + mergeOrderLabel + " failed!" + "Exception: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Position merge for " + instrument
+                        + "  with label " + mergeOrderLabel + " was successful."));
     }
 
     public Observable<OrderEvent> closePosition(final Instrument instrument) {
         return orderUtilImpl.closePosition(checkNotNull(instrument))
-            .doOnSubscribe(() -> logger.info("Starting position close for " + instrument))
-            .doOnCompleted(() -> logger.info("Closing position " + instrument + " was successful."))
-            .doOnError(e -> logger.error("Closing position " + instrument
-                    + " failed! Exception: " + e.getMessage()));
+                .doOnSubscribe(() -> logger.info("Starting position close for " + instrument))
+                .doOnCompleted(() -> logger.info("Closing position " + instrument + " was successful."))
+                .doOnError(e -> logger.error("Closing position " + instrument
+                        + " failed! Exception: " + e.getMessage()));
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
@@ -151,14 +151,14 @@ public class OrderUtil {
                                 commonLog);
     }
 
-    private <T> Observable<OrderEvent> changeObservable(final Observable<OrderEvent> observable,
-                                                        final IOrder order,
-                                                        final String commonLog) {
+    private Observable<OrderEvent> changeObservable(final Observable<OrderEvent> observable,
+                                                    final IOrder order,
+                                                    final String commonLog) {
         final String logMsg = commonLog + " for order " + order.getLabel()
                 + " and instrument " + order.getInstrument();
         return observable
-            .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
-            .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Changed " + logMsg));
+                .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
+                .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Changed " + logMsg));
     }
 }
