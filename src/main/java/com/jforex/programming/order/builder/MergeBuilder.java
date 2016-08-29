@@ -40,9 +40,7 @@ public class MergeBuilder {
         return mergeCloseOKAction;
     }
 
-    public interface MergeOption {
-        public MergeOption onError(Consumer<Throwable> errorAction);
-
+    public interface MergeOption extends CommonOption<MergeOption> {
         public MergeOption onMergeReject(Consumer<IOrder> mergeRejectAction);
 
         public MergeOption onMergeOK(Consumer<IOrder> mergeOKAction);
@@ -66,11 +64,10 @@ public class MergeBuilder {
         return new Builder(checkNotNull(mergeOrderLabel), checkNotNull(toMergeOrders));
     }
 
-    private static class Builder implements MergeOption {
+    private static class Builder extends CommonBuilder<Builder> implements MergeOption {
 
         private final String mergeOrderLabel;
         private final Collection<IOrder> toMergeOrders;
-        private Consumer<Throwable> errorAction = t -> {};
         private Consumer<IOrder> mergeRejectAction = o -> {};
         private Consumer<IOrder> mergeOKAction = o -> {};
         private Consumer<IOrder> mergeCloseOKAction = o -> {};
@@ -79,12 +76,6 @@ public class MergeBuilder {
                         final Collection<IOrder> toMergeOrders) {
             this.mergeOrderLabel = mergeOrderLabel;
             this.toMergeOrders = toMergeOrders;
-        }
-
-        @Override
-        public MergeOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
         }
 
         @Override

@@ -45,9 +45,7 @@ public class SubmitBuilder {
         return fillAction;
     }
 
-    public interface SubmitOption {
-        public SubmitOption onError(Consumer<Throwable> errorAction);
-
+    public interface SubmitOption extends CommonOption<SubmitOption> {
         public SubmitOption onSubmitReject(Consumer<IOrder> submitRejectAction);
 
         public SubmitOption onFillReject(Consumer<IOrder> fillRejectAction);
@@ -75,10 +73,9 @@ public class SubmitBuilder {
         return new Builder(checkNotNull(orderParams));
     }
 
-    private static class Builder implements SubmitOption {
+    private static class Builder extends CommonBuilder<Builder> implements SubmitOption {
 
         private final OrderParams orderParams;
-        private Consumer<Throwable> errorAction = t -> {};
         private Consumer<IOrder> submitRejectAction = o -> {};
         private Consumer<IOrder> fillRejectAction = o -> {};
         private Consumer<IOrder> submitOKAction = o -> {};
@@ -87,12 +84,6 @@ public class SubmitBuilder {
 
         private Builder(final OrderParams orderParams) {
             this.orderParams = orderParams;
-        }
-
-        @Override
-        public SubmitOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
         }
 
         @Override

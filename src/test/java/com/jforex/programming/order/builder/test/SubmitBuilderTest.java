@@ -17,8 +17,8 @@ public class SubmitBuilderTest extends CommonUtilForTest {
     @Test
     public void assertActionsAreValidWhenNotDefined() {
         final SubmitBuilder submitBuilder = SubmitBuilder
-                .forOrderParams(buyParamsEURUSD)
-                .build();
+            .forOrderParams(buyParamsEURUSD)
+            .build();
 
         assertNotNull(submitBuilder.errorAction());
         assertNotNull(submitBuilder.submitRejectAction());
@@ -38,14 +38,14 @@ public class SubmitBuilderTest extends CommonUtilForTest {
         final Consumer<IOrder> fillAction = o -> {};
 
         final SubmitBuilder submitBuilder = SubmitBuilder
-                .forOrderParams(buyParamsEURUSD)
-                .onError(errorAction)
-                .onSubmitReject(submitRejectAction)
-                .onFillReject(fillRejectAction)
-                .onSubmitOK(submitOKAction)
-                .onPartialFill(partialFillAction)
-                .onFill(fillAction)
-                .build();
+            .forOrderParams(buyParamsEURUSD)
+            .onError(errorAction)
+            .onSubmitReject(submitRejectAction)
+            .onFillReject(fillRejectAction)
+            .onSubmitOK(submitOKAction)
+            .onPartialFill(partialFillAction)
+            .onFill(fillAction)
+            .build();
 
         assertThat(submitBuilder.orderParams(), equalTo(buyParamsEURUSD));
         assertThat(submitBuilder.errorAction(), equalTo(errorAction));
