@@ -7,10 +7,9 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderParams;
 
-public class SubmitBuilder {
+public class SubmitBuilder extends OrderBuilder {
 
     private final OrderParams orderParams;
-    private final Consumer<Throwable> errorAction;
     private final Consumer<IOrder> submitRejectAction;
     private final Consumer<IOrder> fillRejectAction;
     private final Consumer<IOrder> submitOKAction;
@@ -19,10 +18,6 @@ public class SubmitBuilder {
 
     public final OrderParams orderParams() {
         return orderParams;
-    }
-
-    public final Consumer<Throwable> errorAction() {
-        return errorAction;
     }
 
     public final Consumer<IOrder> submitRejectAction() {
@@ -60,8 +55,8 @@ public class SubmitBuilder {
     }
 
     private SubmitBuilder(final Builder builder) {
+        super(builder);
         orderParams = builder.orderParams;
-        errorAction = builder.errorAction;
         submitRejectAction = builder.submitRejectAction;
         fillRejectAction = builder.fillRejectAction;
         submitOKAction = builder.submitOKAction;

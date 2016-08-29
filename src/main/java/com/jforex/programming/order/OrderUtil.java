@@ -11,12 +11,10 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.builder.CloseBuilder;
-import com.jforex.programming.order.builder.CloseBuilder.CloseOption;
 import com.jforex.programming.order.builder.MergeBuilder;
+import com.jforex.programming.order.builder.OrderBuilder;
 import com.jforex.programming.order.builder.OrderCallRetry;
-import com.jforex.programming.order.builder.MergeBuilder.MergeOption;
 import com.jforex.programming.order.builder.SubmitBuilder;
-import com.jforex.programming.order.builder.SubmitBuilder.SubmitOption;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.PositionOrders;
@@ -44,11 +42,11 @@ public class OrderUtil {
         final String orderLabel = orderParams.label();
 
         return orderUtilImpl.submitOrder(orderParams)
-                .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
-                .doOnError(e -> logger.error("Submit task with label " + orderLabel
-                        + " for " + instrument + " failed!Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
-                        + " for " + instrument + " was successful."));
+            .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
+            .doOnError(e -> logger.error("Submit task with label " + orderLabel
+                    + " for " + instrument + " failed!Exception: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
+                    + " for " + instrument + " was successful."));
     }
 
     public Observable<OrderEvent> submitAndMergePosition(final String mergeOrderLabel,
@@ -73,12 +71,12 @@ public class OrderUtil {
         checkNotNull(toMergeOrders);
 
         return orderUtilImpl.mergeOrders(mergeOrderLabel, toMergeOrders)
-                .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
-                        + " for position " + instrumentFromOrders(toMergeOrders) + "."))
-                .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
-                        + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
-                .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
-                        + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
+            .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
+                    + " for position " + instrumentFromOrders(toMergeOrders) + "."))
+            .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
+                    + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
+            .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
+                    + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
     }
 
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
@@ -87,20 +85,20 @@ public class OrderUtil {
         checkNotNull(instrument);
 
         return orderUtilImpl.mergePositionOrders(mergeOrderLabel, instrument)
-                .doOnSubscribe(() -> logger.info("Starting position merge for " +
-                        instrument + " with label " + mergeOrderLabel))
-                .doOnError(e -> logger.error("Position merge for " + instrument
-                        + "  with label " + mergeOrderLabel + " failed!" + "Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.info("Position merge for " + instrument
-                        + "  with label " + mergeOrderLabel + " was successful."));
+            .doOnSubscribe(() -> logger.info("Starting position merge for " +
+                    instrument + " with label " + mergeOrderLabel))
+            .doOnError(e -> logger.error("Position merge for " + instrument
+                    + "  with label " + mergeOrderLabel + " failed!" + "Exception: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Position merge for " + instrument
+                    + "  with label " + mergeOrderLabel + " was successful."));
     }
 
     public Observable<OrderEvent> closePosition(final Instrument instrument) {
         return orderUtilImpl.closePosition(checkNotNull(instrument))
-                .doOnSubscribe(() -> logger.info("Starting position close for " + instrument))
-                .doOnCompleted(() -> logger.info("Closing position " + instrument + " was successful."))
-                .doOnError(e -> logger.error("Closing position " + instrument
-                        + " failed! Exception: " + e.getMessage()));
+            .doOnSubscribe(() -> logger.info("Starting position close for " + instrument))
+            .doOnCompleted(() -> logger.info("Closing position " + instrument + " was successful."))
+            .doOnError(e -> logger.error("Closing position " + instrument
+                    + " failed! Exception: " + e.getMessage()));
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
@@ -165,75 +163,72 @@ public class OrderUtil {
         final String logMsg = commonLog + " for order " + order.getLabel()
                 + " and instrument " + order.getInstrument();
         return observable
-                .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
-                .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
-                .doOnCompleted(() -> logger.info("Changed " + logMsg));
-    }
-
-    public final SubmitOption submitBuilder(final OrderParams orderParams) {
-        return SubmitBuilder.forOrderParams(orderParams);
+            .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
+            .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Changed " + logMsg));
     }
 
     public final void startSubmit(final SubmitBuilder submitBuilder) {
-        submitOrder(submitBuilder.orderParams())
-                .subscribe(orderEvent -> {
-                    final IOrder order = orderEvent.order();
-                    if (orderEvent.type() == OrderEventType.FULLY_FILLED)
-                        submitBuilder.fillAction().accept(order);
-                    else if (orderEvent.type() == OrderEventType.PARTIAL_FILL_OK)
-                        submitBuilder.partialFillAction().accept(order);
-                    else if (orderEvent.type() == OrderEventType.SUBMIT_CONDITIONAL_OK
-                            || orderEvent.type() == OrderEventType.SUBMIT_OK)
-                        submitBuilder.submitOKAction().accept(order);
-                    else if (orderEvent.type() == OrderEventType.SUBMIT_REJECTED)
-                        submitBuilder.submitRejectAction().accept(order);
-                    else if (orderEvent.type() == OrderEventType.FILL_REJECTED)
-                        submitBuilder.fillRejectAction().accept(order);
-                }, submitBuilder.errorAction()::accept);
-    }
+        final Observable<OrderEvent> submitObservable =
+                evaluateRetry(submitOrder(submitBuilder.orderParams()),
+                              submitBuilder);
 
-    public final MergeOption mergeBuilder(final String mergeOrderLabel,
-                                          final Collection<IOrder> toMergeOrders) {
-        return MergeBuilder.forParams(mergeOrderLabel, toMergeOrders);
+        submitObservable
+            .subscribe(orderEvent -> {
+                final IOrder order = orderEvent.order();
+                if (orderEvent.type() == OrderEventType.FULLY_FILLED)
+                    submitBuilder.fillAction().accept(order);
+                else if (orderEvent.type() == OrderEventType.PARTIAL_FILL_OK)
+                    submitBuilder.partialFillAction().accept(order);
+                else if (orderEvent.type() == OrderEventType.SUBMIT_CONDITIONAL_OK
+                        || orderEvent.type() == OrderEventType.SUBMIT_OK)
+                    submitBuilder.submitOKAction().accept(order);
+                else if (orderEvent.type() == OrderEventType.SUBMIT_REJECTED)
+                    submitBuilder.submitRejectAction().accept(order);
+                else if (orderEvent.type() == OrderEventType.FILL_REJECTED)
+                    submitBuilder.fillRejectAction().accept(order);
+            }, submitBuilder.errorAction()::accept);
     }
 
     public final void startMerge(final MergeBuilder mergeBuilder) {
-        mergeOrders(mergeBuilder.mergeOrderLabel(), mergeBuilder.toMergeOrders())
-                .subscribe(orderEvent -> {
-                    final IOrder order = orderEvent.order();
-                    if (orderEvent.type() == OrderEventType.MERGE_OK)
-                        mergeBuilder.mergeOKAction().accept(order);
-                    else if (orderEvent.type() == OrderEventType.MERGE_CLOSE_OK)
-                        mergeBuilder.mergeCloseOKAction().accept(order);
-                    else if (orderEvent.type() == OrderEventType.MERGE_REJECTED)
-                        mergeBuilder.mergeRejectAction().accept(order);
-                }, mergeBuilder.errorAction()::accept);
-    }
+        final Observable<OrderEvent> mergeObservable =
+                evaluateRetry(mergeOrders(mergeBuilder.mergeOrderLabel(), mergeBuilder.toMergeOrders()),
+                              mergeBuilder);
 
-    public final CloseOption closeBuilder(final IOrder orderToClose) {
-        return CloseBuilder.forOrder(orderToClose);
+        mergeObservable
+            .subscribe(orderEvent -> {
+                final IOrder order = orderEvent.order();
+                if (orderEvent.type() == OrderEventType.MERGE_OK)
+                    mergeBuilder.mergeOKAction().accept(order);
+                else if (orderEvent.type() == OrderEventType.MERGE_CLOSE_OK)
+                    mergeBuilder.mergeCloseOKAction().accept(order);
+                else if (orderEvent.type() == OrderEventType.MERGE_REJECTED)
+                    mergeBuilder.mergeRejectAction().accept(order);
+            }, mergeBuilder.errorAction()::accept);
     }
 
     public final void startClose(final CloseBuilder closeBuilder) {
         final IOrder orderToClose = closeBuilder.orderToClose();
-
-        Observable<OrderEvent> closeObservable;
-        if (closeBuilder.noOfRetries() > 0) {
-            final OrderCallRetry orderCallRetry = new OrderCallRetry(closeBuilder.noOfRetries(),
-                                                                     closeBuilder.delayInMillis());
-            closeObservable = close(orderToClose)
-                    .retryWhen(orderCallRetry::retryOnRejectObservable);
-        } else
-            closeObservable = close(orderToClose);
+        final Observable<OrderEvent> closeObservable = evaluateRetry(close(orderToClose), closeBuilder);
 
         closeObservable
-                .subscribe(orderEvent -> {
-                    if (orderEvent.type() == OrderEventType.CLOSE_OK)
-                        closeBuilder.closeOKAction().accept(orderToClose);
-                    else if (orderEvent.type() == OrderEventType.CLOSE_REJECTED)
-                        closeBuilder.closeRejectAction().accept(orderToClose);
-                    else if (orderEvent.type() == OrderEventType.PARTIAL_CLOSE_OK)
-                        closeBuilder.partialCloseAction().accept(orderToClose);
-                }, closeBuilder.errorAction()::accept);
+            .subscribe(orderEvent -> {
+                if (orderEvent.type() == OrderEventType.CLOSE_OK)
+                    closeBuilder.closeOKAction().accept(orderToClose);
+                else if (orderEvent.type() == OrderEventType.CLOSE_REJECTED)
+                    closeBuilder.closeRejectAction().accept(orderToClose);
+                else if (orderEvent.type() == OrderEventType.PARTIAL_CLOSE_OK)
+                    closeBuilder.partialCloseAction().accept(orderToClose);
+            }, closeBuilder.errorAction()::accept);
+    }
+
+    private final Observable<OrderEvent> evaluateRetry(final Observable<OrderEvent> observable,
+                                                       final OrderBuilder builder) {
+        if (builder.noOfRetries() > 0) {
+            final OrderCallRetry orderCallRetry = new OrderCallRetry(builder.noOfRetries(),
+                                                                     builder.delayInMillis());
+            return observable.retryWhen(orderCallRetry::retryOnRejectObservable);
+        }
+        return observable;
     }
 }

@@ -7,11 +7,10 @@ import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
 
-public class MergeBuilder {
+public class MergeBuilder extends OrderBuilder {
 
     private final String mergeOrderLabel;
     private final Collection<IOrder> toMergeOrders;
-    private final Consumer<Throwable> errorAction;
     private final Consumer<IOrder> mergeRejectAction;
     private final Consumer<IOrder> mergeOKAction;
     private final Consumer<IOrder> mergeCloseOKAction;
@@ -22,10 +21,6 @@ public class MergeBuilder {
 
     public final Collection<IOrder> toMergeOrders() {
         return toMergeOrders;
-    }
-
-    public final Consumer<Throwable> errorAction() {
-        return errorAction;
     }
 
     public final Consumer<IOrder> mergeRejectAction() {
@@ -51,9 +46,9 @@ public class MergeBuilder {
     }
 
     private MergeBuilder(final Builder builder) {
+        super(builder);
         mergeOrderLabel = builder.mergeOrderLabel;
         toMergeOrders = builder.toMergeOrders;
-        errorAction = builder.errorAction;
         mergeRejectAction = builder.mergeRejectAction;
         mergeOKAction = builder.mergeOKAction;
         mergeCloseOKAction = builder.mergeCloseOKAction;

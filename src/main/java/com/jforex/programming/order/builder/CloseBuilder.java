@@ -6,22 +6,15 @@ import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
 
-public class CloseBuilder {
+public class CloseBuilder extends OrderBuilder {
 
     private final IOrder orderToClose;
-    private final Consumer<Throwable> errorAction;
     private final Consumer<IOrder> closeRejectAction;
     private final Consumer<IOrder> closeOKAction;
     private final Consumer<IOrder> partialCloseAction;
-    private final int noOfRetries;
-    private final long delayInMillis;
 
     public final IOrder orderToClose() {
         return orderToClose;
-    }
-
-    public final Consumer<Throwable> errorAction() {
-        return errorAction;
     }
 
     public final Consumer<IOrder> closeRejectAction() {
@@ -36,14 +29,6 @@ public class CloseBuilder {
         return partialCloseAction;
     }
 
-    public final int noOfRetries() {
-        return noOfRetries;
-    }
-
-    public final long delayInMillis() {
-        return delayInMillis;
-    }
-
     public interface CloseOption extends CommonOption<CloseOption> {
         public CloseOption onCloseReject(Consumer<IOrder> closeRejectAction);
 
@@ -55,13 +40,11 @@ public class CloseBuilder {
     }
 
     private CloseBuilder(final Builder builder) {
+        super(builder);
         orderToClose = builder.orderToClose;
-        errorAction = builder.errorAction;
         closeRejectAction = builder.closeRejectAction;
         closeOKAction = builder.closeOKAction;
         partialCloseAction = builder.partialCloseAction;
-        noOfRetries = builder.noOfRetries;
-        delayInMillis = builder.delayInMillis;
     }
 
     public static final CloseOption forOrder(final IOrder orderToClose) {

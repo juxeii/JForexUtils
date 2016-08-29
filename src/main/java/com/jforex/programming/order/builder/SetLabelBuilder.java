@@ -6,15 +6,12 @@ import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
 
-public class SetLabelBuilder {
+public class SetLabelBuilder extends OrderBuilder {
 
     private final IOrder orderToSetLabel;
     private final String newLabel;
-    private final Consumer<Throwable> errorAction;
     private final Consumer<IOrder> rejectAction;
     private final Consumer<IOrder> okAction;
-    private final int noOfRetries;
-    private final long delayInMillis;
 
     public final IOrder orderToSetLabel() {
         return orderToSetLabel;
@@ -24,24 +21,12 @@ public class SetLabelBuilder {
         return newLabel;
     }
 
-    public final Consumer<Throwable> errorAction() {
-        return errorAction;
-    }
-
     public final Consumer<IOrder> rejectAction() {
         return rejectAction;
     }
 
     public final Consumer<IOrder> okAction() {
         return okAction;
-    }
-
-    public final int noOfRetries() {
-        return noOfRetries;
-    }
-
-    public final long delayInMillis() {
-        return delayInMillis;
     }
 
     public interface SetLabelOption extends CommonOption<SetLabelOption> {
@@ -53,13 +38,11 @@ public class SetLabelBuilder {
     }
 
     private SetLabelBuilder(final Builder builder) {
+        super(builder);
         orderToSetLabel = builder.orderToSetLabel;
         newLabel = builder.newLabel;
-        errorAction = builder.errorAction;
         rejectAction = builder.rejectAction;
         okAction = builder.okAction;
-        noOfRetries = builder.noOfRetries;
-        delayInMillis = builder.delayInMillis;
     }
 
     public static final SetLabelOption forParams(final IOrder orderToSetLabel,
