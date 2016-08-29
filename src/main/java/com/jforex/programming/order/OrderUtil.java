@@ -10,10 +10,13 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.builder.CloseBuilder;
+import com.jforex.programming.order.builder.CloseBuilder.CloseOption;
 import com.jforex.programming.order.builder.MergeBuilder;
 import com.jforex.programming.order.builder.MergeBuilder.MergeOption;
 import com.jforex.programming.order.builder.SubmitBuilder;
 import com.jforex.programming.order.builder.SubmitBuilder.SubmitOption;
+import com.jforex.programming.order.builder.test.OrderCallRetry;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.PositionOrders;
@@ -205,5 +208,32 @@ public class OrderUtil {
                     else if (orderEvent.type() == OrderEventType.MERGE_REJECTED)
                         mergeBuilder.mergeRejectAction().accept(order);
                 }, mergeBuilder.errorAction()::accept);
+    }
+
+    public final CloseOption closeBuilder(final IOrder orderToClose) {
+        return CloseBuilder.forOrder(orderToClose);
+    }
+
+    public final void startClose(final CloseBuilder closeBuilder) {
+        final IOrder orderToClose = closeBuilder.orderToClose();
+
+        Observable<OrderEvent> closeObservable;
+        if (closeBuilder.noOfRetries() > 0) {
+            final OrderCallRetry orderCallRetry = new OrderCallRetry(closeBuilder.noOfRetries(),
+                                                                     closeBuilder.delayInMillis());
+            closeObservable = close(orderToClose)
+                    .retryWhen(orderCallRetry::retryOnRejectObservable);
+        } else
+            closeObservable = close(orderToClose);
+
+        closeObservable
+                .subscribe(orderEvent -> {
+                    if (orderEvent.type() == OrderEventType.CLOSE_OK)
+                        closeBuilder.closeOKAction().accept(orderToClose);
+                    else if (orderEvent.type() == OrderEventType.CLOSE_REJECTED)
+                        closeBuilder.closeRejectAction().accept(orderToClose);
+                    else if (orderEvent.type() == OrderEventType.PARTIAL_CLOSE_OK)
+                        closeBuilder.partialCloseAction().accept(orderToClose);
+                }, closeBuilder.errorAction()::accept);
     }
 }
