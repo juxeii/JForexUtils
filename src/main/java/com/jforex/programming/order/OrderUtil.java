@@ -10,7 +10,12 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.builder.MergeBuilder;
+import com.jforex.programming.order.builder.MergeBuilder.MergeOption;
+import com.jforex.programming.order.builder.SubmitBuilder;
+import com.jforex.programming.order.builder.SubmitBuilder.SubmitOption;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.PositionOrders;
 
 import rx.Observable;
@@ -160,5 +165,45 @@ public class OrderUtil {
                 .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
                 .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
                 .doOnCompleted(() -> logger.info("Changed " + logMsg));
+    }
+
+    public final SubmitOption submitBuilder(final OrderParams orderParams) {
+        return SubmitBuilder.forOrderParams(orderParams);
+    }
+
+    public final void startSubmit(final SubmitBuilder submitBuilder) {
+        submitOrder(submitBuilder.orderParams())
+                .subscribe(orderEvent -> {
+                    final IOrder order = orderEvent.order();
+                    if (orderEvent.type() == OrderEventType.FULLY_FILLED)
+                        submitBuilder.fillAction().accept(order);
+                    else if (orderEvent.type() == OrderEventType.PARTIAL_FILL_OK)
+                        submitBuilder.partialFillAction().accept(order);
+                    else if (orderEvent.type() == OrderEventType.SUBMIT_CONDITIONAL_OK
+                            || orderEvent.type() == OrderEventType.SUBMIT_OK)
+                        submitBuilder.submitOKAction().accept(order);
+                    else if (orderEvent.type() == OrderEventType.SUBMIT_REJECTED)
+                        submitBuilder.submitRejectAction().accept(order);
+                    else if (orderEvent.type() == OrderEventType.FILL_REJECTED)
+                        submitBuilder.fillRejectAction().accept(order);
+                }, submitBuilder.errorAction()::accept);
+    }
+
+    public final MergeOption mergeBuilder(final String mergeOrderLabel,
+                                          final Collection<IOrder> toMergeOrders) {
+        return MergeBuilder.forParams(mergeOrderLabel, toMergeOrders);
+    }
+
+    public final void startMerge(final MergeBuilder mergeBuilder) {
+        mergeOrders(mergeBuilder.mergeOrderLabel(), mergeBuilder.toMergeOrders())
+                .subscribe(orderEvent -> {
+                    final IOrder order = orderEvent.order();
+                    if (orderEvent.type() == OrderEventType.MERGE_OK)
+                        mergeBuilder.mergeOKAction().accept(order);
+                    else if (orderEvent.type() == OrderEventType.MERGE_CLOSE_OK)
+                        mergeBuilder.mergeCloseOKAction().accept(order);
+                    else if (orderEvent.type() == OrderEventType.MERGE_REJECTED)
+                        mergeBuilder.mergeRejectAction().accept(order);
+                }, mergeBuilder.errorAction()::accept);
     }
 }
