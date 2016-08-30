@@ -17,13 +17,10 @@ public class CloseBuilderTest extends CommonUtilForTest {
     @Test
     public void assertActionsAreValidWhenNotDefined() {
         final CloseBuilder closeBuilder = CloseBuilder
-                .forOrder(buyOrderEURUSD)
-                .build();
+            .forOrder(buyOrderEURUSD)
+            .build();
 
         assertNotNull(closeBuilder.errorAction());
-        assertNotNull(closeBuilder.closeRejectAction());
-        assertNotNull(closeBuilder.closeOKAction());
-        assertNotNull(closeBuilder.partialCloseAction());
     }
 
     @Test
@@ -34,17 +31,14 @@ public class CloseBuilderTest extends CommonUtilForTest {
         final Consumer<IOrder> partialCloseAction = o -> {};
 
         final CloseBuilder closeBuilder = CloseBuilder
-                .forOrder(buyOrderEURUSD)
-                .onError(errorAction)
-                .onCloseReject(closeRejectAction)
-                .onCloseOK(closeOKAction)
-                .onPartialCloseOK(partialCloseAction)
-                .build();
+            .forOrder(buyOrderEURUSD)
+            .onError(errorAction)
+            .onCloseReject(closeRejectAction)
+            .onCloseOK(closeOKAction)
+            .onPartialCloseOK(partialCloseAction)
+            .build();
 
         assertThat(closeBuilder.orderToClose(), equalTo(buyOrderEURUSD));
         assertThat(closeBuilder.errorAction(), equalTo(errorAction));
-        assertThat(closeBuilder.closeRejectAction(), equalTo(closeRejectAction));
-        assertThat(closeBuilder.closeOKAction(), equalTo(closeOKAction));
-        assertThat(closeBuilder.partialCloseAction(), equalTo(partialCloseAction));
     }
 }

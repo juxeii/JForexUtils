@@ -2,6 +2,10 @@ package com.jforex.programming.order.builder;
 
 import java.util.function.Consumer;
 
+import com.jforex.programming.order.event.OrderEvent;
+
+import rx.Observable;
+
 public abstract class OrderBuilder {
 
     protected Consumer<Throwable> errorAction;
@@ -24,5 +28,20 @@ public abstract class OrderBuilder {
 
     public final long delayInMillis() {
         return delayInMillis;
+    }
+
+    public void startObservable(final Observable<OrderEvent> observable) {
+        evaluateRetry(observable)
+            .subscribe(this::callEventHandler, errorAction::accept);
+    }
+
+    protected abstract void callEventHandler(OrderEvent orderEvent);
+
+    private final Observable<OrderEvent> evaluateRetry(final Observable<OrderEvent> observable) {
+        if (noOfRetries() > 0) {
+            final OrderCallRetry orderCallRetry = new OrderCallRetry(noOfRetries, delayInMillis);
+            return observable.retryWhen(orderCallRetry::retryOnRejectObservable);
+        }
+        return observable;
     }
 }

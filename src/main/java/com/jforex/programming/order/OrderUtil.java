@@ -12,11 +12,9 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.builder.CloseBuilder;
 import com.jforex.programming.order.builder.MergeBuilder;
-import com.jforex.programming.order.builder.OrderBuilder;
-import com.jforex.programming.order.builder.OrderCallRetry;
+import com.jforex.programming.order.builder.SetLabelBuilder;
 import com.jforex.programming.order.builder.SubmitBuilder;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.PositionOrders;
 
 import rx.Observable;
@@ -169,66 +167,20 @@ public class OrderUtil {
     }
 
     public final void startSubmit(final SubmitBuilder submitBuilder) {
-        final Observable<OrderEvent> submitObservable =
-                evaluateRetry(submitOrder(submitBuilder.orderParams()),
-                              submitBuilder);
-
-        submitObservable
-            .subscribe(orderEvent -> {
-                final IOrder order = orderEvent.order();
-                if (orderEvent.type() == OrderEventType.FULLY_FILLED)
-                    submitBuilder.fillAction().accept(order);
-                else if (orderEvent.type() == OrderEventType.PARTIAL_FILL_OK)
-                    submitBuilder.partialFillAction().accept(order);
-                else if (orderEvent.type() == OrderEventType.SUBMIT_CONDITIONAL_OK
-                        || orderEvent.type() == OrderEventType.SUBMIT_OK)
-                    submitBuilder.submitOKAction().accept(order);
-                else if (orderEvent.type() == OrderEventType.SUBMIT_REJECTED)
-                    submitBuilder.submitRejectAction().accept(order);
-                else if (orderEvent.type() == OrderEventType.FILL_REJECTED)
-                    submitBuilder.fillRejectAction().accept(order);
-            }, submitBuilder.errorAction()::accept);
+        submitBuilder.startObservable(submitOrder(submitBuilder.orderParams()));
     }
 
     public final void startMerge(final MergeBuilder mergeBuilder) {
-        final Observable<OrderEvent> mergeObservable =
-                evaluateRetry(mergeOrders(mergeBuilder.mergeOrderLabel(), mergeBuilder.toMergeOrders()),
-                              mergeBuilder);
-
-        mergeObservable
-            .subscribe(orderEvent -> {
-                final IOrder order = orderEvent.order();
-                if (orderEvent.type() == OrderEventType.MERGE_OK)
-                    mergeBuilder.mergeOKAction().accept(order);
-                else if (orderEvent.type() == OrderEventType.MERGE_CLOSE_OK)
-                    mergeBuilder.mergeCloseOKAction().accept(order);
-                else if (orderEvent.type() == OrderEventType.MERGE_REJECTED)
-                    mergeBuilder.mergeRejectAction().accept(order);
-            }, mergeBuilder.errorAction()::accept);
+        mergeBuilder.startObservable(mergeOrders(mergeBuilder.mergeOrderLabel(),
+                                                 mergeBuilder.toMergeOrders()));
     }
 
     public final void startClose(final CloseBuilder closeBuilder) {
-        final IOrder orderToClose = closeBuilder.orderToClose();
-        final Observable<OrderEvent> closeObservable = evaluateRetry(close(orderToClose), closeBuilder);
-
-        closeObservable
-            .subscribe(orderEvent -> {
-                if (orderEvent.type() == OrderEventType.CLOSE_OK)
-                    closeBuilder.closeOKAction().accept(orderToClose);
-                else if (orderEvent.type() == OrderEventType.CLOSE_REJECTED)
-                    closeBuilder.closeRejectAction().accept(orderToClose);
-                else if (orderEvent.type() == OrderEventType.PARTIAL_CLOSE_OK)
-                    closeBuilder.partialCloseAction().accept(orderToClose);
-            }, closeBuilder.errorAction()::accept);
+        closeBuilder.startObservable(close(closeBuilder.orderToClose()));
     }
 
-    private final Observable<OrderEvent> evaluateRetry(final Observable<OrderEvent> observable,
-                                                       final OrderBuilder builder) {
-        if (builder.noOfRetries() > 0) {
-            final OrderCallRetry orderCallRetry = new OrderCallRetry(builder.noOfRetries(),
-                                                                     builder.delayInMillis());
-            return observable.retryWhen(orderCallRetry::retryOnRejectObservable);
-        }
-        return observable;
+    public final void startLabelChange(final SetLabelBuilder setLabelBuilder) {
+        setLabelBuilder.startObservable(setLabel(setLabelBuilder.orderToSetLabel(),
+                                                 setLabelBuilder.newLabel()));
     }
 }

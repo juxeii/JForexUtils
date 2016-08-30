@@ -21,11 +21,6 @@ public class SubmitBuilderTest extends CommonUtilForTest {
             .build();
 
         assertNotNull(submitBuilder.errorAction());
-        assertNotNull(submitBuilder.submitRejectAction());
-        assertNotNull(submitBuilder.fillRejectAction());
-        assertNotNull(submitBuilder.submitOKAction());
-        assertNotNull(submitBuilder.partialFillAction());
-        assertNotNull(submitBuilder.fillAction());
     }
 
     @Test
@@ -49,10 +44,5 @@ public class SubmitBuilderTest extends CommonUtilForTest {
 
         assertThat(submitBuilder.orderParams(), equalTo(buyParamsEURUSD));
         assertThat(submitBuilder.errorAction(), equalTo(errorAction));
-        assertThat(submitBuilder.submitRejectAction(), equalTo(submitRejectAction));
-        assertThat(submitBuilder.fillRejectAction(), equalTo(fillRejectAction));
-        assertThat(submitBuilder.submitOKAction(), equalTo(submitOKAction));
-        assertThat(submitBuilder.partialFillAction(), equalTo(partialFillAction));
-        assertThat(submitBuilder.fillAction(), equalTo(fillAction));
     }
 }

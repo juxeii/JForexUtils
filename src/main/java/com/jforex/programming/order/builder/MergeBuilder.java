@@ -3,37 +3,19 @@ package com.jforex.programming.order.builder;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 
 public class MergeBuilder extends OrderBuilder {
 
     private final String mergeOrderLabel;
     private final Collection<IOrder> toMergeOrders;
-    private final Consumer<IOrder> mergeRejectAction;
-    private final Consumer<IOrder> mergeOKAction;
-    private final Consumer<IOrder> mergeCloseOKAction;
-
-    public final String mergeOrderLabel() {
-        return mergeOrderLabel;
-    }
-
-    public final Collection<IOrder> toMergeOrders() {
-        return toMergeOrders;
-    }
-
-    public final Consumer<IOrder> mergeRejectAction() {
-        return mergeRejectAction;
-    }
-
-    public final Consumer<IOrder> mergeOKAction() {
-        return mergeOKAction;
-    }
-
-    public final Consumer<IOrder> mergeCloseOKAction() {
-        return mergeCloseOKAction;
-    }
 
     public interface MergeOption extends CommonOption<MergeOption> {
         public MergeOption onMergeReject(Consumer<IOrder> mergeRejectAction);
@@ -45,13 +27,25 @@ public class MergeBuilder extends OrderBuilder {
         public MergeBuilder build();
     }
 
+    private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
+
     private MergeBuilder(final Builder builder) {
         super(builder);
         mergeOrderLabel = builder.mergeOrderLabel;
         toMergeOrders = builder.toMergeOrders;
-        mergeRejectAction = builder.mergeRejectAction;
-        mergeOKAction = builder.mergeOKAction;
-        mergeCloseOKAction = builder.mergeCloseOKAction;
+        eventHandlerForType = Maps.immutableEnumMap(ImmutableMap.<OrderEventType, Consumer<IOrder>> builder()
+            .put(OrderEventType.MERGE_OK, builder.mergeOKAction)
+            .put(OrderEventType.MERGE_CLOSE_OK, builder.mergeCloseOKAction)
+            .put(OrderEventType.MERGE_REJECTED, builder.mergeRejectAction)
+            .build());
+    }
+
+    public final String mergeOrderLabel() {
+        return mergeOrderLabel;
+    }
+
+    public final Collection<IOrder> toMergeOrders() {
+        return toMergeOrders;
     }
 
     public static final MergeOption forParams(final String mergeOrderLabel,
@@ -95,5 +89,12 @@ public class MergeBuilder extends OrderBuilder {
         public MergeBuilder build() {
             return new MergeBuilder(this);
         }
+    }
+
+    @Override
+    protected void callEventHandler(final OrderEvent orderEvent) {
+        eventHandlerForType
+            .get(orderEvent.type())
+            .accept(orderEvent.order());
     }
 }

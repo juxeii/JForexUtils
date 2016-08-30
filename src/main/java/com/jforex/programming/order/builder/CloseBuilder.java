@@ -2,32 +2,19 @@ package com.jforex.programming.order.builder;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 
 public class CloseBuilder extends OrderBuilder {
 
     private final IOrder orderToClose;
-    private final Consumer<IOrder> closeRejectAction;
-    private final Consumer<IOrder> closeOKAction;
-    private final Consumer<IOrder> partialCloseAction;
-
-    public final IOrder orderToClose() {
-        return orderToClose;
-    }
-
-    public final Consumer<IOrder> closeRejectAction() {
-        return closeRejectAction;
-    }
-
-    public final Consumer<IOrder> closeOKAction() {
-        return closeOKAction;
-    }
-
-    public final Consumer<IOrder> partialCloseAction() {
-        return partialCloseAction;
-    }
+    private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
     public interface CloseOption extends CommonOption<CloseOption> {
         public CloseOption onCloseReject(Consumer<IOrder> closeRejectAction);
@@ -42,9 +29,15 @@ public class CloseBuilder extends OrderBuilder {
     private CloseBuilder(final Builder builder) {
         super(builder);
         orderToClose = builder.orderToClose;
-        closeRejectAction = builder.closeRejectAction;
-        closeOKAction = builder.closeOKAction;
-        partialCloseAction = builder.partialCloseAction;
+        eventHandlerForType = Maps.immutableEnumMap(ImmutableMap.<OrderEventType, Consumer<IOrder>> builder()
+            .put(OrderEventType.CLOSE_OK, builder.closeOKAction)
+            .put(OrderEventType.PARTIAL_CLOSE_OK, builder.partialCloseAction)
+            .put(OrderEventType.CLOSE_REJECTED, builder.closeRejectAction)
+            .build());
+    }
+
+    public final IOrder orderToClose() {
+        return orderToClose;
     }
 
     public static final CloseOption forOrder(final IOrder orderToClose) {
@@ -84,5 +77,12 @@ public class CloseBuilder extends OrderBuilder {
         public CloseBuilder build() {
             return new CloseBuilder(this);
         }
+    }
+
+    @Override
+    protected void callEventHandler(final OrderEvent orderEvent) {
+        eventHandlerForType
+            .get(orderEvent.type())
+            .accept(orderEvent.order());
     }
 }

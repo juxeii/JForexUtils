@@ -22,13 +22,10 @@ public class MergeBuilderTest extends CommonUtilForTest {
     @Test
     public void assertActionsAreValidWhenNotDefined() {
         final MergeBuilder mergeBuilder = MergeBuilder
-                .forParams(mergeOrderLabel, toMergeOrders)
-                .build();
+            .forParams(mergeOrderLabel, toMergeOrders)
+            .build();
 
         assertNotNull(mergeBuilder.errorAction());
-        assertNotNull(mergeBuilder.mergeRejectAction());
-        assertNotNull(mergeBuilder.mergeOKAction());
-        assertNotNull(mergeBuilder.mergeCloseOKAction());
     }
 
     @Test
@@ -39,18 +36,15 @@ public class MergeBuilderTest extends CommonUtilForTest {
         final Consumer<IOrder> mergeCloseOKAction = o -> {};
 
         final MergeBuilder mergeBuilder = MergeBuilder
-                .forParams(mergeOrderLabel, toMergeOrders)
-                .onError(errorAction)
-                .onMergeReject(mergeRejectAction)
-                .onMergeOK(mergeOKAction)
-                .onMergeCloseOK(mergeCloseOKAction)
-                .build();
+            .forParams(mergeOrderLabel, toMergeOrders)
+            .onError(errorAction)
+            .onMergeReject(mergeRejectAction)
+            .onMergeOK(mergeOKAction)
+            .onMergeCloseOK(mergeCloseOKAction)
+            .build();
 
         assertThat(mergeBuilder.mergeOrderLabel(), equalTo(mergeOrderLabel));
         assertThat(mergeBuilder.toMergeOrders(), equalTo(toMergeOrders));
         assertThat(mergeBuilder.errorAction(), equalTo(errorAction));
-        assertThat(mergeBuilder.mergeRejectAction(), equalTo(mergeRejectAction));
-        assertThat(mergeBuilder.mergeOKAction(), equalTo(mergeOKAction));
-        assertThat(mergeBuilder.mergeCloseOKAction(), equalTo(mergeCloseOKAction));
     }
 }

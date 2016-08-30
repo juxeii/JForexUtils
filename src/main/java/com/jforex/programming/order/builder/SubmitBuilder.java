@@ -2,43 +2,20 @@ package com.jforex.programming.order.builder;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 
 public class SubmitBuilder extends OrderBuilder {
 
     private final OrderParams orderParams;
-    private final Consumer<IOrder> submitRejectAction;
-    private final Consumer<IOrder> fillRejectAction;
-    private final Consumer<IOrder> submitOKAction;
-    private final Consumer<IOrder> partialFillAction;
-    private final Consumer<IOrder> fillAction;
-
-    public final OrderParams orderParams() {
-        return orderParams;
-    }
-
-    public final Consumer<IOrder> submitRejectAction() {
-        return submitRejectAction;
-    }
-
-    public final Consumer<IOrder> fillRejectAction() {
-        return fillRejectAction;
-    }
-
-    public final Consumer<IOrder> submitOKAction() {
-        return submitOKAction;
-    }
-
-    public final Consumer<IOrder> partialFillAction() {
-        return partialFillAction;
-    }
-
-    public final Consumer<IOrder> fillAction() {
-        return fillAction;
-    }
+    private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
     public interface SubmitOption extends CommonOption<SubmitOption> {
         public SubmitOption onSubmitReject(Consumer<IOrder> submitRejectAction);
@@ -57,11 +34,19 @@ public class SubmitBuilder extends OrderBuilder {
     private SubmitBuilder(final Builder builder) {
         super(builder);
         orderParams = builder.orderParams;
-        submitRejectAction = builder.submitRejectAction;
-        fillRejectAction = builder.fillRejectAction;
-        submitOKAction = builder.submitOKAction;
-        partialFillAction = builder.partialFillAction;
-        fillAction = builder.fillAction;
+        eventHandlerForType =
+                Maps.immutableEnumMap(ImmutableMap.<OrderEventType, Consumer<IOrder>> builder()
+                    .put(OrderEventType.FULLY_FILLED, builder.fillAction)
+                    .put(OrderEventType.PARTIAL_FILL_OK, builder.partialFillAction)
+                    .put(OrderEventType.SUBMIT_CONDITIONAL_OK, builder.submitOKAction)
+                    .put(OrderEventType.SUBMIT_OK, builder.submitOKAction)
+                    .put(OrderEventType.SUBMIT_REJECTED, builder.submitRejectAction)
+                    .put(OrderEventType.FILL_REJECTED, builder.fillRejectAction)
+                    .build());
+    }
+
+    public final OrderParams orderParams() {
+        return orderParams;
     }
 
     public static final SubmitOption forOrderParams(final OrderParams orderParams) {
@@ -115,5 +100,12 @@ public class SubmitBuilder extends OrderBuilder {
         public SubmitBuilder build() {
             return new SubmitBuilder(this);
         }
+    }
+
+    @Override
+    protected void callEventHandler(final OrderEvent orderEvent) {
+        eventHandlerForType
+            .get(orderEvent.type())
+            .accept(orderEvent.order());
     }
 }
