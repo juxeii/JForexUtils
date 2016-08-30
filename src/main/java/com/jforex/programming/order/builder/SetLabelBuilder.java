@@ -2,25 +2,20 @@ package com.jforex.programming.order.builder;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Map;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
 public class SetLabelBuilder extends OrderBuilder {
 
     private final IOrder orderToSetLabel;
     private final String newLabel;
-    private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
     public interface SetLabelOption extends CommonOption<SetLabelOption> {
-        public SetLabelOption onReject(Consumer<IOrder> closeRejectAction);
+        public SetLabelOption onReject(Consumer<IOrder> setLabelRejectAction);
 
-        public SetLabelOption onOK(Consumer<IOrder> closeOKAction);
+        public SetLabelOption onOK(Consumer<IOrder> setLabelOKAction);
 
         public SetLabelBuilder build();
     }
@@ -29,10 +24,6 @@ public class SetLabelBuilder extends OrderBuilder {
         super(builder);
         orderToSetLabel = builder.orderToSetLabel;
         newLabel = builder.newLabel;
-        eventHandlerForType = Maps.immutableEnumMap(ImmutableMap.<OrderEventType, Consumer<IOrder>> builder()
-            .put(OrderEventType.CHANGED_LABEL, builder.okAction)
-            .put(OrderEventType.CHANGE_LABEL_REJECTED, builder.rejectAction)
-            .build());
     }
 
     public final IOrder orderToSetLabel() {
@@ -48,19 +39,10 @@ public class SetLabelBuilder extends OrderBuilder {
         return new Builder(checkNotNull(orderToSetLabel), checkNotNull(newLabel));
     }
 
-    @Override
-    protected void callEventHandler(final OrderEvent orderEvent) {
-        eventHandlerForType
-            .get(orderEvent.type())
-            .accept(orderEvent.order());
-    }
-
     private static class Builder extends CommonBuilder<Builder> implements SetLabelOption {
 
         private final IOrder orderToSetLabel;
         private final String newLabel;
-        private Consumer<IOrder> rejectAction = o -> {};
-        private Consumer<IOrder> okAction = o -> {};
 
         private Builder(final IOrder orderToSetLabel,
                         final String newLabel) {
@@ -70,13 +52,13 @@ public class SetLabelBuilder extends OrderBuilder {
 
         @Override
         public SetLabelOption onReject(final Consumer<IOrder> rejectAction) {
-            this.rejectAction = checkNotNull(rejectAction);
+            eventHandlerForType.put(OrderEventType.CHANGE_LABEL_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
         public SetLabelOption onOK(final Consumer<IOrder> okAction) {
-            this.okAction = checkNotNull(okAction);
+            eventHandlerForType.put(OrderEventType.CHANGED_LABEL, checkNotNull(okAction));
             return this;
         }
 
