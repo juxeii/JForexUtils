@@ -27,7 +27,7 @@ public abstract class OrderProcess {
         return errorAction;
     }
 
-    public void startObservable(final Observable<OrderEvent> observable) {
+    public void start(final Observable<OrderEvent> observable) {
         evaluateRetry(observable)
             .subscribe(this::callEventHandler, errorAction::accept);
     }

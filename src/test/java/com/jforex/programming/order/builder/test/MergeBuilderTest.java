@@ -39,8 +39,8 @@ public class MergeBuilderTest extends CommonUtilForTest {
             .forParams(mergeOrderLabel, toMergeOrders)
             .onError(errorAction)
             .onMergeReject(mergeRejectAction)
-            .onMergeOK(mergeOKAction)
-            .onMergeCloseOK(mergeCloseOKAction)
+            .onMerge(mergeOKAction)
+            .onMergeClose(mergeCloseOKAction)
             .build();
 
         assertThat(mergeBuilder.mergeOrderLabel(), equalTo(mergeOrderLabel));

@@ -10,8 +10,9 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.builder.CloseProcess;
 import com.jforex.programming.order.builder.ClosePositionProcess;
+import com.jforex.programming.order.builder.CloseProcess;
+import com.jforex.programming.order.builder.MergePositionProcess;
 import com.jforex.programming.order.builder.MergeProcess;
 import com.jforex.programming.order.builder.SetAmountProcess;
 import com.jforex.programming.order.builder.SetGTTProcess;
@@ -51,46 +52,47 @@ public class OrderUtil {
         return orderUtilImpl.submitAndMergePositionToParams(mergeOrderLabel, orderParams);
     }
 
-    public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
-                                                      final Instrument instrument) {
-        checkNotNull(mergeOrderLabel);
-        checkNotNull(instrument);
-
-        return orderUtilImpl.mergePositionOrders(mergeOrderLabel, instrument)
-                .doOnSubscribe(() -> logger.info("Starting position merge for " +
-                        instrument + " with label " + mergeOrderLabel))
-                .doOnError(e -> logger.error("Position merge for " + instrument
-                        + "  with label " + mergeOrderLabel + " failed!" + "Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.info("Position merge for " + instrument
-                        + "  with label " + mergeOrderLabel + " was successful."));
-    }
-
     public final void startSubmit(final SubmitProcess submitBuilder) {
         final OrderParams orderParams = submitBuilder.orderParams();
         final Instrument instrument = orderParams.instrument();
         final String orderLabel = orderParams.label();
         final Observable<OrderEvent> observable = orderUtilImpl.submitOrder(orderParams)
-                .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
-                .doOnError(e -> logger.error("Submit task with label " + orderLabel
-                        + " for " + instrument + " failed!Exception: " + e.getMessage()))
-                .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
-                        + " for " + instrument + " was successful."));
+            .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
+            .doOnError(e -> logger.error("Submit task with label " + orderLabel
+                    + " for " + instrument + " failed!Exception: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
+                    + " for " + instrument + " was successful."));
 
-        submitBuilder.startObservable(observable);
+        submitBuilder.start(observable);
     }
 
     public final void startMerge(final MergeProcess mergeBuilder) {
         final String mergeOrderLabel = mergeBuilder.mergeOrderLabel();
         final Collection<IOrder> toMergeOrders = mergeBuilder.toMergeOrders();
         final Observable<OrderEvent> observable = orderUtilImpl.mergeOrders(mergeOrderLabel, toMergeOrders)
-                .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
-                        + " for position " + instrumentFromOrders(toMergeOrders) + "."))
-                .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
-                        + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
-                .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
-                        + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
+            .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
+                    + " for position " + instrumentFromOrders(toMergeOrders) + "."))
+            .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
+                    + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
+            .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
+                    + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
 
-        mergeBuilder.startObservable(observable);
+        mergeBuilder.start(observable);
+    }
+
+    public final void startPositionMerge(final MergePositionProcess mergePositionProcess) {
+        final String mergeOrderLabel = mergePositionProcess.mergeOrderLabel();
+        final Instrument instrument = mergePositionProcess.instrument();
+
+        final Observable<OrderEvent> observable = orderUtilImpl.mergePositionOrders(mergeOrderLabel, instrument)
+            .doOnSubscribe(() -> logger.info("Starting position merge for " +
+                    instrument + " with label " + mergeOrderLabel))
+            .doOnError(e -> logger.error("Position merge for " + instrument
+                    + "  with label " + mergeOrderLabel + " failed!" + "Exception: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Position merge for " + instrument
+                    + "  with label " + mergeOrderLabel + " was successful."));
+
+        mergePositionProcess.start(observable);
     }
 
     public final void startClose(final CloseProcess closeBuilder) {
@@ -101,18 +103,18 @@ public class OrderUtil {
                                  orderToClose,
                                  commonLog);
 
-        closeBuilder.startObservable(observable);
+        closeBuilder.start(observable);
     }
 
     public final void startPositionClose(final ClosePositionProcess closePositionBuilder) {
         final Instrument instrument = closePositionBuilder.instrument();
         final Observable<OrderEvent> observable = orderUtilImpl.closePosition(instrument)
-                .doOnSubscribe(() -> logger.info("Starting position close for " + instrument))
-                .doOnCompleted(() -> logger.info("Closing position " + instrument + " was successful."))
-                .doOnError(e -> logger.error("Closing position " + instrument
-                        + " failed! Exception: " + e.getMessage()));
+            .doOnSubscribe(() -> logger.info("Starting position close for " + instrument))
+            .doOnCompleted(() -> logger.info("Closing position " + instrument + " was successful."))
+            .doOnError(e -> logger.error("Closing position " + instrument
+                    + " failed! Exception: " + e.getMessage()));
 
-        closePositionBuilder.startObservable(observable);
+        closePositionBuilder.start(observable);
     }
 
     public final void startLabelChange(final SetLabelProcess setLabelBuilder) {
@@ -124,7 +126,7 @@ public class OrderUtil {
                                  orderToChangeLabel,
                                  commonLog);
 
-        setLabelBuilder.startObservable(observable);
+        setLabelBuilder.start(observable);
     }
 
     public final void startGTTChange(final SetGTTProcess setGTTBuilder) {
@@ -136,7 +138,7 @@ public class OrderUtil {
                                  orderToChangeGTT,
                                  commonLog);
 
-        setGTTBuilder.startObservable(observable);
+        setGTTBuilder.start(observable);
     }
 
     public final void startAmountChange(final SetAmountProcess setAmountBuilder) {
@@ -149,7 +151,7 @@ public class OrderUtil {
                                  orderToChangeAmount,
                                  commonLog);
 
-        setAmountBuilder.startObservable(observable);
+        setAmountBuilder.start(observable);
     }
 
     public final void startOpenPriceChange(final SetPriceProcess setPriceBuilder) {
@@ -161,7 +163,7 @@ public class OrderUtil {
                                  orderToChangeOpenPrice,
                                  commonLog);
 
-        setPriceBuilder.startObservable(observable);
+        setPriceBuilder.start(observable);
     }
 
     public final void startSLChange(final SetSLProcess setSLBuilder) {
@@ -173,7 +175,7 @@ public class OrderUtil {
                                  orderToChangeSL,
                                  commonLog);
 
-        setSLBuilder.startObservable(observable);
+        setSLBuilder.start(observable);
     }
 
     public final void startTPChange(final SetTPProcess setTPBuilder) {
@@ -185,7 +187,7 @@ public class OrderUtil {
                                  orderToChangeTP,
                                  commonLog);
 
-        setTPBuilder.startObservable(observable);
+        setTPBuilder.start(observable);
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
@@ -198,8 +200,8 @@ public class OrderUtil {
         final String logMsg = commonLog + " for order " + order.getLabel()
                 + " and instrument " + order.getInstrument();
         return observable
-                .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
-                .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
-                .doOnCompleted(() -> logger.info("Changed " + logMsg));
+            .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
+            .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Changed " + logMsg));
     }
 }

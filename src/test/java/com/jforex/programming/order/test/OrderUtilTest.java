@@ -14,8 +14,9 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilImpl;
-import com.jforex.programming.order.builder.CloseProcess;
 import com.jforex.programming.order.builder.ClosePositionProcess;
+import com.jforex.programming.order.builder.CloseProcess;
+import com.jforex.programming.order.builder.MergePositionProcess;
 import com.jforex.programming.order.builder.MergeProcess;
 import com.jforex.programming.order.builder.SetAmountProcess;
 import com.jforex.programming.order.builder.SetGTTProcess;
@@ -24,12 +25,10 @@ import com.jforex.programming.order.builder.SetPriceProcess;
 import com.jforex.programming.order.builder.SetSLProcess;
 import com.jforex.programming.order.builder.SetTPProcess;
 import com.jforex.programming.order.builder.SubmitProcess;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.observers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {
@@ -40,7 +39,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderUtilImpl orderUtilImplMock;
     @Mock
     private Position positionMock;
-    private final TestSubscriber<OrderEvent> orderEventSubscriber = new TestSubscriber<>();
     private final String mergeOrderLabel = "MergeLabel";
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
@@ -110,12 +108,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .thenReturn(emptyObservable())
             .thenReturn(jfExceptionObservable());
 
-        orderUtil
-            .mergePositionOrders(mergeOrderLabel, instrumentEURUSD)
-            .subscribe(orderEventSubscriber);
-        orderUtil
-            .mergePositionOrders(mergeOrderLabel, instrumentEURUSD)
-            .subscribe(orderEventSubscriber);
+        final MergePositionProcess process = MergePositionProcess
+            .forParams(mergeOrderLabel, instrumentEURUSD)
+            .build();
+
+        orderUtil.startPositionMerge(process);
+        orderUtil.startPositionMerge(process);
 
         verify(orderUtilImplMock, times(2)).mergePositionOrders(mergeOrderLabel, instrumentEURUSD);
     }
