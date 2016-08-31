@@ -14,6 +14,16 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilImpl;
+import com.jforex.programming.order.builder.CloseBuilder;
+import com.jforex.programming.order.builder.ClosePositionBuilder;
+import com.jforex.programming.order.builder.MergeBuilder;
+import com.jforex.programming.order.builder.SetAmountBuilder;
+import com.jforex.programming.order.builder.SetGTTBuilder;
+import com.jforex.programming.order.builder.SetLabelBuilder;
+import com.jforex.programming.order.builder.SetPriceBuilder;
+import com.jforex.programming.order.builder.SetSLBuilder;
+import com.jforex.programming.order.builder.SetTPBuilder;
+import com.jforex.programming.order.builder.SubmitBuilder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -49,17 +59,17 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void submitOrderDelegatesToOrderUtilImpl() {
+    public void startSubmitDelegatesToOrderUtilImpl() {
         when(orderUtilImplMock.submitOrder(buyParamsEURUSD))
             .thenReturn(emptyObservable())
             .thenReturn(jfExceptionObservable());
 
-        orderUtil
-            .submitOrder(buyParamsEURUSD)
-            .subscribe(orderEventSubscriber);
-        orderUtil
-            .submitOrder(buyParamsEURUSD)
-            .subscribe(orderEventSubscriber);
+        final SubmitBuilder builder = SubmitBuilder
+            .forOrderParams(buyParamsEURUSD)
+            .build();
+
+        orderUtil.startSubmit(builder);
+        orderUtil.startSubmit(builder);
 
         verify(orderUtilImplMock, times(2)).submitOrder(buyParamsEURUSD);
     }
@@ -84,12 +94,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .thenReturn(emptyObservable())
             .thenReturn(jfExceptionObservable());
 
-        orderUtil
-            .mergeOrders(mergeOrderLabel, toMergeOrders)
-            .subscribe(orderEventSubscriber);
-        orderUtil
-            .mergeOrders(mergeOrderLabel, toMergeOrders)
-            .subscribe(orderEventSubscriber);
+        final MergeBuilder builder = MergeBuilder
+            .forParams(mergeOrderLabel, toMergeOrders)
+            .build();
+
+        orderUtil.startMerge(builder);
+        orderUtil.startMerge(builder);
 
         verify(orderUtilImplMock, times(2)).mergeOrders(mergeOrderLabel, toMergeOrders);
     }
@@ -116,12 +126,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .thenReturn(emptyObservable())
             .thenReturn(jfExceptionObservable());
 
-        orderUtil
-            .closePosition(instrumentEURUSD)
-            .subscribe(orderEventSubscriber);
-        orderUtil
-            .closePosition(instrumentEURUSD)
-            .subscribe(orderEventSubscriber);
+        final ClosePositionBuilder builder = ClosePositionBuilder
+            .forInstrument(instrumentEURUSD)
+            .build();
+
+        orderUtil.startPositionClose(builder);
+        orderUtil.startPositionClose(builder);
 
         verify(orderUtilImplMock, times(2)).closePosition(instrumentEURUSD);
     }
@@ -131,7 +141,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.close(buyOrderEURUSD))
             .thenReturn(neverObservable());
 
-        orderUtil.close(buyOrderEURUSD);
+        final CloseBuilder builder = CloseBuilder
+            .forOrder(buyOrderEURUSD)
+            .build();
+
+        orderUtil.startClose(builder);
 
         verify(orderUtilImplMock).close(buyOrderEURUSD);
     }
@@ -143,12 +157,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .thenReturn(emptyObservable())
             .thenReturn(jfExceptionObservable());
 
-        orderUtil
-            .setLabel(buyOrderEURUSD, newLabel)
-            .subscribe(orderEventSubscriber);
-        orderUtil
-            .setLabel(buyOrderEURUSD, newLabel)
-            .subscribe(orderEventSubscriber);
+        final SetLabelBuilder builder = SetLabelBuilder
+            .forParams(buyOrderEURUSD, newLabel)
+            .build();
+
+        orderUtil.startLabelChange(builder);
+        orderUtil.startLabelChange(builder);
 
         verify(orderUtilImplMock, times(2)).setLabel(buyOrderEURUSD, newLabel);
     }
@@ -159,7 +173,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.setGoodTillTime(buyOrderEURUSD, newGTT))
             .thenReturn(neverObservable());
 
-        orderUtil.setGoodTillTime(buyOrderEURUSD, newGTT);
+        final SetGTTBuilder builder = SetGTTBuilder
+            .forParams(buyOrderEURUSD, newGTT)
+            .build();
+
+        orderUtil.startGTTChange(builder);
 
         verify(orderUtilImplMock).setGoodTillTime(buyOrderEURUSD, newGTT);
     }
@@ -170,7 +188,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.setOpenPrice(buyOrderEURUSD, newOpenPrice))
             .thenReturn(neverObservable());
 
-        orderUtil.setOpenPrice(buyOrderEURUSD, newOpenPrice);
+        final SetPriceBuilder builder = SetPriceBuilder
+            .forParams(buyOrderEURUSD, newOpenPrice)
+            .build();
+
+        orderUtil.startOpenPriceChange(builder);
 
         verify(orderUtilImplMock).setOpenPrice(buyOrderEURUSD, newOpenPrice);
     }
@@ -181,7 +203,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.setRequestedAmount(buyOrderEURUSD, newAmount))
             .thenReturn(neverObservable());
 
-        orderUtil.setRequestedAmount(buyOrderEURUSD, newAmount);
+        final SetAmountBuilder builder = SetAmountBuilder
+            .forParams(buyOrderEURUSD, newAmount)
+            .build();
+
+        orderUtil.startAmountChange(builder);
 
         verify(orderUtilImplMock).setRequestedAmount(buyOrderEURUSD, newAmount);
     }
@@ -192,7 +218,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.setStopLossPrice(buyOrderEURUSD, newSL))
             .thenReturn(neverObservable());
 
-        orderUtil.setStopLossPrice(buyOrderEURUSD, newSL);
+        final SetSLBuilder builder = SetSLBuilder
+            .forParams(buyOrderEURUSD, newSL)
+            .build();
+
+        orderUtil.startSLChange(builder);
 
         verify(orderUtilImplMock).setStopLossPrice(buyOrderEURUSD, newSL);
     }
@@ -203,7 +233,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.setTakeProfitPrice(buyOrderEURUSD, newTP))
             .thenReturn(neverObservable());
 
-        orderUtil.setTakeProfitPrice(buyOrderEURUSD, newTP);
+        final SetTPBuilder builder = SetTPBuilder
+            .forParams(buyOrderEURUSD, newTP)
+            .build();
+
+        orderUtil.startTPChange(builder);
 
         verify(orderUtilImplMock).setTakeProfitPrice(buyOrderEURUSD, newTP);
     }

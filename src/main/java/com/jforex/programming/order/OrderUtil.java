@@ -11,8 +11,14 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.builder.CloseBuilder;
+import com.jforex.programming.order.builder.ClosePositionBuilder;
 import com.jforex.programming.order.builder.MergeBuilder;
+import com.jforex.programming.order.builder.SetAmountBuilder;
+import com.jforex.programming.order.builder.SetGTTBuilder;
 import com.jforex.programming.order.builder.SetLabelBuilder;
+import com.jforex.programming.order.builder.SetPriceBuilder;
+import com.jforex.programming.order.builder.SetSLBuilder;
+import com.jforex.programming.order.builder.SetTPBuilder;
 import com.jforex.programming.order.builder.SubmitBuilder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
@@ -27,24 +33,6 @@ public class OrderUtil {
 
     public OrderUtil(final OrderUtilImpl orderUtilImpl) {
         this.orderUtilImpl = orderUtilImpl;
-    }
-
-    public PositionOrders positionOrders(final Instrument instrument) {
-        return orderUtilImpl.positionOrders(checkNotNull(instrument));
-    }
-
-    public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
-        checkNotNull(orderParams);
-
-        final Instrument instrument = orderParams.instrument();
-        final String orderLabel = orderParams.label();
-
-        return orderUtilImpl.submitOrder(orderParams)
-            .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
-            .doOnError(e -> logger.error("Submit task with label " + orderLabel
-                    + " for " + instrument + " failed!Exception: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
-                    + " for " + instrument + " was successful."));
     }
 
     public Observable<OrderEvent> submitAndMergePosition(final String mergeOrderLabel,
@@ -63,96 +51,145 @@ public class OrderUtil {
         return orderUtilImpl.submitAndMergePositionToParams(mergeOrderLabel, orderParams);
     }
 
-    public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
-                                              final Collection<IOrder> toMergeOrders) {
-        checkNotNull(mergeOrderLabel);
-        checkNotNull(toMergeOrders);
-
-        return orderUtilImpl.mergeOrders(mergeOrderLabel, toMergeOrders)
-            .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
-                    + " for position " + instrumentFromOrders(toMergeOrders) + "."))
-            .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
-                    + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
-            .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
-                    + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
-    }
-
     public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
                                                       final Instrument instrument) {
         checkNotNull(mergeOrderLabel);
         checkNotNull(instrument);
 
         return orderUtilImpl.mergePositionOrders(mergeOrderLabel, instrument)
-            .doOnSubscribe(() -> logger.info("Starting position merge for " +
-                    instrument + " with label " + mergeOrderLabel))
-            .doOnError(e -> logger.error("Position merge for " + instrument
-                    + "  with label " + mergeOrderLabel + " failed!" + "Exception: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Position merge for " + instrument
-                    + "  with label " + mergeOrderLabel + " was successful."));
+                .doOnSubscribe(() -> logger.info("Starting position merge for " +
+                        instrument + " with label " + mergeOrderLabel))
+                .doOnError(e -> logger.error("Position merge for " + instrument
+                        + "  with label " + mergeOrderLabel + " failed!" + "Exception: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Position merge for " + instrument
+                        + "  with label " + mergeOrderLabel + " was successful."));
     }
 
-    public Observable<OrderEvent> closePosition(final Instrument instrument) {
-        return orderUtilImpl.closePosition(checkNotNull(instrument))
-            .doOnSubscribe(() -> logger.info("Starting position close for " + instrument))
-            .doOnCompleted(() -> logger.info("Closing position " + instrument + " was successful."))
-            .doOnError(e -> logger.error("Closing position " + instrument
-                    + " failed! Exception: " + e.getMessage()));
+    public final void startSubmit(final SubmitBuilder submitBuilder) {
+        final OrderParams orderParams = submitBuilder.orderParams();
+        final Instrument instrument = orderParams.instrument();
+        final String orderLabel = orderParams.label();
+        final Observable<OrderEvent> observable = orderUtilImpl.submitOrder(orderParams)
+                .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
+                .doOnError(e -> logger.error("Submit task with label " + orderLabel
+                        + " for " + instrument + " failed!Exception: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
+                        + " for " + instrument + " was successful."));
+
+        submitBuilder.startObservable(observable);
     }
 
-    public Observable<OrderEvent> close(final IOrder orderToClose) {
+    public final void startMerge(final MergeBuilder mergeBuilder) {
+        final String mergeOrderLabel = mergeBuilder.mergeOrderLabel();
+        final Collection<IOrder> toMergeOrders = mergeBuilder.toMergeOrders();
+        final Observable<OrderEvent> observable = orderUtilImpl.mergeOrders(mergeOrderLabel, toMergeOrders)
+                .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
+                        + " for position " + instrumentFromOrders(toMergeOrders) + "."))
+                .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
+                        + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
+                .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
+                        + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
+
+        mergeBuilder.startObservable(observable);
+    }
+
+    public final void startClose(final CloseBuilder closeBuilder) {
+        final IOrder orderToClose = closeBuilder.orderToClose();
         final String commonLog = "state from " + orderToClose.getState() + " to " + IOrder.State.CLOSED;
-        return changeObservable(orderUtilImpl.close(orderToClose),
-                                orderToClose,
-                                commonLog);
+        final Observable<OrderEvent> observable =
+                changeObservable(orderUtilImpl.close(orderToClose),
+                                 orderToClose,
+                                 commonLog);
+
+        closeBuilder.startObservable(observable);
     }
 
-    public Observable<OrderEvent> setLabel(final IOrder orderToChangeLabel,
-                                           final String newLabel) {
+    public final void startPositionClose(final ClosePositionBuilder closePositionBuilder) {
+        final Instrument instrument = closePositionBuilder.instrument();
+        final Observable<OrderEvent> observable = orderUtilImpl.closePosition(instrument)
+                .doOnSubscribe(() -> logger.info("Starting position close for " + instrument))
+                .doOnCompleted(() -> logger.info("Closing position " + instrument + " was successful."))
+                .doOnError(e -> logger.error("Closing position " + instrument
+                        + " failed! Exception: " + e.getMessage()));
+
+        closePositionBuilder.startObservable(observable);
+    }
+
+    public final void startLabelChange(final SetLabelBuilder setLabelBuilder) {
+        final IOrder orderToChangeLabel = setLabelBuilder.order();
+        final String newLabel = setLabelBuilder.newLabel();
         final String commonLog = "label from " + orderToChangeLabel.getLabel() + " to " + newLabel;
-        return changeObservable(orderUtilImpl.setLabel(orderToChangeLabel, newLabel),
-                                orderToChangeLabel,
-                                commonLog);
+        final Observable<OrderEvent> observable =
+                changeObservable(orderUtilImpl.setLabel(orderToChangeLabel, newLabel),
+                                 orderToChangeLabel,
+                                 commonLog);
+
+        setLabelBuilder.startObservable(observable);
     }
 
-    public Observable<OrderEvent> setGoodTillTime(final IOrder orderToChangeGTT,
-                                                  final long newGTT) {
+    public final void startGTTChange(final SetGTTBuilder setGTTBuilder) {
+        final IOrder orderToChangeGTT = setGTTBuilder.order();
+        final long newGTT = setGTTBuilder.newGTT();
         final String commonLog = "GTT from " + orderToChangeGTT.getGoodTillTime() + " to " + newGTT;
-        return changeObservable(orderUtilImpl.setGoodTillTime(orderToChangeGTT, newGTT),
-                                orderToChangeGTT,
-                                commonLog);
+        final Observable<OrderEvent> observable =
+                changeObservable(orderUtilImpl.setGoodTillTime(orderToChangeGTT, newGTT),
+                                 orderToChangeGTT,
+                                 commonLog);
+
+        setGTTBuilder.startObservable(observable);
     }
 
-    public Observable<OrderEvent> setOpenPrice(final IOrder orderToChangeOpenPrice,
-                                               final double newOpenPrice) {
-        final String commonLog = "open price from " + orderToChangeOpenPrice.getOpenPrice() + " to " + newOpenPrice;
-        return changeObservable(orderUtilImpl.setOpenPrice(orderToChangeOpenPrice, newOpenPrice),
-                                orderToChangeOpenPrice,
-                                commonLog);
-    }
-
-    public Observable<OrderEvent> setRequestedAmount(final IOrder orderToChangeAmount,
-                                                     final double newRequestedAmount) {
+    public final void startAmountChange(final SetAmountBuilder setAmountBuilder) {
+        final IOrder orderToChangeAmount = setAmountBuilder.order();
+        final double newRequestedAmount = setAmountBuilder.newAmount();
         final String commonLog = "amount from " + orderToChangeAmount.getRequestedAmount()
                 + " to " + newRequestedAmount;
-        return changeObservable(orderUtilImpl.setRequestedAmount(orderToChangeAmount, newRequestedAmount),
-                                orderToChangeAmount,
-                                commonLog);
+        final Observable<OrderEvent> observable =
+                changeObservable(orderUtilImpl.setRequestedAmount(orderToChangeAmount, newRequestedAmount),
+                                 orderToChangeAmount,
+                                 commonLog);
+
+        setAmountBuilder.startObservable(observable);
     }
 
-    public Observable<OrderEvent> setStopLossPrice(final IOrder orderToChangeSL,
-                                                   final double newSL) {
+    public final void startOpenPriceChange(final SetPriceBuilder setPriceBuilder) {
+        final IOrder orderToChangeOpenPrice = setPriceBuilder.order();
+        final double newOpenPrice = setPriceBuilder.newOpenPrice();
+        final String commonLog = "open price from " + orderToChangeOpenPrice.getOpenPrice() + " to " + newOpenPrice;
+        final Observable<OrderEvent> observable =
+                changeObservable(orderUtilImpl.setOpenPrice(orderToChangeOpenPrice, newOpenPrice),
+                                 orderToChangeOpenPrice,
+                                 commonLog);
+
+        setPriceBuilder.startObservable(observable);
+    }
+
+    public final void startSLChange(final SetSLBuilder setSLBuilder) {
+        final IOrder orderToChangeSL = setSLBuilder.order();
+        final double newSL = setSLBuilder.newSL();
         final String commonLog = "SL from " + orderToChangeSL.getStopLossPrice() + " to " + newSL;
-        return changeObservable(orderUtilImpl.setStopLossPrice(orderToChangeSL, newSL),
-                                orderToChangeSL,
-                                commonLog);
+        final Observable<OrderEvent> observable =
+                changeObservable(orderUtilImpl.setStopLossPrice(orderToChangeSL, newSL),
+                                 orderToChangeSL,
+                                 commonLog);
+
+        setSLBuilder.startObservable(observable);
     }
 
-    public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToChangeTP,
-                                                     final double newTP) {
+    public final void startTPChange(final SetTPBuilder setTPBuilder) {
+        final IOrder orderToChangeTP = setTPBuilder.order();
+        final double newTP = setTPBuilder.newTP();
         final String commonLog = "TP from " + orderToChangeTP.getTakeProfitPrice() + " to " + newTP;
-        return changeObservable(orderUtilImpl.setTakeProfitPrice(orderToChangeTP, newTP),
-                                orderToChangeTP,
-                                commonLog);
+        final Observable<OrderEvent> observable =
+                changeObservable(orderUtilImpl.setTakeProfitPrice(orderToChangeTP, newTP),
+                                 orderToChangeTP,
+                                 commonLog);
+
+        setTPBuilder.startObservable(observable);
+    }
+
+    public PositionOrders positionOrders(final Instrument instrument) {
+        return orderUtilImpl.positionOrders(checkNotNull(instrument));
     }
 
     private Observable<OrderEvent> changeObservable(final Observable<OrderEvent> observable,
@@ -161,26 +198,8 @@ public class OrderUtil {
         final String logMsg = commonLog + " for order " + order.getLabel()
                 + " and instrument " + order.getInstrument();
         return observable
-            .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
-            .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Changed " + logMsg));
-    }
-
-    public final void startSubmit(final SubmitBuilder submitBuilder) {
-        submitBuilder.startObservable(submitOrder(submitBuilder.orderParams()));
-    }
-
-    public final void startMerge(final MergeBuilder mergeBuilder) {
-        mergeBuilder.startObservable(mergeOrders(mergeBuilder.mergeOrderLabel(),
-                                                 mergeBuilder.toMergeOrders()));
-    }
-
-    public final void startClose(final CloseBuilder closeBuilder) {
-        closeBuilder.startObservable(close(closeBuilder.orderToClose()));
-    }
-
-    public final void startLabelChange(final SetLabelBuilder setLabelBuilder) {
-        setLabelBuilder.startObservable(setLabel(setLabelBuilder.orderToSetLabel(),
-                                                 setLabelBuilder.newLabel()));
+                .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
+                .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Changed " + logMsg));
     }
 }

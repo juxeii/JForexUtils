@@ -21,6 +21,7 @@ import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.OrderUtilImpl;
+import com.jforex.programming.order.builder.ClosePositionBuilder;
 import com.jforex.programming.order.event.MessageToOrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
@@ -155,10 +156,10 @@ public class JForexUtil {
         return orderUtil;
     }
 
-    public void closeAllPositions() {
+    public void closeAllPositions(final ClosePositionBuilder closePositionBuilder) {
         positionFactory
-            .all()
-            .forEach(position -> orderUtil.closePosition(position.instrument()).subscribe());
+                .all()
+                .forEach(position -> orderUtil.startPositionClose(closePositionBuilder));
     }
 
     public void onStop() {
@@ -213,9 +214,9 @@ public class JForexUtil {
                                        final IBar askBar) {
         if (shouldForwardQuote(askBar.getTime())) {
             final BarParams quoteParams = BarParams
-                .forInstrument(instrument)
-                .period(period)
-                .offerSide(offerside);
+                    .forInstrument(instrument)
+                    .period(period)
+                    .offerSide(offerside);
             final BarQuote askBarQuote = new BarQuote(askBar, quoteParams);
             barQuoteSubject.onNext(askBarQuote);
         }

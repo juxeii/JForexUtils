@@ -9,7 +9,7 @@ import com.jforex.programming.order.event.OrderEventType;
 
 public class SetLabelBuilder extends OrderBuilder {
 
-    private final IOrder orderToSetLabel;
+    private final IOrder order;
     private final String newLabel;
 
     public interface SetLabelOption extends CommonOption<SetLabelOption> {
@@ -22,31 +22,31 @@ public class SetLabelBuilder extends OrderBuilder {
 
     private SetLabelBuilder(final Builder builder) {
         super(builder);
-        orderToSetLabel = builder.orderToSetLabel;
+        order = builder.order;
         newLabel = builder.newLabel;
     }
 
-    public final IOrder orderToSetLabel() {
-        return orderToSetLabel;
+    public final IOrder order() {
+        return order;
     }
 
     public final String newLabel() {
         return newLabel;
     }
 
-    public static final SetLabelOption forParams(final IOrder orderToSetLabel,
+    public static final SetLabelOption forParams(final IOrder order,
                                                  final String newLabel) {
-        return new Builder(checkNotNull(orderToSetLabel), checkNotNull(newLabel));
+        return new Builder(checkNotNull(order), checkNotNull(newLabel));
     }
 
     private static class Builder extends CommonBuilder<Builder> implements SetLabelOption {
 
-        private final IOrder orderToSetLabel;
+        private final IOrder order;
         private final String newLabel;
 
-        private Builder(final IOrder orderToSetLabel,
+        private Builder(final IOrder order,
                         final String newLabel) {
-            this.orderToSetLabel = orderToSetLabel;
+            this.order = order;
             this.newLabel = newLabel;
         }
 
