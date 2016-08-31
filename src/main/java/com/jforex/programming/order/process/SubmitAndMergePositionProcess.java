@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.event.OrderEventType;
 
 public class SubmitAndMergePositionProcess extends OrderProcess {
 
@@ -48,75 +47,74 @@ public class SubmitAndMergePositionProcess extends OrderProcess {
         }
 
         @Override
-        public Option onRemoveSLReject(final Consumer<IOrder> changeSLRejectAction) {
-            eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(changeSLRejectAction));
+        public Option onRemoveSLReject(final Consumer<IOrder> setSLRejectAction) {
+            putRemoveSLReject(setSLRejectAction);
             return this;
         }
 
         @Override
-        public Option onRemoveTPReject(final Consumer<IOrder> changeTPRejectAction) {
-            eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(changeTPRejectAction));
+        public Option onRemoveTPReject(final Consumer<IOrder> setTPRejectAction) {
+            putRemoveTPReject(setTPRejectAction);
             return this;
         }
 
         @Override
         public Option onRemoveSL(final Consumer<IOrder> changedSLAction) {
-            eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(changedSLAction));
+            putRemoveSL(changedSLAction);
             return this;
         }
 
         @Override
         public Option onRemoveTP(final Consumer<IOrder> changedTPAction) {
-            eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(changedTPAction));
+            putRemoveSL(changedTPAction);
             return this;
         }
 
         @Override
         public Option onMergeReject(final Consumer<IOrder> mergeRejectAction) {
-            eventHandlerForType.put(OrderEventType.MERGE_REJECTED, checkNotNull(mergeRejectAction));
+            putMergeReject(mergeRejectAction);
             return this;
         }
 
         @Override
-        public Option onMerge(final Consumer<IOrder> mergeOKAction) {
-            eventHandlerForType.put(OrderEventType.MERGE_OK, checkNotNull(mergeOKAction));
+        public Option onMerge(final Consumer<IOrder> mergedAction) {
+            putMerge(mergedAction);
             return this;
         }
 
         @Override
-        public Option onMergeClose(final Consumer<IOrder> mergeCloseOKAction) {
-            eventHandlerForType.put(OrderEventType.MERGE_CLOSE_OK, checkNotNull(mergeCloseOKAction));
+        public Option onMergeClose(final Consumer<IOrder> mergeClosedAction) {
+            putMergeClose(mergeClosedAction);
             return this;
         }
 
         @Override
         public Option onSubmitReject(final Consumer<IOrder> submitRejectAction) {
-            eventHandlerForType.put(OrderEventType.SUBMIT_REJECTED, checkNotNull(submitRejectAction));
+            putSubmitReject(submitRejectAction);
             return this;
         }
 
         @Override
         public Option onFillReject(final Consumer<IOrder> fillRejectAction) {
-            eventHandlerForType.put(OrderEventType.FILL_REJECTED, checkNotNull(fillRejectAction));
+            putFillReject(fillRejectAction);
             return this;
         }
 
         @Override
-        public Option onSubmitOK(final Consumer<IOrder> submitOKAction) {
-            eventHandlerForType.put(OrderEventType.SUBMIT_OK, checkNotNull(submitOKAction));
-            eventHandlerForType.put(OrderEventType.SUBMIT_CONDITIONAL_OK, checkNotNull(submitOKAction));
+        public Option onSubmitOK(final Consumer<IOrder> submittedAction) {
+            putSubmitOK(submittedAction);
             return this;
         }
 
         @Override
-        public Option onPartialFill(final Consumer<IOrder> partialFillAction) {
-            eventHandlerForType.put(OrderEventType.PARTIAL_FILL_OK, checkNotNull(partialFillAction));
+        public Option onPartialFill(final Consumer<IOrder> partialFilledAction) {
+            putPartialFill(partialFilledAction);
             return this;
         }
 
         @Override
-        public Option onFill(final Consumer<IOrder> fillAction) {
-            eventHandlerForType.put(OrderEventType.FULLY_FILLED, checkNotNull(fillAction));
+        public Option onFill(final Consumer<IOrder> filledAction) {
+            putFill(filledAction);
             return this;
         }
 

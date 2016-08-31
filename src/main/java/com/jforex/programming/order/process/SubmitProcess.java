@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.event.OrderEventType;
 
 public class SubmitProcess extends OrderProcess {
 
@@ -39,32 +38,31 @@ public class SubmitProcess extends OrderProcess {
 
         @Override
         public Option onSubmitReject(final Consumer<IOrder> submitRejectAction) {
-            eventHandlerForType.put(OrderEventType.SUBMIT_REJECTED, checkNotNull(submitRejectAction));
+            putSubmitReject(submitRejectAction);
             return this;
         }
 
         @Override
         public Option onFillReject(final Consumer<IOrder> fillRejectAction) {
-            eventHandlerForType.put(OrderEventType.FILL_REJECTED, checkNotNull(fillRejectAction));
+            putFillReject(fillRejectAction);
             return this;
         }
 
         @Override
-        public Option onSubmitOK(final Consumer<IOrder> submitOKAction) {
-            eventHandlerForType.put(OrderEventType.SUBMIT_OK, checkNotNull(submitOKAction));
-            eventHandlerForType.put(OrderEventType.SUBMIT_CONDITIONAL_OK, checkNotNull(submitOKAction));
+        public Option onSubmitOK(final Consumer<IOrder> submittedAction) {
+            putSubmitOK(submittedAction);
             return this;
         }
 
         @Override
-        public Option onPartialFill(final Consumer<IOrder> partialFillAction) {
-            eventHandlerForType.put(OrderEventType.PARTIAL_FILL_OK, checkNotNull(partialFillAction));
+        public Option onPartialFill(final Consumer<IOrder> partialFilledAction) {
+            putPartialFill(partialFilledAction);
             return this;
         }
 
         @Override
-        public Option onFill(final Consumer<IOrder> fillAction) {
-            eventHandlerForType.put(OrderEventType.FULLY_FILLED, checkNotNull(fillAction));
+        public Option onFill(final Consumer<IOrder> filledAction) {
+            putFill(filledAction);
             return this;
         }
 

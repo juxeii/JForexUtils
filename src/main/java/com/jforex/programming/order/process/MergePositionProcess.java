@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.event.OrderEventType;
 
 public class MergePositionProcess extends OrderProcess {
 
@@ -48,44 +47,44 @@ public class MergePositionProcess extends OrderProcess {
         }
 
         @Override
-        public Option onRemoveSLReject(final Consumer<IOrder> changeSLRejectAction) {
-            eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(changeSLRejectAction));
+        public Option onRemoveSLReject(final Consumer<IOrder> setSLRejectAction) {
+            putRemoveSLReject(setSLRejectAction);
             return this;
         }
 
         @Override
-        public Option onRemoveTPReject(final Consumer<IOrder> changeTPRejectAction) {
-            eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(changeTPRejectAction));
+        public Option onRemoveTPReject(final Consumer<IOrder> setTPRejectAction) {
+            putRemoveTPReject(setTPRejectAction);
             return this;
         }
 
         @Override
         public Option onRemoveSL(final Consumer<IOrder> changedSLAction) {
-            eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(changedSLAction));
+            putRemoveSL(changedSLAction);
             return this;
         }
 
         @Override
         public Option onRemoveTP(final Consumer<IOrder> changedTPAction) {
-            eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(changedTPAction));
+            putRemoveSL(changedTPAction);
             return this;
         }
 
         @Override
         public Option onMergeReject(final Consumer<IOrder> mergeRejectAction) {
-            eventHandlerForType.put(OrderEventType.MERGE_REJECTED, checkNotNull(mergeRejectAction));
+            putMergeReject(mergeRejectAction);
             return this;
         }
 
         @Override
-        public Option onMerge(final Consumer<IOrder> mergeOKAction) {
-            eventHandlerForType.put(OrderEventType.MERGE_OK, checkNotNull(mergeOKAction));
+        public Option onMerge(final Consumer<IOrder> mergedAction) {
+            putMerge(mergedAction);
             return this;
         }
 
         @Override
-        public Option onMergeClose(final Consumer<IOrder> mergeCloseOKAction) {
-            eventHandlerForType.put(OrderEventType.MERGE_CLOSE_OK, checkNotNull(mergeCloseOKAction));
+        public Option onMergeClose(final Consumer<IOrder> mergeClosedAction) {
+            putMergeClose(mergeClosedAction);
             return this;
         }
 

@@ -16,7 +16,7 @@ public abstract class OrderProcess {
     protected long delayInMillis;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
-    protected OrderProcess(final CommonBuilder<?> builder) {
+    protected OrderProcess(final CommonBuilder builder) {
         errorAction = builder.errorAction;
         noOfRetries = builder.noOfRetries;
         delayInMillis = builder.delayInMillis;

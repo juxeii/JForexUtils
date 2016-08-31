@@ -4,13 +4,11 @@ import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
 
-public interface CloseOption<V extends OrderProcess> extends CommonOption<CloseOption<V>> {
+public interface CloseOption extends CommonOption {
 
-    public CloseOption<V> onCloseReject(Consumer<IOrder> closeRejectAction);
+    public CommonBuilder onCloseReject(Consumer<IOrder> closeRejectAction);
 
-    public CloseOption<V> onClose(Consumer<IOrder> closedAction);
+    public CommonBuilder onClose(Consumer<IOrder> closedAction);
 
-    public CloseOption<V> onPartialClose(Consumer<IOrder> partialClosedAction);
-
-    public V build();
+    public CommonBuilder onPartialClose(Consumer<IOrder> partialClosedAction);
 }

@@ -19,7 +19,7 @@ import com.jforex.programming.order.process.MergeProcess;
 import com.jforex.programming.order.process.SetAmountProcess;
 import com.jforex.programming.order.process.SetGTTProcess;
 import com.jforex.programming.order.process.SetLabelProcess;
-import com.jforex.programming.order.process.SetPriceProcess;
+import com.jforex.programming.order.process.SetOpenPriceProcess;
 import com.jforex.programming.order.process.SetSLProcess;
 import com.jforex.programming.order.process.SetTPProcess;
 import com.jforex.programming.order.process.SubmitAndMergePositionProcess;
@@ -160,7 +160,7 @@ public class OrderUtil {
         process.start(observable);
     }
 
-    public final void startOpenPriceChange(final SetPriceProcess process) {
+    public final void startOpenPriceChange(final SetOpenPriceProcess process) {
         final IOrder orderToChangeOpenPrice = process.order();
         final double newOpenPrice = process.newOpenPrice();
         final String commonLog = "open price from " + orderToChangeOpenPrice.getOpenPrice() + " to " + newOpenPrice;

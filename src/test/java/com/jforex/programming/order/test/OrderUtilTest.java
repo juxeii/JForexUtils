@@ -21,7 +21,7 @@ import com.jforex.programming.order.process.MergeProcess;
 import com.jforex.programming.order.process.SetAmountProcess;
 import com.jforex.programming.order.process.SetGTTProcess;
 import com.jforex.programming.order.process.SetLabelProcess;
-import com.jforex.programming.order.process.SetPriceProcess;
+import com.jforex.programming.order.process.SetOpenPriceProcess;
 import com.jforex.programming.order.process.SetSLProcess;
 import com.jforex.programming.order.process.SetTPProcess;
 import com.jforex.programming.order.process.SubmitAndMergePositionProcess;
@@ -203,7 +203,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.setOpenPrice(buyOrderEURUSD, newOpenPrice))
             .thenReturn(neverObservable());
 
-        final SetPriceProcess builder = SetPriceProcess
+        final SetOpenPriceProcess builder = SetOpenPriceProcess
             .forParams(buyOrderEURUSD, newOpenPrice)
             .build();
 

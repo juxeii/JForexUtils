@@ -4,15 +4,15 @@ import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
 
-public interface SubmitOption<T> extends CommonOption<T> {
+public interface SubmitOption extends CommonOption {
 
-    public T onSubmitReject(Consumer<IOrder> submitRejectAction);
+    public CommonBuilder onSubmitReject(Consumer<IOrder> submitRejectAction);
 
-    public T onFillReject(Consumer<IOrder> fillRejectAction);
+    public CommonBuilder onFillReject(Consumer<IOrder> fillRejectAction);
 
-    public T onSubmitOK(Consumer<IOrder> submitOKAction);
+    public CommonBuilder onSubmitOK(Consumer<IOrder> submitOKAction);
 
-    public T onPartialFill(Consumer<IOrder> partialFillAction);
+    public CommonBuilder onPartialFill(Consumer<IOrder> partialFillAction);
 
-    public T onFill(Consumer<IOrder> fillAction);
+    public CommonBuilder onFill(Consumer<IOrder> fillAction);
 }
