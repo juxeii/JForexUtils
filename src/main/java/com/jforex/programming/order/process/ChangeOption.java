@@ -8,7 +8,7 @@ public interface ChangeOption<V extends OrderProcess> extends CommonOption<Chang
 
     public ChangeOption<V> onReject(Consumer<IOrder> rejectAction);
 
-    public ChangeOption<V> onOK(Consumer<IOrder> okAction);
+    public ChangeOption<V> onDone(Consumer<IOrder> doneAction);
 
     public V build();
 }

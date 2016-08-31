@@ -42,8 +42,8 @@ public abstract class OrderProcess {
 
     private final Observable<OrderEvent> evaluateRetry(final Observable<OrderEvent> observable) {
         if (noOfRetries > 0) {
-            final OrderProcessRetry orderCallRetry = new OrderProcessRetry(noOfRetries, delayInMillis);
-            return observable.retryWhen(orderCallRetry::retryOnRejectObservable);
+            final OrderProcessRetry orderProcessRetry = new OrderProcessRetry(noOfRetries, delayInMillis);
+            return observable.retryWhen(orderProcessRetry::retryOnRejectObservable);
         }
         return observable;
     }

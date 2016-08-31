@@ -49,7 +49,7 @@ public class SetGTTProcess extends OrderProcess {
         }
 
         @Override
-        public ChangeOption<SetGTTProcess> onOK(final Consumer<IOrder> okAction) {
+        public ChangeOption<SetGTTProcess> onDone(final Consumer<IOrder> okAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_GTT, checkNotNull(okAction));
             return this;
         }

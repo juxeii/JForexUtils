@@ -49,7 +49,7 @@ public class SetSLProcess extends OrderProcess {
         }
 
         @Override
-        public ChangeOption<SetSLProcess> onOK(final Consumer<IOrder> okAction) {
+        public ChangeOption<SetSLProcess> onDone(final Consumer<IOrder> okAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(okAction));
             return this;
         }

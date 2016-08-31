@@ -49,7 +49,7 @@ public class SetAmountProcess extends OrderProcess {
         }
 
         @Override
-        public ChangeOption<SetAmountProcess> onOK(final Consumer<IOrder> okAction) {
+        public ChangeOption<SetAmountProcess> onDone(final Consumer<IOrder> okAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_AMOUNT, checkNotNull(okAction));
             return this;
         }

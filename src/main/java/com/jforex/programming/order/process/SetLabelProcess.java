@@ -49,7 +49,7 @@ public class SetLabelProcess extends OrderProcess {
         }
 
         @Override
-        public ChangeOption<SetLabelProcess> onOK(final Consumer<IOrder> okAction) {
+        public ChangeOption<SetLabelProcess> onDone(final Consumer<IOrder> okAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_LABEL, checkNotNull(okAction));
             return this;
         }

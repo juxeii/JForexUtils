@@ -49,7 +49,7 @@ public class SetTPProcess extends OrderProcess {
         }
 
         @Override
-        public ChangeOption<SetTPProcess> onOK(final Consumer<IOrder> okAction) {
+        public ChangeOption<SetTPProcess> onDone(final Consumer<IOrder> okAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(okAction));
             return this;
         }

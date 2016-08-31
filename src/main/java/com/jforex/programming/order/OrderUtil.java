@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.jforex.programming.order.OrderStaticUtil.instrumentFromOrders;
 
 import java.util.Collection;
+import java.util.function.BiFunction;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,21 +57,18 @@ public class OrderUtil {
     }
 
     public final void startSubmitAndMergePosition(final SubmitAndMergePositionProcess process) {
-        final OrderParams orderParams = process.orderParams();
-        final String mergeOrderLabel = process.mergeOrderLabel();
-
-        final Observable<OrderEvent> observable =
-                orderUtilImpl.submitAndMergePosition(mergeOrderLabel, orderParams);
-
-        process.start(observable);
+        startSubmitAndMergeGeneric(process, orderUtilImpl::submitAndMergePosition);
     }
 
     public final void startSubmitAndMergePositionToParams(final SubmitAndMergePositionProcess process) {
+        startSubmitAndMergeGeneric(process, orderUtilImpl::submitAndMergePositionToParams);
+    }
+
+    private final void startSubmitAndMergeGeneric(final SubmitAndMergePositionProcess process,
+                                                  final BiFunction<String, OrderParams, Observable<OrderEvent>> call) {
         final OrderParams orderParams = process.orderParams();
         final String mergeOrderLabel = process.mergeOrderLabel();
-
-        final Observable<OrderEvent> observable =
-                orderUtilImpl.submitAndMergePositionToParams(mergeOrderLabel, orderParams);
+        final Observable<OrderEvent> observable = call.apply(mergeOrderLabel, orderParams);
 
         process.start(observable);
     }
@@ -92,7 +90,6 @@ public class OrderUtil {
     public final void startPositionMerge(final MergePositionProcess process) {
         final String mergeOrderLabel = process.mergeOrderLabel();
         final Instrument instrument = process.instrument();
-
         final Observable<OrderEvent> observable = orderUtilImpl.mergePositionOrders(mergeOrderLabel, instrument)
             .doOnSubscribe(() -> logger.info("Starting position merge for " +
                     instrument + " with label " + mergeOrderLabel))
@@ -104,15 +101,15 @@ public class OrderUtil {
         process.start(observable);
     }
 
-    public final void startClose(final CloseProcess closeBuilder) {
-        final IOrder orderToClose = closeBuilder.orderToClose();
+    public final void startClose(final CloseProcess process) {
+        final IOrder orderToClose = process.orderToClose();
         final String commonLog = "state from " + orderToClose.getState() + " to " + IOrder.State.CLOSED;
         final Observable<OrderEvent> observable =
                 changeObservable(orderUtilImpl.close(orderToClose),
                                  orderToClose,
                                  commonLog);
 
-        closeBuilder.start(observable);
+        process.start(observable);
     }
 
     public final void startPositionClose(final ClosePositionProcess process) {
