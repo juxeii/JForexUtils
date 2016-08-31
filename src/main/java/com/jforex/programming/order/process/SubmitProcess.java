@@ -13,6 +13,7 @@ public class SubmitProcess extends OrderProcess {
     private final OrderParams orderParams;
 
     public interface SubmitOption extends CommonOption<SubmitOption> {
+
         public SubmitOption onSubmitReject(Consumer<IOrder> submitRejectAction);
 
         public SubmitOption onFillReject(Consumer<IOrder> fillRejectAction);

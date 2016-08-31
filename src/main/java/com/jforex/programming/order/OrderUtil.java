@@ -21,6 +21,8 @@ import com.jforex.programming.order.process.SetLabelProcess;
 import com.jforex.programming.order.process.SetPriceProcess;
 import com.jforex.programming.order.process.SetSLProcess;
 import com.jforex.programming.order.process.SetTPProcess;
+import com.jforex.programming.order.process.SubmitAndMergePositionProcess;
+import com.jforex.programming.order.process.SubmitAndMergePositionToParamsProcess;
 import com.jforex.programming.order.process.SubmitProcess;
 import com.jforex.programming.position.PositionOrders;
 
@@ -36,22 +38,6 @@ public class OrderUtil {
         this.orderUtilImpl = orderUtilImpl;
     }
 
-    public Observable<OrderEvent> submitAndMergePosition(final String mergeOrderLabel,
-                                                         final OrderParams orderParams) {
-        checkNotNull(mergeOrderLabel);
-        checkNotNull(orderParams);
-
-        return orderUtilImpl.submitAndMergePosition(mergeOrderLabel, orderParams);
-    }
-
-    public Observable<OrderEvent> submitAndMergePositionToParams(final String mergeOrderLabel,
-                                                                 final OrderParams orderParams) {
-        checkNotNull(mergeOrderLabel);
-        checkNotNull(orderParams);
-
-        return orderUtilImpl.submitAndMergePositionToParams(mergeOrderLabel, orderParams);
-    }
-
     public final void startSubmit(final SubmitProcess submitBuilder) {
         final OrderParams orderParams = submitBuilder.orderParams();
         final Instrument instrument = orderParams.instrument();
@@ -64,6 +50,26 @@ public class OrderUtil {
                     + " for " + instrument + " was successful."));
 
         submitBuilder.start(observable);
+    }
+
+    public final void startSubmitAndMergePosition(final SubmitAndMergePositionProcess process) {
+        final OrderParams orderParams = process.orderParams();
+        final String mergeOrderLabel = process.mergeOrderLabel();
+
+        final Observable<OrderEvent> observable =
+                orderUtilImpl.submitAndMergePosition(mergeOrderLabel, orderParams);
+
+        process.start(observable);
+    }
+
+    public final void startSubmitAndMergePositionToParams(final SubmitAndMergePositionToParamsProcess process) {
+        final OrderParams orderParams = process.orderParams();
+        final String mergeOrderLabel = process.mergeOrderLabel();
+
+        final Observable<OrderEvent> observable =
+                orderUtilImpl.submitAndMergePositionToParams(mergeOrderLabel, orderParams);
+
+        process.start(observable);
     }
 
     public final void startMerge(final MergeProcess mergeBuilder) {

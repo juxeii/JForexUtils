@@ -24,6 +24,8 @@ import com.jforex.programming.order.process.SetLabelProcess;
 import com.jforex.programming.order.process.SetPriceProcess;
 import com.jforex.programming.order.process.SetSLProcess;
 import com.jforex.programming.order.process.SetTPProcess;
+import com.jforex.programming.order.process.SubmitAndMergePositionProcess;
+import com.jforex.programming.order.process.SubmitAndMergePositionToParamsProcess;
 import com.jforex.programming.order.process.SubmitProcess;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -74,14 +76,30 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void submitAndMergePositionDelegatesToOrderUtilImpl() {
-        orderUtil.submitAndMergePosition(mergeOrderLabel, buyParamsEURUSD);
+        when(orderUtilImplMock.submitAndMergePosition(mergeOrderLabel, buyParamsEURUSD))
+            .thenReturn(emptyObservable())
+            .thenReturn(jfExceptionObservable());
+
+        final SubmitAndMergePositionProcess process = SubmitAndMergePositionProcess
+            .forParams(buyParamsEURUSD, mergeOrderLabel)
+            .build();
+
+        orderUtil.startSubmitAndMergePosition(process);
 
         verify(orderUtilImplMock).submitAndMergePosition(mergeOrderLabel, buyParamsEURUSD);
     }
 
     @Test
     public void submitAndMergePositionToParamsDelegatesToOrderUtilImpl() {
-        orderUtil.submitAndMergePositionToParams(mergeOrderLabel, buyParamsEURUSD);
+        when(orderUtilImplMock.submitAndMergePositionToParams(mergeOrderLabel, buyParamsEURUSD))
+            .thenReturn(emptyObservable())
+            .thenReturn(jfExceptionObservable());
+
+        final SubmitAndMergePositionToParamsProcess process = SubmitAndMergePositionToParamsProcess
+            .forParams(buyParamsEURUSD, mergeOrderLabel)
+            .build();
+
+        orderUtil.startSubmitAndMergePositionToParams(process);
 
         verify(orderUtilImplMock).submitAndMergePositionToParams(mergeOrderLabel, buyParamsEURUSD);
     }
