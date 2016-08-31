@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class SetTPBuilder extends OrderBuilder {
+public class SetTPProcess extends OrderProcess {
 
     private final IOrder order;
     private final double newTP;
@@ -17,10 +17,10 @@ public class SetTPBuilder extends OrderBuilder {
 
         public SetSLOption onOK(Consumer<IOrder> okAction);
 
-        public SetTPBuilder build();
+        public SetTPProcess build();
     }
 
-    private SetTPBuilder(final Builder builder) {
+    private SetTPProcess(final Builder builder) {
         super(builder);
         order = builder.order;
         newTP = builder.newTP;
@@ -39,7 +39,7 @@ public class SetTPBuilder extends OrderBuilder {
         return new Builder(checkNotNull(order), checkNotNull(newTP));
     }
 
-    private static class Builder extends CommonBuilder<Builder> implements SetSLOption {
+    private static class Builder extends CommonProcess<Builder> implements SetSLOption {
 
         private final IOrder order;
         private final double newTP;
@@ -63,8 +63,8 @@ public class SetTPBuilder extends OrderBuilder {
         }
 
         @Override
-        public SetTPBuilder build() {
-            return new SetTPBuilder(this);
+        public SetTPProcess build() {
+            return new SetTPProcess(this);
         }
     }
 }

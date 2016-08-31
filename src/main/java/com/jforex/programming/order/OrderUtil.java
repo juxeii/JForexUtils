@@ -10,16 +10,16 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.builder.CloseBuilder;
-import com.jforex.programming.order.builder.ClosePositionBuilder;
-import com.jforex.programming.order.builder.MergeBuilder;
-import com.jforex.programming.order.builder.SetAmountBuilder;
-import com.jforex.programming.order.builder.SetGTTBuilder;
-import com.jforex.programming.order.builder.SetLabelBuilder;
-import com.jforex.programming.order.builder.SetPriceBuilder;
-import com.jforex.programming.order.builder.SetSLBuilder;
-import com.jforex.programming.order.builder.SetTPBuilder;
-import com.jforex.programming.order.builder.SubmitBuilder;
+import com.jforex.programming.order.builder.CloseProcess;
+import com.jforex.programming.order.builder.ClosePositionProcess;
+import com.jforex.programming.order.builder.MergeProcess;
+import com.jforex.programming.order.builder.SetAmountProcess;
+import com.jforex.programming.order.builder.SetGTTProcess;
+import com.jforex.programming.order.builder.SetLabelProcess;
+import com.jforex.programming.order.builder.SetPriceProcess;
+import com.jforex.programming.order.builder.SetSLProcess;
+import com.jforex.programming.order.builder.SetTPProcess;
+import com.jforex.programming.order.builder.SubmitProcess;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
 
@@ -65,7 +65,7 @@ public class OrderUtil {
                         + "  with label " + mergeOrderLabel + " was successful."));
     }
 
-    public final void startSubmit(final SubmitBuilder submitBuilder) {
+    public final void startSubmit(final SubmitProcess submitBuilder) {
         final OrderParams orderParams = submitBuilder.orderParams();
         final Instrument instrument = orderParams.instrument();
         final String orderLabel = orderParams.label();
@@ -79,7 +79,7 @@ public class OrderUtil {
         submitBuilder.startObservable(observable);
     }
 
-    public final void startMerge(final MergeBuilder mergeBuilder) {
+    public final void startMerge(final MergeProcess mergeBuilder) {
         final String mergeOrderLabel = mergeBuilder.mergeOrderLabel();
         final Collection<IOrder> toMergeOrders = mergeBuilder.toMergeOrders();
         final Observable<OrderEvent> observable = orderUtilImpl.mergeOrders(mergeOrderLabel, toMergeOrders)
@@ -93,7 +93,7 @@ public class OrderUtil {
         mergeBuilder.startObservable(observable);
     }
 
-    public final void startClose(final CloseBuilder closeBuilder) {
+    public final void startClose(final CloseProcess closeBuilder) {
         final IOrder orderToClose = closeBuilder.orderToClose();
         final String commonLog = "state from " + orderToClose.getState() + " to " + IOrder.State.CLOSED;
         final Observable<OrderEvent> observable =
@@ -104,7 +104,7 @@ public class OrderUtil {
         closeBuilder.startObservable(observable);
     }
 
-    public final void startPositionClose(final ClosePositionBuilder closePositionBuilder) {
+    public final void startPositionClose(final ClosePositionProcess closePositionBuilder) {
         final Instrument instrument = closePositionBuilder.instrument();
         final Observable<OrderEvent> observable = orderUtilImpl.closePosition(instrument)
                 .doOnSubscribe(() -> logger.info("Starting position close for " + instrument))
@@ -115,7 +115,7 @@ public class OrderUtil {
         closePositionBuilder.startObservable(observable);
     }
 
-    public final void startLabelChange(final SetLabelBuilder setLabelBuilder) {
+    public final void startLabelChange(final SetLabelProcess setLabelBuilder) {
         final IOrder orderToChangeLabel = setLabelBuilder.order();
         final String newLabel = setLabelBuilder.newLabel();
         final String commonLog = "label from " + orderToChangeLabel.getLabel() + " to " + newLabel;
@@ -127,7 +127,7 @@ public class OrderUtil {
         setLabelBuilder.startObservable(observable);
     }
 
-    public final void startGTTChange(final SetGTTBuilder setGTTBuilder) {
+    public final void startGTTChange(final SetGTTProcess setGTTBuilder) {
         final IOrder orderToChangeGTT = setGTTBuilder.order();
         final long newGTT = setGTTBuilder.newGTT();
         final String commonLog = "GTT from " + orderToChangeGTT.getGoodTillTime() + " to " + newGTT;
@@ -139,7 +139,7 @@ public class OrderUtil {
         setGTTBuilder.startObservable(observable);
     }
 
-    public final void startAmountChange(final SetAmountBuilder setAmountBuilder) {
+    public final void startAmountChange(final SetAmountProcess setAmountBuilder) {
         final IOrder orderToChangeAmount = setAmountBuilder.order();
         final double newRequestedAmount = setAmountBuilder.newAmount();
         final String commonLog = "amount from " + orderToChangeAmount.getRequestedAmount()
@@ -152,7 +152,7 @@ public class OrderUtil {
         setAmountBuilder.startObservable(observable);
     }
 
-    public final void startOpenPriceChange(final SetPriceBuilder setPriceBuilder) {
+    public final void startOpenPriceChange(final SetPriceProcess setPriceBuilder) {
         final IOrder orderToChangeOpenPrice = setPriceBuilder.order();
         final double newOpenPrice = setPriceBuilder.newOpenPrice();
         final String commonLog = "open price from " + orderToChangeOpenPrice.getOpenPrice() + " to " + newOpenPrice;
@@ -164,7 +164,7 @@ public class OrderUtil {
         setPriceBuilder.startObservable(observable);
     }
 
-    public final void startSLChange(final SetSLBuilder setSLBuilder) {
+    public final void startSLChange(final SetSLProcess setSLBuilder) {
         final IOrder orderToChangeSL = setSLBuilder.order();
         final double newSL = setSLBuilder.newSL();
         final String commonLog = "SL from " + orderToChangeSL.getStopLossPrice() + " to " + newSL;
@@ -176,7 +176,7 @@ public class OrderUtil {
         setSLBuilder.startObservable(observable);
     }
 
-    public final void startTPChange(final SetTPBuilder setTPBuilder) {
+    public final void startTPChange(final SetTPProcess setTPBuilder) {
         final IOrder orderToChangeTP = setTPBuilder.order();
         final double newTP = setTPBuilder.newTP();
         final String commonLog = "TP from " + orderToChangeTP.getTakeProfitPrice() + " to " + newTP;

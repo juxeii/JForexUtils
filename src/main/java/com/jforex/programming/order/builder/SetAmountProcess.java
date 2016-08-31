@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class SetAmountBuilder extends OrderBuilder {
+public class SetAmountProcess extends OrderProcess {
 
     private final IOrder order;
     private final double newAmount;
@@ -17,10 +17,10 @@ public class SetAmountBuilder extends OrderBuilder {
 
         public SetAmountOption onOK(Consumer<IOrder> okAction);
 
-        public SetAmountBuilder build();
+        public SetAmountProcess build();
     }
 
-    private SetAmountBuilder(final Builder builder) {
+    private SetAmountProcess(final Builder builder) {
         super(builder);
         order = builder.order;
         newAmount = builder.newAmount;
@@ -39,7 +39,7 @@ public class SetAmountBuilder extends OrderBuilder {
         return new Builder(checkNotNull(order), checkNotNull(newAmount));
     }
 
-    private static class Builder extends CommonBuilder<Builder> implements SetAmountOption {
+    private static class Builder extends CommonProcess<Builder> implements SetAmountOption {
 
         private final IOrder order;
         private final double newAmount;
@@ -63,8 +63,8 @@ public class SetAmountBuilder extends OrderBuilder {
         }
 
         @Override
-        public SetAmountBuilder build() {
-            return new SetAmountBuilder(this);
+        public SetAmountProcess build() {
+            return new SetAmountProcess(this);
         }
     }
 }

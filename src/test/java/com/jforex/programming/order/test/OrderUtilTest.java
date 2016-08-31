@@ -14,16 +14,16 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilImpl;
-import com.jforex.programming.order.builder.CloseBuilder;
-import com.jforex.programming.order.builder.ClosePositionBuilder;
-import com.jforex.programming.order.builder.MergeBuilder;
-import com.jforex.programming.order.builder.SetAmountBuilder;
-import com.jforex.programming.order.builder.SetGTTBuilder;
-import com.jforex.programming.order.builder.SetLabelBuilder;
-import com.jforex.programming.order.builder.SetPriceBuilder;
-import com.jforex.programming.order.builder.SetSLBuilder;
-import com.jforex.programming.order.builder.SetTPBuilder;
-import com.jforex.programming.order.builder.SubmitBuilder;
+import com.jforex.programming.order.builder.CloseProcess;
+import com.jforex.programming.order.builder.ClosePositionProcess;
+import com.jforex.programming.order.builder.MergeProcess;
+import com.jforex.programming.order.builder.SetAmountProcess;
+import com.jforex.programming.order.builder.SetGTTProcess;
+import com.jforex.programming.order.builder.SetLabelProcess;
+import com.jforex.programming.order.builder.SetPriceProcess;
+import com.jforex.programming.order.builder.SetSLProcess;
+import com.jforex.programming.order.builder.SetTPProcess;
+import com.jforex.programming.order.builder.SubmitProcess;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -64,7 +64,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .thenReturn(emptyObservable())
             .thenReturn(jfExceptionObservable());
 
-        final SubmitBuilder builder = SubmitBuilder
+        final SubmitProcess builder = SubmitProcess
             .forOrderParams(buyParamsEURUSD)
             .build();
 
@@ -94,7 +94,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .thenReturn(emptyObservable())
             .thenReturn(jfExceptionObservable());
 
-        final MergeBuilder builder = MergeBuilder
+        final MergeProcess builder = MergeProcess
             .forParams(mergeOrderLabel, toMergeOrders)
             .build();
 
@@ -126,7 +126,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .thenReturn(emptyObservable())
             .thenReturn(jfExceptionObservable());
 
-        final ClosePositionBuilder builder = ClosePositionBuilder
+        final ClosePositionProcess builder = ClosePositionProcess
             .forInstrument(instrumentEURUSD)
             .build();
 
@@ -141,7 +141,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.close(buyOrderEURUSD))
             .thenReturn(neverObservable());
 
-        final CloseBuilder builder = CloseBuilder
+        final CloseProcess builder = CloseProcess
             .forOrder(buyOrderEURUSD)
             .build();
 
@@ -157,7 +157,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .thenReturn(emptyObservable())
             .thenReturn(jfExceptionObservable());
 
-        final SetLabelBuilder builder = SetLabelBuilder
+        final SetLabelProcess builder = SetLabelProcess
             .forParams(buyOrderEURUSD, newLabel)
             .build();
 
@@ -173,7 +173,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.setGoodTillTime(buyOrderEURUSD, newGTT))
             .thenReturn(neverObservable());
 
-        final SetGTTBuilder builder = SetGTTBuilder
+        final SetGTTProcess builder = SetGTTProcess
             .forParams(buyOrderEURUSD, newGTT)
             .build();
 
@@ -188,7 +188,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.setOpenPrice(buyOrderEURUSD, newOpenPrice))
             .thenReturn(neverObservable());
 
-        final SetPriceBuilder builder = SetPriceBuilder
+        final SetPriceProcess builder = SetPriceProcess
             .forParams(buyOrderEURUSD, newOpenPrice)
             .build();
 
@@ -203,7 +203,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.setRequestedAmount(buyOrderEURUSD, newAmount))
             .thenReturn(neverObservable());
 
-        final SetAmountBuilder builder = SetAmountBuilder
+        final SetAmountProcess builder = SetAmountProcess
             .forParams(buyOrderEURUSD, newAmount)
             .build();
 
@@ -218,7 +218,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.setStopLossPrice(buyOrderEURUSD, newSL))
             .thenReturn(neverObservable());
 
-        final SetSLBuilder builder = SetSLBuilder
+        final SetSLProcess builder = SetSLProcess
             .forParams(buyOrderEURUSD, newSL)
             .build();
 
@@ -233,7 +233,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(orderUtilImplMock.setTakeProfitPrice(buyOrderEURUSD, newTP))
             .thenReturn(neverObservable());
 
-        final SetTPBuilder builder = SetTPBuilder
+        final SetTPProcess builder = SetTPProcess
             .forParams(buyOrderEURUSD, newTP)
             .build();
 

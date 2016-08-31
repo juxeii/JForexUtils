@@ -12,14 +12,14 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 
 import rx.Observable;
 
-public class OrderCallRetry {
+public class OrderProcessRetry {
 
     private final int noOfRetries;
     private final long delayInMillis;
 
-    private static final Logger logger = LogManager.getLogger(OrderCallRetry.class);
+    private static final Logger logger = LogManager.getLogger(OrderProcessRetry.class);
 
-    public OrderCallRetry(final int noOfRetries,
+    public OrderProcessRetry(final int noOfRetries,
                           final long delayInMillis) {
         this.noOfRetries = noOfRetries;
         this.delayInMillis = delayInMillis;
@@ -40,7 +40,6 @@ public class OrderCallRetry {
             logPositionTaskRetry((OrderCallRejectException) error);
             return Observable.just(error);
         }
-        logger.error("Retry logic received unexpected error " + error.getClass().getName() + "!");
         return Observable.error(error);
     }
 

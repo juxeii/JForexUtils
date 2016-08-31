@@ -9,14 +9,14 @@ import java.util.function.Consumer;
 import org.junit.Test;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.builder.SubmitBuilder;
+import com.jforex.programming.order.builder.SubmitProcess;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class SubmitBuilderTest extends CommonUtilForTest {
 
     @Test
     public void assertActionsAreValidWhenNotDefined() {
-        final SubmitBuilder submitBuilder = SubmitBuilder
+        final SubmitProcess submitBuilder = SubmitProcess
             .forOrderParams(buyParamsEURUSD)
             .build();
 
@@ -32,7 +32,7 @@ public class SubmitBuilderTest extends CommonUtilForTest {
         final Consumer<IOrder> partialFillAction = o -> {};
         final Consumer<IOrder> fillAction = o -> {};
 
-        final SubmitBuilder submitBuilder = SubmitBuilder
+        final SubmitProcess submitBuilder = SubmitProcess
             .forOrderParams(buyParamsEURUSD)
             .onError(errorAction)
             .onSubmitReject(submitRejectAction)

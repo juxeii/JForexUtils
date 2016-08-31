@@ -10,7 +10,7 @@ import com.google.common.collect.Maps;
 import com.jforex.programming.order.event.OrderEventType;
 
 @SuppressWarnings("unchecked")
-public abstract class CommonBuilder<T extends CommonBuilder<T>> {
+public abstract class CommonProcess<T extends CommonProcess<T>> {
 
     protected Consumer<Throwable> errorAction = o -> {};
     protected int noOfRetries;

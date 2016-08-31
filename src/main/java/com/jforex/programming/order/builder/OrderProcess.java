@@ -9,14 +9,14 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import rx.Observable;
 
-public abstract class OrderBuilder {
+public abstract class OrderProcess {
 
     protected Consumer<Throwable> errorAction;
     protected int noOfRetries;
     protected long delayInMillis;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
-    protected OrderBuilder(final CommonBuilder<?> builder) {
+    protected OrderProcess(final CommonProcess<?> builder) {
         errorAction = builder.errorAction;
         noOfRetries = builder.noOfRetries;
         delayInMillis = builder.delayInMillis;
@@ -42,7 +42,7 @@ public abstract class OrderBuilder {
 
     private final Observable<OrderEvent> evaluateRetry(final Observable<OrderEvent> observable) {
         if (noOfRetries > 0) {
-            final OrderCallRetry orderCallRetry = new OrderCallRetry(noOfRetries, delayInMillis);
+            final OrderProcessRetry orderCallRetry = new OrderProcessRetry(noOfRetries, delayInMillis);
             return observable.retryWhen(orderCallRetry::retryOnRejectObservable);
         }
         return observable;

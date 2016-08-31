@@ -21,7 +21,7 @@ import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.OrderUtilImpl;
-import com.jforex.programming.order.builder.ClosePositionBuilder;
+import com.jforex.programming.order.builder.ClosePositionProcess;
 import com.jforex.programming.order.event.MessageToOrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
@@ -156,7 +156,7 @@ public class JForexUtil {
         return orderUtil;
     }
 
-    public void closeAllPositions(final ClosePositionBuilder closePositionBuilder) {
+    public void closeAllPositions(final ClosePositionProcess closePositionBuilder) {
         positionFactory
                 .all()
                 .forEach(position -> orderUtil.startPositionClose(closePositionBuilder));

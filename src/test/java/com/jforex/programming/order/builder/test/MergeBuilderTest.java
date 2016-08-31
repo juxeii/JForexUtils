@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.builder.MergeBuilder;
+import com.jforex.programming.order.builder.MergeProcess;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class MergeBuilderTest extends CommonUtilForTest {
@@ -21,7 +21,7 @@ public class MergeBuilderTest extends CommonUtilForTest {
 
     @Test
     public void assertActionsAreValidWhenNotDefined() {
-        final MergeBuilder mergeBuilder = MergeBuilder
+        final MergeProcess mergeBuilder = MergeProcess
             .forParams(mergeOrderLabel, toMergeOrders)
             .build();
 
@@ -35,7 +35,7 @@ public class MergeBuilderTest extends CommonUtilForTest {
         final Consumer<IOrder> mergeOKAction = o -> {};
         final Consumer<IOrder> mergeCloseOKAction = o -> {};
 
-        final MergeBuilder mergeBuilder = MergeBuilder
+        final MergeProcess mergeBuilder = MergeProcess
             .forParams(mergeOrderLabel, toMergeOrders)
             .onError(errorAction)
             .onMergeReject(mergeRejectAction)

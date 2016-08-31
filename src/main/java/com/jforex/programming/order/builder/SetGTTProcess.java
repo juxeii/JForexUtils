@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class SetGTTBuilder extends OrderBuilder {
+public class SetGTTProcess extends OrderProcess {
 
     private final IOrder order;
     private final long newGTT;
@@ -17,10 +17,10 @@ public class SetGTTBuilder extends OrderBuilder {
 
         public SetGTTOption onOK(Consumer<IOrder> okAction);
 
-        public SetGTTBuilder build();
+        public SetGTTProcess build();
     }
 
-    private SetGTTBuilder(final Builder builder) {
+    private SetGTTProcess(final Builder builder) {
         super(builder);
         order = builder.order;
         newGTT = builder.newGTT;
@@ -39,7 +39,7 @@ public class SetGTTBuilder extends OrderBuilder {
         return new Builder(checkNotNull(order), checkNotNull(newGTT));
     }
 
-    private static class Builder extends CommonBuilder<Builder> implements SetGTTOption {
+    private static class Builder extends CommonProcess<Builder> implements SetGTTOption {
 
         private final IOrder order;
         private final long newGTT;
@@ -63,8 +63,8 @@ public class SetGTTBuilder extends OrderBuilder {
         }
 
         @Override
-        public SetGTTBuilder build() {
-            return new SetGTTBuilder(this);
+        public SetGTTProcess build() {
+            return new SetGTTProcess(this);
         }
     }
 }

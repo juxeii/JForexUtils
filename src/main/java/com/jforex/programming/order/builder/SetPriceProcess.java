@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class SetPriceBuilder extends OrderBuilder {
+public class SetPriceProcess extends OrderProcess {
 
     private final IOrder order;
     private final double newPrice;
@@ -17,10 +17,10 @@ public class SetPriceBuilder extends OrderBuilder {
 
         public SetPriceOption onOK(Consumer<IOrder> okAction);
 
-        public SetPriceBuilder build();
+        public SetPriceProcess build();
     }
 
-    private SetPriceBuilder(final Builder builder) {
+    private SetPriceProcess(final Builder builder) {
         super(builder);
         order = builder.order;
         newPrice = builder.newPrice;
@@ -39,7 +39,7 @@ public class SetPriceBuilder extends OrderBuilder {
         return new Builder(checkNotNull(order), checkNotNull(newPrice));
     }
 
-    private static class Builder extends CommonBuilder<Builder> implements SetPriceOption {
+    private static class Builder extends CommonProcess<Builder> implements SetPriceOption {
 
         private final IOrder order;
         private final double newPrice;
@@ -63,8 +63,8 @@ public class SetPriceBuilder extends OrderBuilder {
         }
 
         @Override
-        public SetPriceBuilder build() {
-            return new SetPriceBuilder(this);
+        public SetPriceProcess build() {
+            return new SetPriceProcess(this);
         }
     }
 }

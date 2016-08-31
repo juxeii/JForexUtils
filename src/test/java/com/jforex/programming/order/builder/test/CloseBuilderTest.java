@@ -9,14 +9,14 @@ import java.util.function.Consumer;
 import org.junit.Test;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.builder.CloseBuilder;
+import com.jforex.programming.order.builder.CloseProcess;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class CloseBuilderTest extends CommonUtilForTest {
 
     @Test
     public void assertActionsAreValidWhenNotDefined() {
-        final CloseBuilder closeBuilder = CloseBuilder
+        final CloseProcess closeBuilder = CloseProcess
             .forOrder(buyOrderEURUSD)
             .build();
 
@@ -30,7 +30,7 @@ public class CloseBuilderTest extends CommonUtilForTest {
         final Consumer<IOrder> closeOKAction = o -> {};
         final Consumer<IOrder> partialCloseAction = o -> {};
 
-        final CloseBuilder closeBuilder = CloseBuilder
+        final CloseProcess closeBuilder = CloseProcess
             .forOrder(buyOrderEURUSD)
             .onError(errorAction)
             .onCloseReject(closeRejectAction)

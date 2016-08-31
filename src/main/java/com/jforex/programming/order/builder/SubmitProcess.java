@@ -8,7 +8,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class SubmitBuilder extends OrderBuilder {
+public class SubmitProcess extends OrderProcess {
 
     private final OrderParams orderParams;
 
@@ -23,10 +23,10 @@ public class SubmitBuilder extends OrderBuilder {
 
         public SubmitOption onFill(Consumer<IOrder> fillAction);
 
-        public SubmitBuilder build();
+        public SubmitProcess build();
     }
 
-    private SubmitBuilder(final Builder builder) {
+    private SubmitProcess(final Builder builder) {
         super(builder);
         orderParams = builder.orderParams;
     }
@@ -39,7 +39,7 @@ public class SubmitBuilder extends OrderBuilder {
         return new Builder(checkNotNull(orderParams));
     }
 
-    private static class Builder extends CommonBuilder<Builder> implements SubmitOption {
+    private static class Builder extends CommonProcess<Builder> implements SubmitOption {
 
         private final OrderParams orderParams;
 
@@ -79,8 +79,8 @@ public class SubmitBuilder extends OrderBuilder {
         }
 
         @Override
-        public SubmitBuilder build() {
-            return new SubmitBuilder(this);
+        public SubmitProcess build() {
+            return new SubmitProcess(this);
         }
     }
 }

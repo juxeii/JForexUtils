@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class SetLabelBuilder extends OrderBuilder {
+public class SetLabelProcess extends OrderProcess {
 
     private final IOrder order;
     private final String newLabel;
@@ -17,10 +17,10 @@ public class SetLabelBuilder extends OrderBuilder {
 
         public SetLabelOption onOK(Consumer<IOrder> setLabelOKAction);
 
-        public SetLabelBuilder build();
+        public SetLabelProcess build();
     }
 
-    private SetLabelBuilder(final Builder builder) {
+    private SetLabelProcess(final Builder builder) {
         super(builder);
         order = builder.order;
         newLabel = builder.newLabel;
@@ -39,7 +39,7 @@ public class SetLabelBuilder extends OrderBuilder {
         return new Builder(checkNotNull(order), checkNotNull(newLabel));
     }
 
-    private static class Builder extends CommonBuilder<Builder> implements SetLabelOption {
+    private static class Builder extends CommonProcess<Builder> implements SetLabelOption {
 
         private final IOrder order;
         private final String newLabel;
@@ -63,8 +63,8 @@ public class SetLabelBuilder extends OrderBuilder {
         }
 
         @Override
-        public SetLabelBuilder build() {
-            return new SetLabelBuilder(this);
+        public SetLabelProcess build() {
+            return new SetLabelProcess(this);
         }
     }
 }

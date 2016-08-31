@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class MergeBuilder extends OrderBuilder {
+public class MergeProcess extends OrderProcess {
 
     private final String mergeOrderLabel;
     private final Collection<IOrder> toMergeOrders;
@@ -20,10 +20,10 @@ public class MergeBuilder extends OrderBuilder {
 
         public MergeOption onMergeCloseOK(Consumer<IOrder> mergeCloseOKAction);
 
-        public MergeBuilder build();
+        public MergeProcess build();
     }
 
-    private MergeBuilder(final Builder builder) {
+    private MergeProcess(final Builder builder) {
         super(builder);
         mergeOrderLabel = builder.mergeOrderLabel;
         toMergeOrders = builder.toMergeOrders;
@@ -42,7 +42,7 @@ public class MergeBuilder extends OrderBuilder {
         return new Builder(checkNotNull(mergeOrderLabel), checkNotNull(toMergeOrders));
     }
 
-    private static class Builder extends CommonBuilder<Builder> implements MergeOption {
+    private static class Builder extends CommonProcess<Builder> implements MergeOption {
 
         private final String mergeOrderLabel;
         private final Collection<IOrder> toMergeOrders;
@@ -72,8 +72,8 @@ public class MergeBuilder extends OrderBuilder {
         }
 
         @Override
-        public MergeBuilder build() {
-            return new MergeBuilder(this);
+        public MergeProcess build() {
+            return new MergeProcess(this);
         }
     }
 }
