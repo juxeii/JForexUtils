@@ -1,4 +1,4 @@
-package com.jforex.programming.order.builder;
+package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

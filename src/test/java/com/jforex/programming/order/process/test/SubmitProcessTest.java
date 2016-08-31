@@ -1,4 +1,4 @@
-package com.jforex.programming.order.builder.test;
+package com.jforex.programming.order.process.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
@@ -9,10 +9,10 @@ import java.util.function.Consumer;
 import org.junit.Test;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.builder.SubmitProcess;
+import com.jforex.programming.order.process.SubmitProcess;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
-public class SubmitBuilderTest extends CommonUtilForTest {
+public class SubmitProcessTest extends CommonUtilForTest {
 
     @Test
     public void assertActionsAreValidWhenNotDefined() {

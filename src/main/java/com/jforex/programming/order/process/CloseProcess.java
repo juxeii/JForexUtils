@@ -1,46 +1,45 @@
-package com.jforex.programming.order.builder;
+package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class ClosePositionProcess extends OrderProcess {
+public class CloseProcess extends OrderProcess {
 
-    private final Instrument instrument;
+    private final IOrder orderToClose;
 
     public interface CloseOption extends CommonOption<CloseOption> {
         public CloseOption onCloseReject(Consumer<IOrder> closeRejectAction);
 
         public CloseOption onCloseOK(Consumer<IOrder> closeOKAction);
 
-        public CloseOption onPartialClose(Consumer<IOrder> partialCloseAction);
+        public CloseOption onPartialCloseOK(Consumer<IOrder> partialCloseAction);
 
-        public ClosePositionProcess build();
+        public CloseProcess build();
     }
 
-    private ClosePositionProcess(final Builder builder) {
+    private CloseProcess(final Builder builder) {
         super(builder);
-        instrument = builder.instrument;
+        orderToClose = builder.orderToClose;
     }
 
-    public final Instrument instrument() {
-        return instrument;
+    public final IOrder orderToClose() {
+        return orderToClose;
     }
 
-    public static final CloseOption forInstrument(final Instrument instrument) {
-        return new Builder(checkNotNull(instrument));
+    public static final CloseOption forOrder(final IOrder orderToClose) {
+        return new Builder(checkNotNull(orderToClose));
     }
 
     private static class Builder extends CommonProcess<Builder> implements CloseOption {
 
-        private final Instrument instrument;
+        private final IOrder orderToClose;
 
-        private Builder(final Instrument instrument) {
-            this.instrument = instrument;
+        private Builder(final IOrder orderToClose) {
+            this.orderToClose = orderToClose;
         }
 
         @Override
@@ -56,14 +55,14 @@ public class ClosePositionProcess extends OrderProcess {
         }
 
         @Override
-        public CloseOption onPartialClose(final Consumer<IOrder> partialCloseAction) {
+        public CloseOption onPartialCloseOK(final Consumer<IOrder> partialCloseAction) {
             eventHandlerForType.put(OrderEventType.PARTIAL_CLOSE_OK, checkNotNull(partialCloseAction));
             return this;
         }
 
         @Override
-        public ClosePositionProcess build() {
-            return new ClosePositionProcess(this);
+        public CloseProcess build() {
+            return new CloseProcess(this);
         }
     }
 }

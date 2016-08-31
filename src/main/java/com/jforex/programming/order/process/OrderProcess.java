@@ -1,4 +1,4 @@
-package com.jforex.programming.order.builder;
+package com.jforex.programming.order.process;
 
 import java.util.Map;
 import java.util.function.Consumer;

@@ -1,64 +1,65 @@
-package com.jforex.programming.order.builder;
+package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class MergePositionProcess extends OrderProcess {
+public class MergeProcess extends OrderProcess {
 
     private final String mergeOrderLabel;
-    private final Instrument instrument;
+    private final Collection<IOrder> toMergeOrders;
 
     public interface MergeOption extends CommonOption<MergeOption> {
-        public MergeOption onRemoveSLReject(Consumer<IOrder> mergeRejectAction);
 
-        public MergeOption onRemoveTPReject(Consumer<IOrder> mergeRejectAction);
+        public MergeOption onRemoveSLReject(Consumer<IOrder> removeSLRejectAction);
 
-        public MergeOption onRemoveSL(Consumer<IOrder> mergeRejectAction);
+        public MergeOption onRemoveTPReject(Consumer<IOrder> removeTPRejectAction);
 
-        public MergeOption onRemoveTP(Consumer<IOrder> mergeRejectAction);
+        public MergeOption onRemoveSL(Consumer<IOrder> removedSLAction);
+
+        public MergeOption onRemoveTP(Consumer<IOrder> removedTPAction);
 
         public MergeOption onMergeReject(Consumer<IOrder> mergeRejectAction);
 
-        public MergeOption onMerge(Consumer<IOrder> mergeOKAction);
+        public MergeOption onMerge(Consumer<IOrder> mergedAction);
 
-        public MergeOption onMergeClose(Consumer<IOrder> mergeCloseOKAction);
+        public MergeOption onMergeClose(Consumer<IOrder> mergeClosedAction);
 
-        public MergePositionProcess build();
+        public MergeProcess build();
     }
 
-    private MergePositionProcess(final Builder builder) {
+    private MergeProcess(final Builder builder) {
         super(builder);
         mergeOrderLabel = builder.mergeOrderLabel;
-        instrument = builder.instrument;
+        toMergeOrders = builder.toMergeOrders;
     }
 
     public final String mergeOrderLabel() {
         return mergeOrderLabel;
     }
 
-    public final Instrument instrument() {
-        return instrument;
+    public final Collection<IOrder> toMergeOrders() {
+        return toMergeOrders;
     }
 
     public static final MergeOption forParams(final String mergeOrderLabel,
-                                              final Instrument instrument) {
-        return new Builder(checkNotNull(mergeOrderLabel), checkNotNull(instrument));
+                                              final Collection<IOrder> toMergeOrders) {
+        return new Builder(checkNotNull(mergeOrderLabel), checkNotNull(toMergeOrders));
     }
 
     private static class Builder extends CommonProcess<Builder> implements MergeOption {
 
         private final String mergeOrderLabel;
-        private final Instrument instrument;
+        private final Collection<IOrder> toMergeOrders;
 
         private Builder(final String mergeOrderLabel,
-                        final Instrument instrument) {
+                        final Collection<IOrder> toMergeOrders) {
             this.mergeOrderLabel = mergeOrderLabel;
-            this.instrument = instrument;
+            this.toMergeOrders = toMergeOrders;
         }
 
         @Override
@@ -104,8 +105,8 @@ public class MergePositionProcess extends OrderProcess {
         }
 
         @Override
-        public MergePositionProcess build() {
-            return new MergePositionProcess(this);
+        public MergeProcess build() {
+            return new MergeProcess(this);
         }
     }
 }
