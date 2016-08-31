@@ -12,15 +12,6 @@ public class SetSLProcess extends OrderProcess {
     private final IOrder order;
     private final double newSL;
 
-    public interface Option extends CommonOption<Option> {
-        
-        public Option onReject(Consumer<IOrder> rejectAction);
-
-        public Option onOK(Consumer<IOrder> okAction);
-
-        public SetSLProcess build();
-    }
-
     private SetSLProcess(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -35,12 +26,12 @@ public class SetSLProcess extends OrderProcess {
         return newSL;
     }
 
-    public static final Option forParams(final IOrder order,
-                                              final double newSL) {
+    public static final ChangeOption<SetSLProcess> forParams(final IOrder order,
+                                                             final double newSL) {
         return new Builder(checkNotNull(order), checkNotNull(newSL));
     }
 
-    private static class Builder extends CommonProcess<Builder> implements Option {
+    private static class Builder extends CommonBuilder<Builder> implements ChangeOption<SetSLProcess> {
 
         private final IOrder order;
         private final double newSL;
@@ -52,13 +43,13 @@ public class SetSLProcess extends OrderProcess {
         }
 
         @Override
-        public Option onReject(final Consumer<IOrder> rejectAction) {
+        public ChangeOption<SetSLProcess> onReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option onOK(final Consumer<IOrder> okAction) {
+        public ChangeOption<SetSLProcess> onOK(final Consumer<IOrder> okAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(okAction));
             return this;
         }

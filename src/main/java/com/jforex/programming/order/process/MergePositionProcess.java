@@ -36,7 +36,7 @@ public class MergePositionProcess extends OrderProcess {
         return new Builder(checkNotNull(mergeOrderLabel), checkNotNull(instrument));
     }
 
-    private static class Builder extends CommonProcess<Builder> implements Option {
+    private static class Builder extends CommonBuilder<Builder> implements Option {
 
         private final String mergeOrderLabel;
         private final Instrument instrument;

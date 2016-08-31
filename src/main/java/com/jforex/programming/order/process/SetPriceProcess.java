@@ -12,14 +12,6 @@ public class SetPriceProcess extends OrderProcess {
     private final IOrder order;
     private final double newPrice;
 
-    public interface SetPriceOption extends CommonOption<SetPriceOption> {
-        public SetPriceOption onReject(Consumer<IOrder> rejectAction);
-
-        public SetPriceOption onOK(Consumer<IOrder> okAction);
-
-        public SetPriceProcess build();
-    }
-
     private SetPriceProcess(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -34,12 +26,12 @@ public class SetPriceProcess extends OrderProcess {
         return newPrice;
     }
 
-    public static final SetPriceOption forParams(final IOrder order,
-                                                 final double newPrice) {
+    public static final ChangeOption<SetPriceProcess> forParams(final IOrder order,
+                                                                final double newPrice) {
         return new Builder(checkNotNull(order), checkNotNull(newPrice));
     }
 
-    private static class Builder extends CommonProcess<Builder> implements SetPriceOption {
+    private static class Builder extends CommonBuilder<Builder> implements ChangeOption<SetPriceProcess> {
 
         private final IOrder order;
         private final double newPrice;
@@ -51,13 +43,13 @@ public class SetPriceProcess extends OrderProcess {
         }
 
         @Override
-        public SetPriceOption onReject(final Consumer<IOrder> rejectAction) {
+        public ChangeOption<SetPriceProcess> onReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_PRICE_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public SetPriceOption onOK(final Consumer<IOrder> okAction) {
+        public ChangeOption<SetPriceProcess> onOK(final Consumer<IOrder> okAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_PRICE, checkNotNull(okAction));
             return this;
         }

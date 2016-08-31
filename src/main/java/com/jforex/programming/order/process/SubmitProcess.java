@@ -29,7 +29,7 @@ public class SubmitProcess extends OrderProcess {
         return new Builder(checkNotNull(orderParams));
     }
 
-    private static class Builder extends CommonProcess<Builder> implements Option {
+    private static class Builder extends CommonBuilder<Builder> implements Option {
 
         private final OrderParams orderParams;
 

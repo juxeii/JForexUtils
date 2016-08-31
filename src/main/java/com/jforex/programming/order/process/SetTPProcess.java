@@ -12,14 +12,6 @@ public class SetTPProcess extends OrderProcess {
     private final IOrder order;
     private final double newTP;
 
-    public interface SetSLOption extends CommonOption<SetSLOption> {
-        public SetSLOption onReject(Consumer<IOrder> rejectAction);
-
-        public SetSLOption onOK(Consumer<IOrder> okAction);
-
-        public SetTPProcess build();
-    }
-
     private SetTPProcess(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -34,12 +26,12 @@ public class SetTPProcess extends OrderProcess {
         return newTP;
     }
 
-    public static final SetSLOption forParams(final IOrder order,
-                                              final double newTP) {
+    public static final ChangeOption<SetTPProcess> forParams(final IOrder order,
+                                                             final double newTP) {
         return new Builder(checkNotNull(order), checkNotNull(newTP));
     }
 
-    private static class Builder extends CommonProcess<Builder> implements SetSLOption {
+    private static class Builder extends CommonBuilder<Builder> implements ChangeOption<SetTPProcess> {
 
         private final IOrder order;
         private final double newTP;
@@ -51,13 +43,13 @@ public class SetTPProcess extends OrderProcess {
         }
 
         @Override
-        public SetSLOption onReject(final Consumer<IOrder> rejectAction) {
+        public ChangeOption<SetTPProcess> onReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public SetSLOption onOK(final Consumer<IOrder> okAction) {
+        public ChangeOption<SetTPProcess> onOK(final Consumer<IOrder> okAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(okAction));
             return this;
         }

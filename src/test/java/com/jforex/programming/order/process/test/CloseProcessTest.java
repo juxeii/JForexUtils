@@ -34,8 +34,8 @@ public class CloseProcessTest extends CommonUtilForTest {
             .forOrder(buyOrderEURUSD)
             .onError(errorAction)
             .onCloseReject(closeRejectAction)
-            .onCloseOK(closeOKAction)
-            .onPartialCloseOK(partialCloseAction)
+            .onClose(closeOKAction)
+            .onPartialClose(partialCloseAction)
             .build();
 
         assertThat(closeBuilder.orderToClose(), equalTo(buyOrderEURUSD));

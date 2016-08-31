@@ -12,14 +12,6 @@ public class SetLabelProcess extends OrderProcess {
     private final IOrder order;
     private final String newLabel;
 
-    public interface SetLabelOption extends CommonOption<SetLabelOption> {
-        public SetLabelOption onReject(Consumer<IOrder> setLabelRejectAction);
-
-        public SetLabelOption onOK(Consumer<IOrder> setLabelOKAction);
-
-        public SetLabelProcess build();
-    }
-
     private SetLabelProcess(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -34,12 +26,12 @@ public class SetLabelProcess extends OrderProcess {
         return newLabel;
     }
 
-    public static final SetLabelOption forParams(final IOrder order,
-                                                 final String newLabel) {
+    public static final ChangeOption<SetLabelProcess> forParams(final IOrder order,
+                                                                final String newLabel) {
         return new Builder(checkNotNull(order), checkNotNull(newLabel));
     }
 
-    private static class Builder extends CommonProcess<Builder> implements SetLabelOption {
+    private static class Builder extends CommonBuilder<Builder> implements ChangeOption<SetLabelProcess> {
 
         private final IOrder order;
         private final String newLabel;
@@ -51,13 +43,13 @@ public class SetLabelProcess extends OrderProcess {
         }
 
         @Override
-        public SetLabelOption onReject(final Consumer<IOrder> rejectAction) {
+        public ChangeOption<SetLabelProcess> onReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_LABEL_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public SetLabelOption onOK(final Consumer<IOrder> okAction) {
+        public ChangeOption<SetLabelProcess> onOK(final Consumer<IOrder> okAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_LABEL, checkNotNull(okAction));
             return this;
         }

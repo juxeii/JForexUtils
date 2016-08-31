@@ -12,16 +12,6 @@ public class ClosePositionProcess extends OrderProcess {
 
     private final Instrument instrument;
 
-    public interface CloseOption extends CommonOption<CloseOption> {
-        public CloseOption onCloseReject(Consumer<IOrder> closeRejectAction);
-
-        public CloseOption onCloseOK(Consumer<IOrder> closeOKAction);
-
-        public CloseOption onPartialClose(Consumer<IOrder> partialCloseAction);
-
-        public ClosePositionProcess build();
-    }
-
     private ClosePositionProcess(final Builder builder) {
         super(builder);
         instrument = builder.instrument;
@@ -31,11 +21,11 @@ public class ClosePositionProcess extends OrderProcess {
         return instrument;
     }
 
-    public static final CloseOption forInstrument(final Instrument instrument) {
+    public static final CloseOption<ClosePositionProcess> forInstrument(final Instrument instrument) {
         return new Builder(checkNotNull(instrument));
     }
 
-    private static class Builder extends CommonProcess<Builder> implements CloseOption {
+    private static class Builder extends CommonBuilder<Builder> implements CloseOption<ClosePositionProcess> {
 
         private final Instrument instrument;
 
@@ -44,20 +34,20 @@ public class ClosePositionProcess extends OrderProcess {
         }
 
         @Override
-        public CloseOption onCloseReject(final Consumer<IOrder> closeRejectAction) {
+        public CloseOption<ClosePositionProcess> onCloseReject(final Consumer<IOrder> closeRejectAction) {
             eventHandlerForType.put(OrderEventType.CLOSE_REJECTED, checkNotNull(closeRejectAction));
             return this;
         }
 
         @Override
-        public CloseOption onCloseOK(final Consumer<IOrder> closeOKAction) {
-            eventHandlerForType.put(OrderEventType.CLOSE_OK, checkNotNull(closeOKAction));
+        public CloseOption<ClosePositionProcess> onClose(final Consumer<IOrder> closedAction) {
+            eventHandlerForType.put(OrderEventType.CLOSE_OK, checkNotNull(closedAction));
             return this;
         }
 
         @Override
-        public CloseOption onPartialClose(final Consumer<IOrder> partialCloseAction) {
-            eventHandlerForType.put(OrderEventType.PARTIAL_CLOSE_OK, checkNotNull(partialCloseAction));
+        public CloseOption<ClosePositionProcess> onPartialClose(final Consumer<IOrder> partialClosedAction) {
+            eventHandlerForType.put(OrderEventType.PARTIAL_CLOSE_OK, checkNotNull(partialClosedAction));
             return this;
         }
 
