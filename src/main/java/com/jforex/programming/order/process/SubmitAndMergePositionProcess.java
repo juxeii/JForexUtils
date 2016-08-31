@@ -13,32 +13,7 @@ public class SubmitAndMergePositionProcess extends OrderProcess {
     private final OrderParams orderParams;
     private final String mergeOrderLabel;
 
-    public interface Option extends CommonOption<Option> {
-
-        public Option onSubmitReject(Consumer<IOrder> submitRejectAction);
-
-        public Option onFillReject(Consumer<IOrder> fillRejectAction);
-
-        public Option onSubmitOK(Consumer<IOrder> submitOKAction);
-
-        public Option onPartialFill(Consumer<IOrder> partialFillAction);
-
-        public Option onFill(Consumer<IOrder> fillAction);
-
-        public Option onRemoveSLReject(Consumer<IOrder> removeSLRejectAction);
-
-        public Option onRemoveTPReject(Consumer<IOrder> removeTPRejectAction);
-
-        public Option onRemoveSL(Consumer<IOrder> removedSLAction);
-
-        public Option onRemoveTP(Consumer<IOrder> removedTPAction);
-
-        public Option onMergeReject(Consumer<IOrder> mergeRejectAction);
-
-        public Option onMerge(Consumer<IOrder> mergedAction);
-
-        public Option onMergeClose(Consumer<IOrder> mergeClosedAction);
-
+    public interface Option extends SubmitOption<Option>, MergeOption<Option> {
         public SubmitAndMergePositionProcess build();
     }
 

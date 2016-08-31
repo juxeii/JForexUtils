@@ -22,7 +22,6 @@ import com.jforex.programming.order.process.SetPriceProcess;
 import com.jforex.programming.order.process.SetSLProcess;
 import com.jforex.programming.order.process.SetTPProcess;
 import com.jforex.programming.order.process.SubmitAndMergePositionProcess;
-import com.jforex.programming.order.process.SubmitAndMergePositionToParamsProcess;
 import com.jforex.programming.order.process.SubmitProcess;
 import com.jforex.programming.position.PositionOrders;
 
@@ -62,7 +61,7 @@ public class OrderUtil {
         process.start(observable);
     }
 
-    public final void startSubmitAndMergePositionToParams(final SubmitAndMergePositionToParamsProcess process) {
+    public final void startSubmitAndMergePositionToParams(final SubmitAndMergePositionProcess process) {
         final OrderParams orderParams = process.orderParams();
         final String mergeOrderLabel = process.mergeOrderLabel();
 

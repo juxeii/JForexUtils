@@ -13,22 +13,7 @@ public class MergePositionProcess extends OrderProcess {
     private final String mergeOrderLabel;
     private final Instrument instrument;
 
-    public interface MergeOption extends CommonOption<MergeOption> {
-
-        public MergeOption onRemoveSLReject(Consumer<IOrder> removeSLRejectAction);
-
-        public MergeOption onRemoveTPReject(Consumer<IOrder> removeTPRejectAction);
-
-        public MergeOption onRemoveSL(Consumer<IOrder> removedSLAction);
-
-        public MergeOption onRemoveTP(Consumer<IOrder> removedTPAction);
-
-        public MergeOption onMergeReject(Consumer<IOrder> mergeRejectAction);
-
-        public MergeOption onMerge(Consumer<IOrder> mergedAction);
-
-        public MergeOption onMergeClose(Consumer<IOrder> mergeClosedAction);
-
+    public interface Option extends MergeOption<Option> {
         public MergePositionProcess build();
     }
 
@@ -46,12 +31,12 @@ public class MergePositionProcess extends OrderProcess {
         return instrument;
     }
 
-    public static final MergeOption forParams(final String mergeOrderLabel,
-                                              final Instrument instrument) {
+    public static final Option forParams(final String mergeOrderLabel,
+                                         final Instrument instrument) {
         return new Builder(checkNotNull(mergeOrderLabel), checkNotNull(instrument));
     }
 
-    private static class Builder extends CommonProcess<Builder> implements MergeOption {
+    private static class Builder extends CommonProcess<Builder> implements Option {
 
         private final String mergeOrderLabel;
         private final Instrument instrument;
@@ -63,43 +48,43 @@ public class MergePositionProcess extends OrderProcess {
         }
 
         @Override
-        public MergeOption onRemoveSLReject(final Consumer<IOrder> changeSLRejectAction) {
+        public Option onRemoveSLReject(final Consumer<IOrder> changeSLRejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(changeSLRejectAction));
             return this;
         }
 
         @Override
-        public MergeOption onRemoveTPReject(final Consumer<IOrder> changeTPRejectAction) {
+        public Option onRemoveTPReject(final Consumer<IOrder> changeTPRejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(changeTPRejectAction));
             return this;
         }
 
         @Override
-        public MergeOption onRemoveSL(final Consumer<IOrder> changedSLAction) {
+        public Option onRemoveSL(final Consumer<IOrder> changedSLAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(changedSLAction));
             return this;
         }
 
         @Override
-        public MergeOption onRemoveTP(final Consumer<IOrder> changedTPAction) {
+        public Option onRemoveTP(final Consumer<IOrder> changedTPAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(changedTPAction));
             return this;
         }
 
         @Override
-        public MergeOption onMergeReject(final Consumer<IOrder> mergeRejectAction) {
+        public Option onMergeReject(final Consumer<IOrder> mergeRejectAction) {
             eventHandlerForType.put(OrderEventType.MERGE_REJECTED, checkNotNull(mergeRejectAction));
             return this;
         }
 
         @Override
-        public MergeOption onMerge(final Consumer<IOrder> mergeOKAction) {
+        public Option onMerge(final Consumer<IOrder> mergeOKAction) {
             eventHandlerForType.put(OrderEventType.MERGE_OK, checkNotNull(mergeOKAction));
             return this;
         }
 
         @Override
-        public MergeOption onMergeClose(final Consumer<IOrder> mergeCloseOKAction) {
+        public Option onMergeClose(final Consumer<IOrder> mergeCloseOKAction) {
             eventHandlerForType.put(OrderEventType.MERGE_CLOSE_OK, checkNotNull(mergeCloseOKAction));
             return this;
         }

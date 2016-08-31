@@ -25,7 +25,6 @@ import com.jforex.programming.order.process.SetPriceProcess;
 import com.jforex.programming.order.process.SetSLProcess;
 import com.jforex.programming.order.process.SetTPProcess;
 import com.jforex.programming.order.process.SubmitAndMergePositionProcess;
-import com.jforex.programming.order.process.SubmitAndMergePositionToParamsProcess;
 import com.jforex.programming.order.process.SubmitProcess;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -95,7 +94,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .thenReturn(emptyObservable())
             .thenReturn(jfExceptionObservable());
 
-        final SubmitAndMergePositionToParamsProcess process = SubmitAndMergePositionToParamsProcess
+        final SubmitAndMergePositionProcess process = SubmitAndMergePositionProcess
             .forParams(buyParamsEURUSD, mergeOrderLabel)
             .build();
 

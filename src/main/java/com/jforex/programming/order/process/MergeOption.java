@@ -4,21 +4,19 @@ import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
 
-public interface MergeOption<T> extends CommonOption<MergeOption> {
+public interface MergeOption<T> extends CommonOption<T> {
 
-    public MergeOption onRemoveSLReject(Consumer<IOrder> removeSLRejectAction);
+    public T onRemoveSLReject(Consumer<IOrder> removeSLRejectAction);
 
-    public MergeOption onRemoveTPReject(Consumer<IOrder> removeTPRejectAction);
+    public T onRemoveTPReject(Consumer<IOrder> removeTPRejectAction);
 
-    public MergeOption onRemoveSL(Consumer<IOrder> removedSLAction);
+    public T onRemoveSL(Consumer<IOrder> removedSLAction);
 
-    public MergeOption onRemoveTP(Consumer<IOrder> removedTPAction);
+    public T onRemoveTP(Consumer<IOrder> removedTPAction);
 
-    public MergeOption onMergeReject(Consumer<IOrder> mergeRejectAction);
+    public T onMergeReject(Consumer<IOrder> mergeRejectAction);
 
-    public MergeOption onMerge(Consumer<IOrder> mergedAction);
+    public T onMerge(Consumer<IOrder> mergedAction);
 
-    public MergeOption onMergeClose(Consumer<IOrder> mergeClosedAction);
-
-    public T build();
+    public T onMergeClose(Consumer<IOrder> mergeClosedAction);
 }
