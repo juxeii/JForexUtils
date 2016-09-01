@@ -2,10 +2,11 @@ package com.jforex.programming.order.process.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -16,36 +17,48 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class CloseProcessTest extends CommonUtilForTest {
 
-    @Mock
-    public Consumer<IOrder> closeRejectActionMock;
+    private CloseProcess process;
 
-    @Test
-    public void orderToCloseIsCorrectt() {
-        final CloseProcess process = CloseProcess
+    @Mock
+    private Consumer<Throwable> errorActionMock;
+    @Mock
+    private Consumer<IOrder> closeRejectActionMock;
+    @Mock
+    private Consumer<IOrder> closedActionMock;
+    @Mock
+    private Consumer<IOrder> partialClosedActionMock;
+    private Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
+
+    @Before
+    public void setUp() {
+        process = CloseProcess
             .forOrder(buyOrderEURUSD)
+            .onError(errorActionMock)
+            .onClose(closedActionMock)
+            .onCloseReject(closeRejectActionMock)
+            .onPartialClose(partialClosedActionMock)
+            .doRetries(3, 1500L)
             .build();
 
+        eventHandlerForType = process.eventHandlerForType();
+    }
+
+    @Test
+    public void processValuesAreCorrect() {
+        assertThat(eventHandlerForType.size(), equalTo(3));
         assertThat(process.orderToClose(), equalTo(buyOrderEURUSD));
+        assertThat(process.noOfRetries(), equalTo(3));
+        assertThat(process.delayInMillis(), equalTo(1500L));
     }
 
     @Test
     public void actionsAreCorrectMapped() {
-        final Consumer<Throwable> errorAction = t -> {};
-        final Consumer<IOrder> closeOKAction = o -> {};
-        final Consumer<IOrder> partialCloseAction = o -> {};
+        eventHandlerForType.get(OrderEventType.CLOSE_REJECTED).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.CLOSE_OK).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.PARTIAL_CLOSE_OK).accept(buyOrderEURUSD);
 
-        final CloseProcess process = CloseProcess
-            .forOrder(buyOrderEURUSD)
-            .onError(errorAction)
-            .onClose(closeOKAction)
-            .onCloseReject(closeRejectActionMock)
-            .onPartialClose(partialCloseAction)
-            .build();
-
-        assertThat(process.eventHandlerForType().size(), equalTo(3));
-        assertTrue(process.eventHandlerForType().containsKey(OrderEventType.CLOSE_REJECTED));
-
-        process.eventHandlerForType().get(OrderEventType.CLOSE_REJECTED).accept(buyOrderEURUSD);
         verify(closeRejectActionMock).accept(buyOrderEURUSD);
+        verify(closedActionMock).accept(buyOrderEURUSD);
+        verify(partialClosedActionMock).accept(buyOrderEURUSD);
     }
 }
