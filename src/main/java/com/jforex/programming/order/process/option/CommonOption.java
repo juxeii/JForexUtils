@@ -1,6 +1,8 @@
-package com.jforex.programming.order.process;
+package com.jforex.programming.order.process.option;
 
 import java.util.function.Consumer;
+
+import com.jforex.programming.order.process.CommonBuilder;
 
 public interface CommonOption {
 

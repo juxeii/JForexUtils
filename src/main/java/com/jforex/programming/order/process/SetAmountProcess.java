@@ -3,8 +3,9 @@ package com.jforex.programming.order.process;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.process.option.AmountOption;
 
-public class SetAmountProcess extends OrderProcess {
+public class SetAmountProcess extends CommonProcess {
 
     private final IOrder order;
     private final double newAmount;
@@ -23,12 +24,13 @@ public class SetAmountProcess extends OrderProcess {
         return newAmount;
     }
 
-    public static final AmountOption<CommonBuilder> forParams(final IOrder order,
-                                                              final double newAmount) {
+    public static final AmountOption forParams(final IOrder order,
+                                               final double newAmount) {
         return new Builder(checkNotNull(order), checkNotNull(newAmount));
     }
 
-    public static class Builder extends CommonBuilder implements AmountOption<CommonBuilder> {
+    public static class Builder extends CommonBuilder
+                                implements AmountOption {
 
         private final IOrder order;
         private final double newAmount;
@@ -39,6 +41,7 @@ public class SetAmountProcess extends OrderProcess {
             this.newAmount = newAmount;
         }
 
+        @SuppressWarnings("unchecked")
         public SetAmountProcess build() {
             return new SetAmountProcess(this);
         }

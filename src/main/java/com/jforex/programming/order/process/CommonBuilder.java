@@ -8,23 +8,31 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Maps;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.process.option.AmountOption;
+import com.jforex.programming.order.process.option.CloseOption;
+import com.jforex.programming.order.process.option.GTTOption;
+import com.jforex.programming.order.process.option.LabelOption;
+import com.jforex.programming.order.process.option.MergeOption;
+import com.jforex.programming.order.process.option.OpenPriceOption;
+import com.jforex.programming.order.process.option.SLOption;
+import com.jforex.programming.order.process.option.SubmitOption;
+import com.jforex.programming.order.process.option.TPOption;
 
-public class CommonBuilder implements
-        SubmitOption,
-        MergeOption,
-        AmountOption,
-        OpenPriceOption,
-        CloseOption {
+public abstract class CommonBuilder implements
+                                    SubmitOption,
+                                    MergeOption,
+                                    CloseOption,
+                                    LabelOption,
+                                    GTTOption,
+                                    AmountOption,
+                                    OpenPriceOption,
+                                    SLOption,
+                                    TPOption {
 
     protected Consumer<Throwable> errorAction = o -> {};
     protected int noOfRetries;
     protected long delayInMillis;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = Maps.newEnumMap(OrderEventType.class);
-
-    @Override
-    public <T> T build() {
-        return null;
-    }
 
     @Override
     public CommonBuilder onError(final Consumer<Throwable> errorAction) {
@@ -43,19 +51,19 @@ public class CommonBuilder implements
     @Override
     public CommonBuilder onCloseReject(final Consumer<IOrder> closeRejectAction) {
         eventHandlerForType.put(OrderEventType.CLOSE_REJECTED, checkNotNull(closeRejectAction));
-        return null;
+        return this;
     }
 
     @Override
     public CommonBuilder onClose(final Consumer<IOrder> closedAction) {
         eventHandlerForType.put(OrderEventType.CLOSE_OK, checkNotNull(closedAction));
-        return null;
+        return this;
     }
 
     @Override
     public CommonBuilder onPartialClose(final Consumer<IOrder> partialClosedAction) {
         eventHandlerForType.put(OrderEventType.PARTIAL_CLOSE_OK, checkNotNull(partialClosedAction));
-        return null;
+        return this;
     }
 
     @Override
@@ -84,117 +92,118 @@ public class CommonBuilder implements
 
     @Override
     public CommonBuilder onRemoveSLReject(final Consumer<IOrder> removeSLRejectAction) {
-        eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(removeSLRejectAction));
-        return this;
+        return onSLReject(removeSLRejectAction);
     }
 
     @Override
     public CommonBuilder onRemoveTPReject(final Consumer<IOrder> removeTPRejectAction) {
-        eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(removeTPRejectAction));
-        return this;
+        return onTPReject(removeTPRejectAction);
     }
 
     @Override
     public CommonBuilder onRemoveSL(final Consumer<IOrder> removedSLAction) {
-        eventHandlerForType.put(OrderEventType.CHANGED_SL,
-                                checkNotNull(removedSLAction));
-        return this;
+        return onSLChange(removedSLAction);
     }
 
     @Override
     public CommonBuilder onRemoveTP(final Consumer<IOrder> removedTPAction) {
-        eventHandlerForType.put(OrderEventType.CHANGED_TP,
-                                checkNotNull(removedTPAction));
-        return this;
+        return onSLChange(removedTPAction);
     }
 
     @Override
     public CommonBuilder onMergeReject(final Consumer<IOrder> mergeRejectAction) {
-        eventHandlerForType.put(OrderEventType.MERGE_REJECTED,
-                                checkNotNull(mergeRejectAction));
+        eventHandlerForType.put(OrderEventType.MERGE_REJECTED, checkNotNull(mergeRejectAction));
         return this;
     }
 
     @Override
     public CommonBuilder onMerge(final Consumer<IOrder> mergedAction) {
-        eventHandlerForType.put(OrderEventType.MERGE_OK,
-                                checkNotNull(mergedAction));
+        eventHandlerForType.put(OrderEventType.MERGE_OK, checkNotNull(mergedAction));
         return this;
     }
 
     @Override
     public CommonBuilder onMergeClose(final Consumer<IOrder> mergeClosedAction) {
-        eventHandlerForType.put(OrderEventType.MERGE_CLOSE_OK,
-                                checkNotNull(mergeClosedAction));
+        eventHandlerForType.put(OrderEventType.MERGE_CLOSE_OK, checkNotNull(mergeClosedAction));
         return this;
     }
 
     @Override
     public CommonBuilder onSubmitReject(final Consumer<IOrder> submitRejectAction) {
-        // TODO Auto-generated method stub
-        return null;
+        eventHandlerForType.put(OrderEventType.SUBMIT_REJECTED, checkNotNull(submitRejectAction));
+        return this;
     }
 
     @Override
     public CommonBuilder onFillReject(final Consumer<IOrder> fillRejectAction) {
-        // TODO Auto-generated method stub
-        return null;
+        eventHandlerForType.put(OrderEventType.FILL_REJECTED, checkNotNull(fillRejectAction));
+        return this;
     }
 
     @Override
     public CommonBuilder onSubmitOK(final Consumer<IOrder> submitOKAction) {
-        // TODO Auto-generated method stub
-        return null;
+        eventHandlerForType.put(OrderEventType.SUBMIT_OK, checkNotNull(submitOKAction));
+        eventHandlerForType.put(OrderEventType.SUBMIT_CONDITIONAL_OK, checkNotNull(submitOKAction));
+        return this;
     }
 
     @Override
     public CommonBuilder onPartialFill(final Consumer<IOrder> partialFillAction) {
-        // TODO Auto-generated method stub
-        return null;
+        eventHandlerForType.put(OrderEventType.PARTIAL_FILL_OK, checkNotNull(partialFillAction));
+        return this;
     }
 
     @Override
     public CommonBuilder onFill(final Consumer<IOrder> fillAction) {
-        // TODO Auto-generated method stub
-        return null;
+        eventHandlerForType.put(OrderEventType.FULLY_FILLED, checkNotNull(fillAction));
+        return this;
     }
 
-    public void putMergeReject(final Consumer<IOrder> mergeRejectAction) {
-
+    @Override
+    public CommonBuilder onTPReject(final Consumer<IOrder> rejectAction) {
+        eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(rejectAction));
+        return this;
     }
 
-    public void putMerge(final Consumer<IOrder> mergeOKAction) {
-
+    @Override
+    public CommonBuilder onTPChange(final Consumer<IOrder> doneAction) {
+        eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(doneAction));
+        return this;
     }
 
-    public void putMergeClose(final Consumer<IOrder> mergeCloseOKAction) {
-
+    @Override
+    public CommonBuilder onSLReject(final Consumer<IOrder> rejectAction) {
+        eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(rejectAction));
+        return this;
     }
 
-    public void putSubmitReject(final Consumer<IOrder> submitRejectAction) {
-        eventHandlerForType.put(OrderEventType.SUBMIT_REJECTED,
-                                checkNotNull(submitRejectAction));
+    @Override
+    public CommonBuilder onSLChange(final Consumer<IOrder> doneAction) {
+        eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(doneAction));
+        return this;
     }
 
-    public void putFillReject(final Consumer<IOrder> fillRejectAction) {
-        eventHandlerForType.put(OrderEventType.FILL_REJECTED,
-                                checkNotNull(fillRejectAction));
+    @Override
+    public CommonBuilder onGTTReject(final Consumer<IOrder> rejectAction) {
+        eventHandlerForType.put(OrderEventType.CHANGE_GTT_REJECTED, checkNotNull(rejectAction));
+        return this;
     }
 
-    public void putSubmitOK(final Consumer<IOrder> submitOKAction) {
-        eventHandlerForType.put(OrderEventType.SUBMIT_OK,
-                                checkNotNull(submitOKAction));
-        eventHandlerForType.put(OrderEventType.SUBMIT_CONDITIONAL_OK,
-                                checkNotNull(submitOKAction));
+    @Override
+    public CommonBuilder onGTTChange(final Consumer<IOrder> doneAction) {
+        eventHandlerForType.put(OrderEventType.CHANGED_GTT, checkNotNull(doneAction));
+        return this;
     }
 
-    public void putPartialFill(final Consumer<IOrder> partialFillAction) {
-        eventHandlerForType.put(OrderEventType.PARTIAL_FILL_OK,
-                                checkNotNull(partialFillAction));
+    @Override
+    public CommonBuilder onLabelReject(final Consumer<IOrder> rejectAction) {
+        eventHandlerForType.put(OrderEventType.CHANGE_LABEL_REJECTED, checkNotNull(rejectAction));
+        return this;
     }
 
-    public void putFill(final Consumer<IOrder> fillAction) {
-        eventHandlerForType.put(OrderEventType.FULLY_FILLED,
-                                checkNotNull(fillAction));
+    @Override
+    public CommonBuilder onLabelChange(final Consumer<IOrder> doneAction) {
+        eventHandlerForType.put(OrderEventType.CHANGED_LABEL, checkNotNull(doneAction));
+        return this;
     }
 }

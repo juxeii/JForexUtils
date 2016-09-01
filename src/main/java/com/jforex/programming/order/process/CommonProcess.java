@@ -9,14 +9,14 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import rx.Observable;
 
-public abstract class OrderProcess {
+public abstract class CommonProcess {
 
-    protected Consumer<Throwable> errorAction;
-    protected int noOfRetries;
-    protected long delayInMillis;
-    protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
+    private final Consumer<Throwable> errorAction;
+    private final int noOfRetries;
+    private final long delayInMillis;
+    private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
-    protected OrderProcess(final CommonBuilder builder) {
+    protected CommonProcess(final CommonBuilder builder) {
         errorAction = builder.errorAction;
         noOfRetries = builder.noOfRetries;
         delayInMillis = builder.delayInMillis;
@@ -27,12 +27,12 @@ public abstract class OrderProcess {
         return errorAction;
     }
 
-    public void start(final Observable<OrderEvent> observable) {
+    public final void start(final Observable<OrderEvent> observable) {
         evaluateRetry(observable)
             .subscribe(this::callEventHandler, errorAction::accept);
     }
 
-    protected void callEventHandler(final OrderEvent orderEvent) {
+    private final void callEventHandler(final OrderEvent orderEvent) {
         final OrderEventType type = orderEvent.type();
         if (eventHandlerForType.containsKey(type))
             eventHandlerForType

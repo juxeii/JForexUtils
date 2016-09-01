@@ -3,8 +3,9 @@ package com.jforex.programming.order.process;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.process.option.CloseOption;
 
-public class CloseProcess extends OrderProcess {
+public class CloseProcess extends CommonProcess {
 
     private final IOrder orderToClose;
 
@@ -22,7 +23,7 @@ public class CloseProcess extends OrderProcess {
     }
 
     public static class Builder extends CommonBuilder
-            implements CloseOption {
+                                implements CloseOption {
 
         private final IOrder orderToClose;
 
