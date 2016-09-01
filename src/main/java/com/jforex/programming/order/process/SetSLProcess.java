@@ -2,10 +2,7 @@ package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.function.Consumer;
-
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.SLOption;
 
 public class SetSLProcess extends CommonProcess {
@@ -47,18 +44,6 @@ public class SetSLProcess extends CommonProcess {
                         final double newSL) {
             this.order = order;
             this.newSL = newSL;
-        }
-
-        @Override
-        public Option onSLReject(final Consumer<IOrder> rejectAction) {
-            eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(rejectAction));
-            return this;
-        }
-
-        @Override
-        public Option onSLChange(final Consumer<IOrder> doneAction) {
-            eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(doneAction));
-            return this;
         }
 
         @Override

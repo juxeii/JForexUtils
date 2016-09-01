@@ -2,10 +2,7 @@ package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.function.Consumer;
-
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.LabelOption;
 
 public class SetLabelProcess extends CommonProcess {
@@ -47,16 +44,6 @@ public class SetLabelProcess extends CommonProcess {
                         final String newLabel) {
             this.order = order;
             this.newLabel = newLabel;
-        }
-
-        public Option onLabelReject(final Consumer<IOrder> rejectAction) {
-            eventHandlerForType.put(OrderEventType.CHANGE_LABEL_REJECTED, checkNotNull(rejectAction));
-            return this;
-        }
-
-        public Option onLabelChange(final Consumer<IOrder> doneAction) {
-            eventHandlerForType.put(OrderEventType.CHANGED_LABEL, checkNotNull(doneAction));
-            return this;
         }
 
         @Override

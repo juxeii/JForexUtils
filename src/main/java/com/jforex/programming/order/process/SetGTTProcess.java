@@ -2,10 +2,7 @@ package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.function.Consumer;
-
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.GTTOption;
 
 public class SetGTTProcess extends CommonProcess {
@@ -47,16 +44,6 @@ public class SetGTTProcess extends CommonProcess {
                         final long newGTT) {
             this.order = order;
             this.newGTT = newGTT;
-        }
-
-        public Option onGTTReject(final Consumer<IOrder> rejectAction) {
-            eventHandlerForType.put(OrderEventType.CHANGE_GTT_REJECTED, checkNotNull(rejectAction));
-            return this;
-        }
-
-        public Option onGTTChange(final Consumer<IOrder> doneAction) {
-            eventHandlerForType.put(OrderEventType.CHANGED_GTT, checkNotNull(doneAction));
-            return this;
         }
 
         @Override

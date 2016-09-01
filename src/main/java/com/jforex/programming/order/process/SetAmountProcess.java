@@ -2,10 +2,7 @@ package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.function.Consumer;
-
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.AmountOption;
 
 public class SetAmountProcess extends CommonProcess {
@@ -47,16 +44,6 @@ public class SetAmountProcess extends CommonProcess {
                         final double newAmount) {
             this.order = order;
             this.newAmount = newAmount;
-        }
-
-        public Option onAmountReject(final Consumer<IOrder> rejectAction) {
-            eventHandlerForType.put(OrderEventType.CHANGE_AMOUNT_REJECTED, checkNotNull(rejectAction));
-            return this;
-        }
-
-        public Option onAmountChange(final Consumer<IOrder> okAction) {
-            eventHandlerForType.put(OrderEventType.CHANGED_AMOUNT, checkNotNull(okAction));
-            return this;
         }
 
         public SetAmountProcess build() {

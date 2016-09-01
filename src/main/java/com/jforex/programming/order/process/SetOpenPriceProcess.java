@@ -2,10 +2,7 @@ package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.function.Consumer;
-
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.OpenPriceOption;
 
 public class SetOpenPriceProcess extends CommonProcess {
@@ -47,16 +44,6 @@ public class SetOpenPriceProcess extends CommonProcess {
                         final double newPrice) {
             this.order = order;
             this.newPrice = newPrice;
-        }
-
-        public Option onOpenPriceReject(final Consumer<IOrder> rejectAction) {
-            eventHandlerForType.put(OrderEventType.CHANGE_PRICE_REJECTED, checkNotNull(rejectAction));
-            return this;
-        }
-
-        public Option onOpenPriceChange(final Consumer<IOrder> doneAction) {
-            eventHandlerForType.put(OrderEventType.CHANGED_PRICE, checkNotNull(doneAction));
-            return this;
         }
 
         @Override

@@ -2,10 +2,7 @@ package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.function.Consumer;
-
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.TPOption;
 
 public class SetTPProcess extends CommonProcess {
@@ -47,16 +44,6 @@ public class SetTPProcess extends CommonProcess {
                         final double newTP) {
             this.order = order;
             this.newTP = newTP;
-        }
-
-        public Option onTPReject(final Consumer<IOrder> rejectAction) {
-            eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(rejectAction));
-            return this;
-        }
-
-        public Option onTPChange(final Consumer<IOrder> doneAction) {
-            eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(doneAction));
-            return this;
         }
 
         @Override
