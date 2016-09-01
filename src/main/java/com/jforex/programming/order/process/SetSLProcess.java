@@ -13,6 +13,11 @@ public class SetSLProcess extends CommonProcess {
     private final IOrder order;
     private final double newSL;
 
+    public interface Option extends SLOption<Option> {
+
+        public SetSLProcess build();
+    }
+
     private SetSLProcess(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -27,13 +32,13 @@ public class SetSLProcess extends CommonProcess {
         return newSL;
     }
 
-    public static final SLOption forParams(final IOrder order,
-                                           final double newSL) {
+    public static final Option forParams(final IOrder order,
+                                         final double newSL) {
         return new Builder(checkNotNull(order), checkNotNull(newSL));
     }
 
-    private static class Builder extends CommonBuilder<SLOption>
-                                 implements SLOption {
+    private static class Builder extends CommonBuilder<Option>
+                                 implements Option {
 
         private final IOrder order;
         private final double newSL;
@@ -44,12 +49,14 @@ public class SetSLProcess extends CommonProcess {
             this.newSL = newSL;
         }
 
-        public SLOption onSLReject(final Consumer<IOrder> rejectAction) {
+        @Override
+        public Option onSLReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
-        public SLOption onSLChange(final Consumer<IOrder> doneAction) {
+        @Override
+        public Option onSLChange(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(doneAction));
             return this;
         }

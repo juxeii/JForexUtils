@@ -7,12 +7,18 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.option.SubmitAndMergeOption;
+import com.jforex.programming.order.process.option.MergeOption;
+import com.jforex.programming.order.process.option.SubmitOption;
 
 public class SubmitAndMergePositionProcess extends CommonProcess {
 
     private final OrderParams orderParams;
     private final String mergeOrderLabel;
+
+    public interface Option extends MergeOption<Option>, SubmitOption<Option> {
+
+        public SubmitAndMergePositionProcess build();
+    }
 
     private SubmitAndMergePositionProcess(final Builder builder) {
         super(builder);
@@ -28,13 +34,13 @@ public class SubmitAndMergePositionProcess extends CommonProcess {
         return mergeOrderLabel;
     }
 
-    public static final SubmitAndMergeOption forParams(final OrderParams orderParams,
-                                                       final String mergeOrderLabel) {
+    public static final Option forParams(final OrderParams orderParams,
+                                         final String mergeOrderLabel) {
         return new Builder(checkNotNull(orderParams), checkNotNull(mergeOrderLabel));
     }
 
-    private static class Builder extends CommonBuilder<SubmitAndMergeOption>
-                                 implements SubmitAndMergeOption {
+    private static class Builder extends CommonBuilder<Option>
+                                 implements Option {
 
         private final OrderParams orderParams;
         private final String mergeOrderLabel;
@@ -45,63 +51,63 @@ public class SubmitAndMergePositionProcess extends CommonProcess {
             this.mergeOrderLabel = mergeOrderLabel;
         }
 
-        public SubmitAndMergeOption onSubmitReject(final Consumer<IOrder> submitRejectAction) {
+        public Option onSubmitReject(final Consumer<IOrder> submitRejectAction) {
             eventHandlerForType.put(OrderEventType.SUBMIT_REJECTED, checkNotNull(submitRejectAction));
             return this;
         }
 
-        public SubmitAndMergeOption onFillReject(final Consumer<IOrder> fillRejectAction) {
+        public Option onFillReject(final Consumer<IOrder> fillRejectAction) {
             eventHandlerForType.put(OrderEventType.FILL_REJECTED, checkNotNull(fillRejectAction));
             return this;
         }
 
-        public SubmitAndMergeOption onSubmitOK(final Consumer<IOrder> submitOKAction) {
+        public Option onSubmitOK(final Consumer<IOrder> submitOKAction) {
             eventHandlerForType.put(OrderEventType.SUBMIT_OK, checkNotNull(submitOKAction));
             eventHandlerForType.put(OrderEventType.SUBMIT_CONDITIONAL_OK, checkNotNull(submitOKAction));
             return this;
         }
 
-        public SubmitAndMergeOption onPartialFill(final Consumer<IOrder> partialFillAction) {
+        public Option onPartialFill(final Consumer<IOrder> partialFillAction) {
             eventHandlerForType.put(OrderEventType.PARTIAL_FILL_OK, checkNotNull(partialFillAction));
             return this;
         }
 
-        public SubmitAndMergeOption onFill(final Consumer<IOrder> fillAction) {
+        public Option onFill(final Consumer<IOrder> fillAction) {
             eventHandlerForType.put(OrderEventType.FULLY_FILLED, checkNotNull(fillAction));
             return this;
         }
 
-        public SubmitAndMergeOption onRemoveSLReject(final Consumer<IOrder> removeSLRejectAction) {
+        public Option onRemoveSLReject(final Consumer<IOrder> removeSLRejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(removeSLRejectAction));
             return this;
         }
 
-        public SubmitAndMergeOption onRemoveTPReject(final Consumer<IOrder> removeTPRejectAction) {
+        public Option onRemoveTPReject(final Consumer<IOrder> removeTPRejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(removeTPRejectAction));
             return this;
         }
 
-        public SubmitAndMergeOption onRemoveSL(final Consumer<IOrder> removedSLAction) {
+        public Option onRemoveSL(final Consumer<IOrder> removedSLAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(removedSLAction));
             return this;
         }
 
-        public SubmitAndMergeOption onRemoveTP(final Consumer<IOrder> removedTPAction) {
+        public Option onRemoveTP(final Consumer<IOrder> removedTPAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(removedTPAction));
             return this;
         }
 
-        public SubmitAndMergeOption onMergeReject(final Consumer<IOrder> mergeRejectAction) {
+        public Option onMergeReject(final Consumer<IOrder> mergeRejectAction) {
             eventHandlerForType.put(OrderEventType.MERGE_REJECTED, checkNotNull(mergeRejectAction));
             return this;
         }
 
-        public SubmitAndMergeOption onMerge(final Consumer<IOrder> mergedAction) {
+        public Option onMerge(final Consumer<IOrder> mergedAction) {
             eventHandlerForType.put(OrderEventType.MERGE_OK, checkNotNull(mergedAction));
             return this;
         }
 
-        public SubmitAndMergeOption onMergeClose(final Consumer<IOrder> mergeClosedAction) {
+        public Option onMergeClose(final Consumer<IOrder> mergeClosedAction) {
             eventHandlerForType.put(OrderEventType.MERGE_CLOSE_OK, checkNotNull(mergeClosedAction));
             return this;
         }

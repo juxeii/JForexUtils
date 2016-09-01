@@ -13,6 +13,11 @@ public class SetLabelProcess extends CommonProcess {
     private final IOrder order;
     private final String newLabel;
 
+    public interface Option extends LabelOption<Option> {
+
+        public SetLabelProcess build();
+    }
+
     private SetLabelProcess(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -27,13 +32,13 @@ public class SetLabelProcess extends CommonProcess {
         return newLabel;
     }
 
-    public static final LabelOption forParams(final IOrder order,
-                                              final String newLabel) {
+    public static final Option forParams(final IOrder order,
+                                         final String newLabel) {
         return new Builder(checkNotNull(order), checkNotNull(newLabel));
     }
 
-    private static class Builder extends CommonBuilder<LabelOption>
-                                 implements LabelOption {
+    private static class Builder extends CommonBuilder<Option>
+                                 implements Option {
 
         private final IOrder order;
         private final String newLabel;
@@ -44,12 +49,12 @@ public class SetLabelProcess extends CommonProcess {
             this.newLabel = newLabel;
         }
 
-        public LabelOption onLabelReject(final Consumer<IOrder> rejectAction) {
+        public Option onLabelReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_LABEL_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
-        public LabelOption onLabelChange(final Consumer<IOrder> doneAction) {
+        public Option onLabelChange(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_LABEL, checkNotNull(doneAction));
             return this;
         }

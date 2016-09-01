@@ -3,13 +3,10 @@ package com.jforex.programming.order.process.option;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.process.SetLabelProcess;
 
-public interface LabelOption extends CommonOption<LabelOption> {
+public interface LabelOption<T extends LabelOption<T>> extends CommonOption<T> {
 
-    public LabelOption onLabelReject(Consumer<IOrder> rejectAction);
+    public T onLabelReject(Consumer<IOrder> rejectAction);
 
-    public LabelOption onLabelChange(Consumer<IOrder> doneAction);
-
-    public SetLabelProcess build();
+    public T onLabelChange(Consumer<IOrder> doneAction);
 }

@@ -13,6 +13,11 @@ public class SetGTTProcess extends CommonProcess {
     private final IOrder order;
     private final long newGTT;
 
+    public interface Option extends GTTOption<Option> {
+
+        public SetGTTProcess build();
+    }
+
     private SetGTTProcess(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -27,13 +32,13 @@ public class SetGTTProcess extends CommonProcess {
         return newGTT;
     }
 
-    public static final GTTOption forParams(final IOrder order,
-                                            final long newGTT) {
+    public static final Option forParams(final IOrder order,
+                                         final long newGTT) {
         return new Builder(checkNotNull(order), checkNotNull(newGTT));
     }
 
-    private static class Builder extends CommonBuilder<GTTOption>
-                                 implements GTTOption {
+    private static class Builder extends CommonBuilder<Option>
+                                 implements Option {
 
         private final IOrder order;
         private final long newGTT;
@@ -44,12 +49,12 @@ public class SetGTTProcess extends CommonProcess {
             this.newGTT = newGTT;
         }
 
-        public GTTOption onGTTReject(final Consumer<IOrder> rejectAction) {
+        public Option onGTTReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_GTT_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
-        public GTTOption onGTTChange(final Consumer<IOrder> doneAction) {
+        public Option onGTTChange(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_GTT, checkNotNull(doneAction));
             return this;
         }

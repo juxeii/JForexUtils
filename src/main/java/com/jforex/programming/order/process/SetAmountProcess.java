@@ -13,6 +13,11 @@ public class SetAmountProcess extends CommonProcess {
     private final IOrder order;
     private final double newAmount;
 
+    public interface Option extends AmountOption<Option> {
+
+        public SetAmountProcess build();
+    }
+
     private SetAmountProcess(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -27,13 +32,13 @@ public class SetAmountProcess extends CommonProcess {
         return newAmount;
     }
 
-    public static final AmountOption forParams(final IOrder order,
-                                               final double newAmount) {
+    public static final Option forParams(final IOrder order,
+                                         final double newAmount) {
         return new Builder(checkNotNull(order), checkNotNull(newAmount));
     }
 
-    public static class Builder extends CommonBuilder<AmountOption>
-                                implements AmountOption {
+    public static class Builder extends CommonBuilder<Option>
+                                implements Option {
 
         private final IOrder order;
         private final double newAmount;
@@ -44,12 +49,12 @@ public class SetAmountProcess extends CommonProcess {
             this.newAmount = newAmount;
         }
 
-        public AmountOption onAmountReject(final Consumer<IOrder> rejectAction) {
+        public Option onAmountReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_AMOUNT_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
-        public AmountOption onAmountChange(final Consumer<IOrder> okAction) {
+        public Option onAmountChange(final Consumer<IOrder> okAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_AMOUNT, checkNotNull(okAction));
             return this;
         }

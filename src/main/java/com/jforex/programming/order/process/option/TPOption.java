@@ -3,13 +3,10 @@ package com.jforex.programming.order.process.option;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.process.SetTPProcess;
 
-public interface TPOption extends CommonOption<TPOption> {
+public interface TPOption<T extends TPOption<T>> extends CommonOption<T> {
 
-    public TPOption onTPReject(Consumer<IOrder> rejectAction);
+    public T onTPReject(Consumer<IOrder> rejectAction);
 
-    public TPOption onTPChange(Consumer<IOrder> doneAction);
-
-    public SetTPProcess build();
+    public T onTPChange(Consumer<IOrder> doneAction);
 }

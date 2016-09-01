@@ -3,13 +3,10 @@ package com.jforex.programming.order.process.option;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.process.SetSLProcess;
 
-public interface SLOption extends CommonOption<SLOption> {
+public interface SLOption<T extends SLOption<T>> extends CommonOption<T> {
 
-    public SLOption onSLReject(Consumer<IOrder> rejectAction);
+    public T onSLReject(Consumer<IOrder> rejectAction);
 
-    public SLOption onSLChange(Consumer<IOrder> doneAction);
-
-    public SetSLProcess build();
+    public T onSLChange(Consumer<IOrder> doneAction);
 }

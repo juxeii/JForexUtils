@@ -12,6 +12,11 @@ public class CloseProcess extends CommonProcess {
 
     private final IOrder orderToClose;
 
+    public interface Option extends CloseOption<Option> {
+
+        public CloseProcess build();
+    }
+
     private CloseProcess(final Builder builder) {
         super(builder);
         orderToClose = builder.orderToClose;
@@ -21,12 +26,12 @@ public class CloseProcess extends CommonProcess {
         return orderToClose;
     }
 
-    public static final CloseOption forOrder(final IOrder orderToClose) {
+    public static final Option forOrder(final IOrder orderToClose) {
         return new Builder(checkNotNull(orderToClose));
     }
 
-    public static class Builder extends CommonBuilder<CloseOption>
-                                implements CloseOption {
+    public static class Builder extends CommonBuilder<Option>
+                                implements Option {
 
         private final IOrder orderToClose;
 
@@ -35,19 +40,19 @@ public class CloseProcess extends CommonProcess {
         }
 
         @Override
-        public CloseOption onCloseReject(final Consumer<IOrder> closeRejectAction) {
+        public Option onCloseReject(final Consumer<IOrder> closeRejectAction) {
             eventHandlerForType.put(OrderEventType.CLOSE_REJECTED, checkNotNull(closeRejectAction));
             return this;
         }
 
         @Override
-        public CloseOption onClose(final Consumer<IOrder> closedAction) {
+        public Option onClose(final Consumer<IOrder> closedAction) {
             eventHandlerForType.put(OrderEventType.CLOSE_OK, checkNotNull(closedAction));
             return this;
         }
 
         @Override
-        public CloseOption onPartialClose(final Consumer<IOrder> partialClosedAction) {
+        public Option onPartialClose(final Consumer<IOrder> partialClosedAction) {
             eventHandlerForType.put(OrderEventType.PARTIAL_CLOSE_OK, checkNotNull(partialClosedAction));
             return this;
         }

@@ -7,11 +7,16 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.option.ClosePositionOption;
+import com.jforex.programming.order.process.option.CloseOption;
 
 public class ClosePositionProcess extends CommonProcess {
 
     private final Instrument instrument;
+
+    public interface Option extends CloseOption<Option> {
+
+        public ClosePositionProcess build();
+    }
 
     private ClosePositionProcess(final Builder builder) {
         super(builder);
@@ -22,12 +27,12 @@ public class ClosePositionProcess extends CommonProcess {
         return instrument;
     }
 
-    public static final ClosePositionOption forInstrument(final Instrument instrument) {
+    public static final Option forInstrument(final Instrument instrument) {
         return new Builder(checkNotNull(instrument));
     }
 
-    private static class Builder extends CommonBuilder<ClosePositionOption>
-                                 implements ClosePositionOption {
+    private static class Builder extends CommonBuilder<Option>
+                                 implements Option {
 
         private final Instrument instrument;
 
@@ -35,17 +40,17 @@ public class ClosePositionProcess extends CommonProcess {
             this.instrument = instrument;
         }
 
-        public ClosePositionOption onCloseReject(final Consumer<IOrder> closeRejectAction) {
+        public Option onCloseReject(final Consumer<IOrder> closeRejectAction) {
             eventHandlerForType.put(OrderEventType.CLOSE_REJECTED, checkNotNull(closeRejectAction));
             return this;
         }
 
-        public ClosePositionOption onClose(final Consumer<IOrder> closedAction) {
+        public Option onClose(final Consumer<IOrder> closedAction) {
             eventHandlerForType.put(OrderEventType.CLOSE_OK, checkNotNull(closedAction));
             return this;
         }
 
-        public ClosePositionOption onPartialClose(final Consumer<IOrder> partialClosedAction) {
+        public Option onPartialClose(final Consumer<IOrder> partialClosedAction) {
             eventHandlerForType.put(OrderEventType.PARTIAL_CLOSE_OK, checkNotNull(partialClosedAction));
             return this;
         }

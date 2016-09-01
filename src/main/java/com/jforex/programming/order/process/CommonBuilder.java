@@ -11,7 +11,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.CommonOption;
 
 @SuppressWarnings("unchecked")
-public class CommonBuilder<T> implements CommonOption<T> {
+public class CommonBuilder<T extends CommonOption<T>> implements CommonOption<T> {
 
     protected Consumer<Throwable> errorAction = o -> {};
     protected int noOfRetries;
