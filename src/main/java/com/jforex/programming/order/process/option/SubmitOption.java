@@ -3,17 +3,16 @@ package com.jforex.programming.order.process.option;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.process.CommonBuilder;
 
 public interface SubmitOption extends CommonOption {
 
-    public CommonBuilder onSubmitReject(Consumer<IOrder> submitRejectAction);
+    public SubmitOption onSubmitReject(Consumer<IOrder> submitRejectAction);
 
-    public CommonBuilder onFillReject(Consumer<IOrder> fillRejectAction);
+    public SubmitOption onFillReject(Consumer<IOrder> fillRejectAction);
 
-    public CommonBuilder onSubmitOK(Consumer<IOrder> submitOKAction);
+    public SubmitOption onSubmitOK(Consumer<IOrder> submitOKAction);
 
-    public CommonBuilder onPartialFill(Consumer<IOrder> partialFillAction);
+    public SubmitOption onPartialFill(Consumer<IOrder> partialFillAction);
 
-    public CommonBuilder onFill(Consumer<IOrder> fillAction);
+    public SubmitOption onFill(Consumer<IOrder> fillAction);
 }

@@ -11,5 +11,5 @@ public interface CommonOption {
     public CommonBuilder doRetries(int noOfRetries,
                                    long delayInMillis);
 
-    public <T> T build();
+    public <V> V build();
 }
