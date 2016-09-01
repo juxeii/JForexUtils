@@ -33,7 +33,8 @@ public class MergePositionProcess extends CommonProcess {
         return new Builder(checkNotNull(mergeOrderLabel), checkNotNull(instrument));
     }
 
-    private static class Builder extends CommonBuilder implements MergePositionOption {
+    private static class Builder extends CommonBuilder<MergePositionOption>
+                                 implements MergePositionOption {
 
         private final String mergeOrderLabel;
         private final Instrument instrument;
@@ -42,20 +43,6 @@ public class MergePositionProcess extends CommonProcess {
                         final Instrument instrument) {
             this.mergeOrderLabel = mergeOrderLabel;
             this.instrument = instrument;
-        }
-
-        @Override
-        public MergePositionOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public MergePositionOption doRetries(final int noOfRetries,
-                                             final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         public MergePositionOption onRemoveSLReject(final Consumer<IOrder> removeSLRejectAction) {

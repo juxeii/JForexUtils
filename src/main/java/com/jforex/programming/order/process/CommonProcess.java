@@ -13,7 +13,7 @@ public class CommonProcess {
     private final long delayInMillis;
     private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
-    protected CommonProcess(final CommonBuilder builder) {
+    protected CommonProcess(final CommonBuilder<?> builder) {
         errorAction = builder.errorAction;
         noOfRetries = builder.noOfRetries;
         delayInMillis = builder.delayInMillis;

@@ -32,7 +32,7 @@ public class SetLabelProcess extends CommonProcess {
         return new Builder(checkNotNull(order), checkNotNull(newLabel));
     }
 
-    private static class Builder extends CommonBuilder
+    private static class Builder extends CommonBuilder<LabelOption>
                                  implements LabelOption {
 
         private final IOrder order;
@@ -42,20 +42,6 @@ public class SetLabelProcess extends CommonProcess {
                         final String newLabel) {
             this.order = order;
             this.newLabel = newLabel;
-        }
-
-        @Override
-        public LabelOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public LabelOption doRetries(final int noOfRetries,
-                                     final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         public LabelOption onLabelReject(final Consumer<IOrder> rejectAction) {

@@ -33,7 +33,8 @@ public class SubmitAndMergePositionProcess extends CommonProcess {
         return new Builder(checkNotNull(orderParams), checkNotNull(mergeOrderLabel));
     }
 
-    private static class Builder extends CommonBuilder implements SubmitAndMergeOption {
+    private static class Builder extends CommonBuilder<SubmitAndMergeOption>
+                                 implements SubmitAndMergeOption {
 
         private final OrderParams orderParams;
         private final String mergeOrderLabel;
@@ -42,20 +43,6 @@ public class SubmitAndMergePositionProcess extends CommonProcess {
                         final String mergeOrderLabel) {
             this.orderParams = orderParams;
             this.mergeOrderLabel = mergeOrderLabel;
-        }
-
-        @Override
-        public SubmitAndMergeOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public SubmitAndMergeOption doRetries(final int noOfRetries,
-                                              final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         public SubmitAndMergeOption onSubmitReject(final Consumer<IOrder> submitRejectAction) {

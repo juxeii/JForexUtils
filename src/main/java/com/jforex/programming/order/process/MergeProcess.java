@@ -33,7 +33,7 @@ public class MergeProcess extends CommonProcess {
         return new Builder(checkNotNull(mergeOrderLabel), checkNotNull(toMergeOrders));
     }
 
-    private static class Builder extends CommonBuilder
+    private static class Builder extends CommonBuilder<MergeOption>
                                  implements MergeOption {
 
         private final String mergeOrderLabel;
@@ -43,20 +43,6 @@ public class MergeProcess extends CommonProcess {
                         final Collection<IOrder> toMergeOrders) {
             this.mergeOrderLabel = mergeOrderLabel;
             this.toMergeOrders = toMergeOrders;
-        }
-
-        @Override
-        public MergeOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public MergeOption doRetries(final int noOfRetries,
-                                     final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         public MergeOption onRemoveSLReject(final Consumer<IOrder> removeSLRejectAction) {

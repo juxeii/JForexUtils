@@ -32,7 +32,7 @@ public class SetSLProcess extends CommonProcess {
         return new Builder(checkNotNull(order), checkNotNull(newSL));
     }
 
-    private static class Builder extends CommonBuilder
+    private static class Builder extends CommonBuilder<SLOption>
                                  implements SLOption {
 
         private final IOrder order;
@@ -42,20 +42,6 @@ public class SetSLProcess extends CommonProcess {
                         final double newSL) {
             this.order = order;
             this.newSL = newSL;
-        }
-
-        @Override
-        public SLOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public SLOption doRetries(final int noOfRetries,
-                                  final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         public SLOption onSLReject(final Consumer<IOrder> rejectAction) {

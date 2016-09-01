@@ -32,7 +32,7 @@ public class SetGTTProcess extends CommonProcess {
         return new Builder(checkNotNull(order), checkNotNull(newGTT));
     }
 
-    private static class Builder extends CommonBuilder
+    private static class Builder extends CommonBuilder<GTTOption>
                                  implements GTTOption {
 
         private final IOrder order;
@@ -42,20 +42,6 @@ public class SetGTTProcess extends CommonProcess {
                         final long newGTT) {
             this.order = order;
             this.newGTT = newGTT;
-        }
-
-        @Override
-        public GTTOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public GTTOption doRetries(final int noOfRetries,
-                                   final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         public GTTOption onGTTReject(final Consumer<IOrder> rejectAction) {

@@ -26,27 +26,13 @@ public class ClosePositionProcess extends CommonProcess {
         return new Builder(checkNotNull(instrument));
     }
 
-    private static class Builder extends CommonBuilder
+    private static class Builder extends CommonBuilder<ClosePositionOption>
                                  implements ClosePositionOption {
 
         private final Instrument instrument;
 
         private Builder(final Instrument instrument) {
             this.instrument = instrument;
-        }
-
-        @Override
-        public ClosePositionOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public ClosePositionOption doRetries(final int noOfRetries,
-                                             final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         public ClosePositionOption onCloseReject(final Consumer<IOrder> closeRejectAction) {

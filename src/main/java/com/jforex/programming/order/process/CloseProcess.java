@@ -25,27 +25,13 @@ public class CloseProcess extends CommonProcess {
         return new Builder(checkNotNull(orderToClose));
     }
 
-    public static class Builder extends CommonBuilder
+    public static class Builder extends CommonBuilder<CloseOption>
                                 implements CloseOption {
 
         private final IOrder orderToClose;
 
         private Builder(final IOrder orderToClose) {
             this.orderToClose = orderToClose;
-        }
-
-        @Override
-        public CloseOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public CloseOption doRetries(final int noOfRetries,
-                                     final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         @Override

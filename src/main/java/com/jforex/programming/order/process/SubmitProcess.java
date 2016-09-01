@@ -26,27 +26,13 @@ public class SubmitProcess extends CommonProcess {
         return new Builder(checkNotNull(orderParams));
     }
 
-    private static class Builder extends CommonBuilder
+    private static class Builder extends CommonBuilder<SubmitOption>
                                  implements SubmitOption {
 
         private final OrderParams orderParams;
 
         private Builder(final OrderParams orderParams) {
             this.orderParams = orderParams;
-        }
-
-        @Override
-        public SubmitOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public SubmitOption doRetries(final int noOfRetries,
-                                      final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         public SubmitOption onSubmitReject(final Consumer<IOrder> submitRejectAction) {

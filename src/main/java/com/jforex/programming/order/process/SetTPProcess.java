@@ -32,7 +32,7 @@ public class SetTPProcess extends CommonProcess {
         return new Builder(checkNotNull(order), checkNotNull(newTP));
     }
 
-    private static class Builder extends CommonBuilder
+    private static class Builder extends CommonBuilder<TPOption>
                                  implements TPOption {
 
         private final IOrder order;
@@ -42,20 +42,6 @@ public class SetTPProcess extends CommonProcess {
                         final double newTP) {
             this.order = order;
             this.newTP = newTP;
-        }
-
-        @Override
-        public TPOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public TPOption doRetries(final int noOfRetries,
-                                  final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         public TPOption onTPReject(final Consumer<IOrder> rejectAction) {

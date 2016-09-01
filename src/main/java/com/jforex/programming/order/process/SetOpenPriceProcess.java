@@ -32,7 +32,7 @@ public class SetOpenPriceProcess extends CommonProcess {
         return new Builder(checkNotNull(order), checkNotNull(newPrice));
     }
 
-    private static class Builder extends CommonBuilder
+    private static class Builder extends CommonBuilder<OpenPriceOption>
                                  implements OpenPriceOption {
 
         private final IOrder order;
@@ -42,20 +42,6 @@ public class SetOpenPriceProcess extends CommonProcess {
                         final double newPrice) {
             this.order = order;
             this.newPrice = newPrice;
-        }
-
-        @Override
-        public OpenPriceOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public OpenPriceOption doRetries(final int noOfRetries,
-                                         final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         public OpenPriceOption onOpenPriceReject(final Consumer<IOrder> rejectAction) {

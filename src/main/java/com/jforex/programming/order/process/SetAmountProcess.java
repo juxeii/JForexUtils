@@ -32,7 +32,7 @@ public class SetAmountProcess extends CommonProcess {
         return new Builder(checkNotNull(order), checkNotNull(newAmount));
     }
 
-    public static class Builder extends CommonBuilder
+    public static class Builder extends CommonBuilder<AmountOption>
                                 implements AmountOption {
 
         private final IOrder order;
@@ -42,20 +42,6 @@ public class SetAmountProcess extends CommonProcess {
                         final double newAmount) {
             this.order = order;
             this.newAmount = newAmount;
-        }
-
-        @Override
-        public AmountOption onError(final Consumer<Throwable> errorAction) {
-            this.errorAction = checkNotNull(errorAction);
-            return this;
-        }
-
-        @Override
-        public AmountOption doRetries(final int noOfRetries,
-                                      final long delayInMillis) {
-            this.noOfRetries = noOfRetries;
-            this.delayInMillis = delayInMillis;
-            return this;
         }
 
         public AmountOption onAmountReject(final Consumer<IOrder> rejectAction) {
