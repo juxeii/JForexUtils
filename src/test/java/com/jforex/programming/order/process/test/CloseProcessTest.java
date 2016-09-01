@@ -2,6 +2,7 @@ package com.jforex.programming.order.process.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.function.Consumer;
 
@@ -9,6 +10,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.CloseProcess;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
@@ -35,11 +37,15 @@ public class CloseProcessTest extends CommonUtilForTest {
         final CloseProcess process = CloseProcess
             .forOrder(buyOrderEURUSD)
             .onError(errorAction)
-            .onCloseReject(closeRejectActionMock)
             .onClose(closeOKAction)
+            .onCloseReject(closeRejectActionMock)
             .onPartialClose(partialCloseAction)
             .build();
 
-        // verify(closeRejectActionMock).accept(buyOrderEURUSD);
+        assertThat(process.eventHandlerForType().size(), equalTo(3));
+        assertTrue(process.eventHandlerForType().containsKey(OrderEventType.CLOSE_REJECTED));
+
+        process.eventHandlerForType().get(OrderEventType.CLOSE_REJECTED).accept(buyOrderEURUSD);
+        verify(closeRejectActionMock).accept(buyOrderEURUSD);
     }
 }

@@ -2,8 +2,12 @@ package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Consumer;
+
+import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.process.option.CloseOption;
+import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.process.option.ClosePositionOption;
 
 public class ClosePositionProcess extends CommonProcess {
 
@@ -18,12 +22,12 @@ public class ClosePositionProcess extends CommonProcess {
         return instrument;
     }
 
-    public static final CloseOption forInstrument(final Instrument instrument) {
+    public static final ClosePositionOption forInstrument(final Instrument instrument) {
         return new Builder(checkNotNull(instrument));
     }
 
     private static class Builder extends CommonBuilder
-                                 implements CloseOption {
+                                 implements ClosePositionOption {
 
         private final Instrument instrument;
 
@@ -31,7 +35,35 @@ public class ClosePositionProcess extends CommonProcess {
             this.instrument = instrument;
         }
 
-        @SuppressWarnings("unchecked")
+        @Override
+        public ClosePositionOption onError(final Consumer<Throwable> errorAction) {
+            this.errorAction = checkNotNull(errorAction);
+            return this;
+        }
+
+        @Override
+        public ClosePositionOption doRetries(final int noOfRetries,
+                                             final long delayInMillis) {
+            this.noOfRetries = noOfRetries;
+            this.delayInMillis = delayInMillis;
+            return this;
+        }
+
+        public ClosePositionOption onCloseReject(final Consumer<IOrder> closeRejectAction) {
+            eventHandlerForType.put(OrderEventType.CLOSE_REJECTED, checkNotNull(closeRejectAction));
+            return this;
+        }
+
+        public ClosePositionOption onClose(final Consumer<IOrder> closedAction) {
+            eventHandlerForType.put(OrderEventType.CLOSE_OK, checkNotNull(closedAction));
+            return this;
+        }
+
+        public ClosePositionOption onPartialClose(final Consumer<IOrder> partialClosedAction) {
+            eventHandlerForType.put(OrderEventType.PARTIAL_CLOSE_OK, checkNotNull(partialClosedAction));
+            return this;
+        }
+
         @Override
         public ClosePositionProcess build() {
             return new ClosePositionProcess(this);

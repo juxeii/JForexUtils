@@ -2,7 +2,10 @@ package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Consumer;
+
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.GTTOption;
 
 public class SetGTTProcess extends CommonProcess {
@@ -41,7 +44,30 @@ public class SetGTTProcess extends CommonProcess {
             this.newGTT = newGTT;
         }
 
-        @SuppressWarnings("unchecked")
+        @Override
+        public GTTOption onError(final Consumer<Throwable> errorAction) {
+            this.errorAction = checkNotNull(errorAction);
+            return this;
+        }
+
+        @Override
+        public GTTOption doRetries(final int noOfRetries,
+                                   final long delayInMillis) {
+            this.noOfRetries = noOfRetries;
+            this.delayInMillis = delayInMillis;
+            return this;
+        }
+
+        public GTTOption onGTTReject(final Consumer<IOrder> rejectAction) {
+            eventHandlerForType.put(OrderEventType.CHANGE_GTT_REJECTED, checkNotNull(rejectAction));
+            return this;
+        }
+
+        public GTTOption onGTTChange(final Consumer<IOrder> doneAction) {
+            eventHandlerForType.put(OrderEventType.CHANGED_GTT, checkNotNull(doneAction));
+            return this;
+        }
+
         @Override
         public SetGTTProcess build() {
             return new SetGTTProcess(this);

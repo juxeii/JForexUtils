@@ -2,7 +2,10 @@ package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Consumer;
+
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.TPOption;
 
 public class SetTPProcess extends CommonProcess {
@@ -41,7 +44,30 @@ public class SetTPProcess extends CommonProcess {
             this.newTP = newTP;
         }
 
-        @SuppressWarnings("unchecked")
+        @Override
+        public TPOption onError(final Consumer<Throwable> errorAction) {
+            this.errorAction = checkNotNull(errorAction);
+            return this;
+        }
+
+        @Override
+        public TPOption doRetries(final int noOfRetries,
+                                  final long delayInMillis) {
+            this.noOfRetries = noOfRetries;
+            this.delayInMillis = delayInMillis;
+            return this;
+        }
+
+        public TPOption onTPReject(final Consumer<IOrder> rejectAction) {
+            eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(rejectAction));
+            return this;
+        }
+
+        public TPOption onTPChange(final Consumer<IOrder> doneAction) {
+            eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(doneAction));
+            return this;
+        }
+
         @Override
         public SetTPProcess build() {
             return new SetTPProcess(this);

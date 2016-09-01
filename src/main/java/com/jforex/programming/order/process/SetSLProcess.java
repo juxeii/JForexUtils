@@ -2,7 +2,10 @@ package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Consumer;
+
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.SLOption;
 
 public class SetSLProcess extends CommonProcess {
@@ -41,7 +44,30 @@ public class SetSLProcess extends CommonProcess {
             this.newSL = newSL;
         }
 
-        @SuppressWarnings("unchecked")
+        @Override
+        public SLOption onError(final Consumer<Throwable> errorAction) {
+            this.errorAction = checkNotNull(errorAction);
+            return this;
+        }
+
+        @Override
+        public SLOption doRetries(final int noOfRetries,
+                                  final long delayInMillis) {
+            this.noOfRetries = noOfRetries;
+            this.delayInMillis = delayInMillis;
+            return this;
+        }
+
+        public SLOption onSLReject(final Consumer<IOrder> rejectAction) {
+            eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(rejectAction));
+            return this;
+        }
+
+        public SLOption onSLChange(final Consumer<IOrder> doneAction) {
+            eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(doneAction));
+            return this;
+        }
+
         @Override
         public SetSLProcess build() {
             return new SetSLProcess(this);

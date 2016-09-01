@@ -2,7 +2,10 @@ package com.jforex.programming.order.process;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Consumer;
+
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.AmountOption;
 
 public class SetAmountProcess extends CommonProcess {
@@ -41,7 +44,30 @@ public class SetAmountProcess extends CommonProcess {
             this.newAmount = newAmount;
         }
 
-        @SuppressWarnings("unchecked")
+        @Override
+        public AmountOption onError(final Consumer<Throwable> errorAction) {
+            this.errorAction = checkNotNull(errorAction);
+            return this;
+        }
+
+        @Override
+        public AmountOption doRetries(final int noOfRetries,
+                                      final long delayInMillis) {
+            this.noOfRetries = noOfRetries;
+            this.delayInMillis = delayInMillis;
+            return this;
+        }
+
+        public AmountOption onAmountReject(final Consumer<IOrder> rejectAction) {
+            eventHandlerForType.put(OrderEventType.CHANGE_AMOUNT_REJECTED, checkNotNull(rejectAction));
+            return this;
+        }
+
+        public AmountOption onAmountChange(final Consumer<IOrder> okAction) {
+            eventHandlerForType.put(OrderEventType.CHANGED_AMOUNT, checkNotNull(okAction));
+            return this;
+        }
+
         public SetAmountProcess build() {
             return new SetAmountProcess(this);
         }
