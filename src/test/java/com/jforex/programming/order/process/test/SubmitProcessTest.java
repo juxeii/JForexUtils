@@ -3,35 +3,74 @@ package com.jforex.programming.order.process.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.SubmitProcess;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class SubmitProcessTest extends CommonUtilForTest {
 
-    @Test
-    public void assertValuesAreCorrect() {
-        final Consumer<Throwable> errorAction = t -> {};
-        final Consumer<IOrder> submitRejectAction = o -> {};
-        final Consumer<IOrder> fillRejectAction = o -> {};
-        final Consumer<IOrder> submitOKAction = o -> {};
-        final Consumer<IOrder> partialFillAction = o -> {};
-        final Consumer<IOrder> fillAction = o -> {};
+    private SubmitProcess process;
 
-        final SubmitProcess submitBuilder = SubmitProcess
+    @Mock
+    private Consumer<Throwable> errorActionMock;
+    @Mock
+    private Consumer<IOrder> submitRejectActionMock;
+    @Mock
+    private Consumer<IOrder> fillRejectActionMock;
+    @Mock
+    private Consumer<IOrder> partialFillActionMock;
+    @Mock
+    private Consumer<IOrder> submittedActionMock;
+    @Mock
+    private Consumer<IOrder> filledActionMock;
+    private Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
+
+    @Before
+    public void setUp() {
+        process = SubmitProcess
             .forOrderParams(buyParamsEURUSD)
-            .onError(errorAction)
-            .onSubmitReject(submitRejectAction)
-            .onFillReject(fillRejectAction)
-            .onSubmitOK(submitOKAction)
-            .onPartialFill(partialFillAction)
-            .onFill(fillAction)
+            .onError(errorActionMock)
+            .onSubmitReject(submitRejectActionMock)
+            .onFillReject(fillRejectActionMock)
+            .onSubmitOK(submittedActionMock)
+            .onPartialFill(partialFillActionMock)
+            .onFill(filledActionMock)
+            .doRetries(3, 1500L)
             .build();
 
-        assertThat(submitBuilder.orderParams(), equalTo(buyParamsEURUSD));
+        eventHandlerForType = process.eventHandlerForType();
+    }
+
+    @Test
+    public void processValuesAreCorrect() {
+        assertThat(process.errorAction(), equalTo(errorActionMock));
+        assertThat(process.orderParams(), equalTo(buyParamsEURUSD));
+        assertThat(process.noOfRetries(), equalTo(3));
+        assertThat(process.delayInMillis(), equalTo(1500L));
+        assertThat(eventHandlerForType.size(), equalTo(6));
+    }
+
+    @Test
+    public void actionsAreCorrectMapped() {
+        eventHandlerForType.get(OrderEventType.SUBMIT_REJECTED).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.FILL_REJECTED).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.SUBMIT_OK).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.SUBMIT_CONDITIONAL_OK).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.PARTIAL_FILL_OK).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.FULLY_FILLED).accept(buyOrderEURUSD);
+
+        verify(submitRejectActionMock).accept(buyOrderEURUSD);
+        verify(fillRejectActionMock).accept(buyOrderEURUSD);
+        verify(submittedActionMock, times(2)).accept(buyOrderEURUSD);
+        verify(partialFillActionMock).accept(buyOrderEURUSD);
+        verify(filledActionMock).accept(buyOrderEURUSD);
     }
 }

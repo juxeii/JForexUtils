@@ -45,10 +45,11 @@ public class CloseProcessTest extends CommonUtilForTest {
 
     @Test
     public void processValuesAreCorrect() {
-        assertThat(eventHandlerForType.size(), equalTo(3));
+        assertThat(process.errorAction(), equalTo(errorActionMock));
         assertThat(process.orderToClose(), equalTo(buyOrderEURUSD));
         assertThat(process.noOfRetries(), equalTo(3));
         assertThat(process.delayInMillis(), equalTo(1500L));
+        assertThat(eventHandlerForType.size(), equalTo(3));
     }
 
     @Test
