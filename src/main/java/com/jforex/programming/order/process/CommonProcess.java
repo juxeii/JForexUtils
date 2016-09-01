@@ -4,12 +4,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Observable;
-
-public abstract class CommonProcess {
+public class CommonProcess {
 
     private final Consumer<Throwable> errorAction;
     private final int noOfRetries;
@@ -27,24 +24,15 @@ public abstract class CommonProcess {
         return errorAction;
     }
 
-    public final void start(final Observable<OrderEvent> observable) {
-        evaluateRetry(observable)
-            .subscribe(this::callEventHandler, errorAction::accept);
+    public final int noOfRetries() {
+        return noOfRetries;
     }
 
-    private final void callEventHandler(final OrderEvent orderEvent) {
-        final OrderEventType type = orderEvent.type();
-        if (eventHandlerForType.containsKey(type))
-            eventHandlerForType
-                .get(type)
-                .accept(orderEvent.order());
+    public final long delayInMillis() {
+        return delayInMillis;
     }
 
-    private final Observable<OrderEvent> evaluateRetry(final Observable<OrderEvent> observable) {
-        if (noOfRetries > 0) {
-            final OrderProcessRetry orderProcessRetry = new OrderProcessRetry(noOfRetries, delayInMillis);
-            return observable.retryWhen(orderProcessRetry::retryOnRejectObservable);
-        }
-        return observable;
+    public final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType() {
+        return eventHandlerForType;
     }
 }

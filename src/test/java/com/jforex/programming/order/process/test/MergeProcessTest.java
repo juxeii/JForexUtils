@@ -1,7 +1,6 @@
 package com.jforex.programming.order.process.test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.Collection;
@@ -20,15 +19,6 @@ public class MergeProcessTest extends CommonUtilForTest {
     private final Collection<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Test
-    public void assertActionsAreValidWhenNotDefined() {
-        final MergeProcess mergeBuilder = MergeProcess
-            .forParams(mergeOrderLabel, toMergeOrders)
-            .build();
-
-        assertNotNull(mergeBuilder.errorAction());
-    }
-
-    @Test
     public void assertValuesAreCorrect() {
         final Consumer<Throwable> errorAction = t -> {};
         final Consumer<IOrder> mergeRejectAction = o -> {};
@@ -45,6 +35,5 @@ public class MergeProcessTest extends CommonUtilForTest {
 
         assertThat(process.mergeOrderLabel(), equalTo(mergeOrderLabel));
         assertThat(process.toMergeOrders(), equalTo(toMergeOrders));
-        assertThat(process.errorAction(), equalTo(errorAction));
     }
 }

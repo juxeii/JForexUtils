@@ -12,14 +12,14 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 
 import rx.Observable;
 
-public class OrderProcessRetry {
+public class ProcessRetry {
 
     private final int noOfRetries;
     private final long delayInMillis;
 
-    private static final Logger logger = LogManager.getLogger(OrderProcessRetry.class);
+    private static final Logger logger = LogManager.getLogger(ProcessRetry.class);
 
-    public OrderProcessRetry(final int noOfRetries,
+    public ProcessRetry(final int noOfRetries,
                           final long delayInMillis) {
         this.noOfRetries = noOfRetries;
         this.delayInMillis = delayInMillis;

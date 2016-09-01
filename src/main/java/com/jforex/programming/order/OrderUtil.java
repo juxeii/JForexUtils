@@ -4,7 +4,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.jforex.programming.order.OrderStaticUtil.instrumentFromOrders;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,10 +14,13 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.ClosePositionProcess;
 import com.jforex.programming.order.process.CloseProcess;
+import com.jforex.programming.order.process.CommonProcess;
 import com.jforex.programming.order.process.MergePositionProcess;
 import com.jforex.programming.order.process.MergeProcess;
+import com.jforex.programming.order.process.ProcessRetry;
 import com.jforex.programming.order.process.SetAmountProcess;
 import com.jforex.programming.order.process.SetGTTProcess;
 import com.jforex.programming.order.process.SetLabelProcess;
@@ -53,7 +58,7 @@ public class OrderUtil {
             .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
                     + " for " + instrument + " was successful."));
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     public final void startSubmitAndMergePosition(final SubmitAndMergePositionProcess process) {
@@ -70,7 +75,7 @@ public class OrderUtil {
         final String mergeOrderLabel = process.mergeOrderLabel();
         final Observable<OrderEvent> observable = call.apply(mergeOrderLabel, orderParams);
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     public final void startMerge(final MergeProcess process) {
@@ -84,7 +89,7 @@ public class OrderUtil {
             .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
                     + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     public final void startPositionMerge(final MergePositionProcess process) {
@@ -98,7 +103,7 @@ public class OrderUtil {
             .doOnCompleted(() -> logger.info("Position merge for " + instrument
                     + "  with label " + mergeOrderLabel + " was successful."));
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     public final void startClose(final CloseProcess process) {
@@ -109,7 +114,7 @@ public class OrderUtil {
                                  orderToClose,
                                  commonLog);
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     public final void startPositionClose(final ClosePositionProcess process) {
@@ -120,7 +125,7 @@ public class OrderUtil {
             .doOnError(e -> logger.error("Closing position " + instrument
                     + " failed! Exception: " + e.getMessage()));
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     public final void startLabelChange(final SetLabelProcess process) {
@@ -132,7 +137,7 @@ public class OrderUtil {
                                  orderToChangeLabel,
                                  commonLog);
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     public final void startGTTChange(final SetGTTProcess process) {
@@ -144,7 +149,7 @@ public class OrderUtil {
                                  orderToChangeGTT,
                                  commonLog);
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     public final void startAmountChange(final SetAmountProcess process) {
@@ -157,7 +162,7 @@ public class OrderUtil {
                                  orderToChangeAmount,
                                  commonLog);
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     public final void startOpenPriceChange(final SetOpenPriceProcess process) {
@@ -169,7 +174,7 @@ public class OrderUtil {
                                  orderToChangeOpenPrice,
                                  commonLog);
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     public final void startSLChange(final SetSLProcess process) {
@@ -181,7 +186,7 @@ public class OrderUtil {
                                  orderToChangeSL,
                                  commonLog);
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     public final void startTPChange(final SetTPProcess process) {
@@ -193,7 +198,7 @@ public class OrderUtil {
                                  orderToChangeTP,
                                  commonLog);
 
-        process.start(observable);
+        startProcess(process, observable);
     }
 
     private Observable<OrderEvent> changeObservable(final Observable<OrderEvent> observable,
@@ -205,5 +210,30 @@ public class OrderUtil {
             .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
             .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
             .doOnCompleted(() -> logger.info("Changed " + logMsg));
+    }
+
+    public final void startProcess(final CommonProcess process,
+                                   final Observable<OrderEvent> observable) {
+        evaluateRetry(process, observable)
+            .subscribe(orderEvent -> callEventHandler(orderEvent, process.eventHandlerForType()),
+                       process.errorAction()::accept);
+    }
+
+    private final void callEventHandler(final OrderEvent orderEvent,
+                                        final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType) {
+        final OrderEventType type = orderEvent.type();
+        if (eventHandlerForType.containsKey(type))
+            eventHandlerForType
+                .get(type)
+                .accept(orderEvent.order());
+    }
+
+    private final Observable<OrderEvent> evaluateRetry(final CommonProcess process,
+                                                       final Observable<OrderEvent> observable) {
+        if (process.noOfRetries() > 0) {
+            final ProcessRetry orderProcessRetry = new ProcessRetry(process.noOfRetries(), process.delayInMillis());
+            return observable.retryWhen(orderProcessRetry::retryOnRejectObservable);
+        }
+        return observable;
     }
 }

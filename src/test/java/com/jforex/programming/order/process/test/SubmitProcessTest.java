@@ -1,7 +1,6 @@
 package com.jforex.programming.order.process.test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.function.Consumer;
@@ -13,15 +12,6 @@ import com.jforex.programming.order.process.SubmitProcess;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class SubmitProcessTest extends CommonUtilForTest {
-
-    @Test
-    public void assertActionsAreValidWhenNotDefined() {
-        final SubmitProcess submitBuilder = SubmitProcess
-            .forOrderParams(buyParamsEURUSD)
-            .build();
-
-        assertNotNull(submitBuilder.errorAction());
-    }
 
     @Test
     public void assertValuesAreCorrect() {
@@ -43,6 +33,5 @@ public class SubmitProcessTest extends CommonUtilForTest {
             .build();
 
         assertThat(submitBuilder.orderParams(), equalTo(buyParamsEURUSD));
-        assertThat(submitBuilder.errorAction(), equalTo(errorAction));
     }
 }

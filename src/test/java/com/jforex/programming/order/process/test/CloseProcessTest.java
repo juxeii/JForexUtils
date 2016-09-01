@@ -1,12 +1,12 @@
 package com.jforex.programming.order.process.test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.function.Consumer;
 
 import org.junit.Test;
+import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.process.CloseProcess;
@@ -14,31 +14,32 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class CloseProcessTest extends CommonUtilForTest {
 
+    @Mock
+    public Consumer<IOrder> closeRejectActionMock;
+
     @Test
-    public void assertActionsAreValidWhenNotDefined() {
-        final CloseProcess closeBuilder = CloseProcess
+    public void orderToCloseIsCorrectt() {
+        final CloseProcess process = CloseProcess
             .forOrder(buyOrderEURUSD)
             .build();
 
-        assertNotNull(closeBuilder.errorAction());
+        assertThat(process.orderToClose(), equalTo(buyOrderEURUSD));
     }
 
     @Test
-    public void assertValuesAreCorrect() {
+    public void actionsAreCorrectMapped() {
         final Consumer<Throwable> errorAction = t -> {};
-        final Consumer<IOrder> closeRejectAction = o -> {};
         final Consumer<IOrder> closeOKAction = o -> {};
         final Consumer<IOrder> partialCloseAction = o -> {};
 
-        final CloseProcess closeBuilder = CloseProcess
+        final CloseProcess process = CloseProcess
             .forOrder(buyOrderEURUSD)
             .onError(errorAction)
-            .onCloseReject(closeRejectAction)
+            .onCloseReject(closeRejectActionMock)
             .onClose(closeOKAction)
             .onPartialClose(partialCloseAction)
             .build();
 
-        assertThat(closeBuilder.orderToClose(), equalTo(buyOrderEURUSD));
-        assertThat(closeBuilder.errorAction(), equalTo(errorAction));
+        verify(closeRejectActionMock).accept(buyOrderEURUSD);
     }
 }
