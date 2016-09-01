@@ -19,7 +19,6 @@ import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallCommand;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
@@ -161,13 +160,6 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
                 subscriber.assertNoErrors();
                 subscriber.assertCompleted();
-            }
-
-            @Test
-            public void subscriberErrosRejectEvent() {
-                sendOrderEvent(orderToClose, OrderEventType.CLOSE_REJECTED);
-
-                subscriber.assertError(OrderCallRejectException.class);
             }
 
             @Test

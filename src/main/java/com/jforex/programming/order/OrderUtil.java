@@ -13,8 +13,10 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.event.OrderEventTypeSets;
 import com.jforex.programming.order.process.ClosePositionProcess;
 import com.jforex.programming.order.process.CloseProcess;
 import com.jforex.programming.order.process.CommonProcess;
@@ -214,8 +216,11 @@ public class OrderUtil {
 
     private final void startProcess(final CommonProcess process,
                                     final Observable<OrderEvent> observable) {
-        evaluateRetry(process, observable)
-            .subscribe(orderEvent -> callEventHandler(orderEvent, process.eventHandlerForType()),
+        final Observable<OrderEvent> addActionHandlersObservable =
+                observable.doOnNext(orderEvent -> callEventHandler(orderEvent,
+                                                                   process.eventHandlerForType()));
+        evaluateRetry(process, addActionHandlersObservable)
+            .subscribe(process.eventAction()::accept,
                        process.errorAction()::accept);
     }
 
@@ -232,8 +237,19 @@ public class OrderUtil {
                                                        final Observable<OrderEvent> observable) {
         if (process.noOfRetries() > 0) {
             final ProcessRetry orderProcessRetry = new ProcessRetry(process.noOfRetries(), process.delayInMillis());
-            return observable.retryWhen(orderProcessRetry::retryOnRejectObservable);
+            return observable
+                .flatMap(orderEvent -> rejectAsErrorObservable(orderEvent))
+                .retryWhen(orderProcessRetry::retryOnRejectObservable);
         }
         return observable;
+    }
+
+    private Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
+        logger.info("EVEEEEEEEEEEEEEEEEEEE " + orderEvent.type() + " contains: "
+                + OrderEventTypeSets.rejectEvents.contains(orderEvent.type()));
+        return OrderEventTypeSets.rejectEvents.contains(orderEvent.type())
+                ? Observable.error(new OrderCallRejectException("Reject event",
+                                                                orderEvent))
+                : Observable.just(orderEvent);
     }
 }

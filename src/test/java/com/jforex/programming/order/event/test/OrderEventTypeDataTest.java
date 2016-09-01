@@ -34,12 +34,6 @@ public class OrderEventTypeDataTest {
     }
 
     @Test
-    public void testRejectTypesAreCorrect() {
-        assertThat(orderEventTypeData.rejectEventTypes(),
-                   containsInAnyOrder(CLOSE_REJECTED, CHANGED_PRICE));
-    }
-
-    @Test
     public void testAllTypesAreCorrect() {
         assertThat(orderEventTypeData.allEventTypes(),
                    containsInAnyOrder(NOTIFICATION,

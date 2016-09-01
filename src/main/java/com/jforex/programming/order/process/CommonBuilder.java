@@ -7,16 +7,31 @@ import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Maps;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.CommonOption;
+
+import rx.functions.Action0;
 
 @SuppressWarnings("unchecked")
 public abstract class CommonBuilder<T extends CommonOption<T>> {
 
+    protected Action0 completedAction = () -> {};
+    protected Consumer<OrderEvent> eventAction = o -> {};
     protected Consumer<Throwable> errorAction = o -> {};
     protected int noOfRetries;
     protected long delayInMillis;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = Maps.newEnumMap(OrderEventType.class);
+
+    public T onCompleted(final Action0 completedAction) {
+        this.completedAction = checkNotNull(completedAction);
+        return (T) this;
+    }
+
+    public T onEvent(final Consumer<OrderEvent> eventAction) {
+        this.eventAction = checkNotNull(eventAction);
+        return (T) this;
+    }
 
     public T onError(final Consumer<Throwable> errorAction) {
         this.errorAction = checkNotNull(errorAction);

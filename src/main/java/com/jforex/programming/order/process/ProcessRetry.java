@@ -27,7 +27,6 @@ public class ProcessRetry {
     }
 
     public final Observable<Long> retryOnRejectObservable(final Observable<? extends Throwable> errors) {
-        logger.info("TEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
         return checkNotNull(errors)
             .flatMap(this::filterCallErrorType)
             .zipWith(StreamUtil.retryCounterObservable(noOfRetries), Pair::of)

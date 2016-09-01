@@ -74,10 +74,6 @@ public class OrderCallCommandTest extends CommonUtilForTest {
         assertEvents(orderCallCommand::isDoneEvent, orderEventTypes);
     }
 
-    private void assertRejectEvents(final OrderEventType... orderEventTypes) {
-        assertEvents(orderCallCommand::isRejectEvent, orderEventTypes);
-    }
-
     private void assertEvents(final Function<OrderEvent, Boolean> testFunction,
                               final OrderEventType... orderEventTypes) {
         new ArrayList<>(Arrays.asList(orderEventTypes))
@@ -115,9 +111,6 @@ public class OrderCallCommandTest extends CommonUtilForTest {
             assertDoneEvents(FULLY_FILLED,
                              SUBMIT_CONDITIONAL_OK);
 
-            assertRejectEvents(FILL_REJECTED,
-                               SUBMIT_REJECTED);
-
             assertEventsForCommand(NOTIFICATION,
                                    FULLY_FILLED,
                                    SUBMIT_CONDITIONAL_OK,
@@ -145,8 +138,6 @@ public class OrderCallCommandTest extends CommonUtilForTest {
             assertDoneEvents(MERGE_OK,
                              MERGE_CLOSE_OK);
 
-            assertRejectEvents(MERGE_REJECTED);
-
             assertEventsForCommand(MERGE_OK,
                                    NOTIFICATION,
                                    MERGE_CLOSE_OK,
@@ -170,12 +161,11 @@ public class OrderCallCommandTest extends CommonUtilForTest {
         public void orderEventTypesAreCorrect() {
             assertDoneEvents(CLOSE_OK);
 
-            assertRejectEvents(CLOSE_REJECTED);
-
             assertEventsForCommand(NOTIFICATION,
                                    CLOSE_OK,
                                    CLOSE_REJECTED,
-                                   PARTIAL_CLOSE_OK);
+                                   PARTIAL_CLOSE_OK,
+                                   CLOSE_REJECTED);
         }
     }
 
@@ -194,8 +184,6 @@ public class OrderCallCommandTest extends CommonUtilForTest {
         @Test
         public void orderEventTypesAreCorrect() {
             assertDoneEvents(CHANGED_LABEL);
-
-            assertRejectEvents(CHANGE_LABEL_REJECTED);
 
             assertEventsForCommand(NOTIFICATION,
                                    CHANGED_LABEL,
@@ -219,8 +207,6 @@ public class OrderCallCommandTest extends CommonUtilForTest {
         public void orderEventTypesAreCorrect() {
             assertDoneEvents(CHANGED_GTT);
 
-            assertRejectEvents(CHANGE_GTT_REJECTED);
-
             assertEventsForCommand(NOTIFICATION,
                                    CHANGED_GTT,
                                    CHANGE_GTT_REJECTED);
@@ -242,8 +228,6 @@ public class OrderCallCommandTest extends CommonUtilForTest {
         @Test
         public void orderEventTypesAreCorrect() {
             assertDoneEvents(CHANGED_PRICE);
-
-            assertRejectEvents(CHANGE_PRICE_REJECTED);
 
             assertEventsForCommand(NOTIFICATION,
                                    CHANGED_PRICE,
@@ -267,8 +251,6 @@ public class OrderCallCommandTest extends CommonUtilForTest {
         public void orderEventTypesAreCorrect() {
             assertDoneEvents(CHANGED_AMOUNT);
 
-            assertRejectEvents(CHANGE_AMOUNT_REJECTED);
-
             assertEventsForCommand(NOTIFICATION,
                                    CHANGED_AMOUNT,
                                    CHANGE_AMOUNT_REJECTED);
@@ -291,8 +273,6 @@ public class OrderCallCommandTest extends CommonUtilForTest {
         public void orderEventTypesAreCorrect() {
             assertDoneEvents(CHANGED_SL);
 
-            assertRejectEvents(CHANGE_SL_REJECTED);
-
             assertEventsForCommand(NOTIFICATION,
                                    CHANGED_SL,
                                    CHANGE_SL_REJECTED);
@@ -314,8 +294,6 @@ public class OrderCallCommandTest extends CommonUtilForTest {
         @Test
         public void orderEventTypesAreCorrect() {
             assertDoneEvents(CHANGED_TP);
-
-            assertRejectEvents(CHANGE_TP_REJECTED);
 
             assertEventsForCommand(NOTIFICATION,
                                    CHANGED_TP,

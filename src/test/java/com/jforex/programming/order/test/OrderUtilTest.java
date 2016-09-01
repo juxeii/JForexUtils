@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -31,6 +32,7 @@ import com.jforex.programming.order.process.SubmitAndMergePositionProcess;
 import com.jforex.programming.order.process.SubmitProcess;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
+import com.jforex.programming.test.common.RxTestUtil;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Observable;
@@ -118,30 +120,32 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         verify(actionMock, never()).accept(buyOrderEURUSD);
     }
 
-    // @Test
-    // public void startSubmitRetriesOnReject() {
-    // final OrderEvent event = new OrderEvent(buyOrderEURUSD,
-    // OrderEventType.SUBMIT_REJECTED);
-    // final Observable<OrderEvent> observable = Observable
-    // .just(event, event)
-    // .flatMap(orderEvent -> Observable.error(new
-    // OrderCallRejectException("Reject event", orderEvent)));
-    //
-    // when(orderUtilImplMock.submitOrder(buyParamsEURUSD))
-    // .thenReturn(observable);
-    //
-    // final SubmitProcess process = SubmitProcess
-    // .forOrderParams(buyParamsEURUSD)
-    // .onSubmitReject(actionMock)
-    // .doRetries(1, 1500L)
-    // .build();
-    //
-    // orderUtil.startSubmit(process);
-    //
-    // RxTestUtil.advanceTimeBy(1500L, TimeUnit.MILLISECONDS);
-    //
-    // verify(actionMock).accept(buyOrderEURUSD);
-    // }
+    @Test
+    public void startSubmitRetriesOnReject() {
+        final OrderEvent rejectEvent = new OrderEvent(buyOrderEURUSD,
+                                                      OrderEventType.SUBMIT_REJECTED);
+        final OrderEvent doneEvent = new OrderEvent(buyOrderEURUSD,
+                                                    OrderEventType.FULLY_FILLED);
+
+        final Observable<OrderEvent> observable = Observable.just(rejectEvent, doneEvent);
+
+        when(orderUtilImplMock.submitOrder(buyParamsEURUSD))
+            .thenReturn(observable);
+
+        final SubmitProcess process = SubmitProcess
+            .forOrderParams(buyParamsEURUSD)
+            .onSubmitReject(actionMock)
+            .doRetries(1, 1500L)
+            .build();
+
+        logger.info("STAAAAAAAAAAAART");
+        orderUtil.startSubmit(process);
+        logger.info("EEEEEEEEEEEEEEND");
+
+        RxTestUtil.advanceTimeBy(1500L, TimeUnit.MILLISECONDS);
+
+        verify(actionMock, times(2)).accept(buyOrderEURUSD);
+    }
 
     @Test
     public void startSubmitAndMergePositionDelegatesToOrderUtilImpl() {

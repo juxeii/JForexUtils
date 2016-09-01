@@ -4,7 +4,6 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.order.call.OrderCallCommand;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
@@ -41,14 +40,6 @@ public class OrderUtilHandler {
             .observable()
             .filter(orderEvent -> orderEvent.order().equals(order))
             .filter(command::isEventForCommand)
-            .flatMap(orderEvent -> rejectAsErrorObservable(orderEvent, command))
             .takeUntil(command::isDoneEvent);
-    }
-
-    private Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent,
-                                                           final OrderCallCommand command) {
-        return command.isRejectEvent(orderEvent)
-                ? Observable.error(new OrderCallRejectException("Reject event", orderEvent))
-                : Observable.just(orderEvent);
     }
 }
