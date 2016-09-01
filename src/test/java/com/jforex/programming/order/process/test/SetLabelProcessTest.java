@@ -2,6 +2,7 @@ package com.jforex.programming.order.process.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -39,6 +40,19 @@ public class SetLabelProcessTest extends CommonUtilForTest {
             .build();
 
         eventHandlerForType = process.eventHandlerForType();
+    }
+
+    @Test
+    public void emptyProcessHasNoRetriesAndActions() {
+        final SetLabelProcess emptyProcess = SetLabelProcess
+            .forParams(buyOrderEURUSD, newLabel)
+            .build();
+
+        final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = emptyProcess.eventHandlerForType();
+
+        assertThat(emptyProcess.noOfRetries(), equalTo(0));
+        assertThat(emptyProcess.delayInMillis(), equalTo(0L));
+        assertTrue(eventHandlerForType.isEmpty());
     }
 
     @Test

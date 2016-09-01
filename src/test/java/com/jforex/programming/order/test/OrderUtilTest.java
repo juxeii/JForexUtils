@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +15,8 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilObservable;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.ClosePositionProcess;
 import com.jforex.programming.order.process.CloseProcess;
 import com.jforex.programming.order.process.MergePositionProcess;
@@ -30,6 +33,7 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import rx.Observable;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {
@@ -40,12 +44,19 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderUtilObservable orderUtilImplMock;
     @Mock
     private Position positionMock;
+    @Mock
+    private Consumer<IOrder> actionMock;
     private final String mergeOrderLabel = "MergeLabel";
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Before
     public void setUp() {
         orderUtil = new OrderUtil(orderUtilImplMock);
+    }
+
+    private Observable<OrderEvent> observableForEvent(final OrderEventType type) {
+        final OrderEvent event = new OrderEvent(buyOrderEURUSD, type);
+        return Observable.just(event);
     }
 
     @Test
@@ -65,6 +76,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         final SubmitProcess builder = SubmitProcess
             .forOrderParams(buyParamsEURUSD)
+            .doRetries(3, 1500L)
             .build();
 
         orderUtil.startSubmit(builder);
@@ -74,7 +86,65 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void submitAndMergePositionDelegatesToOrderUtilImpl() {
+    public void startSubmitCallsEventHandler() {
+        final Observable<OrderEvent> observable = observableForEvent(OrderEventType.SUBMIT_OK);
+
+        when(orderUtilImplMock.submitOrder(buyParamsEURUSD))
+            .thenReturn(observable);
+
+        final SubmitProcess process = SubmitProcess
+            .forOrderParams(buyParamsEURUSD)
+            .onSubmitOK(actionMock)
+            .build();
+
+        orderUtil.startSubmit(process);
+
+        verify(actionMock).accept(buyOrderEURUSD);
+    }
+
+    @Test
+    public void startSubmitCallsNotEventHandlerWhenNotSet() {
+        final Observable<OrderEvent> observable = observableForEvent(OrderEventType.SUBMIT_OK);
+
+        when(orderUtilImplMock.submitOrder(buyParamsEURUSD))
+            .thenReturn(observable);
+
+        final SubmitProcess process = SubmitProcess
+            .forOrderParams(buyParamsEURUSD)
+            .build();
+
+        orderUtil.startSubmit(process);
+
+        verify(actionMock, never()).accept(buyOrderEURUSD);
+    }
+
+    // @Test
+    // public void startSubmitRetriesOnReject() {
+    // final OrderEvent event = new OrderEvent(buyOrderEURUSD,
+    // OrderEventType.SUBMIT_REJECTED);
+    // final Observable<OrderEvent> observable = Observable
+    // .just(event, event)
+    // .flatMap(orderEvent -> Observable.error(new
+    // OrderCallRejectException("Reject event", orderEvent)));
+    //
+    // when(orderUtilImplMock.submitOrder(buyParamsEURUSD))
+    // .thenReturn(observable);
+    //
+    // final SubmitProcess process = SubmitProcess
+    // .forOrderParams(buyParamsEURUSD)
+    // .onSubmitReject(actionMock)
+    // .doRetries(1, 1500L)
+    // .build();
+    //
+    // orderUtil.startSubmit(process);
+    //
+    // RxTestUtil.advanceTimeBy(1500L, TimeUnit.MILLISECONDS);
+    //
+    // verify(actionMock).accept(buyOrderEURUSD);
+    // }
+
+    @Test
+    public void startSubmitAndMergePositionDelegatesToOrderUtilImpl() {
         when(orderUtilImplMock.submitAndMergePosition(mergeOrderLabel, buyParamsEURUSD))
             .thenReturn(emptyObservable())
             .thenReturn(jfExceptionObservable());

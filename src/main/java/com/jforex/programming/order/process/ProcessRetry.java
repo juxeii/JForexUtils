@@ -27,6 +27,7 @@ public class ProcessRetry {
     }
 
     public final Observable<Long> retryOnRejectObservable(final Observable<? extends Throwable> errors) {
+        logger.info("TEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
         return checkNotNull(errors)
             .flatMap(this::filterCallErrorType)
             .zipWith(StreamUtil.retryCounterObservable(noOfRetries), Pair::of)
@@ -38,9 +39,11 @@ public class ProcessRetry {
 
     private final Observable<? extends Throwable> filterCallErrorType(final Throwable error) {
         if (error instanceof OrderCallRejectException) {
+            logger.info("TTSSSSSSSSSSSSSSSSSSSSSS");
             logPositionTaskRetry((OrderCallRejectException) error);
             return Observable.just(error);
         }
+        logger.info("UUUUUUUUUUUUUUUUUUU");
         return Observable.error(error);
     }
 

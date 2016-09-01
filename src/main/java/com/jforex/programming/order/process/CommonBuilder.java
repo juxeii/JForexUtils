@@ -11,20 +11,18 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.CommonOption;
 
 @SuppressWarnings("unchecked")
-public abstract class CommonBuilder<T extends CommonOption> implements CommonOption<T> {
+public abstract class CommonBuilder<T extends CommonOption<T>> {
 
     protected Consumer<Throwable> errorAction = o -> {};
     protected int noOfRetries;
     protected long delayInMillis;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = Maps.newEnumMap(OrderEventType.class);
 
-    @Override
     public T onError(final Consumer<Throwable> errorAction) {
         this.errorAction = checkNotNull(errorAction);
         return (T) this;
     }
 
-    @Override
     public T doRetries(final int noOfRetries, final long delayInMillis) {
         this.noOfRetries = noOfRetries;
         this.delayInMillis = delayInMillis;
@@ -54,19 +52,19 @@ public abstract class CommonBuilder<T extends CommonOption> implements CommonOpt
     }
 
     public T onRemoveSLReject(final Consumer<IOrder> removeSLRejectAction) {
-        return registerActionHandler(OrderEventType.CHANGE_SL_REJECTED, removeSLRejectAction);
+        return onSLReject(removeSLRejectAction);
     }
 
     public T onRemoveTPReject(final Consumer<IOrder> removeTPRejectAction) {
-        return registerActionHandler(OrderEventType.CHANGE_TP_REJECTED, removeTPRejectAction);
+        return onTPReject(removeTPRejectAction);
     }
 
     public T onRemoveSL(final Consumer<IOrder> removedSLAction) {
-        return registerActionHandler(OrderEventType.CHANGED_SL, removedSLAction);
+        return onSLChange(removedSLAction);
     }
 
     public T onRemoveTP(final Consumer<IOrder> removedTPAction) {
-        return registerActionHandler(OrderEventType.CHANGED_TP, removedTPAction);
+        return onTPChange(removedTPAction);
     }
 
     public T onMergeReject(final Consumer<IOrder> mergeRejectAction) {
