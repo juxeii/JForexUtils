@@ -212,8 +212,8 @@ public class OrderUtil {
             .doOnCompleted(() -> logger.info("Changed " + logMsg));
     }
 
-    public final void startProcess(final CommonProcess process,
-                                   final Observable<OrderEvent> observable) {
+    private final void startProcess(final CommonProcess process,
+                                    final Observable<OrderEvent> observable) {
         evaluateRetry(process, observable)
             .subscribe(orderEvent -> callEventHandler(orderEvent, process.eventHandlerForType()),
                        process.errorAction()::accept);

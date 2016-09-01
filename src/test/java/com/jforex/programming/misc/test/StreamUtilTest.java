@@ -10,23 +10,17 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.StreamUtil;
-import com.jforex.programming.order.call.OrderCallRejectException;
-import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.Observable;
 import rx.observers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -38,89 +32,6 @@ public class StreamUtilTest extends CommonUtilForTest {
     @Test
     public void testConstructorIsPrivate() throws Exception {
         assertPrivateConstructor(StreamUtil.class);
-    }
-
-    public class RetryObservableSetup {
-
-        private final OrderEvent rejectEvent = new OrderEvent(buyOrderEURUSD, OrderEventType.CLOSE_REJECTED);
-        private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
-        private final OrderCallRejectException rejectException =
-                new OrderCallRejectException("Reject exception for test", rejectEvent);
-        private Runnable retryCall;
-
-        private final long delayOnOrderFailRetry = userSettings.delayOnOrderFailRetry();
-        private final int maxRetriesOnOrderFail = userSettings.maxRetriesOnOrderFail();
-
-        @Before
-        public void setUp() {
-            retryCall = () -> Observable
-                .fromCallable(callableMock)
-                .retryWhen(StreamUtil::retryOnRejectObservable)
-                .subscribe(orderSubscriber);
-        }
-
-        @Test
-        public void retryObservableErrorsForNonRejectException() throws Exception {
-            when(callableMock.call()).thenThrow(jfException);
-
-            retryCall.run();
-
-            orderSubscriber.assertError(JFException.class);
-        }
-
-        public class SequenceSetup {
-
-            private void expectAllRetriesThenSuccess() throws Exception {
-                final Throwable throwables[] = new Throwable[maxRetriesOnOrderFail];
-                for (int i = 0; i < maxRetriesOnOrderFail; ++i) {
-                    throwables[i] = rejectException;
-                }
-
-                when(callableMock.call())
-                    .thenThrow(throwables)
-                    .thenReturn(buyOrderEURUSD);
-            }
-
-            private void exceeAllRetries() throws Exception {
-                final Throwable throwables[] = new Throwable[maxRetriesOnOrderFail + 1];
-                for (int i = 0; i <= maxRetriesOnOrderFail; ++i) {
-                    throwables[i] = rejectException;
-                }
-
-                when(callableMock.call())
-                    .thenThrow(throwables);
-            }
-
-            @Test
-            public void testThatAllRetriesAreDone() throws Exception {
-                expectAllRetriesThenSuccess();
-
-                retryCall.run();
-
-                RxTestUtil.advanceTimeBy(maxRetriesOnOrderFail * delayOnOrderFailRetry,
-                                         TimeUnit.MILLISECONDS);
-
-                verify(callableMock, times(maxRetriesOnOrderFail + 1)).call();
-
-                orderSubscriber.assertNoErrors();
-                orderSubscriber.assertValueCount(1);
-                orderSubscriber.assertCompleted();
-            }
-
-            @Test
-            public void testThatAfterAllRetriesTheSubscriberErrors() throws Exception {
-                exceeAllRetries();
-
-                retryCall.run();
-
-                RxTestUtil.advanceTimeBy(maxRetriesOnOrderFail * delayOnOrderFailRetry,
-                                         TimeUnit.MILLISECONDS);
-
-                verify(callableMock, times(maxRetriesOnOrderFail + 1)).call();
-
-                orderSubscriber.assertError(OrderCallRejectException.class);
-            }
-        }
     }
 
     @Test
