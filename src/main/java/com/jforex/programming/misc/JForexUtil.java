@@ -20,7 +20,7 @@ import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.OrderUtilImpl;
+import com.jforex.programming.order.OrderUtilObservable;
 import com.jforex.programming.order.event.MessageToOrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.process.ClosePositionProcess;
@@ -108,10 +108,10 @@ public class JForexUtil {
         orderCallExecutor = new TaskExecutor(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
-        final OrderUtilImpl orderUtilImpl = new OrderUtilImpl(engine,
-                                                              positionFactory,
-                                                              orderUtilHandler);
-        orderUtil = new OrderUtil(orderUtilImpl);
+        final OrderUtilObservable orderUtilObservable = new OrderUtilObservable(engine,
+                                                                                positionFactory,
+                                                                                orderUtilHandler);
+        orderUtil = new OrderUtil(orderUtilObservable);
     }
 
     public IContext context() {
@@ -158,8 +158,8 @@ public class JForexUtil {
 
     public void closeAllPositions(final ClosePositionProcess closePositionBuilder) {
         positionFactory
-                .all()
-                .forEach(position -> orderUtil.startPositionClose(closePositionBuilder));
+            .all()
+            .forEach(position -> orderUtil.startPositionClose(closePositionBuilder));
     }
 
     public void onStop() {
@@ -214,9 +214,9 @@ public class JForexUtil {
                                        final IBar askBar) {
         if (shouldForwardQuote(askBar.getTime())) {
             final BarParams quoteParams = BarParams
-                    .forInstrument(instrument)
-                    .period(period)
-                    .offerSide(offerside);
+                .forInstrument(instrument)
+                .period(period)
+                .offerSide(offerside);
             final BarQuote askBarQuote = new BarQuote(askBar, quoteParams);
             barQuoteSubject.onNext(askBarQuote);
         }

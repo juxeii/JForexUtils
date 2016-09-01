@@ -19,7 +19,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.OrderUtilImpl;
+import com.jforex.programming.order.OrderUtilObservable;
 import com.jforex.programming.order.call.OrderCallCommand;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
@@ -35,9 +35,9 @@ import rx.Observable;
 import rx.observers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderUtilImplTest extends InstrumentUtilForTest {
+public class OrderUtilObservableTest extends InstrumentUtilForTest {
 
-    private OrderUtilImpl orderUtilImpl;
+    private OrderUtilObservable orderUtilObservable;
 
     @Mock
     private PositionFactory positionFactoryMock;
@@ -60,9 +60,9 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        orderUtilImpl = spy(new OrderUtilImpl(engineMock,
-                                              positionFactoryMock,
-                                              orderUtilHandlerMock));
+        orderUtilObservable = spy(new OrderUtilObservable(engineMock,
+                                                          positionFactoryMock,
+                                                          orderUtilHandlerMock));
     }
 
     private void setUpMocks() {
@@ -114,7 +114,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
     @Test
     public void positionOrdersReturnsCorrectInstance() {
-        assertThat(orderUtilImpl.positionOrders(instrumentEURUSD),
+        assertThat(orderUtilObservable.positionOrders(instrumentEURUSD),
                    equalTo(positionMock));
     }
 
@@ -131,7 +131,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                submitAndMergeCall = () -> orderUtilImpl
+                submitAndMergeCall = () -> orderUtilObservable
                     .submitAndMergePosition(mergeOrderLabel, buyParamsEURUSD)
                     .subscribe(orderEventSubscriber);
             }
@@ -142,8 +142,8 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
                 submitAndMergeCall.run();
 
-                verify(orderUtilImpl).submitOrder(buyParamsEURUSD);
-                verify(orderUtilImpl, never()).mergeOrders(eq(mergeOrderLabel), any());
+                verify(orderUtilObservable).submitOrder(buyParamsEURUSD);
+                verify(orderUtilObservable, never()).mergeOrders(eq(mergeOrderLabel), any());
             }
 
             @Test
@@ -152,8 +152,8 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
                 submitAndMergeCall.run();
 
-                verify(orderUtilImpl).submitOrder(buyParamsEURUSD);
-                verify(orderUtilImpl).mergeOrders(eq(mergeOrderLabel), any());
+                verify(orderUtilObservable).submitOrder(buyParamsEURUSD);
+                verify(orderUtilObservable).mergeOrders(eq(mergeOrderLabel), any());
             }
         }
 
@@ -161,7 +161,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void noOrderIsAddedWhenNoDoneEvent() {
             setOrderUtilHandlerMockResult(eventObservable(submitOKEvent));
 
-            orderUtilImpl
+            orderUtilObservable
                 .submitOrder(buyParamsEURUSD)
                 .subscribe(orderEventSubscriber);
 
@@ -174,7 +174,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
                     new OrderEvent(buyOrderEURUSD, OrderEventType.SUBMIT_REJECTED);
 
             setOrderUtilHandlerMockResult(rejectObservable(submitRejectEvent));
-            orderUtilImpl
+            orderUtilObservable
                 .submitOrder(buyParamsEURUSD)
                 .subscribe(orderEventSubscriber);
 
@@ -190,7 +190,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
             public void setUp() {
                 setOrderUtilHandlerMockResult(eventObservable(submitDoneEvent));
 
-                orderUtilImpl
+                orderUtilObservable
                     .submitOrder(buyParamsEURUSD)
                     .subscribe(orderEventSubscriber);
             }
@@ -237,12 +237,12 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
             when(orderUtilHandlerMock.callObservable(isA(OrderCallCommand.class)))
                 .thenReturn(eventObservable(submitOKEvent));
 
-            orderUtilImpl
+            orderUtilObservable
                 .submitAndMergePositionToParams(mergeOrderLabel, buyParamsEURUSD)
                 .subscribe(orderEventSubscriber);
 
-            verify(orderUtilImpl).submitAndMergePosition(eq(mergeOrderLabel),
-                                                         paramsCaptor.capture());
+            verify(orderUtilObservable).submitAndMergePosition(eq(mergeOrderLabel),
+                                                               paramsCaptor.capture());
             adaptedOrderParams = paramsCaptor.getValue();
         }
 
@@ -299,7 +299,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            mergeCall = () -> orderUtilImpl
+            mergeCall = () -> orderUtilObservable
                 .mergePositionOrders(mergeOrderLabel, instrumentEURUSD)
                 .subscribe(orderEventSubscriber);
 
@@ -311,14 +311,14 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void positionMergeCallsNormalMerge() {
             final Observable<OrderEvent> expectedObservable = eventObservable(mergeEvent);
             when(positionMock.filled()).thenReturn(toMergeOrders);
-            when(orderUtilImpl.mergeOrders(mergeOrderLabel, toMergeOrders))
+            when(orderUtilObservable.mergeOrders(mergeOrderLabel, toMergeOrders))
                 .thenReturn(expectedObservable);
 
-            final Observable<OrderEvent> observable = orderUtilImpl
+            final Observable<OrderEvent> observable = orderUtilObservable
                 .mergePositionOrders(mergeOrderLabel, instrumentEURUSD);
             observable.subscribe(orderEventSubscriber);
 
-            verify(orderUtilImpl, times(2)).mergeOrders(mergeOrderLabel, toMergeOrders);
+            verify(orderUtilObservable, times(2)).mergeOrders(mergeOrderLabel, toMergeOrders);
             orderEventSubscriber.assertNoErrors();
             orderEventSubscriber.assertValueCount(1);
             orderEventSubscriber.assertCompleted();
@@ -522,7 +522,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
         private final Set<IOrder> ordersToClose = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
         private final Runnable closeCompletableCall =
-                () -> orderUtilImpl
+                () -> orderUtilObservable
                     .closePosition(instrumentEURUSD)
                     .subscribe(orderEventSubscriber);
 
@@ -638,7 +638,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                observable = orderUtilImpl.close(buyOrderEURUSD);
+                observable = orderUtilObservable.close(buyOrderEURUSD);
             }
 
             @Test
@@ -667,7 +667,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                observable = orderUtilImpl.setLabel(buyOrderEURUSD, newLabel);
+                observable = orderUtilObservable.setLabel(buyOrderEURUSD, newLabel);
             }
 
             @Test
@@ -696,7 +696,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                observable = orderUtilImpl.setGoodTillTime(buyOrderEURUSD, newGTT);
+                observable = orderUtilObservable.setGoodTillTime(buyOrderEURUSD, newGTT);
             }
 
             @Test
@@ -725,7 +725,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                observable = orderUtilImpl.setRequestedAmount(buyOrderEURUSD, newAmount);
+                observable = orderUtilObservable.setRequestedAmount(buyOrderEURUSD, newAmount);
             }
 
             @Test
@@ -754,7 +754,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                observable = orderUtilImpl.setOpenPrice(buyOrderEURUSD, newOpenPrice);
+                observable = orderUtilObservable.setOpenPrice(buyOrderEURUSD, newOpenPrice);
             }
 
             @Test
@@ -783,7 +783,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                observable = orderUtilImpl.setTakeProfitPrice(buyOrderEURUSD, newTP);
+                observable = orderUtilObservable.setTakeProfitPrice(buyOrderEURUSD, newTP);
             }
 
             @Test
@@ -812,7 +812,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                observable = orderUtilImpl.setStopLossPrice(buyOrderEURUSD, newSL);
+                observable = orderUtilObservable.setStopLossPrice(buyOrderEURUSD, newSL);
             }
 
             @Test

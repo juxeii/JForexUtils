@@ -30,7 +30,7 @@ import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Observable;
 
-public class OrderUtilImpl {
+public class OrderUtilObservable {
 
     private final IEngine engine;
     private final PositionFactory positionFactory;
@@ -38,9 +38,9 @@ public class OrderUtilImpl {
 
     private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
 
-    public OrderUtilImpl(final IEngine engine,
-                         final PositionFactory positionFactory,
-                         final OrderUtilHandler orderUtilHandler) {
+    public OrderUtilObservable(final IEngine engine,
+                               final PositionFactory positionFactory,
+                               final OrderUtilHandler orderUtilHandler) {
         this.engine = engine;
         this.positionFactory = positionFactory;
         this.orderUtilHandler = orderUtilHandler;

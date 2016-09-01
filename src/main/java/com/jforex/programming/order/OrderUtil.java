@@ -35,11 +35,11 @@ import rx.Observable;
 
 public class OrderUtil {
 
-    private final OrderUtilImpl orderUtilImpl;
+    private final OrderUtilObservable orderUtilImpl;
 
     private static final Logger logger = LogManager.getLogger(OrderUtil.class);
 
-    public OrderUtil(final OrderUtilImpl orderUtilImpl) {
+    public OrderUtil(final OrderUtilObservable orderUtilImpl) {
         this.orderUtilImpl = orderUtilImpl;
     }
 

@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.OrderUtilImpl;
+import com.jforex.programming.order.OrderUtilObservable;
 import com.jforex.programming.order.process.ClosePositionProcess;
 import com.jforex.programming.order.process.CloseProcess;
 import com.jforex.programming.order.process.MergePositionProcess;
@@ -37,7 +37,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderUtil orderUtil;
 
     @Mock
-    private OrderUtilImpl orderUtilImplMock;
+    private OrderUtilObservable orderUtilImplMock;
     @Mock
     private Position positionMock;
     private final String mergeOrderLabel = "MergeLabel";
