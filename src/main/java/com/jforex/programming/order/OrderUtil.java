@@ -11,6 +11,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.CommonCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.OrderUtilCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
@@ -42,6 +43,16 @@ public class OrderUtil {
     public final <T extends OrderUtilCommand> void startBatchCommand(final Set<IOrder> orders,
                                                                      final Function<IOrder, T> batchCommand) {
         orders.forEach(order -> batchCommand.apply(order).start());
+    }
+
+    @SafeVarargs
+    public final <T extends OrderUtilCommand> void sartCommandsInOrder(final T... commands) {
+        for (int i = 0; i < commands.length - 1; ++i) {
+            final CommonCommand currentCommand = (CommonCommand) commands[i];
+            final CommonCommand nextCommand = (CommonCommand) commands[i + 1];
+            currentCommand.andThen(nextCommand);
+        }
+        commands[0].start();
     }
 
     public final void closePosition(final Instrument instrument,

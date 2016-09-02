@@ -63,8 +63,8 @@ public class JForexUtil {
     private final JFHotSubject<BarQuote> barQuoteSubject = new JFHotSubject<>();
     private final JFHotSubject<IMessage> messageSubject = new JFHotSubject<>();
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
-    private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    public static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    public static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
     public JForexUtil(final IContext context) {
         this.context = checkNotNull(context);

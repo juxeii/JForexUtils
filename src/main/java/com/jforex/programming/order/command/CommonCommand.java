@@ -22,7 +22,7 @@ public class CommonCommand implements OrderUtilCommand {
     private final OrderCallReason callReason;
     private final OrderEventTypeData orderEventTypeData;
     protected Observable<OrderEvent> observable;
-    private final Action0 completedAction;
+    private Action0 completedAction;
     private final Consumer<OrderEvent> eventAction;
     private final Consumer<Throwable> errorAction;
     private final int noOfRetries;
@@ -81,16 +81,12 @@ public class CommonCommand implements OrderUtilCommand {
         return isDoneEvent(orderEvent) || isRejectEvent(orderEvent);
     }
 
-    public final Action0 completedAction() {
-        return completedAction;
-    }
-
-    public final Consumer<OrderEvent> eventAction() {
-        return eventAction;
-    }
-
-    public final Consumer<Throwable> errorAction() {
-        return errorAction;
+    public final void andThen(final CommonCommand command) {
+        final Action0 currentCompletedAction = completedAction;
+        completedAction = () -> {
+            currentCompletedAction.call();
+            command.start();
+        };
     }
 
     public final int noOfRetries() {
