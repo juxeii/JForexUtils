@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -48,6 +49,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private Position positionMock;
     @Mock
     private Consumer<IOrder> actionMock;
+    @Mock
+    private Callable<OrderEvent> orderEventCallableMock;
     private final String mergeOrderLabel = "MergeLabel";
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
@@ -121,14 +124,17 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void startSubmitRetriesOnReject() {
+    public void startSubmitRetriesOnReject() throws Exception {
         final OrderEvent rejectEvent = new OrderEvent(buyOrderEURUSD,
                                                       OrderEventType.SUBMIT_REJECTED);
+        final OrderEvent doneEvent = new OrderEvent(buyOrderEURUSD,
+                                                    OrderEventType.FULLY_FILLED);
 
-        final Observable<OrderEvent> observable = Observable.fromCallable(() -> {
-            logger.info("Running callable");
-            return rejectEvent;
-        });
+        when(orderEventCallableMock.call())
+            .thenReturn(rejectEvent)
+            .thenReturn(doneEvent);
+
+        final Observable<OrderEvent> observable = Observable.fromCallable(orderEventCallableMock);
 
         when(orderUtilImplMock.submitOrder(buyParamsEURUSD))
             .thenReturn(observable);
@@ -143,7 +149,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         RxTestUtil.advanceTimeBy(1500L, TimeUnit.MILLISECONDS);
 
-        verify(actionMock, times(2)).accept(buyOrderEURUSD);
+        verify(actionMock).accept(buyOrderEURUSD);
+        verify(orderEventCallableMock, times(2)).call();
     }
 
     @Test
