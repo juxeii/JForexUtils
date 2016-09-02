@@ -39,11 +39,10 @@ public class CommonCommand implements OrderUtilCommand {
 
     @Override
     public final void start() {
-        final Observable<OrderEvent> addActionHandlersObservable =
-                observable.doOnNext(this::callEventHandler);
-        evaluateRetry(addActionHandlersObservable)
+        evaluateRetry(observable.doOnNext(this::callEventHandler))
             .subscribe(eventAction::accept,
-                       errorAction::accept);
+                       errorAction::accept,
+                       completedAction::call);
     }
 
     public final Action0 completedAction() {
