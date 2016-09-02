@@ -15,8 +15,6 @@ import com.dukascopy.api.IMessage;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.misc.JForexUtil;
-import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
@@ -125,28 +123,6 @@ public class JForexUtilTest extends QuoteProviderForTest {
                                                 eq(custom3MinutePeriod),
                                                 eq(OfferSide.ASK),
                                                 any());
-    }
-
-    public class AfterPositionRetreival {
-
-        private OrderUtil orderUtil;
-        private PositionOrders positionOrders;
-
-        @Before
-        public void setUp() {
-            orderUtil = spy(jForexUtil.orderUtil());
-            positionOrders = orderUtil.positionOrders(instrumentEURUSD);
-        }
-
-        @Test
-        public void returnedPositionOrderSizeIsNull() {
-            assertThat(positionOrders.size(), equalTo(0));
-        }
-
-        @Test
-        public void coverCloseAllPositions() {
-            jForexUtil.closeAllPositions();
-        }
     }
 
     public class AfterBarPushed {

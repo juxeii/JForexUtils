@@ -155,15 +155,6 @@ public class JForexUtil {
         return orderUtil;
     }
 
-    public void closeAllPositions() {
-        positionFactory
-            .all()
-            .forEach(position -> orderUtil
-                .closePositionBuilder(position.instrument())
-                .build()
-                .start());
-    }
-
     public void onStop() {
         tickQuoteSubject.unsubscribe();
         barQuoteSubject.unsubscribe();

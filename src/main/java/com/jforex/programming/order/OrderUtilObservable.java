@@ -11,7 +11,6 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.aeonbits.owner.ConfigFactory;
@@ -81,23 +80,6 @@ public class OrderUtilObservable {
         }
     }
 
-    public Observable<OrderEvent> submitAndMergePosition(final OrderParams orderParams,
-                                                         final String mergeOrderLabel) {
-        return submitOrder(orderParams)
-            .concatWith(Observable.defer(() -> mergePositionOrders(mergeOrderLabel, orderParams.instrument())));
-    }
-
-    public Observable<OrderEvent> submitAndMergePositionToParams(final OrderParams orderParams,
-                                                                 final String mergeOrderLabel) {
-        final double signedPositionAmount = position(orderParams.instrument()).signedExposure();
-        final double signedParamsAmount = OrderStaticUtil.signedAmount(orderParams);
-        final double signedNeededAmount = signedParamsAmount - signedPositionAmount;
-        final OrderParams adaptedOrderParams = OrderStaticUtil
-            .adaptedOrderParamsForSignedAmount(orderParams, signedNeededAmount);
-
-        return submitAndMergePosition(adaptedOrderParams, mergeOrderLabel);
-    }
-
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
         return toMergeOrders.size() < 2
@@ -119,11 +101,6 @@ public class OrderUtilObservable {
         return orderUtilObservable(command);
     }
 
-    public Observable<OrderEvent> mergePositionOrders(final String mergeOrderLabel,
-                                                      final Instrument instrument) {
-        return mergeOrders(mergeOrderLabel, position(instrument).filled());
-    }
-
     private Observable<OrderEvent> removeTPSLObservable(final Collection<IOrder> filledOrders) {
         return Observable
             .from(filledOrders)
@@ -133,19 +110,6 @@ public class OrderUtilObservable {
     private final Observable<OrderEvent> removeSingleTPSLObservable(final IOrder orderToRemoveSLTP) {
         return setTakeProfitPrice(orderToRemoveSLTP, platformSettings.noSLPrice())
             .concatWith(setStopLossPrice(orderToRemoveSLTP, platformSettings.noTPPrice()));
-    }
-
-    public Observable<OrderEvent> closePosition(final Instrument instrument) {
-        final Position position = position(instrument);
-        final Set<IOrder> ordersToClose = position.filledOrOpened();
-
-        return ordersToClose.isEmpty()
-                ? Observable.empty()
-                : Observable
-                    .from(ordersToClose)
-                    .doOnSubscribe(() -> position.markOrdersActive(ordersToClose))
-                    .flatMap(this::close)
-                    .doOnTerminate(() -> position.markOrdersIdle(ordersToClose));
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {

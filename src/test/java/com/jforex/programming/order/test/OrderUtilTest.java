@@ -1,8 +1,5 @@
 package com.jforex.programming.order.test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -47,15 +44,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private Observable<OrderEvent> observableForEvent(final OrderEventType type) {
         final OrderEvent event = new OrderEvent(buyOrderEURUSD, type);
         return Observable.just(event);
-    }
-
-    @Test
-    public void positionOrdersReturnsCorrectInstance() {
-        when(orderUtilImplMock.positionOrders(instrumentEURUSD))
-            .thenReturn(positionMock);
-
-        assertThat(orderUtil.positionOrders(instrumentEURUSD),
-                   equalTo(positionMock));
     }
 
     @Test
