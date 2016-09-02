@@ -40,6 +40,6 @@ public class OrderUtilHandler {
             .observable()
             .filter(orderEvent -> orderEvent.order().equals(order))
             .filter(command::isEventForCommand)
-            .takeUntil(command::isDoneEvent);
+            .takeUntil(command::isFinishEvent);
     }
 }

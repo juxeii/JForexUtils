@@ -124,4 +124,14 @@ public class OrderCallCommand {
             .doneEventTypes()
             .contains(orderEvent.type());
     }
+
+    public final boolean isRejectEvent(final OrderEvent orderEvent) {
+        return orderEventTypeData
+            .rejectEventTypes()
+            .contains(orderEvent.type());
+    }
+
+    public final boolean isFinishEvent(final OrderEvent orderEvent) {
+        return isDoneEvent(orderEvent) || isRejectEvent(orderEvent);
+    }
 }
