@@ -132,7 +132,7 @@ public class OrderUtilObservableTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 submitAndMergeCall = () -> orderUtilObservable
-                    .submitAndMergePosition(mergeOrderLabel, buyParamsEURUSD)
+                    .submitAndMergePosition(buyParamsEURUSD, mergeOrderLabel)
                     .subscribe(orderEventSubscriber);
             }
 
@@ -238,11 +238,12 @@ public class OrderUtilObservableTest extends InstrumentUtilForTest {
                 .thenReturn(eventObservable(submitOKEvent));
 
             orderUtilObservable
-                .submitAndMergePositionToParams(mergeOrderLabel, buyParamsEURUSD)
+                .submitAndMergePositionToParams(buyParamsEURUSD, mergeOrderLabel)
                 .subscribe(orderEventSubscriber);
 
-            verify(orderUtilObservable).submitAndMergePosition(eq(mergeOrderLabel),
-                                                               paramsCaptor.capture());
+            verify(orderUtilObservable).submitAndMergePosition(paramsCaptor.capture(),
+                                                               eq(mergeOrderLabel));
+
             adaptedOrderParams = paramsCaptor.getValue();
         }
 

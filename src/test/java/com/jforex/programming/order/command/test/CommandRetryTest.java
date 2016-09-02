@@ -1,4 +1,4 @@
-package com.jforex.programming.order.process.test;
+package com.jforex.programming.order.command.test;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -11,9 +11,9 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.jforex.programming.order.call.OrderCallRejectException;
+import com.jforex.programming.order.command.CommandRetry;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.ProcessRetry;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
@@ -22,9 +22,9 @@ import rx.Observable;
 import rx.observers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
-public class ProcessRetryTest extends CommonUtilForTest {
+public class CommandRetryTest extends CommonUtilForTest {
 
-    private ProcessRetry processRetry;
+    private CommandRetry processRetry;
 
     @Mock
     private Callable<IOrder> callableMock;
@@ -33,7 +33,7 @@ public class ProcessRetryTest extends CommonUtilForTest {
 
     @Before
     public void SetAmountProcess() {
-        processRetry = new ProcessRetry(noOfRetries, delayInMillis);
+        processRetry = new CommandRetry(noOfRetries, delayInMillis);
     }
 
     public class RetryObservableSetup {

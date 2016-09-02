@@ -1,4 +1,4 @@
-package com.jforex.programming.order.process.test;
+package com.jforex.programming.order.command.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -12,21 +12,17 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.CloseProcess;
-import com.jforex.programming.test.common.CommonUtilForTest;
+import com.jforex.programming.test.common.InstrumentUtilForTest;
 
-import rx.functions.Action0;
+import rx.Observable;
 
-public class CloseProcessTest extends CommonUtilForTest {
+public class ClosePositionCommandTest extends InstrumentUtilForTest {
 
-    private CloseProcess process;
+    private ClosePositionCommand process;
 
-    @Mock
-    private Action0 completedActionMock;
-    @Mock
-    private Consumer<OrderEvent> eventActionMock;
     @Mock
     private Consumer<Throwable> errorActionMock;
     @Mock
@@ -35,18 +31,18 @@ public class CloseProcessTest extends CommonUtilForTest {
     private Consumer<IOrder> closedActionMock;
     @Mock
     private Consumer<IOrder> partialClosedActionMock;
+    private final Observable<OrderEvent> observable =
+            Observable.just(new OrderEvent(buyOrderEURUSD, OrderEventType.CLOSE_OK));
     private Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
     @Before
     public void setUp() {
-        process = CloseProcess
-            .forOrder(buyOrderEURUSD)
+        process = ClosePositionCommand
+            .create(instrumentEURUSD, observable)
             .onError(errorActionMock)
             .onClose(closedActionMock)
             .onCloseReject(closeRejectActionMock)
             .onPartialClose(partialClosedActionMock)
-            .onCompleted(completedActionMock)
-            .onEvent(eventActionMock)
             .doRetries(3, 1500L)
             .build();
 
@@ -55,13 +51,12 @@ public class CloseProcessTest extends CommonUtilForTest {
 
     @Test
     public void emptyProcessHasNoRetriesAndActions() {
-        final CloseProcess emptyProcess = CloseProcess
-            .forOrder(buyOrderEURUSD)
+        final ClosePositionCommand emptyProcess = ClosePositionCommand
+            .create(instrumentEURUSD, observable)
             .build();
 
         final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = emptyProcess.eventHandlerForType();
 
-        emptyProcess.completedAction().call();
         assertThat(emptyProcess.noOfRetries(), equalTo(0));
         assertThat(emptyProcess.delayInMillis(), equalTo(0L));
         assertTrue(eventHandlerForType.isEmpty());
@@ -69,10 +64,8 @@ public class CloseProcessTest extends CommonUtilForTest {
 
     @Test
     public void processValuesAreCorrect() {
-        assertThat(process.completedAction(), equalTo(completedActionMock));
-        assertThat(process.eventAction(), equalTo(eventActionMock));
         assertThat(process.errorAction(), equalTo(errorActionMock));
-        assertThat(process.orderToClose(), equalTo(buyOrderEURUSD));
+        assertThat(process.instrument(), equalTo(instrumentEURUSD));
         assertThat(process.noOfRetries(), equalTo(3));
         assertThat(process.delayInMillis(), equalTo(1500L));
         assertThat(eventHandlerForType.size(), equalTo(3));

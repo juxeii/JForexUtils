@@ -1,4 +1,4 @@
-package com.jforex.programming.order.process;
+package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -13,14 +13,14 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 
 import rx.Observable;
 
-public class ProcessRetry {
+public class CommandRetry {
 
     private final int noOfRetries;
     private final long delayInMillis;
 
-    private static final Logger logger = LogManager.getLogger(ProcessRetry.class);
+    private static final Logger logger = LogManager.getLogger(CommandRetry.class);
 
-    public ProcessRetry(final int noOfRetries,
+    public CommandRetry(final int noOfRetries,
                         final long delayInMillis) {
         this.noOfRetries = noOfRetries;
         this.delayInMillis = delayInMillis;

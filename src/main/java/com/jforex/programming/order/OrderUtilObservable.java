@@ -81,21 +81,21 @@ public class OrderUtilObservable {
         }
     }
 
-    public Observable<OrderEvent> submitAndMergePosition(final String mergeOrderLabel,
-                                                         final OrderParams orderParams) {
+    public Observable<OrderEvent> submitAndMergePosition(final OrderParams orderParams,
+                                                         final String mergeOrderLabel) {
         return submitOrder(orderParams)
             .concatWith(Observable.defer(() -> mergePositionOrders(mergeOrderLabel, orderParams.instrument())));
     }
 
-    public Observable<OrderEvent> submitAndMergePositionToParams(final String mergeOrderLabel,
-                                                                 final OrderParams orderParams) {
+    public Observable<OrderEvent> submitAndMergePositionToParams(final OrderParams orderParams,
+                                                                 final String mergeOrderLabel) {
         final double signedPositionAmount = position(orderParams.instrument()).signedExposure();
         final double signedParamsAmount = OrderStaticUtil.signedAmount(orderParams);
         final double signedNeededAmount = signedParamsAmount - signedPositionAmount;
         final OrderParams adaptedOrderParams = OrderStaticUtil
             .adaptedOrderParamsForSignedAmount(orderParams, signedNeededAmount);
 
-        return submitAndMergePosition(mergeOrderLabel, adaptedOrderParams);
+        return submitAndMergePosition(adaptedOrderParams, mergeOrderLabel);
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,

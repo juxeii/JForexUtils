@@ -1,4 +1,4 @@
-package com.jforex.programming.order.process.test;
+package com.jforex.programming.order.command.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -12,13 +12,16 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.command.SubmitCommand;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.SubmitProcess;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
-public class SubmitProcessTest extends CommonUtilForTest {
+import rx.Observable;
 
-    private SubmitProcess process;
+public class SubmitCommandTest extends CommonUtilForTest {
+
+    private SubmitCommand command;
 
     @Mock
     private Consumer<Throwable> errorActionMock;
@@ -32,12 +35,14 @@ public class SubmitProcessTest extends CommonUtilForTest {
     private Consumer<IOrder> submittedActionMock;
     @Mock
     private Consumer<IOrder> filledActionMock;
+    private final Observable<OrderEvent> observable =
+            Observable.just(new OrderEvent(buyOrderEURUSD, OrderEventType.FULLY_FILLED));
     private Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
     @Before
     public void setUp() {
-        process = SubmitProcess
-            .forOrderParams(buyParamsEURUSD)
+        command = SubmitCommand
+            .create(buyParamsEURUSD, observable)
             .onError(errorActionMock)
             .onSubmitReject(submitRejectActionMock)
             .onFillReject(fillRejectActionMock)
@@ -47,28 +52,28 @@ public class SubmitProcessTest extends CommonUtilForTest {
             .doRetries(3, 1500L)
             .build();
 
-        eventHandlerForType = process.eventHandlerForType();
+        eventHandlerForType = command.eventHandlerForType();
     }
 
     @Test
     public void emptyProcessHasNoRetriesAndActions() {
-        final SubmitProcess emptyProcess = SubmitProcess
-            .forOrderParams(buyParamsEURUSD)
+        final SubmitCommand emptyCommand = SubmitCommand
+            .create(buyParamsEURUSD, observable)
             .build();
 
-        final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = emptyProcess.eventHandlerForType();
+        final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = emptyCommand.eventHandlerForType();
 
-        assertThat(emptyProcess.noOfRetries(), equalTo(0));
-        assertThat(emptyProcess.delayInMillis(), equalTo(0L));
+        assertThat(emptyCommand.noOfRetries(), equalTo(0));
+        assertThat(emptyCommand.delayInMillis(), equalTo(0L));
         assertTrue(eventHandlerForType.isEmpty());
     }
 
     @Test
     public void processValuesAreCorrect() {
-        assertThat(process.errorAction(), equalTo(errorActionMock));
-        assertThat(process.orderParams(), equalTo(buyParamsEURUSD));
-        assertThat(process.noOfRetries(), equalTo(3));
-        assertThat(process.delayInMillis(), equalTo(1500L));
+        assertThat(command.errorAction(), equalTo(errorActionMock));
+        assertThat(command.orderParams(), equalTo(buyParamsEURUSD));
+        assertThat(command.noOfRetries(), equalTo(3));
+        assertThat(command.delayInMillis(), equalTo(1500L));
         assertThat(eventHandlerForType.size(), equalTo(6));
     }
 

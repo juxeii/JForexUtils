@@ -1,4 +1,4 @@
-package com.jforex.programming.order.process.test;
+package com.jforex.programming.order.command.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -12,13 +12,16 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.command.SubmitAndMergeCommand;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.SubmitAndMergePositionProcess;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
-public class SubmitAndMergePositionProcessTest extends CommonUtilForTest {
+import rx.Observable;
 
-    private SubmitAndMergePositionProcess process;
+public class SubmitAndMergePositionCommandTest extends CommonUtilForTest {
+
+    private SubmitAndMergeCommand command;
 
     @Mock
     private Consumer<Throwable> errorActionMock;
@@ -36,13 +39,15 @@ public class SubmitAndMergePositionProcessTest extends CommonUtilForTest {
     private Consumer<IOrder> mergedActionMock;
     @Mock
     private Consumer<IOrder> mergeClosedActionMock;
+    private final Observable<OrderEvent> observable =
+            Observable.just(new OrderEvent(buyOrderEURUSD, OrderEventType.FULLY_FILLED));
     private final String mergeOrderLabel = "MergeLabel";
     private Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
     @Before
     public void setUp() {
-        process = SubmitAndMergePositionProcess
-            .forParams(buyParamsEURUSD, mergeOrderLabel)
+        command = SubmitAndMergeCommand
+            .create(buyParamsEURUSD, mergeOrderLabel, observable)
             .onError(errorActionMock)
             .onRemoveSL(removedSLActionMock)
             .onRemoveTP(removedTPActionMock)
@@ -54,13 +59,13 @@ public class SubmitAndMergePositionProcessTest extends CommonUtilForTest {
             .doRetries(3, 1500L)
             .build();
 
-        eventHandlerForType = process.eventHandlerForType();
+        eventHandlerForType = command.eventHandlerForType();
     }
 
     @Test
     public void emptyProcessHasNoRetriesAndActions() {
-        final SubmitAndMergePositionProcess emptyProcess = SubmitAndMergePositionProcess
-            .forParams(buyParamsEURUSD, mergeOrderLabel)
+        final SubmitAndMergeCommand emptyProcess = SubmitAndMergeCommand
+            .create(buyParamsEURUSD, mergeOrderLabel, observable)
             .build();
 
         final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = emptyProcess.eventHandlerForType();
@@ -72,11 +77,11 @@ public class SubmitAndMergePositionProcessTest extends CommonUtilForTest {
 
     @Test
     public void processValuesAreCorrect() {
-        assertThat(process.errorAction(), equalTo(errorActionMock));
-        assertThat(process.mergeOrderLabel(), equalTo(mergeOrderLabel));
-        assertThat(process.orderParams(), equalTo(buyParamsEURUSD));
-        assertThat(process.noOfRetries(), equalTo(3));
-        assertThat(process.delayInMillis(), equalTo(1500L));
+        assertThat(command.errorAction(), equalTo(errorActionMock));
+        assertThat(command.mergeOrderLabel(), equalTo(mergeOrderLabel));
+        assertThat(command.orderParams(), equalTo(buyParamsEURUSD));
+        assertThat(command.noOfRetries(), equalTo(3));
+        assertThat(command.delayInMillis(), equalTo(1500L));
         assertThat(eventHandlerForType.size(), equalTo(7));
     }
 

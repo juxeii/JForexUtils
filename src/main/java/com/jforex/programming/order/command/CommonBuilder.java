@@ -1,9 +1,12 @@
-package com.jforex.programming.order.process;
+package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
 import java.util.function.Consumer;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Maps;
@@ -11,17 +14,21 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.CommonOption;
 
+import rx.Observable;
 import rx.functions.Action0;
 
 @SuppressWarnings("unchecked")
 public abstract class CommonBuilder<T extends CommonOption<T>> {
 
+    protected Observable<OrderEvent> observable;
     protected Action0 completedAction = () -> {};
     protected Consumer<OrderEvent> eventAction = o -> {};
     protected Consumer<Throwable> errorAction = o -> {};
     protected int noOfRetries;
     protected long delayInMillis;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = Maps.newEnumMap(OrderEventType.class);
+
+    protected static final Logger logger = LogManager.getLogger(CommonBuilder.class);
 
     public T onCompleted(final Action0 completedAction) {
         this.completedAction = checkNotNull(completedAction);
@@ -158,5 +165,16 @@ public abstract class CommonBuilder<T extends CommonOption<T>> {
                                     final Consumer<IOrder> action) {
         eventHandlerForType.put(type, checkNotNull(action));
         return (T) this;
+    }
+
+    protected Observable<OrderEvent> changeObservable(final Observable<OrderEvent> observable,
+                                                      final IOrder order,
+                                                      final String commonLog) {
+        final String logMsg = commonLog + " for order " + order.getLabel()
+                + " and instrument " + order.getInstrument();
+        return observable
+            .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
+            .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Changed " + logMsg));
     }
 }

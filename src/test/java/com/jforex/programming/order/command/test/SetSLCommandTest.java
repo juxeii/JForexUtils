@@ -1,4 +1,4 @@
-package com.jforex.programming.order.process.test;
+package com.jforex.programming.order.command.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -12,13 +12,16 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.command.SetSLCommand;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.SetAmountProcess;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
-public class SetAmountProcessTest extends CommonUtilForTest {
+import rx.Observable;
 
-    private SetAmountProcess process;
+public class SetSLCommandTest extends CommonUtilForTest {
+
+    private SetSLCommand command;
 
     @Mock
     private Consumer<Throwable> errorActionMock;
@@ -26,26 +29,28 @@ public class SetAmountProcessTest extends CommonUtilForTest {
     private Consumer<IOrder> doneActionMock;
     @Mock
     private Consumer<IOrder> rejectedActionMock;
+    private final Observable<OrderEvent> observable =
+            Observable.just(new OrderEvent(buyOrderEURUSD, OrderEventType.CHANGED_SL));
     private Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
-    private final double newAmount = 0.12;
+    private final double newSL = 1.1234;
 
     @Before
-    public void SetAmountProcess() {
-        process = SetAmountProcess
-            .forParams(buyOrderEURUSD, newAmount)
+    public void SetSLProcess() {
+        command = SetSLCommand
+            .create(buyOrderEURUSD, newSL, observable)
             .onError(errorActionMock)
-            .onAmountChange(doneActionMock)
-            .onAmountReject(rejectedActionMock)
+            .onSLChange(doneActionMock)
+            .onSLReject(rejectedActionMock)
             .doRetries(3, 1500L)
             .build();
 
-        eventHandlerForType = process.eventHandlerForType();
+        eventHandlerForType = command.eventHandlerForType();
     }
 
     @Test
     public void emptyProcessHasNoRetriesAndActions() {
-        final SetAmountProcess emptyProcess = SetAmountProcess
-            .forParams(buyOrderEURUSD, newAmount)
+        final SetSLCommand emptyProcess = SetSLCommand
+            .create(buyOrderEURUSD, newSL, observable)
             .build();
 
         final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = emptyProcess.eventHandlerForType();
@@ -57,18 +62,18 @@ public class SetAmountProcessTest extends CommonUtilForTest {
 
     @Test
     public void processValuesAreCorrect() {
-        assertThat(process.errorAction(), equalTo(errorActionMock));
-        assertThat(process.order(), equalTo(buyOrderEURUSD));
-        assertThat(process.newAmount(), equalTo(newAmount));
-        assertThat(process.noOfRetries(), equalTo(3));
-        assertThat(process.delayInMillis(), equalTo(1500L));
+        assertThat(command.errorAction(), equalTo(errorActionMock));
+        assertThat(command.order(), equalTo(buyOrderEURUSD));
+        assertThat(command.newSL(), equalTo(newSL));
+        assertThat(command.noOfRetries(), equalTo(3));
+        assertThat(command.delayInMillis(), equalTo(1500L));
         assertThat(eventHandlerForType.size(), equalTo(2));
     }
 
     @Test
     public void actionsAreCorrectMapped() {
-        eventHandlerForType.get(OrderEventType.CHANGE_AMOUNT_REJECTED).accept(buyOrderEURUSD);
-        eventHandlerForType.get(OrderEventType.CHANGED_AMOUNT).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.CHANGE_SL_REJECTED).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.CHANGED_SL).accept(buyOrderEURUSD);
 
         verify(doneActionMock).accept(buyOrderEURUSD);
         verify(rejectedActionMock).accept(buyOrderEURUSD);
