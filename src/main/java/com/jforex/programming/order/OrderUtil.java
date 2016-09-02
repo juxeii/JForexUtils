@@ -1,11 +1,14 @@
 package com.jforex.programming.order;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.OrderUtilCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
 import com.jforex.programming.order.command.SetGTTCommand;
 import com.jforex.programming.order.command.SetLabelCommand;
@@ -26,6 +29,11 @@ public class OrderUtil {
         this.orderUtilHandler = orderUtilHandler;
         this.positionUtil = positionUtil;
         this.engineUtil = engineUtil;
+    }
+
+    public final void startBatchCommand(final Set<IOrder> orders,
+                                        final Function<IOrder, OrderUtilCommand> batchCommand) {
+        orders.forEach(order -> batchCommand.apply(order).start());
     }
 
     public final SubmitCommand.Option submitBuilder(final OrderParams orderParams) {
