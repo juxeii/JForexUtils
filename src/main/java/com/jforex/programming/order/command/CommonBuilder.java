@@ -3,6 +3,7 @@ package com.jforex.programming.order.command;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
@@ -10,8 +11,12 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Maps;
+import com.jforex.programming.order.OrderUtilHandler;
+import com.jforex.programming.order.PositionUtil;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.order.process.option.CommonOption;
 
 import rx.Observable;
@@ -20,7 +25,11 @@ import rx.functions.Action0;
 @SuppressWarnings("unchecked")
 public abstract class CommonBuilder<T extends CommonOption<T>> {
 
-    protected Observable<OrderEvent> observable;
+    protected OrderUtilHandler orderUtilHandler;
+    protected PositionUtil positionUtil;
+    protected Callable<IOrder> callable;
+    protected OrderCallReason callReason;
+    protected OrderEventTypeData orderEventTypeData;
     protected Action0 completedAction = () -> {};
     protected Consumer<OrderEvent> eventAction = o -> {};
     protected Consumer<Throwable> errorAction = o -> {};
