@@ -52,18 +52,25 @@ public class Position implements PositionOrders {
                 + " Orderstate: " + order.getState() + " repo size " + orderRepository.size());
     }
 
+    public synchronized void markOrderActive(final IOrder order) {
+        markOrder(order, OrderProcessState.ACTIVE);
+    }
+
     public synchronized void markOrdersActive(final Collection<IOrder> orders) {
-        orders.forEach(order -> {
-            if (orderRepository.containsKey(order))
-                orderRepository.put(order, OrderProcessState.ACTIVE);
-        });
+        orders.forEach(this::markOrderActive);
+    }
+
+    public synchronized void markOrderIdle(final IOrder order) {
+        markOrder(order, OrderProcessState.IDLE);
     }
 
     public synchronized void markOrdersIdle(final Collection<IOrder> orders) {
-        orders.forEach(order -> {
-            if (orderRepository.containsKey(order))
-                orderRepository.put(order, OrderProcessState.IDLE);
-        });
+        orders.forEach(this::markOrderIdle);
+    }
+
+    private synchronized void markOrder(final IOrder order,
+                                        final OrderProcessState state) {
+        orderRepository.computeIfPresent(order, (k, v) -> state);
     }
 
     private synchronized void removeOrder(final IOrder order) {

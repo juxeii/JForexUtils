@@ -7,8 +7,8 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
+import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.PositionUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.process.option.MergeOption;
 
@@ -26,7 +26,7 @@ public class MergeCommand extends CommonCommand {
 
     private MergeCommand(final Builder builder,
                          final OrderUtilHandler orderUtilHandler,
-                         final PositionUtil positionUtil) {
+                         final OrderUtil orderUtil) {
         super(builder);
         mergeOrderLabel = builder.mergeOrderLabel;
         toMergeOrders = builder.toMergeOrders;
@@ -35,10 +35,10 @@ public class MergeCommand extends CommonCommand {
                 ? Observable.empty()
                 : Observable
                     .just(toMergeOrders)
-                    .doOnSubscribe(() -> positionUtil.position(toMergeOrders).markOrdersActive(toMergeOrders))
+                    .doOnSubscribe(() -> orderUtil.position(toMergeOrders).markOrdersActive(toMergeOrders))
                     .flatMap(toMergeOrders -> orderUtilHandler.callObservable(this))
-                    .doOnNext(positionUtil::addOrderToPosition)
-                    .doOnTerminate(() -> positionUtil.position(toMergeOrders).markOrdersIdle(toMergeOrders))
+                    .doOnNext(orderUtil::addOrderToPosition)
+                    .doOnTerminate(() -> orderUtil.position(toMergeOrders).markOrdersIdle(toMergeOrders))
                     .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
                             + " for position " + instrumentFromOrders(toMergeOrders) + "."))
                     .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
@@ -51,16 +51,16 @@ public class MergeCommand extends CommonCommand {
                                       final Collection<IOrder> toMergeOrders,
                                       final OrderUtilHandler orderUtilHandler,
                                       final IEngineUtil engineUtil,
-                                      final PositionUtil positionUtil) {
+                                      final OrderUtil orderUtil) {
         return new Builder(checkNotNull(mergeOrderLabel),
                            checkNotNull(toMergeOrders),
                            orderUtilHandler,
                            engineUtil,
-                           positionUtil);
+                           orderUtil);
     }
 
     private static class Builder extends CommonBuilder<Option>
-                                 implements Option {
+            implements Option {
 
         private final String mergeOrderLabel;
         private final Collection<IOrder> toMergeOrders;
@@ -69,18 +69,18 @@ public class MergeCommand extends CommonCommand {
                         final Collection<IOrder> toMergeOrders,
                         final OrderUtilHandler orderUtilHandler,
                         final IEngineUtil engineUtil,
-                        final PositionUtil positionUtil) {
+                        final OrderUtil orderUtil) {
             this.mergeOrderLabel = mergeOrderLabel;
             this.toMergeOrders = toMergeOrders;
             this.orderUtilHandler = orderUtilHandler;
-            this.positionUtil = positionUtil;
+            this.orderUtil = orderUtil;
             this.callable = engineUtil.mergeCallable(mergeOrderLabel, toMergeOrders);
             this.callReason = OrderCallReason.MERGE;
         }
 
         @Override
         public MergeCommand build() {
-            return new MergeCommand(this, orderUtilHandler, positionUtil);
+            return new MergeCommand(this, orderUtilHandler, orderUtil);
         }
     }
 }

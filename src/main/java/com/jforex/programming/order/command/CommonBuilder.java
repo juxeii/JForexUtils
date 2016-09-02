@@ -11,8 +11,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Maps;
+import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.PositionUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
@@ -26,7 +26,7 @@ import rx.functions.Action0;
 public abstract class CommonBuilder<T extends CommonOption<T>> {
 
     protected OrderUtilHandler orderUtilHandler;
-    protected PositionUtil positionUtil;
+    protected OrderUtil orderUtil;
     protected Callable<IOrder> callable;
     protected OrderCallReason callReason;
     protected OrderEventTypeData orderEventTypeData;

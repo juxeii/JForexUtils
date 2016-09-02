@@ -20,7 +20,6 @@ import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.PositionUtil;
 import com.jforex.programming.order.event.MessageToOrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
@@ -56,7 +55,6 @@ public class JForexUtil {
     private TaskExecutor orderCallExecutor;
     private OrderUtilHandler orderUtilHandler;
     private OrderUtil orderUtil;
-    private PositionUtil positionUtil;
     private final MessageToOrderEvent messageToOrderEvent = new MessageToOrderEvent();
 
     private final CalculationUtil calculationUtil;
@@ -110,9 +108,8 @@ public class JForexUtil {
         positionFactory = new PositionFactory(orderEventGateway.observable());
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
         engineUtil = new IEngineUtil(engine);
-        positionUtil = new PositionUtil(positionFactory);
         orderUtil = new OrderUtil(orderUtilHandler,
-                                  positionUtil,
+                                  positionFactory,
                                   engineUtil);
     }
 
@@ -156,10 +153,6 @@ public class JForexUtil {
 
     public OrderUtil orderUtil() {
         return orderUtil;
-    }
-
-    public PositionUtil positionUtil() {
-        return positionUtil;
     }
 
     public void onStop() {

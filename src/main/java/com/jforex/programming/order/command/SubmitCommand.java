@@ -5,8 +5,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.PositionUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.process.option.SubmitOption;
 
@@ -21,7 +21,7 @@ public class SubmitCommand extends CommonCommand {
 
     private SubmitCommand(final Builder builder,
                           final OrderUtilHandler orderUtilHandler,
-                          final PositionUtil positionUtil) {
+                          final OrderUtil orderUtil) {
         super(builder);
         orderParams = builder.orderParams;
 
@@ -33,38 +33,38 @@ public class SubmitCommand extends CommonCommand {
                     + " for " + instrument + " failed!Exception: " + e.getMessage()))
             .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
                     + " for " + instrument + " was successful."))
-            .doOnNext(positionUtil::addOrderToPosition);
+            .doOnNext(orderUtil::addOrderToPosition);
     }
 
     public static final Option create(final OrderParams orderParams,
                                       final OrderUtilHandler orderUtilHandler,
                                       final IEngineUtil engineUtil,
-                                      final PositionUtil positionUtil) {
+                                      final OrderUtil orderUtil) {
         return new Builder(checkNotNull(orderParams),
                            orderUtilHandler,
                            engineUtil,
-                           positionUtil);
+                           orderUtil);
     }
 
     private static class Builder extends CommonBuilder<Option>
-                                 implements Option {
+            implements Option {
 
         private final OrderParams orderParams;
 
         private Builder(final OrderParams orderParams,
                         final OrderUtilHandler orderUtilHandler,
                         final IEngineUtil engineUtil,
-                        final PositionUtil positionUtil) {
+                        final OrderUtil orderUtil) {
             this.orderParams = orderParams;
             this.orderUtilHandler = orderUtilHandler;
-            this.positionUtil = positionUtil;
+            this.orderUtil = orderUtil;
             this.callable = engineUtil.submitCallable(orderParams);
             this.callReason = OrderCallReason.SUBMIT;
         }
 
         @Override
         public SubmitCommand build() {
-            return new SubmitCommand(this, orderUtilHandler, positionUtil);
+            return new SubmitCommand(this, orderUtilHandler, orderUtil);
         }
     }
 }
