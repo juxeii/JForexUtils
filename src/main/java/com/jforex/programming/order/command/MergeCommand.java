@@ -1,9 +1,11 @@
 package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.jforex.programming.order.OrderStaticUtil.instrumentFromOrders;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
@@ -12,12 +14,10 @@ import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.process.option.MergeOption;
 
-import rx.Observable;
-
 public class MergeCommand extends CommonCommand {
 
     private final String mergeOrderLabel;
-    private final Collection<IOrder> toMergeOrders;
+    private final Set<IOrder> toMergeOrders;
 
     public interface Option extends MergeOption<Option> {
 
@@ -31,24 +31,32 @@ public class MergeCommand extends CommonCommand {
         mergeOrderLabel = builder.mergeOrderLabel;
         toMergeOrders = builder.toMergeOrders;
 
-        this.observable = toMergeOrders.size() < 2
-                ? Observable.empty()
-                : Observable
-                    .just(toMergeOrders)
-                    .doOnSubscribe(() -> orderUtil.position(toMergeOrders).markOrdersActive(toMergeOrders))
-                    .flatMap(toMergeOrders -> orderUtilHandler.callObservable(this))
-                    .doOnNext(orderUtil::addOrderToPosition)
-                    .doOnTerminate(() -> orderUtil.position(toMergeOrders).markOrdersIdle(toMergeOrders))
-                    .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
-                            + " for position " + instrumentFromOrders(toMergeOrders) + "."))
-                    .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
-                            + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
-                    .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
-                            + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
+        final Function<IOrder, SetSLCommand> setSLCommandCreator =
+                order -> orderUtil
+                    .setSLBuilder(order, 0.0)
+                    .build();
+        final List<SetSLCommand> setSLCommands =
+                orderUtil.createBatchCommands(toMergeOrders, setSLCommandCreator);
+
+        final Function<IOrder, SetTPCommand> setTPCommandCreator =
+                order -> orderUtil
+                    .setTPBuilder(order, 0.0)
+                    .build();
+        final List<SetTPCommand> setTPCommands =
+                orderUtil.createBatchCommands(toMergeOrders, setTPCommandCreator);
+        final MergeCommand mergeCommand =
+                orderUtil
+                    .mergeBuilder(mergeOrderLabel, toMergeOrders)
+                    .build();
+        final List<OrderUtilCommand> allCommands = new ArrayList<>(setSLCommands);
+        allCommands.addAll(setTPCommands);
+        allCommands.add(mergeCommand);
+
+        orderUtil.startCommandsInOrder(allCommands);
     }
 
     public static final Option create(final String mergeOrderLabel,
-                                      final Collection<IOrder> toMergeOrders,
+                                      final Set<IOrder> toMergeOrders,
                                       final OrderUtilHandler orderUtilHandler,
                                       final IEngineUtil engineUtil,
                                       final OrderUtil orderUtil) {
@@ -63,10 +71,10 @@ public class MergeCommand extends CommonCommand {
             implements Option {
 
         private final String mergeOrderLabel;
-        private final Collection<IOrder> toMergeOrders;
+        private final Set<IOrder> toMergeOrders;
 
         private Builder(final String mergeOrderLabel,
-                        final Collection<IOrder> toMergeOrders,
+                        final Set<IOrder> toMergeOrders,
                         final OrderUtilHandler orderUtilHandler,
                         final IEngineUtil engineUtil,
                         final OrderUtil orderUtil) {

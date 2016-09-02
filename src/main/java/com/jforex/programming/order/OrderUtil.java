@@ -3,9 +3,12 @@ package com.jforex.programming.order;
 import static com.jforex.programming.order.OrderStaticUtil.instrumentFromOrders;
 import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -20,6 +23,7 @@ import com.jforex.programming.order.command.SetLabelCommand;
 import com.jforex.programming.order.command.SetOpenPriceCommand;
 import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.command.SetTPCommand;
+import com.jforex.programming.order.command.SimpleMergeCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
@@ -40,19 +44,32 @@ public class OrderUtil {
         this.engineUtil = engineUtil;
     }
 
+    public final <T extends OrderUtilCommand> List<T> createBatchCommands(final Set<IOrder> orders,
+                                                                          final Function<IOrder, T> commandCreator) {
+        return orders
+            .stream()
+            .map(order -> commandCreator.apply(order))
+            .collect(Collectors.toList());
+    }
+
     public final <T extends OrderUtilCommand> void startBatchCommand(final Set<IOrder> orders,
-                                                                     final Function<IOrder, T> batchCommand) {
-        orders.forEach(order -> batchCommand.apply(order).start());
+                                                                     final Function<IOrder, T> commandCreator) {
+        final List<T> commands = createBatchCommands(orders, commandCreator);
+        commands.forEach(OrderUtilCommand::start);
+    }
+
+    public final <T extends OrderUtilCommand> void startCommandsInOrder(final List<T> commands) {
+        for (int i = 0; i < commands.size() - 1; ++i) {
+            final CommonCommand currentCommand = (CommonCommand) commands.get(i);
+            final CommonCommand nextCommand = (CommonCommand) commands.get(i + 1);
+            currentCommand.andThen(nextCommand);
+        }
+        commands.get(0).start();
     }
 
     @SafeVarargs
-    public final <T extends OrderUtilCommand> void sartCommandsInOrder(final T... commands) {
-        for (int i = 0; i < commands.length - 1; ++i) {
-            final CommonCommand currentCommand = (CommonCommand) commands[i];
-            final CommonCommand nextCommand = (CommonCommand) commands[i + 1];
-            currentCommand.andThen(nextCommand);
-        }
-        commands[0].start();
+    public final <T extends OrderUtilCommand> void startCommandsInOrder(final T... commands) {
+        startCommandsInOrder(Arrays.asList(commands));
     }
 
     public final void closePosition(final Instrument instrument,
@@ -89,8 +106,17 @@ public class OrderUtil {
                                     this);
     }
 
+    public final SimpleMergeCommand.Option simpleMergeBuilder(final String mergeOrderLabel,
+                                                              final Set<IOrder> toMergeOrders) {
+        return SimpleMergeCommand.create(mergeOrderLabel,
+                                         toMergeOrders,
+                                         orderUtilHandler,
+                                         engineUtil,
+                                         this);
+    }
+
     public final MergeCommand.Option mergeBuilder(final String mergeOrderLabel,
-                                                  final Collection<IOrder> toMergeOrders) {
+                                                  final Set<IOrder> toMergeOrders) {
         return MergeCommand.create(mergeOrderLabel,
                                    toMergeOrders,
                                    orderUtilHandler,
