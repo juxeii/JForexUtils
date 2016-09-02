@@ -38,11 +38,9 @@ public class ProcessRetry {
 
     private final Observable<? extends Throwable> filterCallErrorType(final Throwable error) {
         if (error instanceof OrderCallRejectException) {
-            logger.info("TTSSSSSSSSSSSSSSSSSSSSSS");
             logPositionTaskRetry((OrderCallRejectException) error);
             return Observable.just(error);
         }
-        logger.info("UUUUUUUUUUUUUUUUUUU");
         return Observable.error(error);
     }
 

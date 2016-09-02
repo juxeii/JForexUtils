@@ -124,10 +124,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void startSubmitRetriesOnReject() {
         final OrderEvent rejectEvent = new OrderEvent(buyOrderEURUSD,
                                                       OrderEventType.SUBMIT_REJECTED);
-        final OrderEvent doneEvent = new OrderEvent(buyOrderEURUSD,
-                                                    OrderEventType.FULLY_FILLED);
 
-        final Observable<OrderEvent> observable = Observable.just(rejectEvent, doneEvent);
+        final Observable<OrderEvent> observable = Observable.fromCallable(() -> {
+            logger.info("Running callable");
+            return rejectEvent;
+        });
 
         when(orderUtilImplMock.submitOrder(buyParamsEURUSD))
             .thenReturn(observable);
@@ -138,9 +139,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .doRetries(1, 1500L)
             .build();
 
-        logger.info("STAAAAAAAAAAAART");
         orderUtil.startSubmit(process);
-        logger.info("EEEEEEEEEEEEEEND");
 
         RxTestUtil.advanceTimeBy(1500L, TimeUnit.MILLISECONDS);
 

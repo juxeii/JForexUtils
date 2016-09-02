@@ -217,8 +217,7 @@ public class OrderUtil {
     private final void startProcess(final CommonProcess process,
                                     final Observable<OrderEvent> observable) {
         final Observable<OrderEvent> addActionHandlersObservable =
-                observable.doOnNext(orderEvent -> callEventHandler(orderEvent,
-                                                                   process.eventHandlerForType()));
+                observable.doOnNext(orderEvent -> callEventHandler(orderEvent, process.eventHandlerForType()));
         evaluateRetry(process, addActionHandlersObservable)
             .subscribe(process.eventAction()::accept,
                        process.errorAction()::accept);
@@ -238,18 +237,15 @@ public class OrderUtil {
         if (process.noOfRetries() > 0) {
             final ProcessRetry orderProcessRetry = new ProcessRetry(process.noOfRetries(), process.delayInMillis());
             return observable
-                .flatMap(orderEvent -> rejectAsErrorObservable(orderEvent))
+                .flatMap(this::rejectAsErrorObservable)
                 .retryWhen(orderProcessRetry::retryOnRejectObservable);
         }
         return observable;
     }
 
     private Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
-        logger.info("EVEEEEEEEEEEEEEEEEEEE " + orderEvent.type() + " contains: "
-                + OrderEventTypeSets.rejectEvents.contains(orderEvent.type()));
         return OrderEventTypeSets.rejectEvents.contains(orderEvent.type())
-                ? Observable.error(new OrderCallRejectException("Reject event",
-                                                                orderEvent))
+                ? Observable.error(new OrderCallRejectException("Reject event", orderEvent))
                 : Observable.just(orderEvent);
     }
 }
