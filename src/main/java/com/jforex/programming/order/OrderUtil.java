@@ -25,24 +25,25 @@ import rx.Observable;
 
 public class OrderUtil {
 
-    private final OrderUtilObservable orderUtilImpl;
+    private final OrderUtilObservable orderUtilObservable;
 
     public OrderUtil(final OrderUtilObservable orderUtilImpl) {
-        this.orderUtilImpl = orderUtilImpl;
+        this.orderUtilObservable = orderUtilImpl;
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
-        return orderUtilImpl.positionOrders(checkNotNull(instrument));
+        return orderUtilObservable.positionOrders(checkNotNull(instrument));
     }
 
     public final SubmitCommand.Option submitBuilder(final OrderParams orderParams) {
-        final Observable<OrderEvent> observable = orderUtilImpl.submitOrder(orderParams);
+        final Observable<OrderEvent> observable = orderUtilObservable.submitOrder(orderParams);
         return SubmitCommand.create(orderParams, observable);
     }
 
     public final SubmitAndMergeCommand.Option submitAndMergePositionBuilder(final OrderParams orderParams,
                                                                             final String mergeOrderLabel) {
-        final Observable<OrderEvent> observable = orderUtilImpl.submitAndMergePosition(orderParams, mergeOrderLabel);
+        final Observable<OrderEvent> observable =
+                orderUtilObservable.submitAndMergePosition(orderParams, mergeOrderLabel);
         return SubmitAndMergeCommand.create(orderParams, mergeOrderLabel, observable);
     }
 
@@ -50,65 +51,66 @@ public class OrderUtil {
                                                                                     final String mergeOrderLabel) {
 
         final Observable<OrderEvent> observable =
-                orderUtilImpl.submitAndMergePositionToParams(orderParams, mergeOrderLabel);
+                orderUtilObservable.submitAndMergePositionToParams(orderParams, mergeOrderLabel);
         return SubmitAndMergeCommand.create(orderParams, mergeOrderLabel, observable);
     }
 
     public final MergeCommand.Option mergeBuilder(final String mergeOrderLabel,
                                                   final Collection<IOrder> toMergeOrders) {
-        final Observable<OrderEvent> observable = orderUtilImpl.mergeOrders(mergeOrderLabel, toMergeOrders);
+        final Observable<OrderEvent> observable = orderUtilObservable.mergeOrders(mergeOrderLabel, toMergeOrders);
         return MergeCommand.create(mergeOrderLabel, toMergeOrders, observable);
     }
 
     public final MergePositionCommand.Option mergePositionBuilder(final String mergeOrderLabel,
                                                                   final Instrument instrument) {
-        final Observable<OrderEvent> observable = orderUtilImpl.mergePositionOrders(mergeOrderLabel, instrument);
+        final Observable<OrderEvent> observable =
+                orderUtilObservable.mergePositionOrders(mergeOrderLabel, instrument);
         return MergePositionCommand.create(mergeOrderLabel, instrument, observable);
     }
 
     public final CloseCommand.Option closeBuilder(final IOrder orderToClose) {
-        final Observable<OrderEvent> observable = orderUtilImpl.close(orderToClose);
+        final Observable<OrderEvent> observable = orderUtilObservable.close(orderToClose);
         return CloseCommand.create(orderToClose, observable);
     }
 
     public final ClosePositionCommand.Option closePositionBuilder(final Instrument instrument) {
-        final Observable<OrderEvent> observable = orderUtilImpl.closePosition(instrument);
+        final Observable<OrderEvent> observable = orderUtilObservable.closePosition(instrument);
         return ClosePositionCommand.create(instrument, observable);
     }
 
     public final SetLabelCommand.Option setLabelBuilder(final IOrder order,
                                                         final String newLabel) {
-        final Observable<OrderEvent> observable = orderUtilImpl.setLabel(order, newLabel);
+        final Observable<OrderEvent> observable = orderUtilObservable.setLabel(order, newLabel);
         return SetLabelCommand.create(order, newLabel, observable);
     }
 
     public final SetGTTCommand.Option setGTTBuilder(final IOrder order,
                                                     final long newGTT) {
-        final Observable<OrderEvent> observable = orderUtilImpl.setGoodTillTime(order, newGTT);
+        final Observable<OrderEvent> observable = orderUtilObservable.setGoodTillTime(order, newGTT);
         return SetGTTCommand.create(order, newGTT, observable);
     }
 
     public final SetAmountCommand.Option setAmountBuilder(final IOrder order,
                                                           final double newAmount) {
-        final Observable<OrderEvent> observable = orderUtilImpl.setRequestedAmount(order, newAmount);
+        final Observable<OrderEvent> observable = orderUtilObservable.setRequestedAmount(order, newAmount);
         return SetAmountCommand.create(order, newAmount, observable);
     }
 
     public final SetOpenPriceCommand.Option setOpenPriceBuilder(final IOrder order,
                                                                 final double newPrice) {
-        final Observable<OrderEvent> observable = orderUtilImpl.setOpenPrice(order, newPrice);
+        final Observable<OrderEvent> observable = orderUtilObservable.setOpenPrice(order, newPrice);
         return SetOpenPriceCommand.create(order, newPrice, observable);
     }
 
     public final SetSLCommand.Option startSLChange(final IOrder order,
                                                    final double newSL) {
-        final Observable<OrderEvent> observable = orderUtilImpl.setStopLossPrice(order, newSL);
+        final Observable<OrderEvent> observable = orderUtilObservable.setStopLossPrice(order, newSL);
         return SetSLCommand.create(order, newSL, observable);
     }
 
     public final SetTPCommand.Option startTPChange(final IOrder order,
                                                    final double newTP) {
-        final Observable<OrderEvent> observable = orderUtilImpl.setTakeProfitPrice(order, newTP);
+        final Observable<OrderEvent> observable = orderUtilObservable.setTakeProfitPrice(order, newTP);
         return SetTPCommand.create(order, newTP, observable);
     }
 }
