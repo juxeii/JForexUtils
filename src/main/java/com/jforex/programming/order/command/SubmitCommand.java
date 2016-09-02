@@ -36,10 +36,6 @@ public class SubmitCommand extends CommonCommand {
             .doOnNext(positionUtil::addOrderToPosition);
     }
 
-    public final OrderParams orderParams() {
-        return orderParams;
-    }
-
     public static final Option create(final OrderParams orderParams,
                                       final OrderUtilHandler orderUtilHandler,
                                       final IEngineUtil engineUtil,

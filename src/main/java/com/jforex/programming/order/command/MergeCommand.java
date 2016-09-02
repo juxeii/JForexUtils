@@ -47,14 +47,6 @@ public class MergeCommand extends CommonCommand {
                             + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
     }
 
-    public final String mergeOrderLabel() {
-        return mergeOrderLabel;
-    }
-
-    public final Collection<IOrder> toMergeOrders() {
-        return toMergeOrders;
-    }
-
     public static final Option create(final String mergeOrderLabel,
                                       final Collection<IOrder> toMergeOrders,
                                       final OrderUtilHandler orderUtilHandler,

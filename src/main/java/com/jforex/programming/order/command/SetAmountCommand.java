@@ -36,14 +36,6 @@ public class SetAmountCommand extends CommonCommand {
                                                commonLog));
     }
 
-    public final IOrder order() {
-        return order;
-    }
-
-    public final double newAmount() {
-        return newAmount;
-    }
-
     public static final Option create(final IOrder order,
                                       final double newAmount,
                                       final OrderUtilHandler orderUtilHandler) {

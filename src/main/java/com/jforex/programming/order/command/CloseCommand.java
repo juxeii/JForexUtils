@@ -34,10 +34,6 @@ public class CloseCommand extends CommonCommand {
                                                commonLog));
     }
 
-    public final IOrder order() {
-        return order;
-    }
-
     public static final Option create(final IOrder orderToClose,
                                       final OrderUtilHandler orderUtilHandler) {
         return new Builder(checkNotNull(orderToClose), orderUtilHandler);

@@ -36,14 +36,6 @@ public class SetTPCommand extends CommonCommand {
                                                commonLog));
     }
 
-    public final IOrder order() {
-        return order;
-    }
-
-    public final double newTP() {
-        return newTP;
-    }
-
     public static final Option create(final IOrder order,
                                       final double newTP,
                                       final OrderUtilHandler orderUtilHandler) {

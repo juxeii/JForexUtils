@@ -36,14 +36,6 @@ public class SetOpenPriceCommand extends CommonCommand {
                                                commonLog));
     }
 
-    public final IOrder order() {
-        return order;
-    }
-
-    public final double newOpenPrice() {
-        return newPrice;
-    }
-
     public static final Option create(final IOrder order,
                                       final double newPrice,
                                       final OrderUtilHandler orderUtilHandler) {

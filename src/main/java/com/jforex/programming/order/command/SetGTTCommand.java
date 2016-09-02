@@ -36,14 +36,6 @@ public class SetGTTCommand extends CommonCommand {
                                                commonLog));
     }
 
-    public final IOrder order() {
-        return order;
-    }
-
-    public final long newGTT() {
-        return newGTT;
-    }
-
     public static final Option create(final IOrder order,
                                       final long newGTT,
                                       final OrderUtilHandler orderUtilHandler) {

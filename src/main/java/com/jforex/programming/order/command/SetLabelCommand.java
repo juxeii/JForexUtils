@@ -36,14 +36,6 @@ public class SetLabelCommand extends CommonCommand {
                                                commonLog));
     }
 
-    public final IOrder order() {
-        return order;
-    }
-
-    public final String newLabel() {
-        return newLabel;
-    }
-
     public static final Option create(final IOrder order,
                                       final String newLabel,
                                       final OrderUtilHandler orderUtilHandler) {

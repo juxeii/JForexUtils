@@ -36,14 +36,6 @@ public class SetSLCommand extends CommonCommand {
                                                commonLog));
     }
 
-    public final IOrder order() {
-        return order;
-    }
-
-    public final double newSL() {
-        return newSL;
-    }
-
     public static final Option create(final IOrder order,
                                       final double newSL,
                                       final OrderUtilHandler orderUtilHandler) {
