@@ -10,11 +10,14 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.IEngineUtil;
+import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.command.CloseCommand;
-import com.jforex.programming.order.command.CommonCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.OrderUtilCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
@@ -29,12 +32,19 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
+import com.jforex.programming.settings.PlatformSettings;
+
+import rx.Completable;
+import rx.Observable;
 
 public class OrderUtil {
 
     private final OrderUtilHandler orderUtilHandler;
     private final PositionFactory positionFactory;
     private final IEngineUtil engineUtil;
+
+    public static final PlatformSettings platformSettings = JForexUtil.platformSettings;
+    private static final Logger logger = LogManager.getLogger(OrderUtil.class);
 
     public OrderUtil(final OrderUtilHandler orderUtilHandler,
                      final PositionFactory positionFactory,
@@ -52,24 +62,30 @@ public class OrderUtil {
             .collect(Collectors.toList());
     }
 
-    public final <T extends OrderUtilCommand> void startBatchCommand(final Set<IOrder> orders,
-                                                                     final Function<IOrder, T> commandCreator) {
-        final List<T> commands = createBatchCommands(orders, commandCreator);
-        commands.forEach(OrderUtilCommand::start);
+    public final Completable batchCompletable(final List<? extends OrderUtilCommand> batchCommands) {
+        return Completable.merge(commandsToCompletables(batchCommands));
     }
 
-    public final <T extends OrderUtilCommand> void startCommandsInOrder(final List<T> commands) {
-        for (int i = 0; i < commands.size() - 1; ++i) {
-            final CommonCommand currentCommand = (CommonCommand) commands.get(i);
-            final CommonCommand nextCommand = (CommonCommand) commands.get(i + 1);
-            currentCommand.andThen(nextCommand);
-        }
-        commands.get(0).start();
+    public final List<Completable> commandsToCompletables(final List<? extends OrderUtilCommand> commands) {
+        return commands
+            .stream()
+            .map(OrderUtilCommand::completable)
+            .collect(Collectors.toList());
+    }
+
+    public final void startBatchCommand(final Set<IOrder> orders,
+                                        final Function<IOrder, ? extends OrderUtilCommand> commandCreator) {
+        createBatchCommands(orders, commandCreator)
+            .forEach(OrderUtilCommand::start);
+    }
+
+    public Completable commandSequence(final List<? extends OrderUtilCommand> commands) {
+        return Completable.concat(commandsToCompletables(commands));
     }
 
     @SafeVarargs
-    public final <T extends OrderUtilCommand> void startCommandsInOrder(final T... commands) {
-        startCommandsInOrder(Arrays.asList(commands));
+    public final <T extends OrderUtilCommand> Completable commandSequence(final T... commands) {
+        return commandSequence(Arrays.asList(commands));
     }
 
     public final void closePosition(final Instrument instrument,
@@ -80,48 +96,90 @@ public class OrderUtil {
         startBatchCommand(ordersToClose, closeCommand);
     }
 
-    public PositionOrders positionOrders(final Instrument instrument) {
-        return positionFactory.forInstrument(instrument);
-    }
-
-    public Position position(final Collection<IOrder> orders) {
-        return position(instrumentFromOrders(orders));
-    }
-
-    public Position position(final Instrument instrument) {
-        return (Position) positionOrders(instrument);
-    }
-
-    public void addOrderToPosition(final OrderEvent orderEvent) {
-        if (createEvents.contains(orderEvent.type())) {
-            final IOrder order = orderEvent.order();
-            position(order.getInstrument()).addOrder(order);
-        }
-    }
-
     public final SubmitCommand.Option submitBuilder(final OrderParams orderParams) {
         return SubmitCommand.create(orderParams,
-                                    orderUtilHandler,
                                     engineUtil,
-                                    this);
+                                    this::submitOrder);
+    }
+
+    public final Completable submitOrder(final SubmitCommand command) {
+        final OrderParams orderParams = command.orderParams();
+        final Instrument instrument = orderParams.instrument();
+        final String orderLabel = orderParams.label();
+
+        return orderUtilHandler.callObservable(command)
+            .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
+            .doOnError(e -> logger.error("Submit task with label " + orderLabel
+                    + " for " + instrument + " failed!Exception: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
+                    + " for " + instrument + " was successful."))
+            .doOnNext(this::addOrderToPosition)
+            .toCompletable();
+    }
+
+    public final Completable simpleMergeOrders(final SimpleMergeCommand command) {
+        final String mergeOrderLabel = command.mergeOrderLabel();
+        final Set<IOrder> toMergeOrders = command.toMergeOrders();
+
+        return toMergeOrders.size() < 2
+                ? Completable.complete()
+                : Observable
+                    .just(toMergeOrders)
+                    .doOnSubscribe(() -> position(toMergeOrders).markOrdersActive(toMergeOrders))
+                    .flatMap(orders -> orderUtilHandler.callObservable(command))
+                    .doOnNext(this::addOrderToPosition)
+                    .doOnTerminate(() -> position(toMergeOrders).markOrdersIdle(toMergeOrders))
+                    .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
+                            + " for position " + instrumentFromOrders(toMergeOrders) + "."))
+                    .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
+                            + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
+                    .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
+                            + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()))
+                    .toCompletable();
     }
 
     public final SimpleMergeCommand.Option simpleMergeBuilder(final String mergeOrderLabel,
                                                               final Set<IOrder> toMergeOrders) {
         return SimpleMergeCommand.create(mergeOrderLabel,
                                          toMergeOrders,
-                                         orderUtilHandler,
                                          engineUtil,
-                                         this);
+                                         this::simpleMergeOrders);
     }
 
     public final MergeCommand.Option mergeBuilder(final String mergeOrderLabel,
                                                   final Set<IOrder> toMergeOrders) {
         return MergeCommand.create(mergeOrderLabel,
                                    toMergeOrders,
-                                   orderUtilHandler,
-                                   engineUtil,
-                                   this);
+                                   this::mergeOrders);
+    }
+
+    public final Completable mergeOrders(final MergeCommand command) {
+        final Set<IOrder> toMergeOrders = command.toMergeOrders();
+
+        final MergeCommand mergeCommand = mergeBuilder(command.mergeOrderLabel(), toMergeOrders)
+            .build();
+
+        return Completable.concat(removeSLBatch(toMergeOrders),
+                                  removeTPBatch(toMergeOrders),
+                                  mergeCommand.completable());
+    }
+
+    private Completable removeSLBatch(final Set<IOrder> orders) {
+        final Function<IOrder, SetSLCommand> setSLCommandCreator =
+                order -> setSLBuilder(order, platformSettings.noSLPrice())
+                    .build();
+        final List<SetSLCommand> setSLCommands =
+                createBatchCommands(orders, setSLCommandCreator);
+        return batchCompletable(setSLCommands);
+    }
+
+    private Completable removeTPBatch(final Set<IOrder> orders) {
+        final Function<IOrder, SetTPCommand> setTPCommandCreator =
+                order -> setTPBuilder(order, platformSettings.noSLPrice())
+                    .build();
+        final List<SetTPCommand> setTPCommands =
+                createBatchCommands(orders, setTPCommandCreator);
+        return batchCompletable(setTPCommands);
     }
 
     public final CloseCommand.Option closeBuilder(final IOrder orderToClose) {
@@ -170,5 +228,24 @@ public class OrderUtil {
         return SetTPCommand.create(order,
                                    newTP,
                                    orderUtilHandler);
+    }
+
+    public PositionOrders positionOrders(final Instrument instrument) {
+        return positionFactory.forInstrument(instrument);
+    }
+
+    public Position position(final Collection<IOrder> orders) {
+        return position(instrumentFromOrders(orders));
+    }
+
+    public Position position(final Instrument instrument) {
+        return (Position) positionOrders(instrument);
+    }
+
+    public void addOrderToPosition(final OrderEvent orderEvent) {
+        if (createEvents.contains(orderEvent.type())) {
+            final IOrder order = orderEvent.order();
+            position(order.getInstrument()).addOrder(order);
+        }
     }
 }

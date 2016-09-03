@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +20,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.order.process.option.CommonOption;
 
+import rx.Completable;
 import rx.Observable;
 import rx.functions.Action0;
 
@@ -36,6 +38,7 @@ public abstract class CommonBuilder<T extends CommonOption<T>> {
     protected int noOfRetries;
     protected long delayInMillis;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = Maps.newEnumMap(OrderEventType.class);
+    protected Function<? extends CommonCommand, Completable> startFunction;
 
     protected static final Logger logger = LogManager.getLogger(CommonBuilder.class);
 

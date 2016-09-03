@@ -33,7 +33,8 @@ public class OrderUtilHandler {
             .onStrategyThread(command.callable())
             .doOnNext(order -> registerOrder(order, command.callReason()))
             .flatMap(order -> gatewayObservable(order, command))
-            .doOnNext(orderEvent -> callEventHandler(orderEvent, command.eventHandlerForType()));
+            .doOnNext(orderEvent -> callEventHandler(orderEvent, command.eventHandlerForType()))
+            .doOnNext(command.eventAction()::accept);
 
         return decorateRetry(observable, command.noOfRetries(), command.delayInMillis());
     }

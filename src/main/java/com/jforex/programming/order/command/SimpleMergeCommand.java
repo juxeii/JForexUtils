@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.jforex.programming.order.OrderStaticUtil.instrumentFromOrders;
 
 import java.util.Set;
+import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
@@ -12,6 +13,7 @@ import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.process.option.SimpleMergeOption;
 
+import rx.Completable;
 import rx.Observable;
 
 public class SimpleMergeCommand extends CommonCommand {
@@ -47,16 +49,22 @@ public class SimpleMergeCommand extends CommonCommand {
                             + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
     }
 
+    public String mergeOrderLabel() {
+        return mergeOrderLabel;
+    }
+
+    public Set<IOrder> toMergeOrders() {
+        return toMergeOrders;
+    }
+
     public static final Option create(final String mergeOrderLabel,
                                       final Set<IOrder> toMergeOrders,
-                                      final OrderUtilHandler orderUtilHandler,
                                       final IEngineUtil engineUtil,
-                                      final OrderUtil orderUtil) {
+                                      final Function<SimpleMergeCommand, Completable> startFunction) {
         return new Builder(checkNotNull(mergeOrderLabel),
                            checkNotNull(toMergeOrders),
-                           orderUtilHandler,
                            engineUtil,
-                           orderUtil);
+                           startFunction);
     }
 
     private static class Builder extends CommonBuilder<Option>
@@ -67,15 +75,13 @@ public class SimpleMergeCommand extends CommonCommand {
 
         private Builder(final String mergeOrderLabel,
                         final Set<IOrder> toMergeOrders,
-                        final OrderUtilHandler orderUtilHandler,
                         final IEngineUtil engineUtil,
-                        final OrderUtil orderUtil) {
+                        final Function<SimpleMergeCommand, Completable> startFunction) {
             this.mergeOrderLabel = mergeOrderLabel;
             this.toMergeOrders = toMergeOrders;
-            this.orderUtilHandler = orderUtilHandler;
-            this.orderUtil = orderUtil;
             this.callable = engineUtil.mergeCallable(mergeOrderLabel, toMergeOrders);
             this.callReason = OrderCallReason.MERGE;
+            this.startFunction = startFunction;
         }
 
         @Override

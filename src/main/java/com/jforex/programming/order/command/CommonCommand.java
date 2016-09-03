@@ -3,6 +3,7 @@ package com.jforex.programming.order.command;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +14,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
+import rx.Completable;
 import rx.Observable;
 import rx.functions.Action0;
 
@@ -22,15 +24,17 @@ public class CommonCommand implements OrderUtilCommand {
     private final OrderCallReason callReason;
     private final OrderEventTypeData orderEventTypeData;
     protected Observable<OrderEvent> observable;
-    private Action0 completedAction;
     private final Consumer<OrderEvent> eventAction;
     private final Consumer<Throwable> errorAction;
+    private Action0 completedAction;
     private final int noOfRetries;
     private final long delayInMillis;
     private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
+    private final Function<CommonCommand, Completable> startFunction;
 
     protected static final Logger logger = LogManager.getLogger(CommonCommand.class);
 
+    @SuppressWarnings("unchecked")
     protected CommonCommand(final CommonBuilder<?> builder) {
         callable = builder.callable;
         callReason = builder.callReason;
@@ -41,14 +45,31 @@ public class CommonCommand implements OrderUtilCommand {
         noOfRetries = builder.noOfRetries;
         delayInMillis = builder.delayInMillis;
         eventHandlerForType = builder.eventHandlerForType;
+        startFunction = (Function<CommonCommand, Completable>) builder.startFunction;
     }
 
     @Override
     public final void start() {
-        observable
-            .subscribe(eventAction::accept,
-                       errorAction::accept,
-                       completedAction::call);
+        startFunction
+            .apply(this)
+            .subscribe(completedAction::call, errorAction::accept);
+    }
+
+    @Override
+    public Completable completable() {
+        return startFunction.apply(this);
+    }
+
+    public Action0 completedAction() {
+        return completedAction;
+    }
+
+    public Consumer<OrderEvent> eventAction() {
+        return eventAction;
+    }
+
+    public Consumer<Throwable> errorAction() {
+        return errorAction;
     }
 
     public final Callable<IOrder> callable() {
