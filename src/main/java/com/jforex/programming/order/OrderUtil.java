@@ -1,14 +1,13 @@
 package com.jforex.programming.order;
 
 import static com.jforex.programming.order.OrderStaticUtil.instrumentFromOrders;
+import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+import static com.jforex.programming.order.OrderStaticUtil.isLabelSetTo;
 import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +18,6 @@ import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.OrderUtilCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
 import com.jforex.programming.order.command.SetGTTCommand;
 import com.jforex.programming.order.command.SetLabelCommand;
@@ -53,47 +51,6 @@ public class OrderUtil {
         this.engineUtil = engineUtil;
     }
 
-    public final <T extends OrderUtilCommand> List<T> createBatchCommands(final Set<IOrder> orders,
-                                                                          final Function<IOrder, T> commandCreator) {
-        return orders
-            .stream()
-            .map(order -> commandCreator.apply(order))
-            .collect(Collectors.toList());
-    }
-
-    public final Completable batchCompletable(final List<? extends OrderUtilCommand> batchCommands) {
-        return Completable.merge(commandsToCompletables(batchCommands));
-    }
-
-    public final List<Completable> commandsToCompletables(final List<? extends OrderUtilCommand> commands) {
-        return commands
-            .stream()
-            .map(OrderUtilCommand::completable)
-            .collect(Collectors.toList());
-    }
-
-    public final Completable batchCompletable(final Set<IOrder> orders,
-                                              final Function<IOrder, ? extends OrderUtilCommand> commandCreator) {
-        return batchCompletable(createBatchCommands(orders, commandCreator));
-    }
-
-    public Completable commandSequence(final List<? extends OrderUtilCommand> commands) {
-        return Completable.concat(commandsToCompletables(commands));
-    }
-
-    @SafeVarargs
-    public final <T extends OrderUtilCommand> Completable commandSequence(final T... commands) {
-        return commandSequence(Arrays.asList(commands));
-    }
-
-    public final Completable closePosition(final Instrument instrument,
-                                           final Function<IOrder, CloseCommand> closeCreator) {
-        final Position position = position(instrument);
-        final Set<IOrder> ordersToClose = position.filledOrOpened();
-
-        return batchCompletable(ordersToClose, closeCreator);
-    }
-
     public final SubmitCommand.Option submitBuilder(final OrderParams orderParams) {
         return SubmitCommand.create(orderParams,
                                     engineUtil,
@@ -105,21 +62,29 @@ public class OrderUtil {
         final Instrument instrument = orderParams.instrument();
         final String orderLabel = orderParams.label();
 
-        return orderUtilHandler.callObservable(command)
+        return Completable.defer(() -> orderUtilHandler.callObservable(command)
             .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
             .doOnError(e -> logger.error("Submit task with label " + orderLabel
                     + " for " + instrument + " failed!Exception: " + e.getMessage()))
             .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
                     + " for " + instrument + " was successful."))
             .doOnNext(this::addOrderToPosition)
-            .toCompletable();
+            .toCompletable());
+    }
+
+    public final MergeCommand.Option mergeBuilder(final String mergeOrderLabel,
+                                                  final Set<IOrder> toMergeOrders) {
+        return MergeCommand.create(mergeOrderLabel,
+                                   toMergeOrders,
+                                   engineUtil,
+                                   this::mergeOrders);
     }
 
     public final Completable mergeOrders(final MergeCommand command) {
         final String mergeOrderLabel = command.mergeOrderLabel();
         final Set<IOrder> toMergeOrders = command.toMergeOrders();
 
-        return toMergeOrders.size() < 2
+        return Completable.defer(() -> toMergeOrders.size() < 2
                 ? Completable.complete()
                 : Observable
                     .just(toMergeOrders)
@@ -133,28 +98,54 @@ public class OrderUtil {
                             + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
                     .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
                             + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()))
-                    .toCompletable();
-    }
-
-    public final MergeCommand.Option mergeBuilder(final String mergeOrderLabel,
-                                                  final Set<IOrder> toMergeOrders) {
-        return MergeCommand.create(mergeOrderLabel,
-                                   toMergeOrders,
-                                   engineUtil,
-                                   this::mergeOrders);
+                    .toCompletable());
     }
 
     public final CloseCommand.Option closeBuilder(final IOrder orderToClose) {
         return CloseCommand.create(orderToClose,
-                                   orderUtilHandler,
-                                   this);
+                                   this::close);
+    }
+
+    public final Completable close(final CloseCommand command) {
+        final IOrder orderToClose = command.order();
+        final Instrument instrument = orderToClose.getInstrument();
+        final Position position = position(instrument);
+        final String label = orderToClose.getLabel();
+
+        return Completable.defer(() -> Observable
+            .just(orderToClose)
+            .filter(order -> !isClosed.test(order))
+            .doOnSubscribe(() -> position.markOrderActive(orderToClose))
+            .doOnSubscribe(() -> logger.info("Start to close order " + label + " with instrument " + instrument))
+            .doOnError(e -> logger.error("Failed to close order " + label + "!Excpetion: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Closed order " + label + " with instrument " + instrument))
+            .doOnTerminate(() -> position.markOrderIdle(orderToClose))
+            .toCompletable());
     }
 
     public final SetLabelCommand.Option setLabelBuilder(final IOrder order,
                                                         final String newLabel) {
         return SetLabelCommand.create(order,
                                       newLabel,
-                                      orderUtilHandler);
+                                      this::setLabel);
+    }
+
+    public final Completable setLabel(final SetLabelCommand command) {
+        final IOrder orderToSetLabel = command.order();
+        final Instrument instrument = orderToSetLabel.getInstrument();
+        final String label = orderToSetLabel.getLabel();
+        final String newLabel = command.newLabel();
+
+        return Completable.defer(() -> Observable
+            .just(orderToSetLabel)
+            .filter(order -> !isLabelSetTo(newLabel).test(order))
+            .doOnSubscribe(() -> logger.info("Start to change label from " + label + " to " + newLabel
+                    + " for order " + label + " and instrument " + instrument))
+            .doOnError(e -> logger.error("Failed to change label from " + label + " to " + newLabel
+                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Changed label from " + label + " to " + newLabel
+                    + " for order " + label + " and instrument " + instrument))
+            .toCompletable());
     }
 
     public final SetGTTCommand.Option setGTTBuilder(final IOrder order,
@@ -189,7 +180,16 @@ public class OrderUtil {
                                                   final double newTP) {
         return SetTPCommand.create(order,
                                    newTP,
+
                                    orderUtilHandler);
+    }
+
+    public final Completable closePosition(final Instrument instrument,
+                                           final Function<IOrder, CloseCommand> closeCreator) {
+        final Position position = position(instrument);
+        final Set<IOrder> ordersToClose = position.filledOrOpened();
+
+        return CommandUtil.runBatchCommands(ordersToClose, closeCreator);
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {

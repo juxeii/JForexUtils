@@ -1,17 +1,15 @@
 package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+
+import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
-import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.process.option.CloseOption;
-import com.jforex.programming.position.Position;
 
-import rx.Observable;
+import rx.Completable;
 
 public class CloseCommand extends CommonCommand {
 
@@ -22,30 +20,19 @@ public class CloseCommand extends CommonCommand {
         public CloseCommand build();
     }
 
-    private CloseCommand(final Builder builder,
-                         final OrderUtilHandler orderUtilHandler,
-                         final OrderUtil orderUtil) {
+    private CloseCommand(final Builder builder) {
         super(builder);
         order = builder.order;
+    }
 
-        final String commonLog = "state from " + order.getState() + " to " + IOrder.State.CLOSED;
-        final Position position = orderUtil.position(order.getInstrument());
-        this.observable = Observable
-            .just(order)
-            .filter(order -> !isClosed.test(order))
-            .doOnSubscribe(() -> position.markOrderActive(order))
-            .flatMap(order -> changeObservable(orderUtilHandler.callObservable(this),
-                                               order,
-                                               commonLog))
-            .doOnTerminate(() -> position.markOrderIdle(order));
+    public final IOrder order() {
+        return order;
     }
 
     public static final Option create(final IOrder orderToClose,
-                                      final OrderUtilHandler orderUtilHandler,
-                                      final OrderUtil orderUtil) {
+                                      final Function<CloseCommand, Completable> startFunction) {
         return new Builder(checkNotNull(orderToClose),
-                           orderUtilHandler,
-                           orderUtil);
+                           startFunction);
     }
 
     public static class Builder extends CommonBuilder<Option>
@@ -54,18 +41,16 @@ public class CloseCommand extends CommonCommand {
         private final IOrder order;
 
         private Builder(final IOrder order,
-                        final OrderUtilHandler orderUtilHandler,
-                        final OrderUtil orderUtil) {
+                        final Function<CloseCommand, Completable> startFunction) {
             this.order = order;
-            this.orderUtilHandler = orderUtilHandler;
-            this.orderUtil = orderUtil;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.close(), order);
             this.callReason = OrderCallReason.CLOSE;
+            this.startFunction = startFunction;
         }
 
         @Override
         public CloseCommand build() {
-            return new CloseCommand(this, orderUtilHandler, orderUtil);
+            return new CloseCommand(this);
         }
     }
 }
