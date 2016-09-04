@@ -26,7 +26,6 @@ import com.jforex.programming.order.command.SetLabelCommand;
 import com.jforex.programming.order.command.SetOpenPriceCommand;
 import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.command.SetTPCommand;
-import com.jforex.programming.order.command.SimpleMergeCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
@@ -73,10 +72,9 @@ public class OrderUtil {
             .collect(Collectors.toList());
     }
 
-    public final void startBatchCommand(final Set<IOrder> orders,
-                                        final Function<IOrder, ? extends OrderUtilCommand> commandCreator) {
-        createBatchCommands(orders, commandCreator)
-            .forEach(OrderUtilCommand::start);
+    public final Completable batchCompletable(final Set<IOrder> orders,
+                                              final Function<IOrder, ? extends OrderUtilCommand> commandCreator) {
+        return batchCompletable(createBatchCommands(orders, commandCreator));
     }
 
     public Completable commandSequence(final List<? extends OrderUtilCommand> commands) {
@@ -88,12 +86,12 @@ public class OrderUtil {
         return commandSequence(Arrays.asList(commands));
     }
 
-    public final void closePosition(final Instrument instrument,
-                                    final Function<IOrder, CloseCommand> closeCommand) {
+    public final Completable closePosition(final Instrument instrument,
+                                           final Function<IOrder, CloseCommand> closeCreator) {
         final Position position = position(instrument);
         final Set<IOrder> ordersToClose = position.filledOrOpened();
 
-        startBatchCommand(ordersToClose, closeCommand);
+        return batchCompletable(ordersToClose, closeCreator);
     }
 
     public final SubmitCommand.Option submitBuilder(final OrderParams orderParams) {
@@ -117,7 +115,7 @@ public class OrderUtil {
             .toCompletable();
     }
 
-    public final Completable simpleMergeOrders(final SimpleMergeCommand command) {
+    public final Completable mergeOrders(final MergeCommand command) {
         final String mergeOrderLabel = command.mergeOrderLabel();
         final Set<IOrder> toMergeOrders = command.toMergeOrders();
 
@@ -138,48 +136,12 @@ public class OrderUtil {
                     .toCompletable();
     }
 
-    public final SimpleMergeCommand.Option simpleMergeBuilder(final String mergeOrderLabel,
-                                                              final Set<IOrder> toMergeOrders) {
-        return SimpleMergeCommand.create(mergeOrderLabel,
-                                         toMergeOrders,
-                                         engineUtil,
-                                         this::simpleMergeOrders);
-    }
-
     public final MergeCommand.Option mergeBuilder(final String mergeOrderLabel,
                                                   final Set<IOrder> toMergeOrders) {
         return MergeCommand.create(mergeOrderLabel,
                                    toMergeOrders,
+                                   engineUtil,
                                    this::mergeOrders);
-    }
-
-    public final Completable mergeOrders(final MergeCommand command) {
-        final Set<IOrder> toMergeOrders = command.toMergeOrders();
-
-        final MergeCommand mergeCommand = mergeBuilder(command.mergeOrderLabel(), toMergeOrders)
-            .build();
-
-        return Completable.concat(removeSLBatch(toMergeOrders),
-                                  removeTPBatch(toMergeOrders),
-                                  mergeCommand.completable());
-    }
-
-    private Completable removeSLBatch(final Set<IOrder> orders) {
-        final Function<IOrder, SetSLCommand> setSLCommandCreator =
-                order -> setSLBuilder(order, platformSettings.noSLPrice())
-                    .build();
-        final List<SetSLCommand> setSLCommands =
-                createBatchCommands(orders, setSLCommandCreator);
-        return batchCompletable(setSLCommands);
-    }
-
-    private Completable removeTPBatch(final Set<IOrder> orders) {
-        final Function<IOrder, SetTPCommand> setTPCommandCreator =
-                order -> setTPBuilder(order, platformSettings.noSLPrice())
-                    .build();
-        final List<SetTPCommand> setTPCommands =
-                createBatchCommands(orders, setTPCommandCreator);
-        return batchCompletable(setTPCommands);
     }
 
     public final CloseCommand.Option closeBuilder(final IOrder orderToClose) {

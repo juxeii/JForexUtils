@@ -8,7 +8,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.command.SimpleMergeCommand;
+import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
@@ -17,7 +17,7 @@ import rx.Observable;
 
 public class MergeCommandTest extends CommonUtilForTest {
 
-    private SimpleMergeCommand command;
+    private MergeCommand command;
 
     @Mock private Consumer<Throwable> errorActionMock;
     @Mock private Consumer<IOrder> removedSLActionMock;

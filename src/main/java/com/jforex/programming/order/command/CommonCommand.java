@@ -26,7 +26,7 @@ public class CommonCommand implements OrderUtilCommand {
     protected Observable<OrderEvent> observable;
     private final Consumer<OrderEvent> eventAction;
     private final Consumer<Throwable> errorAction;
-    private Action0 completedAction;
+    private final Action0 completedAction;
     private final int noOfRetries;
     private final long delayInMillis;
     private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
@@ -46,13 +46,6 @@ public class CommonCommand implements OrderUtilCommand {
         delayInMillis = builder.delayInMillis;
         eventHandlerForType = builder.eventHandlerForType;
         startFunction = (Function<CommonCommand, Completable>) builder.startFunction;
-    }
-
-    @Override
-    public final void start() {
-        startFunction
-            .apply(this)
-            .subscribe(completedAction::call, errorAction::accept);
     }
 
     @Override
@@ -100,14 +93,6 @@ public class CommonCommand implements OrderUtilCommand {
 
     public final boolean isFinishEvent(final OrderEvent orderEvent) {
         return isDoneEvent(orderEvent) || isRejectEvent(orderEvent);
-    }
-
-    public final void andThen(final CommonCommand command) {
-        final Action0 currentCompletedAction = completedAction;
-        completedAction = () -> {
-            currentCompletedAction.call();
-            command.start();
-        };
     }
 
     public final int noOfRetries() {
