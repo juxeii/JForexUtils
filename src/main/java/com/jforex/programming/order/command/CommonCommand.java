@@ -19,12 +19,13 @@ import rx.functions.Action0;
 
 public class CommonCommand implements OrderUtilCommand {
 
+    private final Action0 startAction;
+    private final Action0 completedAction;
+    private final Consumer<Throwable> errorAction;
+    private final Consumer<OrderEvent> eventAction;
     private final Callable<IOrder> callable;
     private final OrderCallReason callReason;
     private final OrderEventTypeData orderEventTypeData;
-    private final Consumer<OrderEvent> eventAction;
-    private final Consumer<Throwable> errorAction;
-    private final Action0 completedAction;
     private final int noOfRetries;
     private final long retryDelayInMillis;
     private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
@@ -37,6 +38,7 @@ public class CommonCommand implements OrderUtilCommand {
         callable = builder.callable;
         callReason = builder.callReason;
         orderEventTypeData = builder.orderEventTypeData;
+        startAction = builder.startAction;
         completedAction = builder.completedAction;
         eventAction = builder.eventAction;
         errorAction = builder.errorAction;
@@ -49,6 +51,10 @@ public class CommonCommand implements OrderUtilCommand {
     @Override
     public Completable completable() {
         return startFunction.apply(this);
+    }
+
+    public Action0 startAction() {
+        return startAction;
     }
 
     public Action0 completedAction() {

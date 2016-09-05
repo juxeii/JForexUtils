@@ -8,6 +8,8 @@ import rx.functions.Action0;
 
 public interface CommonOption<T> {
 
+    public T doOnStart(Action0 startAction);
+
     public T doOnCompleted(Action0 completedAction);
 
     public T doOnOrderEvent(Consumer<OrderEvent> orderEventAction);

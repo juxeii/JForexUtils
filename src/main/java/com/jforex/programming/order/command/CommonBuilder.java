@@ -21,6 +21,7 @@ import rx.functions.Action0;
 @SuppressWarnings("unchecked")
 public class CommonBuilder<T extends CommonOption<T>> {
 
+    protected Action0 startAction = () -> {};
     protected Action0 completedAction = () -> {};
     protected Consumer<OrderEvent> eventAction = o -> {};
     protected Consumer<Throwable> errorAction = o -> {};
@@ -31,6 +32,11 @@ public class CommonBuilder<T extends CommonOption<T>> {
     protected OrderEventTypeData orderEventTypeData;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = Maps.newEnumMap(OrderEventType.class);
     protected Function<? extends CommonCommand, Completable> startFunction;
+
+    public T doOnStart(final Action0 startAction) {
+        this.startAction = checkNotNull(startAction);
+        return (T) this;
+    }
 
     public T doOnCompleted(final Action0 completedAction) {
         this.completedAction = checkNotNull(completedAction);
