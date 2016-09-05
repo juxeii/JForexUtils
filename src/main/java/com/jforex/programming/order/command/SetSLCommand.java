@@ -1,15 +1,15 @@
 package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
+
+import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
-import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.process.option.SLOption;
 
-import rx.Observable;
+import rx.Completable;
 
 public class SetSLCommand extends CommonCommand {
 
@@ -21,27 +21,26 @@ public class SetSLCommand extends CommonCommand {
         public SetSLCommand build();
     }
 
-    private SetSLCommand(final Builder builder,
-                         final OrderUtilHandler orderUtilHandler) {
+    private SetSLCommand(final Builder builder) {
         super(builder);
         order = builder.order;
         newSL = builder.newSL;
+    }
 
-        final String commonLog = "SL from " + order.getStopLossPrice() + " to " + newSL;
-        this.observable = Observable
-            .just(order)
-            .filter(order -> !isSLSetTo(newSL).test(order))
-            .flatMap(order -> changeObservable(orderUtilHandler.callObservable(this),
-                                               order,
-                                               commonLog));
+    public final IOrder order() {
+        return order;
+    }
+
+    public final double newSL() {
+        return newSL;
     }
 
     public static final Option create(final IOrder order,
                                       final double newSL,
-                                      final OrderUtilHandler orderUtilHandler) {
+                                      final Function<SetSLCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
                            newSL,
-                           orderUtilHandler);
+                           startFunction);
     }
 
     private static class Builder extends CommonBuilder<Option>
@@ -52,17 +51,17 @@ public class SetSLCommand extends CommonCommand {
 
         private Builder(final IOrder order,
                         final double newSL,
-                        final OrderUtilHandler orderUtilHandler) {
+                        final Function<SetSLCommand, Completable> startFunction) {
             this.order = order;
             this.newSL = newSL;
-            this.orderUtilHandler = orderUtilHandler;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setStopLossPrice(newSL), order);
             this.callReason = OrderCallReason.CHANGE_SL;
+            this.startFunction = startFunction;
         }
 
         @Override
         public SetSLCommand build() {
-            return new SetSLCommand(this, orderUtilHandler);
+            return new SetSLCommand(this);
         }
     }
 }

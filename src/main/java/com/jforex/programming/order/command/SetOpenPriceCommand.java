@@ -1,15 +1,15 @@
 package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.jforex.programming.order.OrderStaticUtil.isOpenPriceSetTo;
+
+import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
-import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.process.option.OpenPriceOption;
 
-import rx.Observable;
+import rx.Completable;
 
 public class SetOpenPriceCommand extends CommonCommand {
 
@@ -21,27 +21,26 @@ public class SetOpenPriceCommand extends CommonCommand {
         public SetOpenPriceCommand build();
     }
 
-    private SetOpenPriceCommand(final Builder builder,
-                                final OrderUtilHandler orderUtilHandler) {
+    private SetOpenPriceCommand(final Builder builder) {
         super(builder);
         order = builder.order;
         newPrice = builder.newPrice;
+    }
 
-        final String commonLog = "open price from " + order.getOpenPrice() + " to " + newPrice;
-        this.observable = Observable
-            .just(order)
-            .filter(order -> !isOpenPriceSetTo(newPrice).test(order))
-            .flatMap(order -> changeObservable(orderUtilHandler.callObservable(this),
-                                               order,
-                                               commonLog));
+    public final IOrder order() {
+        return order;
+    }
+
+    public final double newPrice() {
+        return newPrice;
     }
 
     public static final Option create(final IOrder order,
                                       final double newPrice,
-                                      final OrderUtilHandler orderUtilHandler) {
+                                      final Function<SetOpenPriceCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
                            newPrice,
-                           orderUtilHandler);
+                           startFunction);
     }
 
     private static class Builder extends CommonBuilder<Option>
@@ -52,17 +51,17 @@ public class SetOpenPriceCommand extends CommonCommand {
 
         private Builder(final IOrder order,
                         final double newPrice,
-                        final OrderUtilHandler orderUtilHandler) {
+                        final Function<SetOpenPriceCommand, Completable> startFunction) {
             this.order = order;
             this.newPrice = newPrice;
-            this.orderUtilHandler = orderUtilHandler;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setOpenPrice(newPrice), order);
             this.callReason = OrderCallReason.CHANGE_PRICE;
+            this.startFunction = startFunction;
         }
 
         @Override
         public SetOpenPriceCommand build() {
-            return new SetOpenPriceCommand(this, orderUtilHandler);
+            return new SetOpenPriceCommand(this);
         }
     }
 }

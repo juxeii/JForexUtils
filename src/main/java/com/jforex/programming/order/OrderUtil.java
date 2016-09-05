@@ -1,8 +1,13 @@
 package com.jforex.programming.order;
 
 import static com.jforex.programming.order.OrderStaticUtil.instrumentFromOrders;
+import static com.jforex.programming.order.OrderStaticUtil.isAmountSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+import static com.jforex.programming.order.OrderStaticUtil.isGTTSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isLabelSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isOpenPriceSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents;
 
 import java.util.Collection;
@@ -152,36 +157,130 @@ public class OrderUtil {
                                                     final long newGTT) {
         return SetGTTCommand.create(order,
                                     newGTT,
-                                    orderUtilHandler);
+                                    this::setGTT);
+    }
+
+    public final Completable setGTT(final SetGTTCommand command) {
+        final IOrder orderToSetGTT = command.order();
+        final Instrument instrument = orderToSetGTT.getInstrument();
+        final String label = orderToSetGTT.getLabel();
+        final long currentGTT = orderToSetGTT.getGoodTillTime();
+        final long newGTT = command.newGTT();
+
+        return Completable.defer(() -> Observable
+            .just(orderToSetGTT)
+            .filter(order -> !isGTTSetTo(newGTT).test(order))
+            .doOnSubscribe(() -> logger.info("Start to change GTT from " + currentGTT + " to " + newGTT
+                    + " for order " + label + " and instrument " + instrument))
+            .doOnError(e -> logger.error("Failed to change GTT from " + currentGTT + " to " + newGTT
+                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Changed GTT from " + currentGTT + " to " + newGTT
+                    + " for order " + label + " and instrument " + instrument))
+            .toCompletable());
     }
 
     public final SetAmountCommand.Option setAmountBuilder(final IOrder order,
                                                           final double newAmount) {
         return SetAmountCommand.create(order,
                                        newAmount,
-                                       orderUtilHandler);
+                                       this::setAmount);
+    }
+
+    public final Completable setAmount(final SetAmountCommand command) {
+        final IOrder orderToSetAmount = command.order();
+        final Instrument instrument = orderToSetAmount.getInstrument();
+        final String label = orderToSetAmount.getLabel();
+        final double currentAmount = orderToSetAmount.getRequestedAmount();
+        final double newAmount = command.newAmount();
+
+        return Completable.defer(() -> Observable
+            .just(orderToSetAmount)
+            .filter(order -> !isAmountSetTo(newAmount).test(order))
+            .doOnSubscribe(() -> logger.info("Start to change amount from " + currentAmount + " to " + newAmount
+                    + " for order " + label + " and instrument " + instrument))
+            .doOnError(e -> logger.error("Failed to change amount from " + currentAmount + " to " + newAmount
+                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Changed amount from " + currentAmount + " to " + newAmount
+                    + " for order " + label + " and instrument " + instrument))
+            .toCompletable());
     }
 
     public final SetOpenPriceCommand.Option setOpenPriceBuilder(final IOrder order,
                                                                 final double newPrice) {
         return SetOpenPriceCommand.create(order,
                                           newPrice,
-                                          orderUtilHandler);
+                                          this::setOpenPrice);
+    }
+
+    public final Completable setOpenPrice(final SetOpenPriceCommand command) {
+        final IOrder orderToSetOpenPrice = command.order();
+        final Instrument instrument = orderToSetOpenPrice.getInstrument();
+        final String label = orderToSetOpenPrice.getLabel();
+        final double currentOpenPrice = orderToSetOpenPrice.getOpenPrice();
+        final double newOpenPrice = command.newPrice();
+
+        return Completable.defer(() -> Observable
+            .just(orderToSetOpenPrice)
+            .filter(order -> !isOpenPriceSetTo(newOpenPrice).test(order))
+            .doOnSubscribe(() -> logger.info("Start to change open price from " + currentOpenPrice + " to "
+                    + newOpenPrice + " for order " + label + " and instrument " + instrument))
+            .doOnError(e -> logger.error("Failed to change open price from " + currentOpenPrice + " to " + newOpenPrice
+                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Changed open price from " + currentOpenPrice + " to " + newOpenPrice
+                    + " for order " + label + " and instrument " + instrument))
+            .toCompletable());
     }
 
     public final SetSLCommand.Option setSLBuilder(final IOrder order,
                                                   final double newSL) {
         return SetSLCommand.create(order,
                                    newSL,
-                                   orderUtilHandler);
+                                   this::setSL);
+    }
+
+    public final Completable setSL(final SetSLCommand command) {
+        final IOrder orderToSetSL = command.order();
+        final Instrument instrument = orderToSetSL.getInstrument();
+        final String label = orderToSetSL.getLabel();
+        final double currentSL = orderToSetSL.getStopLossPrice();
+        final double newSL = command.newSL();
+
+        return Completable.defer(() -> Observable
+            .just(orderToSetSL)
+            .filter(order -> !isSLSetTo(newSL).test(order))
+            .doOnSubscribe(() -> logger.info("Start to change SL from " + currentSL + " to " + newSL
+                    + " for order " + label + " and instrument " + instrument))
+            .doOnError(e -> logger.error("Failed to change SL from " + currentSL + " to " + newSL
+                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Changed SL from " + currentSL + " to " + newSL
+                    + " for order " + label + " and instrument " + instrument))
+            .toCompletable());
     }
 
     public final SetTPCommand.Option setTPBuilder(final IOrder order,
                                                   final double newTP) {
         return SetTPCommand.create(order,
                                    newTP,
+                                   this::setTP);
+    }
 
-                                   orderUtilHandler);
+    public final Completable setTP(final SetTPCommand command) {
+        final IOrder orderToSetTP = command.order();
+        final Instrument instrument = orderToSetTP.getInstrument();
+        final String label = orderToSetTP.getLabel();
+        final double currentTP = orderToSetTP.getTakeProfitPrice();
+        final double newTP = command.newTP();
+
+        return Completable.defer(() -> Observable
+            .just(orderToSetTP)
+            .filter(order -> !isTPSetTo(newTP).test(order))
+            .doOnSubscribe(() -> logger.info("Start to change TP from " + currentTP + " to " + newTP
+                    + " for order " + label + " and instrument " + instrument))
+            .doOnError(e -> logger.error("Failed to change TP from " + currentTP + " to " + newTP
+                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
+            .doOnCompleted(() -> logger.info("Changed TP from " + currentTP + " to " + newTP
+                    + " for order " + label + " and instrument " + instrument))
+            .toCompletable());
     }
 
     public final Completable closePosition(final Instrument instrument,
