@@ -316,7 +316,7 @@ public class OrderUtil {
         final Position position = position(instrument);
         final Set<IOrder> ordersToClose = position.filledOrOpened();
 
-        return CommandUtil.runBatchCommands(ordersToClose, closeCreator);
+        return CommandUtil.runCommandsForOrderBatch(ordersToClose, closeCreator);
     }
 
     public final Completable mergePosition(final Instrument instrument,

@@ -12,15 +12,6 @@ import rx.Completable;
 
 public final class CommandUtil {
 
-    public static final Completable runCommands(final List<? extends OrderUtilCommand> commands) {
-        return Completable.merge(commandsToCompletables(commands));
-    }
-
-    public static final Completable runBatchCommands(final Set<IOrder> orders,
-                                                     final Function<IOrder, ? extends OrderUtilCommand> commandCreator) {
-        return runCommands(createBatchCommands(orders, commandCreator));
-    }
-
     public static final List<Completable> commandsToCompletables(final List<? extends OrderUtilCommand> commands) {
         return commands
             .stream()
@@ -28,11 +19,22 @@ public final class CommandUtil {
             .collect(Collectors.toList());
     }
 
-    public static final <T extends OrderUtilCommand> List<T> createBatchCommands(final Set<IOrder> orders,
-                                                                                 final Function<IOrder, T> commandCreator) {
+    public static final Completable runCommands(final List<? extends OrderUtilCommand> commands) {
+        return Completable.merge(commandsToCompletables(commands));
+    }
+
+    public static final Completable
+           runCommandsForOrderBatch(final Set<IOrder> orders,
+                                    final Function<IOrder, ? extends OrderUtilCommand> commandCreator) {
+        return runCommands(createBatchCommands(orders, commandCreator));
+    }
+
+    public static final <T extends OrderUtilCommand> List<T>
+           createBatchCommands(final Set<IOrder> orders,
+                               final Function<IOrder, T> commandCreator) {
         return orders
             .stream()
-            .map(order -> commandCreator.apply(order))
+            .map(commandCreator::apply)
             .collect(Collectors.toList());
     }
 
