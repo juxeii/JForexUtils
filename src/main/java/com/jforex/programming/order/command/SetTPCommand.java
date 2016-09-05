@@ -62,13 +62,13 @@ public class SetTPCommand extends CommonCommand {
         }
 
         @Override
-        public Option onTPReject(final Consumer<IOrder> rejectAction) {
+        public Option doOnSetTPReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option onTPChange(final Consumer<IOrder> doneAction) {
+        public Option doOnSetTP(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(doneAction));
             return this;
         }

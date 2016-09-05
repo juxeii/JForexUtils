@@ -6,7 +6,7 @@ import com.dukascopy.api.IOrder;
 
 public interface AmountOption<T extends AmountOption<T>> extends CommonOption<T> {
 
-    public T onAmountReject(Consumer<IOrder> rejectAction);
+    public T doOnSetAmountReject(Consumer<IOrder> rejectAction);
 
-    public T onAmountChange(Consumer<IOrder> doneAction);
+    public T doOnSetAmount(Consumer<IOrder> doneAction);
 }

@@ -62,13 +62,13 @@ public class SetLabelCommand extends CommonCommand {
         }
 
         @Override
-        public Option onLabelReject(final Consumer<IOrder> rejectAction) {
+        public Option doOnSetLabelReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_LABEL_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option onLabelChange(final Consumer<IOrder> doneAction) {
+        public Option doOnSetLabel(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_LABEL, checkNotNull(doneAction));
             return this;
         }

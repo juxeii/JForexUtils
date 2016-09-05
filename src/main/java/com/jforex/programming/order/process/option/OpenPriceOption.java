@@ -6,7 +6,7 @@ import com.dukascopy.api.IOrder;
 
 public interface OpenPriceOption<T extends OpenPriceOption<T>> extends CommonOption<T> {
 
-    public T onOpenPriceReject(Consumer<IOrder> rejectAction);
+    public T doOnSetOpenPriceReject(Consumer<IOrder> rejectAction);
 
-    public T onOpenPriceChange(Consumer<IOrder> doneAction);
+    public T doOnSetOpenPrice(Consumer<IOrder> doneAction);
 }

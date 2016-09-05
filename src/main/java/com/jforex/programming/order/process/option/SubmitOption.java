@@ -6,13 +6,13 @@ import com.dukascopy.api.IOrder;
 
 public interface SubmitOption<T extends SubmitOption<T>> extends CommonOption<T> {
 
-    public T onSubmitReject(Consumer<IOrder> submitRejectAction);
+    public T doOnSubmitReject(Consumer<IOrder> submitRejectAction);
 
-    public T onFillReject(Consumer<IOrder> fillRejectAction);
+    public T doOnFillReject(Consumer<IOrder> fillRejectAction);
 
-    public T onSubmitOK(Consumer<IOrder> submitOKAction);
+    public T doOnSubmit(Consumer<IOrder> submitOKAction);
 
-    public T onPartialFill(Consumer<IOrder> partialFillAction);
+    public T doOnPartialFill(Consumer<IOrder> partialFillAction);
 
-    public T onFill(Consumer<IOrder> fillAction);
+    public T doOnFill(Consumer<IOrder> fillAction);
 }

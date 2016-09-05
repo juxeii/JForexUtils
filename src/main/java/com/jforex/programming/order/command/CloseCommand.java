@@ -51,19 +51,19 @@ public class CloseCommand extends CommonCommand {
         }
 
         @Override
-        public Option onCloseReject(final Consumer<IOrder> rejectAction) {
+        public Option doOnCloseReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CLOSE_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option onPartialClose(final Consumer<IOrder> partialDoneAction) {
+        public Option doOnPartialClose(final Consumer<IOrder> partialDoneAction) {
             eventHandlerForType.put(OrderEventType.PARTIAL_CLOSE_OK, checkNotNull(partialDoneAction));
             return this;
         }
 
         @Override
-        public Option onClose(final Consumer<IOrder> doneAction) {
+        public Option doOnClose(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CLOSE_OK, checkNotNull(doneAction));
             return this;
         }

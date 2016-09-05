@@ -6,9 +6,9 @@ import com.dukascopy.api.IOrder;
 
 public interface MergeOption<T extends MergeOption<T>> extends CommonOption<T> {
 
-    public T onMergeReject(Consumer<IOrder> mergeRejectAction);
+    public T doOnMergeReject(Consumer<IOrder> mergeRejectAction);
 
-    public T onMerge(Consumer<IOrder> mergedAction);
+    public T doOnMerge(Consumer<IOrder> mergedAction);
 
-    public T onMergeClose(Consumer<IOrder> mergeClosedAction);
+    public T doOnMergeClose(Consumer<IOrder> mergeClosedAction);
 }

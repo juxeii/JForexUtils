@@ -62,13 +62,13 @@ public class SetAmountCommand extends CommonCommand {
         }
 
         @Override
-        public Option onAmountReject(final Consumer<IOrder> rejectAction) {
+        public Option doOnSetAmountReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_AMOUNT_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option onAmountChange(final Consumer<IOrder> doneAction) {
+        public Option doOnSetAmount(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_AMOUNT, checkNotNull(doneAction));
             return this;
         }

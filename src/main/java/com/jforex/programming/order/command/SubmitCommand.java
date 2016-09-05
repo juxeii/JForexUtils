@@ -55,32 +55,32 @@ public class SubmitCommand extends CommonCommand {
         }
 
         @Override
-        public Option onSubmitOK(final Consumer<IOrder> submitOKAction) {
+        public Option doOnSubmit(final Consumer<IOrder> submitOKAction) {
             eventHandlerForType.put(OrderEventType.SUBMIT_OK, checkNotNull(submitOKAction));
             eventHandlerForType.put(OrderEventType.SUBMIT_CONDITIONAL_OK, checkNotNull(submitOKAction));
             return this;
         }
 
         @Override
-        public Option onSubmitReject(final Consumer<IOrder> submitRejectAction) {
+        public Option doOnSubmitReject(final Consumer<IOrder> submitRejectAction) {
             eventHandlerForType.put(OrderEventType.SUBMIT_REJECTED, checkNotNull(submitRejectAction));
             return this;
         }
 
         @Override
-        public Option onFillReject(final Consumer<IOrder> fillRejectAction) {
+        public Option doOnFillReject(final Consumer<IOrder> fillRejectAction) {
             eventHandlerForType.put(OrderEventType.FILL_REJECTED, checkNotNull(fillRejectAction));
             return this;
         }
 
         @Override
-        public Option onPartialFill(final Consumer<IOrder> partialFillAction) {
+        public Option doOnPartialFill(final Consumer<IOrder> partialFillAction) {
             eventHandlerForType.put(OrderEventType.PARTIAL_FILL_OK, checkNotNull(partialFillAction));
             return this;
         }
 
         @Override
-        public Option onFill(final Consumer<IOrder> fillAction) {
+        public Option doOnFill(final Consumer<IOrder> fillAction) {
             eventHandlerForType.put(OrderEventType.FULLY_FILLED, checkNotNull(fillAction));
             return this;
         }

@@ -12,8 +12,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Maps;
-import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
@@ -26,8 +24,6 @@ import rx.functions.Action0;
 @SuppressWarnings("unchecked")
 public abstract class CommonBuilder<T extends CommonOption<T>> {
 
-    protected OrderUtilHandler orderUtilHandler;
-    protected OrderUtil orderUtil;
     protected Callable<IOrder> callable;
     protected OrderCallReason callReason;
     protected OrderEventTypeData orderEventTypeData;
@@ -41,22 +37,22 @@ public abstract class CommonBuilder<T extends CommonOption<T>> {
 
     protected static final Logger logger = LogManager.getLogger(CommonBuilder.class);
 
-    public T onCompleted(final Action0 completedAction) {
+    public T doOnCompleted(final Action0 completedAction) {
         this.completedAction = checkNotNull(completedAction);
         return (T) this;
     }
 
-    public T onEvent(final Consumer<OrderEvent> eventAction) {
+    public T doOnOrderEvent(final Consumer<OrderEvent> eventAction) {
         this.eventAction = checkNotNull(eventAction);
         return (T) this;
     }
 
-    public T onError(final Consumer<Throwable> errorAction) {
+    public T doOnError(final Consumer<Throwable> errorAction) {
         this.errorAction = checkNotNull(errorAction);
         return (T) this;
     }
 
-    public T doRetries(final int noOfRetries, final long delayInMillis) {
+    public T retry(final int noOfRetries, final long delayInMillis) {
         this.noOfRetries = noOfRetries;
         this.delayInMillis = delayInMillis;
         return (T) this;

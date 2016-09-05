@@ -62,13 +62,13 @@ public class SetOpenPriceCommand extends CommonCommand {
         }
 
         @Override
-        public Option onOpenPriceReject(final Consumer<IOrder> rejectAction) {
+        public Option doOnSetOpenPriceReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_PRICE_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option onOpenPriceChange(final Consumer<IOrder> doneAction) {
+        public Option doOnSetOpenPrice(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_PRICE, checkNotNull(doneAction));
             return this;
         }

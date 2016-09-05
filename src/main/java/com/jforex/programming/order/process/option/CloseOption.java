@@ -6,9 +6,9 @@ import com.dukascopy.api.IOrder;
 
 public interface CloseOption<T extends CloseOption<T>> extends CommonOption<T> {
 
-    public T onCloseReject(Consumer<IOrder> closeRejectAction);
+    public T doOnCloseReject(Consumer<IOrder> closeRejectAction);
 
-    public T onClose(Consumer<IOrder> closedAction);
+    public T doOnClose(Consumer<IOrder> closedAction);
 
-    public T onPartialClose(Consumer<IOrder> partialClosedAction);
+    public T doOnPartialClose(Consumer<IOrder> partialClosedAction);
 }

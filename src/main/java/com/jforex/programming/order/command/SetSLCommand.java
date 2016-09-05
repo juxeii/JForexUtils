@@ -62,13 +62,13 @@ public class SetSLCommand extends CommonCommand {
         }
 
         @Override
-        public Option onSLReject(final Consumer<IOrder> rejectAction) {
+        public Option doOnSetSLReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option onSLChange(final Consumer<IOrder> doneAction) {
+        public Option doOnSetSL(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(doneAction));
             return this;
         }

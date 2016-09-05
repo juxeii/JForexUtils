@@ -8,12 +8,12 @@ import rx.functions.Action0;
 
 public interface CommonOption<T> {
 
-    public T onCompleted(Action0 completedAction);
+    public T doOnCompleted(Action0 completedAction);
 
-    public T onEvent(Consumer<OrderEvent> eventAction);
+    public T doOnOrderEvent(Consumer<OrderEvent> orderEventAction);
 
-    public T onError(Consumer<Throwable> errorAction);
+    public T doOnError(Consumer<Throwable> errorAction);
 
-    public T doRetries(int noOfRetries,
-                       long delayInMillis);
+    public T retry(int noOfRetries,
+                   long delayInMillis);
 }

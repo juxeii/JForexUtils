@@ -62,13 +62,13 @@ public class SetGTTCommand extends CommonCommand {
         }
 
         @Override
-        public Option onGTTReject(final Consumer<IOrder> rejectAction) {
+        public Option doOnSetGTTReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_GTT_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option onGTTChange(final Consumer<IOrder> doneAction) {
+        public Option doOnSetGTT(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_GTT, checkNotNull(doneAction));
             return this;
         }

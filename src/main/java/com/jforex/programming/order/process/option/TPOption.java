@@ -6,7 +6,7 @@ import com.dukascopy.api.IOrder;
 
 public interface TPOption<T extends TPOption<T>> extends CommonOption<T> {
 
-    public T onTPReject(Consumer<IOrder> rejectAction);
+    public T doOnSetTPReject(Consumer<IOrder> rejectAction);
 
-    public T onTPChange(Consumer<IOrder> doneAction);
+    public T doOnSetTP(Consumer<IOrder> doneAction);
 }
