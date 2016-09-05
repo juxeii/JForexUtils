@@ -2,11 +2,13 @@ package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.OpenPriceOption;
 
 import rx.Completable;
@@ -57,6 +59,18 @@ public class SetOpenPriceCommand extends CommonCommand {
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setOpenPrice(newPrice), order);
             this.callReason = OrderCallReason.CHANGE_PRICE;
             this.startFunction = startFunction;
+        }
+
+        @Override
+        public Option onOpenPriceReject(final Consumer<IOrder> rejectAction) {
+            eventHandlerForType.put(OrderEventType.CHANGE_PRICE_REJECTED, checkNotNull(rejectAction));
+            return this;
+        }
+
+        @Override
+        public Option onOpenPriceChange(final Consumer<IOrder> doneAction) {
+            eventHandlerForType.put(OrderEventType.CHANGED_PRICE, checkNotNull(doneAction));
+            return this;
         }
 
         @Override

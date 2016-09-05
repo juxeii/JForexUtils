@@ -1,52 +1,33 @@
 package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.jforex.programming.order.OrderStaticUtil.instrumentFromOrders;
 
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
-import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.process.option.SimpleMergeOption;
+import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.process.option.MergeOption;
 
 import rx.Completable;
-import rx.Observable;
 
 public class MergeCommand extends CommonCommand {
 
     private final String mergeOrderLabel;
     private final Set<IOrder> toMergeOrders;
 
-    public interface Option extends SimpleMergeOption<Option> {
+    public interface Option extends MergeOption<Option> {
 
         public MergeCommand build();
     }
 
-    private MergeCommand(final Builder builder,
-                               final OrderUtilHandler orderUtilHandler,
-                               final OrderUtil orderUtil) {
+    private MergeCommand(final Builder builder) {
         super(builder);
         mergeOrderLabel = builder.mergeOrderLabel;
         toMergeOrders = builder.toMergeOrders;
-
-        this.observable = toMergeOrders.size() < 2
-                ? Observable.empty()
-                : Observable
-                    .just(toMergeOrders)
-                    .doOnSubscribe(() -> orderUtil.position(toMergeOrders).markOrdersActive(toMergeOrders))
-                    .flatMap(toMergeOrders -> orderUtilHandler.callObservable(this))
-                    .doOnNext(orderUtil::addOrderToPosition)
-                    .doOnTerminate(() -> orderUtil.position(toMergeOrders).markOrdersIdle(toMergeOrders))
-                    .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
-                            + " for position " + instrumentFromOrders(toMergeOrders) + "."))
-                    .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
-                            + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
-                    .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
-                            + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
     }
 
     public String mergeOrderLabel() {
@@ -68,7 +49,7 @@ public class MergeCommand extends CommonCommand {
     }
 
     private static class Builder extends CommonBuilder<Option>
-            implements Option {
+                                 implements Option {
 
         private final String mergeOrderLabel;
         private final Set<IOrder> toMergeOrders;
@@ -85,8 +66,26 @@ public class MergeCommand extends CommonCommand {
         }
 
         @Override
+        public Option onMergeReject(final Consumer<IOrder> rejectAction) {
+            eventHandlerForType.put(OrderEventType.MERGE_REJECTED, checkNotNull(rejectAction));
+            return this;
+        }
+
+        @Override
+        public Option onMergeClose(final Consumer<IOrder> mergeCloseAction) {
+            eventHandlerForType.put(OrderEventType.MERGE_CLOSE_OK, checkNotNull(mergeCloseAction));
+            return this;
+        }
+
+        @Override
+        public Option onMerge(final Consumer<IOrder> doneAction) {
+            eventHandlerForType.put(OrderEventType.MERGE_OK, checkNotNull(doneAction));
+            return this;
+        }
+
+        @Override
         public MergeCommand build() {
-            return new MergeCommand(this, orderUtilHandler, orderUtil);
+            return new MergeCommand(this);
         }
     }
 }

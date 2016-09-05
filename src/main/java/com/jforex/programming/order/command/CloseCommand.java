@@ -2,11 +2,13 @@ package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.process.option.CloseOption;
 
 import rx.Completable;
@@ -36,7 +38,7 @@ public class CloseCommand extends CommonCommand {
     }
 
     public static class Builder extends CommonBuilder<Option>
-            implements Option {
+                                implements Option {
 
         private final IOrder order;
 
@@ -46,6 +48,24 @@ public class CloseCommand extends CommonCommand {
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.close(), order);
             this.callReason = OrderCallReason.CLOSE;
             this.startFunction = startFunction;
+        }
+
+        @Override
+        public Option onCloseReject(final Consumer<IOrder> rejectAction) {
+            eventHandlerForType.put(OrderEventType.CLOSE_REJECTED, checkNotNull(rejectAction));
+            return this;
+        }
+
+        @Override
+        public Option onPartialClose(final Consumer<IOrder> partialDoneAction) {
+            eventHandlerForType.put(OrderEventType.PARTIAL_CLOSE_OK, checkNotNull(partialDoneAction));
+            return this;
+        }
+
+        @Override
+        public Option onClose(final Consumer<IOrder> doneAction) {
+            eventHandlerForType.put(OrderEventType.CLOSE_OK, checkNotNull(doneAction));
+            return this;
         }
 
         @Override
