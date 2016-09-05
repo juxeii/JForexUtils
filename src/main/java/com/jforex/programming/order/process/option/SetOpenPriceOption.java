@@ -5,11 +5,11 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.command.SetOpenPriceCommand;
 
-public interface OpenPriceOption extends CommonOption<OpenPriceOption> {
+public interface SetOpenPriceOption extends CommonOption<SetOpenPriceOption> {
 
-    public OpenPriceOption doOnSetOpenPriceReject(Consumer<IOrder> rejectAction);
+    public SetOpenPriceOption doOnSetOpenPriceReject(Consumer<IOrder> rejectAction);
 
-    public OpenPriceOption doOnSetOpenPrice(Consumer<IOrder> doneAction);
+    public SetOpenPriceOption doOnSetOpenPrice(Consumer<IOrder> doneAction);
 
     public SetOpenPriceCommand build();
 }

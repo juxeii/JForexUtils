@@ -9,7 +9,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.option.SLOption;
+import com.jforex.programming.order.process.option.SetSLOption;
 
 import rx.Completable;
 
@@ -32,7 +32,7 @@ public class SetSLCommand extends CommonCommand {
         return newSL;
     }
 
-    public static final SLOption create(final IOrder order,
+    public static final SetSLOption create(final IOrder order,
                                         final double newSL,
                                         final Function<SetSLCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
@@ -40,8 +40,8 @@ public class SetSLCommand extends CommonCommand {
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<SLOption>
-                                 implements SLOption {
+    private static class Builder extends CommonBuilder<SetSLOption>
+                                 implements SetSLOption {
 
         private final IOrder order;
         private final double newSL;
@@ -57,13 +57,13 @@ public class SetSLCommand extends CommonCommand {
         }
 
         @Override
-        public SLOption doOnSetSLReject(final Consumer<IOrder> rejectAction) {
+        public SetSLOption doOnSetSLReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public SLOption doOnSetSL(final Consumer<IOrder> doneAction) {
+        public SetSLOption doOnSetSL(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(doneAction));
             return this;
         }

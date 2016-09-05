@@ -5,11 +5,11 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.command.SetLabelCommand;
 
-public interface LabelOption extends CommonOption<LabelOption> {
+public interface SetLabelOption extends CommonOption<SetLabelOption> {
 
-    public LabelOption doOnSetLabelReject(Consumer<IOrder> rejectAction);
+    public SetLabelOption doOnSetLabelReject(Consumer<IOrder> rejectAction);
 
-    public LabelOption doOnSetLabel(Consumer<IOrder> doneAction);
+    public SetLabelOption doOnSetLabel(Consumer<IOrder> doneAction);
 
     public SetLabelCommand build();
 }

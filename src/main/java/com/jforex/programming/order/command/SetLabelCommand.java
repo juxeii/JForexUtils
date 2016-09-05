@@ -9,7 +9,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.option.LabelOption;
+import com.jforex.programming.order.process.option.SetLabelOption;
 
 import rx.Completable;
 
@@ -32,7 +32,7 @@ public class SetLabelCommand extends CommonCommand {
         return newLabel;
     }
 
-    public static final LabelOption create(final IOrder order,
+    public static final SetLabelOption create(final IOrder order,
                                            final String newLabel,
                                            final Function<SetLabelCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
@@ -40,8 +40,8 @@ public class SetLabelCommand extends CommonCommand {
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<LabelOption>
-                                 implements LabelOption {
+    private static class Builder extends CommonBuilder<SetLabelOption>
+                                 implements SetLabelOption {
 
         private final IOrder order;
         private final String newLabel;
@@ -57,13 +57,13 @@ public class SetLabelCommand extends CommonCommand {
         }
 
         @Override
-        public LabelOption doOnSetLabelReject(final Consumer<IOrder> rejectAction) {
+        public SetLabelOption doOnSetLabelReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_LABEL_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public LabelOption doOnSetLabel(final Consumer<IOrder> doneAction) {
+        public SetLabelOption doOnSetLabel(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_LABEL, checkNotNull(doneAction));
             return this;
         }

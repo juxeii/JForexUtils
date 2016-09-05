@@ -9,7 +9,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.option.GTTOption;
+import com.jforex.programming.order.process.option.SetGTTOption;
 
 import rx.Completable;
 
@@ -32,7 +32,7 @@ public class SetGTTCommand extends CommonCommand {
         return newGTT;
     }
 
-    public static final GTTOption create(final IOrder order,
+    public static final SetGTTOption create(final IOrder order,
                                          final long newGTT,
                                          final Function<SetGTTCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
@@ -40,8 +40,8 @@ public class SetGTTCommand extends CommonCommand {
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<GTTOption>
-                                 implements GTTOption {
+    private static class Builder extends CommonBuilder<SetGTTOption>
+                                 implements SetGTTOption {
 
         private final IOrder order;
         private final long newGTT;
@@ -57,13 +57,13 @@ public class SetGTTCommand extends CommonCommand {
         }
 
         @Override
-        public GTTOption doOnSetGTTReject(final Consumer<IOrder> rejectAction) {
+        public SetGTTOption doOnSetGTTReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_GTT_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public GTTOption doOnSetGTT(final Consumer<IOrder> doneAction) {
+        public SetGTTOption doOnSetGTT(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_GTT, checkNotNull(doneAction));
             return this;
         }

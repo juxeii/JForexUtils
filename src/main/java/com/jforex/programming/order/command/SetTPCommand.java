@@ -9,7 +9,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.option.TPOption;
+import com.jforex.programming.order.process.option.SetTPOption;
 
 import rx.Completable;
 
@@ -32,7 +32,7 @@ public class SetTPCommand extends CommonCommand {
         return newTP;
     }
 
-    public static final TPOption create(final IOrder order,
+    public static final SetTPOption create(final IOrder order,
                                         final double newTP,
                                         final Function<SetTPCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
@@ -40,8 +40,8 @@ public class SetTPCommand extends CommonCommand {
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<TPOption>
-                                 implements TPOption {
+    private static class Builder extends CommonBuilder<SetTPOption>
+                                 implements SetTPOption {
 
         private final IOrder order;
         private final double newTP;
@@ -57,13 +57,13 @@ public class SetTPCommand extends CommonCommand {
         }
 
         @Override
-        public TPOption doOnSetTPReject(final Consumer<IOrder> rejectAction) {
+        public SetTPOption doOnSetTPReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public TPOption doOnSetTP(final Consumer<IOrder> doneAction) {
+        public SetTPOption doOnSetTP(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(doneAction));
             return this;
         }

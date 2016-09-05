@@ -9,7 +9,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.option.AmountOption;
+import com.jforex.programming.order.process.option.SetAmountOption;
 
 import rx.Completable;
 
@@ -32,7 +32,7 @@ public class SetAmountCommand extends CommonCommand {
         return newAmount;
     }
 
-    public static final AmountOption create(final IOrder order,
+    public static final SetAmountOption create(final IOrder order,
                                             final double newAmount,
                                             final Function<SetAmountCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
@@ -40,8 +40,8 @@ public class SetAmountCommand extends CommonCommand {
                            startFunction);
     }
 
-    public static class Builder extends CommonBuilder<AmountOption>
-                                implements AmountOption {
+    public static class Builder extends CommonBuilder<SetAmountOption>
+                                implements SetAmountOption {
 
         private final IOrder order;
         private final double newAmount;
@@ -57,13 +57,13 @@ public class SetAmountCommand extends CommonCommand {
         }
 
         @Override
-        public AmountOption doOnSetAmountReject(final Consumer<IOrder> rejectAction) {
+        public SetAmountOption doOnSetAmountReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_AMOUNT_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public AmountOption doOnSetAmount(final Consumer<IOrder> doneAction) {
+        public SetAmountOption doOnSetAmount(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_AMOUNT, checkNotNull(doneAction));
             return this;
         }

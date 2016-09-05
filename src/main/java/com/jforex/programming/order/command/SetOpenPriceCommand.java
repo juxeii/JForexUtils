@@ -9,61 +9,61 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.process.option.OpenPriceOption;
+import com.jforex.programming.order.process.option.SetOpenPriceOption;
 
 import rx.Completable;
 
 public class SetOpenPriceCommand extends CommonCommand {
 
     private final IOrder order;
-    private final double newPrice;
+    private final double newOpenPrice;
 
     private SetOpenPriceCommand(final Builder builder) {
         super(builder);
         order = builder.order;
-        newPrice = builder.newPrice;
+        newOpenPrice = builder.newOpenPrice;
     }
 
     public final IOrder order() {
         return order;
     }
 
-    public final double newPrice() {
-        return newPrice;
+    public final double newOpenPrice() {
+        return newOpenPrice;
     }
 
-    public static final OpenPriceOption create(final IOrder order,
-                                               final double newPrice,
-                                               final Function<SetOpenPriceCommand, Completable> startFunction) {
+    public static final SetOpenPriceOption create(final IOrder order,
+                                                  final double newOpenPrice,
+                                                  final Function<SetOpenPriceCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
-                           newPrice,
+                           newOpenPrice,
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<OpenPriceOption>
-                                 implements OpenPriceOption {
+    private static class Builder extends CommonBuilder<SetOpenPriceOption>
+                                 implements SetOpenPriceOption {
 
         private final IOrder order;
-        private final double newPrice;
+        private final double newOpenPrice;
 
         private Builder(final IOrder order,
-                        final double newPrice,
+                        final double newOpenPrice,
                         final Function<SetOpenPriceCommand, Completable> startFunction) {
             this.order = order;
-            this.newPrice = newPrice;
-            this.callable = OrderStaticUtil.runnableToCallable(() -> order.setOpenPrice(newPrice), order);
+            this.newOpenPrice = newOpenPrice;
+            this.callable = OrderStaticUtil.runnableToCallable(() -> order.setOpenPrice(newOpenPrice), order);
             this.callReason = OrderCallReason.CHANGE_PRICE;
             this.startFunction = startFunction;
         }
 
         @Override
-        public OpenPriceOption doOnSetOpenPriceReject(final Consumer<IOrder> rejectAction) {
+        public SetOpenPriceOption doOnSetOpenPriceReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_PRICE_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public OpenPriceOption doOnSetOpenPrice(final Consumer<IOrder> doneAction) {
+        public SetOpenPriceOption doOnSetOpenPrice(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_PRICE, checkNotNull(doneAction));
             return this;
         }

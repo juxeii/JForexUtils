@@ -31,15 +31,15 @@ import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.process.option.AmountOption;
+import com.jforex.programming.order.process.option.SetAmountOption;
 import com.jforex.programming.order.process.option.CloseOption;
-import com.jforex.programming.order.process.option.GTTOption;
-import com.jforex.programming.order.process.option.LabelOption;
+import com.jforex.programming.order.process.option.SetGTTOption;
+import com.jforex.programming.order.process.option.SetLabelOption;
 import com.jforex.programming.order.process.option.MergeOption;
-import com.jforex.programming.order.process.option.OpenPriceOption;
-import com.jforex.programming.order.process.option.SLOption;
+import com.jforex.programming.order.process.option.SetOpenPriceOption;
+import com.jforex.programming.order.process.option.SetSLOption;
 import com.jforex.programming.order.process.option.SubmitOption;
-import com.jforex.programming.order.process.option.TPOption;
+import com.jforex.programming.order.process.option.SetTPOption;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
@@ -137,7 +137,7 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final LabelOption setLabelBuilder(final IOrder order,
+    public final SetLabelOption setLabelBuilder(final IOrder order,
                                              final String newLabel) {
         return SetLabelCommand.create(order,
                                       newLabel,
@@ -162,7 +162,7 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final GTTOption setGTTBuilder(final IOrder order,
+    public final SetGTTOption setGTTBuilder(final IOrder order,
                                          final long newGTT) {
         return SetGTTCommand.create(order,
                                     newGTT,
@@ -188,7 +188,7 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final AmountOption setAmountBuilder(final IOrder order,
+    public final SetAmountOption setAmountBuilder(final IOrder order,
                                                final double newAmount) {
         return SetAmountCommand.create(order,
                                        newAmount,
@@ -214,7 +214,7 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final OpenPriceOption setOpenPriceBuilder(final IOrder order,
+    public final SetOpenPriceOption setOpenPriceBuilder(final IOrder order,
                                                      final double newPrice) {
         return SetOpenPriceCommand.create(order,
                                           newPrice,
@@ -226,7 +226,7 @@ public class OrderUtil {
         final Instrument instrument = orderToSetOpenPrice.getInstrument();
         final String label = orderToSetOpenPrice.getLabel();
         final double currentOpenPrice = orderToSetOpenPrice.getOpenPrice();
-        final double newOpenPrice = command.newPrice();
+        final double newOpenPrice = command.newOpenPrice();
 
         return Completable.defer(() -> Observable
             .just(orderToSetOpenPrice)
@@ -240,7 +240,7 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final SLOption setSLBuilder(final IOrder order,
+    public final SetSLOption setSLBuilder(final IOrder order,
                                        final double newSL) {
         return SetSLCommand.create(order,
                                    newSL,
@@ -266,7 +266,7 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final TPOption setTPBuilder(final IOrder order,
+    public final SetTPOption setTPBuilder(final IOrder order,
                                        final double newTP) {
         return SetTPCommand.create(order,
                                    newTP,
