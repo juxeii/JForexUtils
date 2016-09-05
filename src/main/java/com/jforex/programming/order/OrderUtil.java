@@ -22,6 +22,7 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.CommandUtil;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
 import com.jforex.programming.order.command.SetGTTCommand;

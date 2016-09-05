@@ -15,7 +15,6 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
 import rx.Completable;
-import rx.Observable;
 import rx.functions.Action0;
 
 public class CommonCommand implements OrderUtilCommand {
@@ -23,12 +22,11 @@ public class CommonCommand implements OrderUtilCommand {
     private final Callable<IOrder> callable;
     private final OrderCallReason callReason;
     private final OrderEventTypeData orderEventTypeData;
-    protected Observable<OrderEvent> observable;
     private final Consumer<OrderEvent> eventAction;
     private final Consumer<Throwable> errorAction;
     private final Action0 completedAction;
     private final int noOfRetries;
-    private final long delayInMillis;
+    private final long retryDelayInMillis;
     private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
     private final Function<CommonCommand, Completable> startFunction;
 
@@ -43,7 +41,7 @@ public class CommonCommand implements OrderUtilCommand {
         eventAction = builder.eventAction;
         errorAction = builder.errorAction;
         noOfRetries = builder.noOfRetries;
-        delayInMillis = builder.delayInMillis;
+        retryDelayInMillis = builder.retryDelayInMillis;
         eventHandlerForType = builder.eventHandlerForType;
         startFunction = (Function<CommonCommand, Completable>) builder.startFunction;
     }
@@ -99,22 +97,11 @@ public class CommonCommand implements OrderUtilCommand {
         return noOfRetries;
     }
 
-    public final long delayInMillis() {
-        return delayInMillis;
+    public final long retryDelayInMillis() {
+        return retryDelayInMillis;
     }
 
     public final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType() {
         return eventHandlerForType;
-    }
-
-    protected Observable<OrderEvent> changeObservable(final Observable<OrderEvent> observable,
-                                                      final IOrder order,
-                                                      final String commonLog) {
-        final String logMsg = commonLog + " for order " + order.getLabel()
-                + " and instrument " + order.getInstrument();
-        return observable
-            .doOnSubscribe(() -> logger.info("Start to change " + logMsg))
-            .doOnError(e -> logger.error("Failed to change " + logMsg + "!Excpetion: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Changed " + logMsg));
     }
 }

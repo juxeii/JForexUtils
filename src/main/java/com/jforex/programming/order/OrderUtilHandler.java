@@ -36,7 +36,7 @@ public class OrderUtilHandler {
             .doOnNext(orderEvent -> callEventHandler(orderEvent, command.eventHandlerForType()))
             .doOnNext(command.eventAction()::accept);
 
-        return decorateRetry(observable, command.noOfRetries(), command.delayInMillis());
+        return decorateRetry(observable, command.noOfRetries(), command.retryDelayInMillis());
     }
 
     private final void registerOrder(final IOrder order,

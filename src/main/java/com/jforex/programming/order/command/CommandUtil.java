@@ -1,4 +1,4 @@
-package com.jforex.programming.order;
+package com.jforex.programming.order.command;
 
 import java.util.Arrays;
 import java.util.List;
@@ -7,7 +7,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.command.OrderUtilCommand;
 
 import rx.Completable;
 

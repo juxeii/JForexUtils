@@ -7,9 +7,6 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Maps;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -22,28 +19,21 @@ import rx.Completable;
 import rx.functions.Action0;
 
 @SuppressWarnings("unchecked")
-public abstract class CommonBuilder<T extends CommonOption<T>> {
+public class CommonBuilder<T extends CommonOption<T>> {
 
-    protected Callable<IOrder> callable;
-    protected OrderCallReason callReason;
-    protected OrderEventTypeData orderEventTypeData;
     protected Action0 completedAction = () -> {};
     protected Consumer<OrderEvent> eventAction = o -> {};
     protected Consumer<Throwable> errorAction = o -> {};
     protected int noOfRetries;
-    protected long delayInMillis;
+    protected long retryDelayInMillis;
+    protected Callable<IOrder> callable;
+    protected OrderCallReason callReason;
+    protected OrderEventTypeData orderEventTypeData;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = Maps.newEnumMap(OrderEventType.class);
     protected Function<? extends CommonCommand, Completable> startFunction;
 
-    protected static final Logger logger = LogManager.getLogger(CommonBuilder.class);
-
     public T doOnCompleted(final Action0 completedAction) {
         this.completedAction = checkNotNull(completedAction);
-        return (T) this;
-    }
-
-    public T doOnOrderEvent(final Consumer<OrderEvent> eventAction) {
-        this.eventAction = checkNotNull(eventAction);
         return (T) this;
     }
 
@@ -52,9 +42,14 @@ public abstract class CommonBuilder<T extends CommonOption<T>> {
         return (T) this;
     }
 
-    public T retry(final int noOfRetries, final long delayInMillis) {
+    public T doOnOrderEvent(final Consumer<OrderEvent> eventAction) {
+        this.eventAction = checkNotNull(eventAction);
+        return (T) this;
+    }
+
+    public T retry(final int noOfRetries, final long retryDelayInMillis) {
         this.noOfRetries = noOfRetries;
-        this.delayInMillis = delayInMillis;
+        this.retryDelayInMillis = retryDelayInMillis;
         return (T) this;
     }
 }
