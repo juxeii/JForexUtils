@@ -17,11 +17,6 @@ public class CloseCommand extends CommonCommand {
 
     private final IOrder order;
 
-    public interface Option extends CloseOption<Option> {
-
-        public CloseCommand build();
-    }
-
     private CloseCommand(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -31,14 +26,14 @@ public class CloseCommand extends CommonCommand {
         return order;
     }
 
-    public static final Option create(final IOrder orderToClose,
-                                      final Function<CloseCommand, Completable> startFunction) {
+    public static final CloseOption create(final IOrder orderToClose,
+                                           final Function<CloseCommand, Completable> startFunction) {
         return new Builder(checkNotNull(orderToClose),
                            startFunction);
     }
 
-    public static class Builder extends CommonBuilder<Option>
-                                implements Option {
+    public static class Builder extends CommonBuilder<CloseOption>
+                                implements CloseOption {
 
         private final IOrder order;
 
@@ -51,19 +46,19 @@ public class CloseCommand extends CommonCommand {
         }
 
         @Override
-        public Option doOnCloseReject(final Consumer<IOrder> rejectAction) {
+        public CloseOption doOnCloseReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CLOSE_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option doOnPartialClose(final Consumer<IOrder> partialDoneAction) {
+        public CloseOption doOnPartialClose(final Consumer<IOrder> partialDoneAction) {
             eventHandlerForType.put(OrderEventType.PARTIAL_CLOSE_OK, checkNotNull(partialDoneAction));
             return this;
         }
 
         @Override
-        public Option doOnClose(final Consumer<IOrder> doneAction) {
+        public CloseOption doOnClose(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CLOSE_OK, checkNotNull(doneAction));
             return this;
         }

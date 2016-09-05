@@ -3,10 +3,13 @@ package com.jforex.programming.order.process.option;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.command.SetGTTCommand;
 
-public interface GTTOption<T extends GTTOption<T>> extends CommonOption<T> {
+public interface GTTOption extends CommonOption<GTTOption> {
 
-    public T doOnSetGTTReject(Consumer<IOrder> rejectAction);
+    public GTTOption doOnSetGTTReject(Consumer<IOrder> rejectAction);
 
-    public T doOnSetGTT(Consumer<IOrder> doneAction);
+    public GTTOption doOnSetGTT(Consumer<IOrder> doneAction);
+
+    public SetGTTCommand build();
 }

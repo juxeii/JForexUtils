@@ -18,11 +18,6 @@ public class SetAmountCommand extends CommonCommand {
     private final IOrder order;
     private final double newAmount;
 
-    public interface Option extends AmountOption<Option> {
-
-        public SetAmountCommand build();
-    }
-
     private SetAmountCommand(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -37,16 +32,16 @@ public class SetAmountCommand extends CommonCommand {
         return newAmount;
     }
 
-    public static final Option create(final IOrder order,
-                                      final double newAmount,
-                                      final Function<SetAmountCommand, Completable> startFunction) {
+    public static final AmountOption create(final IOrder order,
+                                            final double newAmount,
+                                            final Function<SetAmountCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
                            newAmount,
                            startFunction);
     }
 
-    public static class Builder extends CommonBuilder<Option>
-                                implements Option {
+    public static class Builder extends CommonBuilder<AmountOption>
+                                implements AmountOption {
 
         private final IOrder order;
         private final double newAmount;
@@ -62,13 +57,13 @@ public class SetAmountCommand extends CommonCommand {
         }
 
         @Override
-        public Option doOnSetAmountReject(final Consumer<IOrder> rejectAction) {
+        public AmountOption doOnSetAmountReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_AMOUNT_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option doOnSetAmount(final Consumer<IOrder> doneAction) {
+        public AmountOption doOnSetAmount(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_AMOUNT, checkNotNull(doneAction));
             return this;
         }

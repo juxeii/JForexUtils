@@ -3,10 +3,13 @@ package com.jforex.programming.order.process.option;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.command.SetOpenPriceCommand;
 
-public interface OpenPriceOption<T extends OpenPriceOption<T>> extends CommonOption<T> {
+public interface OpenPriceOption extends CommonOption<OpenPriceOption> {
 
-    public T doOnSetOpenPriceReject(Consumer<IOrder> rejectAction);
+    public OpenPriceOption doOnSetOpenPriceReject(Consumer<IOrder> rejectAction);
 
-    public T doOnSetOpenPrice(Consumer<IOrder> doneAction);
+    public OpenPriceOption doOnSetOpenPrice(Consumer<IOrder> doneAction);
+
+    public SetOpenPriceCommand build();
 }

@@ -3,10 +3,13 @@ package com.jforex.programming.order.process.option;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.command.SetAmountCommand;
 
-public interface AmountOption<T extends AmountOption<T>> extends CommonOption<T> {
+public interface AmountOption extends CommonOption<AmountOption> {
 
-    public T doOnSetAmountReject(Consumer<IOrder> rejectAction);
+    public AmountOption doOnSetAmountReject(Consumer<IOrder> rejectAction);
 
-    public T doOnSetAmount(Consumer<IOrder> doneAction);
+    public AmountOption doOnSetAmount(Consumer<IOrder> doneAction);
+
+    public SetAmountCommand build();
 }

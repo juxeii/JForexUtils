@@ -19,11 +19,6 @@ public class MergeCommand extends CommonCommand {
     private final String mergeOrderLabel;
     private final Set<IOrder> toMergeOrders;
 
-    public interface Option extends MergeOption<Option> {
-
-        public MergeCommand build();
-    }
-
     private MergeCommand(final Builder builder) {
         super(builder);
         mergeOrderLabel = builder.mergeOrderLabel;
@@ -38,18 +33,18 @@ public class MergeCommand extends CommonCommand {
         return toMergeOrders;
     }
 
-    public static final Option create(final String mergeOrderLabel,
-                                      final Set<IOrder> toMergeOrders,
-                                      final IEngineUtil engineUtil,
-                                      final Function<MergeCommand, Completable> startFunction) {
+    public static final MergeOption create(final String mergeOrderLabel,
+                                           final Set<IOrder> toMergeOrders,
+                                           final IEngineUtil engineUtil,
+                                           final Function<MergeCommand, Completable> startFunction) {
         return new Builder(checkNotNull(mergeOrderLabel),
                            checkNotNull(toMergeOrders),
                            engineUtil,
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<Option>
-                                 implements Option {
+    private static class Builder extends CommonBuilder<MergeOption>
+                                 implements MergeOption {
 
         private final String mergeOrderLabel;
         private final Set<IOrder> toMergeOrders;
@@ -66,19 +61,19 @@ public class MergeCommand extends CommonCommand {
         }
 
         @Override
-        public Option doOnMergeReject(final Consumer<IOrder> rejectAction) {
+        public MergeOption doOnMergeReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.MERGE_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option doOnMergeClose(final Consumer<IOrder> mergeCloseAction) {
+        public MergeOption doOnMergeClose(final Consumer<IOrder> mergeCloseAction) {
             eventHandlerForType.put(OrderEventType.MERGE_CLOSE_OK, checkNotNull(mergeCloseAction));
             return this;
         }
 
         @Override
-        public Option doOnMerge(final Consumer<IOrder> doneAction) {
+        public MergeOption doOnMerge(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.MERGE_OK, checkNotNull(doneAction));
             return this;
         }

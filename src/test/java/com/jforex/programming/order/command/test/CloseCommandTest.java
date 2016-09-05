@@ -11,29 +11,31 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
-import rx.Observable;
 import rx.functions.Action0;
 
 public class CloseCommandTest extends CommonUtilForTest {
 
     private CloseCommand comamnd;
 
-    @Mock private Action0 completedActionMock;
-    @Mock private Consumer<OrderEvent> eventActionMock;
-    @Mock private Consumer<Throwable> errorActionMock;
-    @Mock private Consumer<IOrder> closeRejectActionMock;
-    @Mock private Consumer<IOrder> closedActionMock;
-    @Mock private Consumer<IOrder> partialClosedActionMock;
-    private final Observable<OrderEvent> observable =
-            Observable.just(new OrderEvent(buyOrderEURUSD, OrderEventType.CLOSE_OK));
+    @Mock
+    private Action0 completedActionMock;
+    @Mock
+    private Consumer<OrderEvent> eventActionMock;
+    @Mock
+    private Consumer<Throwable> errorActionMock;
+    @Mock
+    private Consumer<IOrder> closeRejectActionMock;
+    @Mock
+    private Consumer<IOrder> closedActionMock;
+    @Mock
+    private Consumer<IOrder> partialClosedActionMock;
     private Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
 //    @Before
 //    public void setUp() {
 //        comamnd = CloseCommand
-//            .create(buyOrderEURUSD, observable)
-//            .onError(errorActionMock)
-//            .onClose(closedActionMock)
+//            .create(buyOrderEURUSD, null)
+//
 //            .onCloseReject(closeRejectActionMock)
 //            .onPartialClose(partialClosedActionMock)
 //            .onCompleted(completedActionMock)

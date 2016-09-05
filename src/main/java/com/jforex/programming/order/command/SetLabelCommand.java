@@ -18,11 +18,6 @@ public class SetLabelCommand extends CommonCommand {
     private final IOrder order;
     private final String newLabel;
 
-    public interface Option extends LabelOption<Option> {
-
-        public SetLabelCommand build();
-    }
-
     private SetLabelCommand(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -37,16 +32,16 @@ public class SetLabelCommand extends CommonCommand {
         return newLabel;
     }
 
-    public static final Option create(final IOrder order,
-                                      final String newLabel,
-                                      final Function<SetLabelCommand, Completable> startFunction) {
+    public static final LabelOption create(final IOrder order,
+                                           final String newLabel,
+                                           final Function<SetLabelCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
                            checkNotNull(newLabel),
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<Option>
-                                 implements Option {
+    private static class Builder extends CommonBuilder<LabelOption>
+                                 implements LabelOption {
 
         private final IOrder order;
         private final String newLabel;
@@ -62,13 +57,13 @@ public class SetLabelCommand extends CommonCommand {
         }
 
         @Override
-        public Option doOnSetLabelReject(final Consumer<IOrder> rejectAction) {
+        public LabelOption doOnSetLabelReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_LABEL_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option doOnSetLabel(final Consumer<IOrder> doneAction) {
+        public LabelOption doOnSetLabel(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_LABEL, checkNotNull(doneAction));
             return this;
         }

@@ -18,11 +18,6 @@ public class SetOpenPriceCommand extends CommonCommand {
     private final IOrder order;
     private final double newPrice;
 
-    public interface Option extends OpenPriceOption<Option> {
-
-        public SetOpenPriceCommand build();
-    }
-
     private SetOpenPriceCommand(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -37,16 +32,16 @@ public class SetOpenPriceCommand extends CommonCommand {
         return newPrice;
     }
 
-    public static final Option create(final IOrder order,
-                                      final double newPrice,
-                                      final Function<SetOpenPriceCommand, Completable> startFunction) {
+    public static final OpenPriceOption create(final IOrder order,
+                                               final double newPrice,
+                                               final Function<SetOpenPriceCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
                            newPrice,
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<Option>
-                                 implements Option {
+    private static class Builder extends CommonBuilder<OpenPriceOption>
+                                 implements OpenPriceOption {
 
         private final IOrder order;
         private final double newPrice;
@@ -62,13 +57,13 @@ public class SetOpenPriceCommand extends CommonCommand {
         }
 
         @Override
-        public Option doOnSetOpenPriceReject(final Consumer<IOrder> rejectAction) {
+        public OpenPriceOption doOnSetOpenPriceReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_PRICE_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option doOnSetOpenPrice(final Consumer<IOrder> doneAction) {
+        public OpenPriceOption doOnSetOpenPrice(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_PRICE, checkNotNull(doneAction));
             return this;
         }

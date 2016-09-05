@@ -18,11 +18,6 @@ public class SetGTTCommand extends CommonCommand {
     private final IOrder order;
     private final long newGTT;
 
-    public interface Option extends GTTOption<Option> {
-
-        public SetGTTCommand build();
-    }
-
     private SetGTTCommand(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -37,16 +32,16 @@ public class SetGTTCommand extends CommonCommand {
         return newGTT;
     }
 
-    public static final Option create(final IOrder order,
-                                      final long newGTT,
-                                      final Function<SetGTTCommand, Completable> startFunction) {
+    public static final GTTOption create(final IOrder order,
+                                         final long newGTT,
+                                         final Function<SetGTTCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
                            newGTT,
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<Option>
-                                 implements Option {
+    private static class Builder extends CommonBuilder<GTTOption>
+                                 implements GTTOption {
 
         private final IOrder order;
         private final long newGTT;
@@ -62,13 +57,13 @@ public class SetGTTCommand extends CommonCommand {
         }
 
         @Override
-        public Option doOnSetGTTReject(final Consumer<IOrder> rejectAction) {
+        public GTTOption doOnSetGTTReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_GTT_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option doOnSetGTT(final Consumer<IOrder> doneAction) {
+        public GTTOption doOnSetGTT(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_GTT, checkNotNull(doneAction));
             return this;
         }

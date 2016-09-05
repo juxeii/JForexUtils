@@ -31,6 +31,15 @@ import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.process.option.AmountOption;
+import com.jforex.programming.order.process.option.CloseOption;
+import com.jforex.programming.order.process.option.GTTOption;
+import com.jforex.programming.order.process.option.LabelOption;
+import com.jforex.programming.order.process.option.MergeOption;
+import com.jforex.programming.order.process.option.OpenPriceOption;
+import com.jforex.programming.order.process.option.SLOption;
+import com.jforex.programming.order.process.option.SubmitOption;
+import com.jforex.programming.order.process.option.TPOption;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
@@ -56,7 +65,7 @@ public class OrderUtil {
         this.engineUtil = engineUtil;
     }
 
-    public final SubmitCommand.Option submitBuilder(final OrderParams orderParams) {
+    public final SubmitOption submitBuilder(final OrderParams orderParams) {
         return SubmitCommand.create(orderParams,
                                     engineUtil,
                                     this::submitOrder);
@@ -77,8 +86,8 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final MergeCommand.Option mergeBuilder(final String mergeOrderLabel,
-                                                  final Set<IOrder> toMergeOrders) {
+    public final MergeOption mergeBuilder(final String mergeOrderLabel,
+                                          final Set<IOrder> toMergeOrders) {
         return MergeCommand.create(mergeOrderLabel,
                                    toMergeOrders,
                                    engineUtil,
@@ -106,7 +115,7 @@ public class OrderUtil {
                     .toCompletable());
     }
 
-    public final CloseCommand.Option closeBuilder(final IOrder orderToClose) {
+    public final CloseOption closeBuilder(final IOrder orderToClose) {
         return CloseCommand.create(orderToClose,
                                    this::close);
     }
@@ -128,8 +137,8 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final SetLabelCommand.Option setLabelBuilder(final IOrder order,
-                                                        final String newLabel) {
+    public final LabelOption setLabelBuilder(final IOrder order,
+                                             final String newLabel) {
         return SetLabelCommand.create(order,
                                       newLabel,
                                       this::setLabel);
@@ -153,8 +162,8 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final SetGTTCommand.Option setGTTBuilder(final IOrder order,
-                                                    final long newGTT) {
+    public final GTTOption setGTTBuilder(final IOrder order,
+                                         final long newGTT) {
         return SetGTTCommand.create(order,
                                     newGTT,
                                     this::setGTT);
@@ -179,8 +188,8 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final SetAmountCommand.Option setAmountBuilder(final IOrder order,
-                                                          final double newAmount) {
+    public final AmountOption setAmountBuilder(final IOrder order,
+                                               final double newAmount) {
         return SetAmountCommand.create(order,
                                        newAmount,
                                        this::setAmount);
@@ -205,8 +214,8 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final SetOpenPriceCommand.Option setOpenPriceBuilder(final IOrder order,
-                                                                final double newPrice) {
+    public final OpenPriceOption setOpenPriceBuilder(final IOrder order,
+                                                     final double newPrice) {
         return SetOpenPriceCommand.create(order,
                                           newPrice,
                                           this::setOpenPrice);
@@ -231,8 +240,8 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final SetSLCommand.Option setSLBuilder(final IOrder order,
-                                                  final double newSL) {
+    public final SLOption setSLBuilder(final IOrder order,
+                                       final double newSL) {
         return SetSLCommand.create(order,
                                    newSL,
                                    this::setSL);
@@ -257,8 +266,8 @@ public class OrderUtil {
             .toCompletable());
     }
 
-    public final SetTPCommand.Option setTPBuilder(final IOrder order,
-                                                  final double newTP) {
+    public final TPOption setTPBuilder(final IOrder order,
+                                       final double newTP) {
         return SetTPCommand.create(order,
                                    newTP,
                                    this::setTP);

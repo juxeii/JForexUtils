@@ -18,11 +18,6 @@ public class SubmitCommand extends CommonCommand {
 
     private final OrderParams orderParams;
 
-    public interface Option extends SubmitOption<Option> {
-
-        public SubmitCommand build();
-    }
-
     private SubmitCommand(final Builder builder) {
         super(builder);
         orderParams = builder.orderParams;
@@ -32,16 +27,16 @@ public class SubmitCommand extends CommonCommand {
         return orderParams;
     }
 
-    public static final Option create(final OrderParams orderParams,
-                                      final IEngineUtil engineUtil,
-                                      final Function<SubmitCommand, Completable> startFunction) {
+    public static final SubmitOption create(final OrderParams orderParams,
+                                            final IEngineUtil engineUtil,
+                                            final Function<SubmitCommand, Completable> startFunction) {
         return new Builder(checkNotNull(orderParams),
                            engineUtil,
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<Option>
-                                 implements Option {
+    private static class Builder extends CommonBuilder<SubmitOption>
+                                 implements SubmitOption {
 
         private final OrderParams orderParams;
 
@@ -55,32 +50,32 @@ public class SubmitCommand extends CommonCommand {
         }
 
         @Override
-        public Option doOnSubmit(final Consumer<IOrder> submitOKAction) {
+        public SubmitOption doOnSubmit(final Consumer<IOrder> submitOKAction) {
             eventHandlerForType.put(OrderEventType.SUBMIT_OK, checkNotNull(submitOKAction));
             eventHandlerForType.put(OrderEventType.SUBMIT_CONDITIONAL_OK, checkNotNull(submitOKAction));
             return this;
         }
 
         @Override
-        public Option doOnSubmitReject(final Consumer<IOrder> submitRejectAction) {
+        public SubmitOption doOnSubmitReject(final Consumer<IOrder> submitRejectAction) {
             eventHandlerForType.put(OrderEventType.SUBMIT_REJECTED, checkNotNull(submitRejectAction));
             return this;
         }
 
         @Override
-        public Option doOnFillReject(final Consumer<IOrder> fillRejectAction) {
+        public SubmitOption doOnFillReject(final Consumer<IOrder> fillRejectAction) {
             eventHandlerForType.put(OrderEventType.FILL_REJECTED, checkNotNull(fillRejectAction));
             return this;
         }
 
         @Override
-        public Option doOnPartialFill(final Consumer<IOrder> partialFillAction) {
+        public SubmitOption doOnPartialFill(final Consumer<IOrder> partialFillAction) {
             eventHandlerForType.put(OrderEventType.PARTIAL_FILL_OK, checkNotNull(partialFillAction));
             return this;
         }
 
         @Override
-        public Option doOnFill(final Consumer<IOrder> fillAction) {
+        public SubmitOption doOnFill(final Consumer<IOrder> fillAction) {
             eventHandlerForType.put(OrderEventType.FULLY_FILLED, checkNotNull(fillAction));
             return this;
         }

@@ -18,11 +18,6 @@ public class SetTPCommand extends CommonCommand {
     private final IOrder order;
     private final double newTP;
 
-    public interface Option extends TPOption<Option> {
-
-        public SetTPCommand build();
-    }
-
     private SetTPCommand(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -37,16 +32,16 @@ public class SetTPCommand extends CommonCommand {
         return newTP;
     }
 
-    public static final Option create(final IOrder order,
-                                      final double newTP,
-                                      final Function<SetTPCommand, Completable> startFunction) {
+    public static final TPOption create(final IOrder order,
+                                        final double newTP,
+                                        final Function<SetTPCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
                            newTP,
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<Option>
-                                 implements Option {
+    private static class Builder extends CommonBuilder<TPOption>
+                                 implements TPOption {
 
         private final IOrder order;
         private final double newTP;
@@ -62,13 +57,13 @@ public class SetTPCommand extends CommonCommand {
         }
 
         @Override
-        public Option doOnSetTPReject(final Consumer<IOrder> rejectAction) {
+        public TPOption doOnSetTPReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_TP_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option doOnSetTP(final Consumer<IOrder> doneAction) {
+        public TPOption doOnSetTP(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_TP, checkNotNull(doneAction));
             return this;
         }

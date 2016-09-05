@@ -3,12 +3,15 @@ package com.jforex.programming.order.process.option;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.command.MergeCommand;
 
-public interface MergeOption<T extends MergeOption<T>> extends CommonOption<T> {
+public interface MergeOption extends CommonOption<MergeOption> {
 
-    public T doOnMergeReject(Consumer<IOrder> mergeRejectAction);
+    public MergeOption doOnMergeReject(Consumer<IOrder> mergeRejectAction);
 
-    public T doOnMerge(Consumer<IOrder> mergedAction);
+    public MergeOption doOnMerge(Consumer<IOrder> mergedAction);
 
-    public T doOnMergeClose(Consumer<IOrder> mergeClosedAction);
+    public MergeOption doOnMergeClose(Consumer<IOrder> mergeClosedAction);
+
+    public MergeCommand build();
 }

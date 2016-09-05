@@ -18,11 +18,6 @@ public class SetSLCommand extends CommonCommand {
     private final IOrder order;
     private final double newSL;
 
-    public interface Option extends SLOption<Option> {
-
-        public SetSLCommand build();
-    }
-
     private SetSLCommand(final Builder builder) {
         super(builder);
         order = builder.order;
@@ -37,16 +32,16 @@ public class SetSLCommand extends CommonCommand {
         return newSL;
     }
 
-    public static final Option create(final IOrder order,
-                                      final double newSL,
-                                      final Function<SetSLCommand, Completable> startFunction) {
+    public static final SLOption create(final IOrder order,
+                                        final double newSL,
+                                        final Function<SetSLCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
                            newSL,
                            startFunction);
     }
 
-    private static class Builder extends CommonBuilder<Option>
-                                 implements Option {
+    private static class Builder extends CommonBuilder<SLOption>
+                                 implements SLOption {
 
         private final IOrder order;
         private final double newSL;
@@ -62,13 +57,13 @@ public class SetSLCommand extends CommonCommand {
         }
 
         @Override
-        public Option doOnSetSLReject(final Consumer<IOrder> rejectAction) {
+        public SLOption doOnSetSLReject(final Consumer<IOrder> rejectAction) {
             eventHandlerForType.put(OrderEventType.CHANGE_SL_REJECTED, checkNotNull(rejectAction));
             return this;
         }
 
         @Override
-        public Option doOnSetSL(final Consumer<IOrder> doneAction) {
+        public SLOption doOnSetSL(final Consumer<IOrder> doneAction) {
             eventHandlerForType.put(OrderEventType.CHANGED_SL, checkNotNull(doneAction));
             return this;
         }
