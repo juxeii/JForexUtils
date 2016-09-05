@@ -11,6 +11,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -315,8 +316,9 @@ public class OrderUtil {
                                            final Function<IOrder, CloseCommand> closeCreator) {
         final Position position = position(instrument);
         final Set<IOrder> ordersToClose = position.filledOrOpened();
+        final List<CloseCommand> closeCommands = CommandUtil.createBatchCommands(ordersToClose, closeCreator);
 
-        return CommandUtil.runCommandsForOrderBatch(ordersToClose, closeCreator);
+        return CommandUtil.runCommands(closeCommands);
     }
 
     public final Completable mergePosition(final Instrument instrument,

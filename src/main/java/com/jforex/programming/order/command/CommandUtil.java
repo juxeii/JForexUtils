@@ -23,27 +23,21 @@ public final class CommandUtil {
         return Completable.merge(commandsToCompletables(commands));
     }
 
-    public static final Completable
-           runCommandsForOrderBatch(final Set<IOrder> orders,
-                                    final Function<IOrder, ? extends OrderUtilCommand> commandCreator) {
-        return runCommands(createBatchCommands(orders, commandCreator));
-    }
-
-    public static final <T extends OrderUtilCommand> List<T>
-           createBatchCommands(final Set<IOrder> orders,
-                               final Function<IOrder, T> commandCreator) {
-        return orders
-            .stream()
-            .map(commandCreator::apply)
-            .collect(Collectors.toList());
-    }
-
-    public static final Completable commandSequence(final List<? extends OrderUtilCommand> commands) {
+    public static final Completable runCommandsConcatenated(final List<? extends OrderUtilCommand> commands) {
         return Completable.concat(commandsToCompletables(commands));
     }
 
     @SafeVarargs
-    public static final <T extends OrderUtilCommand> Completable commandSequence(final T... commands) {
-        return commandSequence(Arrays.asList(commands));
+    public static final <T extends OrderUtilCommand> Completable runCommandsConcatenated(final T... commands) {
+        return runCommandsConcatenated(Arrays.asList(commands));
+    }
+
+    public static final <T extends OrderUtilCommand> List<T>
+           createBatchCommands(final Set<IOrder> orders,
+                               final Function<IOrder, T> commandFactory) {
+        return orders
+            .stream()
+            .map(commandFactory::apply)
+            .collect(Collectors.toList());
     }
 }
