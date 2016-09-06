@@ -2,6 +2,7 @@ package com.jforex.programming.order.command.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Set;
@@ -64,8 +65,8 @@ public class CommandUtilTest extends CommonUtilForTest {
         final List<Completable> completables = CommandUtil.commandsToCompletables(commands);
 
         assertThat(completables.size(), equalTo(2));
-        assertThat(completables.get(0), equalTo(completableOne));
-        assertThat(completables.get(1), equalTo(completableTwo));
+        assertTrue(completables.contains(completableOne));
+        assertTrue(completables.contains(completableTwo));
     }
 
     @Test
@@ -105,7 +106,7 @@ public class CommandUtilTest extends CommonUtilForTest {
         final List<OrderUtilCommand> commands = CommandUtil.createBatchCommands(batchOrders, commandFactoryMock);
 
         assertThat(commands.size(), equalTo(2));
-        assertThat(commands.get(0), equalTo(commandOne));
-        assertThat(commands.get(1), equalTo(commandTwo));
+        assertTrue(commands.contains(commandOne));
+        assertTrue(commands.contains(commandTwo));
     }
 }

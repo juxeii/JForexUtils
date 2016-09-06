@@ -58,4 +58,10 @@ public class CommonBuilder<T extends CommonOption<T>> {
         this.retryDelayInMillis = retryDelayInMillis;
         return (T) this;
     }
+
+    protected T registerTypeHandler(final OrderEventType type,
+                                    final Consumer<IOrder> handler) {
+        eventHandlerForType.put(type, checkNotNull(handler));
+        return (T) this;
+    }
 }

@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.IEngineUtil;
-import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.CommandUtil;
 import com.jforex.programming.order.command.CommonCommand;
@@ -47,7 +46,6 @@ import com.jforex.programming.order.process.option.SubmitOption;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
-import com.jforex.programming.settings.PlatformSettings;
 
 import rx.Completable;
 import rx.Observable;
@@ -58,7 +56,6 @@ public class OrderUtil {
     private final PositionFactory positionFactory;
     private final IEngineUtil engineUtil;
 
-    public static final PlatformSettings platformSettings = JForexUtil.platformSettings;
     private static final Logger logger = LogManager.getLogger(OrderUtil.class);
 
     public OrderUtil(final OrderUtilHandler orderUtilHandler,

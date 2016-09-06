@@ -186,6 +186,12 @@ public class CommonUtilForTest extends BDDMockito {
         return Observable.just(orderEvent);
     }
 
+    public final Observable<OrderEvent> eventObservable(final IOrder order,
+                                                        final OrderEventType type) {
+        final OrderEvent orderEvent = new OrderEvent(order, type);
+        return eventObservable(orderEvent);
+    }
+
     public final Observable<OrderEvent> jfExceptionObservable() {
         return Observable.error(jfException);
     }

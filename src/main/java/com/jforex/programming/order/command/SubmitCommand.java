@@ -50,34 +50,30 @@ public class SubmitCommand extends CommonCommand {
         }
 
         @Override
-        public SubmitOption doOnSubmit(final Consumer<IOrder> submitOKAction) {
-            eventHandlerForType.put(OrderEventType.SUBMIT_OK, checkNotNull(submitOKAction));
-            eventHandlerForType.put(OrderEventType.SUBMIT_CONDITIONAL_OK, checkNotNull(submitOKAction));
+        public SubmitOption doOnSubmit(final Consumer<IOrder> submitAction) {
+            eventHandlerForType.put(OrderEventType.SUBMIT_OK, checkNotNull(submitAction));
+            eventHandlerForType.put(OrderEventType.SUBMIT_CONDITIONAL_OK, checkNotNull(submitAction));
             return this;
         }
 
         @Override
         public SubmitOption doOnSubmitReject(final Consumer<IOrder> submitRejectAction) {
-            eventHandlerForType.put(OrderEventType.SUBMIT_REJECTED, checkNotNull(submitRejectAction));
-            return this;
+            return registerTypeHandler(OrderEventType.SUBMIT_REJECTED, submitRejectAction);
         }
 
         @Override
         public SubmitOption doOnFillReject(final Consumer<IOrder> fillRejectAction) {
-            eventHandlerForType.put(OrderEventType.FILL_REJECTED, checkNotNull(fillRejectAction));
-            return this;
+            return registerTypeHandler(OrderEventType.FILL_REJECTED, fillRejectAction);
         }
 
         @Override
         public SubmitOption doOnPartialFill(final Consumer<IOrder> partialFillAction) {
-            eventHandlerForType.put(OrderEventType.PARTIAL_FILL_OK, checkNotNull(partialFillAction));
-            return this;
+            return registerTypeHandler(OrderEventType.PARTIAL_FILL_OK, partialFillAction);
         }
 
         @Override
         public SubmitOption doOnFill(final Consumer<IOrder> fillAction) {
-            eventHandlerForType.put(OrderEventType.FULLY_FILLED, checkNotNull(fillAction));
-            return this;
+            return registerTypeHandler(OrderEventType.FULLY_FILLED, fillAction);
         }
 
         @Override

@@ -24,6 +24,7 @@ import static com.jforex.programming.order.event.OrderEventType.MERGE_CLOSE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITIONAL_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 
 import java.util.EnumSet;
@@ -70,7 +71,7 @@ public final class OrderEventTypeSets {
                                   CHANGE_PRICE_REJECTED);
 
     public static final Set<OrderEventType> createEvents =
-            Sets.immutableEnumSet(FULLY_FILLED,
+            Sets.immutableEnumSet(SUBMIT_OK,
                                   SUBMIT_CONDITIONAL_OK,
                                   MERGE_OK);
 
