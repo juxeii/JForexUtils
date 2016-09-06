@@ -61,6 +61,11 @@ public class CommandUtilTest extends CommonUtilForTest {
     }
 
     @Test
+    public void testConstructorIsPrivate() throws Exception {
+        assertPrivateConstructor(CommandUtil.class);
+    }
+
+    @Test
     public void commandsToCompletablesReturnsCorrectList() {
         final List<Completable> completables = CommandUtil.commandsToCompletables(commands);
 

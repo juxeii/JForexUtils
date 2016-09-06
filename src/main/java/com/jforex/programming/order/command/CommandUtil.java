@@ -12,6 +12,9 @@ import rx.Completable;
 
 public final class CommandUtil {
 
+    private CommandUtil() {
+    }
+
     public static final List<Completable> commandsToCompletables(final List<? extends OrderUtilCommand> commands) {
         return commands
             .stream()
