@@ -1,7 +1,15 @@
 package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.jforex.programming.order.event.OrderEventType.FILL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.FULLY_FILLED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+import static com.jforex.programming.order.event.OrderEventType.PARTIAL_FILL_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITIONAL_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
+import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 
+import java.util.EnumSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -10,6 +18,7 @@ import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.order.process.option.SubmitOption;
 
 import rx.Completable;
@@ -46,6 +55,9 @@ public class SubmitCommand extends CommonCommand {
             this.orderParams = orderParams;
             this.callable = engineUtil.submitCallable(orderParams);
             this.callReason = OrderCallReason.SUBMIT;
+            this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(FULLY_FILLED, SUBMIT_CONDITIONAL_OK),
+                                                             EnumSet.of(FILL_REJECTED, SUBMIT_REJECTED),
+                                                             EnumSet.of(NOTIFICATION, SUBMIT_OK, PARTIAL_FILL_OK));
             this.startFunction = startFunction;
         }
 

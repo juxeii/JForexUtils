@@ -1,7 +1,12 @@
 package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.jforex.programming.order.event.OrderEventType.CLOSE_OK;
+import static com.jforex.programming.order.event.OrderEventType.CLOSE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+import static com.jforex.programming.order.event.OrderEventType.PARTIAL_CLOSE_OK;
 
+import java.util.EnumSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -9,6 +14,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.order.process.option.CloseOption;
 
 import rx.Completable;
@@ -41,6 +47,9 @@ public class CloseCommand extends CommonCommand {
             this.order = order;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.close(), order);
             this.callReason = OrderCallReason.CLOSE;
+            this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CLOSE_OK),
+                                                             EnumSet.of(CLOSE_REJECTED),
+                                                             EnumSet.of(NOTIFICATION, PARTIAL_CLOSE_OK));
             this.startFunction = startFunction;
         }
 

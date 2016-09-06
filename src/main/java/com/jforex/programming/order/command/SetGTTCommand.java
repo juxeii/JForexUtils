@@ -1,7 +1,11 @@
 package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_GTT;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_GTT_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
+import java.util.EnumSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -9,6 +13,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.order.process.option.SetGTTOption;
 
 import rx.Completable;
@@ -33,8 +38,8 @@ public class SetGTTCommand extends CommonCommand {
     }
 
     public static final SetGTTOption create(final IOrder order,
-                                         final long newGTT,
-                                         final Function<SetGTTCommand, Completable> startFunction) {
+                                            final long newGTT,
+                                            final Function<SetGTTCommand, Completable> startFunction) {
         return new Builder(checkNotNull(order),
                            newGTT,
                            startFunction);
@@ -53,6 +58,9 @@ public class SetGTTCommand extends CommonCommand {
             this.newGTT = newGTT;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setGoodTillTime(newGTT), order);
             this.callReason = OrderCallReason.CHANGE_GTT;
+            this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CHANGED_GTT),
+                                                             EnumSet.of(CHANGE_GTT_REJECTED),
+                                                             EnumSet.of(NOTIFICATION));
             this.startFunction = startFunction;
         }
 
