@@ -28,8 +28,7 @@ public class CloseCommand extends CommonCommand {
 
     public static final CloseOption create(final IOrder orderToClose,
                                            final Function<CloseCommand, Completable> startFunction) {
-        return new Builder(checkNotNull(orderToClose),
-                           startFunction);
+        return new Builder(checkNotNull(orderToClose), startFunction);
     }
 
     public static class Builder extends CommonBuilder<CloseOption>
@@ -47,20 +46,17 @@ public class CloseCommand extends CommonCommand {
 
         @Override
         public CloseOption doOnCloseReject(final Consumer<IOrder> rejectAction) {
-            eventHandlerForType.put(OrderEventType.CLOSE_REJECTED, checkNotNull(rejectAction));
-            return this;
+            return registerTypeHandler(OrderEventType.CLOSE_REJECTED, rejectAction);
         }
 
         @Override
-        public CloseOption doOnPartialClose(final Consumer<IOrder> partialDoneAction) {
-            eventHandlerForType.put(OrderEventType.PARTIAL_CLOSE_OK, checkNotNull(partialDoneAction));
-            return this;
+        public CloseOption doOnPartialClose(final Consumer<IOrder> partialCloseAction) {
+            return registerTypeHandler(OrderEventType.PARTIAL_CLOSE_OK, partialCloseAction);
         }
 
         @Override
         public CloseOption doOnClose(final Consumer<IOrder> doneAction) {
-            eventHandlerForType.put(OrderEventType.CLOSE_OK, checkNotNull(doneAction));
-            return this;
+            return registerTypeHandler(OrderEventType.CLOSE_OK, doneAction);
         }
 
         @Override

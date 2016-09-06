@@ -62,20 +62,17 @@ public class MergeCommand extends CommonCommand {
 
         @Override
         public MergeOption doOnMergeReject(final Consumer<IOrder> rejectAction) {
-            eventHandlerForType.put(OrderEventType.MERGE_REJECTED, checkNotNull(rejectAction));
-            return this;
+            return registerTypeHandler(OrderEventType.MERGE_REJECTED, rejectAction);
         }
 
         @Override
         public MergeOption doOnMergeClose(final Consumer<IOrder> mergeCloseAction) {
-            eventHandlerForType.put(OrderEventType.MERGE_CLOSE_OK, checkNotNull(mergeCloseAction));
-            return this;
+            return registerTypeHandler(OrderEventType.MERGE_CLOSE_OK, mergeCloseAction);
         }
 
         @Override
         public MergeOption doOnMerge(final Consumer<IOrder> doneAction) {
-            eventHandlerForType.put(OrderEventType.MERGE_OK, checkNotNull(doneAction));
-            return this;
+            return registerTypeHandler(OrderEventType.MERGE_OK, doneAction);
         }
 
         @Override

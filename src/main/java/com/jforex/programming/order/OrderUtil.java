@@ -119,8 +119,7 @@ public class OrderUtil {
     }
 
     public final CloseOption closeBuilder(final IOrder orderToClose) {
-        return CloseCommand.create(orderToClose,
-                                   this::close);
+        return CloseCommand.create(orderToClose, this::close);
     }
 
     public final Completable close(final CloseCommand command) {
