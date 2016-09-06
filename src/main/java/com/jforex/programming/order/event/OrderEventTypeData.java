@@ -17,8 +17,8 @@ public final class OrderEventTypeData {
                               final EnumSet<OrderEventType> infoEventTypes) {
         this.doneEventTypes = Sets.immutableEnumSet(doneEventTypes);
         this.rejectEventTypes = Sets.immutableEnumSet(rejectEventTypes);
-        allEventTypes = Sets.immutableEnumSet(Sets.union(infoEventTypes, Sets.union(doneEventTypes,
-                                                                                    rejectEventTypes)));
+        allEventTypes = Sets.immutableEnumSet(Sets.union(infoEventTypes,
+                                                         Sets.union(doneEventTypes, rejectEventTypes)));
     }
 
     public final Set<OrderEventType> allEventTypes() {

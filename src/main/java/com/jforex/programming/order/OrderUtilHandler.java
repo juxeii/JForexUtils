@@ -31,11 +31,8 @@ public class OrderUtilHandler {
     public Observable<OrderEvent> callObservable(final CommonCommand command) {
         final Observable<OrderEvent> observable = taskExecutor
             .onStrategyThread(command.callable())
-            .doOnNext(i -> System.out.println("task called"))
             .doOnNext(order -> registerOrder(order, command.callReason()))
-            .doOnNext(i -> System.out.println("task called2"))
             .flatMap(order -> gatewayObservable(order, command))
-            .doOnNext(i -> System.out.println("task called3"))
             .doOnNext(orderEvent -> callEventHandler(orderEvent, command.eventHandlerForType()))
             .doOnNext(command.eventAction()::accept);
 
@@ -52,24 +49,18 @@ public class OrderUtilHandler {
                                                            final CommonCommand command) {
         return orderEventGateway
             .observable()
-            .doOnNext(i -> System.out.println("gate 1"))
             .filter(orderEvent -> orderEvent.order().equals(order))
-            .doOnNext(i -> System.out.println("gate 1.5"))
-            .filter(command::isEventForCommand)
-            .doOnNext(i -> System.out.println("gate 2was event " + i.type()))
-            .takeUntil(command::isFinishEvent);
+            .filter(orderEvent -> command.isEventForCommand(orderEvent.type()))
+            .takeUntil(orderEvent -> command.isFinishEvent(orderEvent.type()));
     }
 
     private final void callEventHandler(final OrderEvent orderEvent,
                                         final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType) {
         final OrderEventType type = orderEvent.type();
-        System.out.println("hello1");
-        if (eventHandlerForType.containsKey(type)) {
-            System.out.println("hello2");
+        if (eventHandlerForType.containsKey(type))
             eventHandlerForType
                 .get(type)
                 .accept(orderEvent.order());
-        }
     }
 
     private final Observable<OrderEvent> decorateRetry(final Observable<OrderEvent> observable,

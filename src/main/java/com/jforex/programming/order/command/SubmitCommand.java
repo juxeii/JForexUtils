@@ -45,7 +45,7 @@ public class SubmitCommand extends CommonCommand {
     }
 
     private static class Builder extends CommonBuilder<SubmitOption>
-                                 implements SubmitOption {
+            implements SubmitOption {
 
         private final OrderParams orderParams;
 
