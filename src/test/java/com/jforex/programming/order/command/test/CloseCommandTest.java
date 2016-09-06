@@ -1,84 +1,99 @@
 package com.jforex.programming.order.command.test;
 
-import java.util.Map;
-import java.util.function.Consumer;
+import static com.jforex.programming.order.event.OrderEventType.CLOSE_OK;
+import static com.jforex.programming.order.event.OrderEventType.CLOSE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+import static com.jforex.programming.order.event.OrderEventType.PARTIAL_CLOSE_OK;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
+import java.util.EnumSet;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.CloseCommand;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.test.common.CommonUtilForTest;
 
-import rx.functions.Action0;
+import rx.Completable;
 
-public class CloseCommandTest extends CommonUtilForTest {
+public class CloseCommandTest extends CommandTester {
 
-    private CloseCommand comamnd;
+    private CloseCommand closeCommand;
 
-    @Mock
-    private Action0 completedActionMock;
-    @Mock
-    private Consumer<OrderEvent> eventActionMock;
-    @Mock
-    private Consumer<Throwable> errorActionMock;
     @Mock
     private Consumer<IOrder> closeRejectActionMock;
     @Mock
-    private Consumer<IOrder> closedActionMock;
+    private Consumer<IOrder> partialCloseActionMock;
     @Mock
-    private Consumer<IOrder> partialClosedActionMock;
-    private Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
+    private Consumer<IOrder> closeActionMock;
+    private final Function<CloseCommand, Completable> startFunction = command -> Completable.complete();
 
-//    @Before
-//    public void setUp() {
-//        comamnd = CloseCommand
-//            .create(buyOrderEURUSD, null)
-//
-//            .onCloseReject(closeRejectActionMock)
-//            .onPartialClose(partialClosedActionMock)
-//            .onCompleted(completedActionMock)
-//            .onEvent(eventActionMock)
-//            .doRetries(3, 1500L)
-//            .build();
-//
-//        eventHandlerForType = comamnd.eventHandlerForType();
-//    }
-//
-//    @Test
-//    public void emptyProcessHasNoRetriesAndActions() {
-//        final CloseCommand emptyProcess = CloseCommand
-//            .create(buyOrderEURUSD, observable)
-//            .build();
-//
-//        final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = emptyProcess.eventHandlerForType();
-//
-//        emptyProcess.completedAction().call();
-//        assertThat(emptyProcess.noOfRetries(), equalTo(0));
-//        assertThat(emptyProcess.delayInMillis(), equalTo(0L));
-//        assertTrue(eventHandlerForType.isEmpty());
-//    }
-//
-//    @Test
-//    public void processValuesAreCorrect() {
-//        assertThat(comamnd.completedAction(), equalTo(completedActionMock));
-//        assertThat(comamnd.eventAction(), equalTo(eventActionMock));
-//        assertThat(comamnd.errorAction(), equalTo(errorActionMock));
-//        assertThat(comamnd.orderToClose(), equalTo(buyOrderEURUSD));
-//        assertThat(comamnd.noOfRetries(), equalTo(3));
-//        assertThat(comamnd.delayInMillis(), equalTo(1500L));
-//        assertThat(eventHandlerForType.size(), equalTo(3));
-//    }
-//
-//    @Test
-//    public void actionsAreCorrectMapped() {
-//        eventHandlerForType.get(OrderEventType.CLOSE_REJECTED).accept(buyOrderEURUSD);
-//        eventHandlerForType.get(OrderEventType.CLOSE_OK).accept(buyOrderEURUSD);
-//        eventHandlerForType.get(OrderEventType.PARTIAL_CLOSE_OK).accept(buyOrderEURUSD);
-//
-//        verify(closeRejectActionMock).accept(buyOrderEURUSD);
-//        verify(closedActionMock).accept(buyOrderEURUSD);
-//        verify(partialClosedActionMock).accept(buyOrderEURUSD);
-//    }
+    @Before
+    public void setUp() {
+        closeCommand = CloseCommand
+            .create(buyOrderEURUSD, startFunction)
+            .doOnError(errorActionMock)
+            .doOnCompleted(completedActionMock)
+            .doOnCloseReject(closeRejectActionMock)
+            .doOnPartialClose(partialCloseActionMock)
+            .doOnClose(closeActionMock)
+            .retry(noOfRetries, retryDelay)
+            .build();
+
+        eventHandlerForType = closeCommand.eventHandlerForType();
+    }
+
+    @Test
+    public void emptyCommandHasNoRetryParameters() {
+        final CloseCommand emptyCommand = CloseCommand
+            .create(buyOrderEURUSD, startFunction)
+            .build();
+
+        assertNoRetryParams(emptyCommand);
+    }
+
+    @Test
+    public void commandValuesAreCorrect() throws Exception {
+        assertThat(closeCommand.order(), equalTo(buyOrderEURUSD));
+        assertThat(closeCommand.callReason(), equalTo(OrderCallReason.CLOSE));
+        assertRetryParams(closeCommand);
+
+        closeCommand.callable().call();
+        verify(buyOrderEURUSD).close();
+    }
+
+    @Test
+    public void orderEventTypeDataIsCorrect() {
+        assertEventTypesForCommand(EnumSet.of(CLOSE_OK,
+                                              CLOSE_REJECTED,
+                                              PARTIAL_CLOSE_OK,
+                                              NOTIFICATION),
+                                   closeCommand);
+        assertFinishEventTypesForCommand(EnumSet.of(CLOSE_OK,
+                                                    CLOSE_REJECTED),
+                                         closeCommand);
+        assertRejectEventTypesForCommand(EnumSet.of(CLOSE_REJECTED),
+                                         closeCommand);
+    }
+
+    @Test
+    public void actionsAreCorrectMapped() {
+        assertThat(eventHandlerForType.size(), equalTo(3));
+        eventHandlerForType.get(OrderEventType.CLOSE_OK).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.PARTIAL_CLOSE_OK).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.CLOSE_REJECTED).accept(buyOrderEURUSD);
+
+        assertThat(closeCommand.completedAction(), equalTo(completedActionMock));
+        assertThat(closeCommand.errorAction(), equalTo(errorActionMock));
+
+        verify(closeRejectActionMock).accept(buyOrderEURUSD);
+        verify(closeActionMock).accept(buyOrderEURUSD);
+        verify(partialCloseActionMock).accept(buyOrderEURUSD);
+    }
 }

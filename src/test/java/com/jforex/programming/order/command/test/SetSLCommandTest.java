@@ -1,72 +1,98 @@
 package com.jforex.programming.order.command.test;
 
-import java.util.Map;
-import java.util.function.Consumer;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_SL;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_SL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
+import java.util.EnumSet;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetSLCommand;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.test.common.CommonUtilForTest;
 
-import rx.Observable;
+import rx.Completable;
 
-public class SetSLCommandTest extends CommonUtilForTest {
+public class SetSLCommandTest extends CommandTester {
 
-    private SetSLCommand command;
+    private SetSLCommand setSLCommand;
 
-    @Mock private Consumer<Throwable> errorActionMock;
-    @Mock private Consumer<IOrder> doneActionMock;
-    @Mock private Consumer<IOrder> rejectedActionMock;
-    private final Observable<OrderEvent> observable =
-            Observable.just(new OrderEvent(buyOrderEURUSD, OrderEventType.CHANGED_SL));
-    private Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
-    private final double newSL = 1.1234;
+    @Mock
+    private Consumer<IOrder> setSLRejectActionMock;
+    @Mock
+    private Consumer<IOrder> setSLActionMock;
+    private final Function<SetSLCommand, Completable> startFunction = command -> Completable.complete();
+    private final double newSL = 1.234;
 
-//    @Before
-//    public void SetSLProcess() {
-//        command = SetSLCommand
-//            .create(buyOrderEURUSD, newSL, observable)
-//            .onError(errorActionMock)
-//            .onSLChange(doneActionMock)
-//            .onSLReject(rejectedActionMock)
-//            .doRetries(3, 1500L)
-//            .build();
-//
-//        eventHandlerForType = command.eventHandlerForType();
-//    }
-//
-//    @Test
-//    public void emptyProcessHasNoRetriesAndActions() {
-//        final SetSLCommand emptyProcess = SetSLCommand
-//            .create(buyOrderEURUSD, newSL, observable)
-//            .build();
-//
-//        final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = emptyProcess.eventHandlerForType();
-//
-//        assertThat(emptyProcess.noOfRetries(), equalTo(0));
-//        assertThat(emptyProcess.delayInMillis(), equalTo(0L));
-//        assertTrue(eventHandlerForType.isEmpty());
-//    }
-//
-//    @Test
-//    public void processValuesAreCorrect() {
-//        assertThat(command.errorAction(), equalTo(errorActionMock));
-//        assertThat(command.order(), equalTo(buyOrderEURUSD));
-//        assertThat(command.newSL(), equalTo(newSL));
-//        assertThat(command.noOfRetries(), equalTo(3));
-//        assertThat(command.delayInMillis(), equalTo(1500L));
-//        assertThat(eventHandlerForType.size(), equalTo(2));
-//    }
-//
-//    @Test
-//    public void actionsAreCorrectMapped() {
-//        eventHandlerForType.get(OrderEventType.CHANGE_SL_REJECTED).accept(buyOrderEURUSD);
-//        eventHandlerForType.get(OrderEventType.CHANGED_SL).accept(buyOrderEURUSD);
-//
-//        verify(doneActionMock).accept(buyOrderEURUSD);
-//        verify(rejectedActionMock).accept(buyOrderEURUSD);
-//    }
+    @Before
+    public void setUp() {
+        setSLCommand = SetSLCommand
+            .create(buyOrderEURUSD,
+                    newSL,
+                    startFunction)
+            .doOnError(errorActionMock)
+            .doOnCompleted(completedActionMock)
+            .doOnSetSLReject(setSLRejectActionMock)
+            .doOnSetSL(setSLActionMock)
+            .retry(noOfRetries, retryDelay)
+            .build();
+
+        eventHandlerForType = setSLCommand.eventHandlerForType();
+    }
+
+    @Test
+    public void emptyCommandHasNoRetryParameters() {
+        final SetSLCommand emptyCommand = SetSLCommand
+            .create(buyOrderEURUSD,
+                    newSL,
+                    startFunction)
+            .build();
+
+        assertNoRetryParams(emptyCommand);
+    }
+
+    @Test
+    public void commandValuesAreCorrect() throws Exception {
+        assertThat(setSLCommand.order(), equalTo(buyOrderEURUSD));
+        assertThat(setSLCommand.newSL(), equalTo(newSL));
+        assertThat(setSLCommand.callReason(), equalTo(OrderCallReason.CHANGE_SL));
+        assertRetryParams(setSLCommand);
+
+        setSLCommand.callable().call();
+        verify(buyOrderEURUSD).setStopLossPrice(newSL);
+    }
+
+    @Test
+    public void orderEventTypeDataIsCorrect() {
+        assertEventTypesForCommand(EnumSet.of(CHANGED_SL,
+                                              CHANGE_SL_REJECTED,
+                                              NOTIFICATION),
+                                   setSLCommand);
+        assertFinishEventTypesForCommand(EnumSet.of(CHANGED_SL,
+                                                    CHANGE_SL_REJECTED),
+                                         setSLCommand);
+        assertRejectEventTypesForCommand(EnumSet.of(CHANGE_SL_REJECTED),
+                                         setSLCommand);
+    }
+
+    @Test
+    public void actionsAreCorrectMapped() {
+        assertThat(eventHandlerForType.size(), equalTo(2));
+        eventHandlerForType.get(OrderEventType.CHANGED_SL).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.CHANGE_SL_REJECTED).accept(buyOrderEURUSD);
+
+        assertThat(setSLCommand.completedAction(), equalTo(completedActionMock));
+        assertThat(setSLCommand.errorAction(), equalTo(errorActionMock));
+
+        verify(setSLRejectActionMock).accept(buyOrderEURUSD);
+        verify(setSLActionMock).accept(buyOrderEURUSD);
+    }
 }

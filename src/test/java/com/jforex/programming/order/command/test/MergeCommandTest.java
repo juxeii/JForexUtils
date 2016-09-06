@@ -1,95 +1,118 @@
 package com.jforex.programming.order.command.test;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
+import static com.jforex.programming.order.event.OrderEventType.MERGE_CLOSE_OK;
+import static com.jforex.programming.order.event.OrderEventType.MERGE_OK;
+import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
+import java.util.EnumSet;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.test.common.CommonUtilForTest;
 
-import rx.Observable;
+import rx.Completable;
 
-public class MergeCommandTest extends CommonUtilForTest {
+public class MergeCommandTest extends CommandTester {
 
-    private MergeCommand command;
+    private MergeCommand mergeCommand;
 
-    @Mock private Consumer<Throwable> errorActionMock;
-    @Mock private Consumer<IOrder> removedSLActionMock;
-    @Mock private Consumer<IOrder> removedTPActionMock;
-    @Mock private Consumer<IOrder> removedSLRejectedActionMock;
-    @Mock private Consumer<IOrder> removedTPRejectedActionMock;
-    @Mock private Consumer<IOrder> mergeRejectActionMock;
-    @Mock private Consumer<IOrder> mergedActionMock;
-    @Mock private Consumer<IOrder> mergeClosedActionMock;
-    private final Observable<OrderEvent> observable =
-            Observable.just(new OrderEvent(buyOrderEURUSD, OrderEventType.MERGE_OK));
-    private final String mergeOrderLabel = "MergeLabel";
+    @Mock
+    private Consumer<IOrder> mergeRejectActionMock;
+    @Mock
+    private Consumer<IOrder> mergeCloseActionMock;
+    @Mock
+    private Consumer<IOrder> mergeActionMock;
+    private final Callable<IOrder> callable = () -> buyOrderEURUSD;
+    private final Function<MergeCommand, Completable> startFunction = command -> Completable.complete();
+    private final String mergeOrderLabel = "mergeOrderLabel";
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
-    private Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
-//    @Before
-//    public void setUp() {
-//        command = MergeCommand
-//            .create(mergeOrderLabel, toMergeOrders, observable)
-//            .onError(errorActionMock)
-//            .onRemoveSL(removedSLActionMock)
-//            .onRemoveTP(removedTPActionMock)
-//            .onRemoveSLReject(removedSLRejectedActionMock)
-//            .onRemoveTPReject(removedTPRejectedActionMock)
-//            .onMergeReject(mergeRejectActionMock)
-//            .onMerge(mergedActionMock)
-//            .onMergeClose(mergeClosedActionMock)
-//            .doRetries(3, 1500L)
-//            .build();
-//
-//        eventHandlerForType = command.eventHandlerForType();
-//    }
-//
-//    @Test
-//    public void emptyProcessHasNoRetriesAndActions() {
-//        final MergeCommand emptyProcess = MergeCommand
-//            .create(mergeOrderLabel, toMergeOrders, observable)
-//            .build();
-//
-//        final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = emptyProcess.eventHandlerForType();
-//
-//        assertThat(emptyProcess.noOfRetries(), equalTo(0));
-//        assertThat(emptyProcess.delayInMillis(), equalTo(0L));
-//        assertTrue(eventHandlerForType.isEmpty());
-//    }
-//
-//    @Test
-//    public void processValuesAreCorrect() {
-//        assertThat(command.errorAction(), equalTo(errorActionMock));
-//        assertThat(command.mergeOrderLabel(), equalTo(mergeOrderLabel));
-//        assertThat(command.toMergeOrders(), equalTo(toMergeOrders));
-//        assertThat(command.noOfRetries(), equalTo(3));
-//        assertThat(command.delayInMillis(), equalTo(1500L));
-//        assertThat(eventHandlerForType.size(), equalTo(7));
-//    }
-//
-//    @Test
-//    public void actionsAreCorrectMapped() {
-//        eventHandlerForType.get(OrderEventType.CHANGED_SL).accept(buyOrderEURUSD);
-//        eventHandlerForType.get(OrderEventType.CHANGED_TP).accept(buyOrderEURUSD);
-//        eventHandlerForType.get(OrderEventType.CHANGE_SL_REJECTED).accept(buyOrderEURUSD);
-//        eventHandlerForType.get(OrderEventType.CHANGE_TP_REJECTED).accept(buyOrderEURUSD);
-//        eventHandlerForType.get(OrderEventType.MERGE_REJECTED).accept(buyOrderEURUSD);
-//        eventHandlerForType.get(OrderEventType.MERGE_OK).accept(buyOrderEURUSD);
-//        eventHandlerForType.get(OrderEventType.MERGE_CLOSE_OK).accept(buyOrderEURUSD);
-//
-//        verify(removedSLActionMock).accept(buyOrderEURUSD);
-//        verify(removedTPActionMock).accept(buyOrderEURUSD);
-//        verify(removedSLRejectedActionMock).accept(buyOrderEURUSD);
-//        verify(removedTPRejectedActionMock).accept(buyOrderEURUSD);
-//        verify(mergeRejectActionMock).accept(buyOrderEURUSD);
-//        verify(mergedActionMock).accept(buyOrderEURUSD);
-//        verify(mergeClosedActionMock).accept(buyOrderEURUSD);
-//    }
+    @Before
+    public void setUp() {
+        setUpMocks();
+
+        mergeCommand = MergeCommand
+            .create(mergeOrderLabel,
+                    toMergeOrders,
+                    iengineUtilMock,
+                    startFunction)
+            .doOnError(errorActionMock)
+            .doOnCompleted(completedActionMock)
+            .doOnMergeClose(mergeCloseActionMock)
+            .doOnMerge(mergeActionMock)
+            .doOnMergeReject(mergeRejectActionMock)
+            .retry(noOfRetries, retryDelay)
+            .build();
+
+        eventHandlerForType = mergeCommand.eventHandlerForType();
+    }
+
+    private void setUpMocks() {
+        when(iengineUtilMock.mergeCallable(mergeOrderLabel, toMergeOrders))
+            .thenReturn(callable);
+    }
+
+    @Test
+    public void emptyCommandHasNoRetryParameters() {
+        final MergeCommand emptyCommand = MergeCommand
+            .create(mergeOrderLabel,
+                    toMergeOrders,
+                    iengineUtilMock,
+                    startFunction)
+            .build();
+
+        assertNoRetryParams(emptyCommand);
+    }
+
+    @Test
+    public void commandValuesAreCorrect() {
+        assertThat(mergeCommand.mergeOrderLabel(), equalTo(mergeOrderLabel));
+        assertThat(mergeCommand.toMergeOrders(), equalTo(toMergeOrders));
+        assertThat(mergeCommand.callReason(), equalTo(OrderCallReason.MERGE));
+        assertThat(mergeCommand.callable(), equalTo(callable));
+        assertRetryParams(mergeCommand);
+    }
+
+    @Test
+    public void orderEventTypeDataIsCorrect() {
+        assertEventTypesForCommand(EnumSet.of(MERGE_OK,
+                                              MERGE_CLOSE_OK,
+                                              MERGE_REJECTED,
+                                              NOTIFICATION),
+                                   mergeCommand);
+        assertFinishEventTypesForCommand(EnumSet.of(MERGE_OK,
+                                                    MERGE_CLOSE_OK,
+                                                    MERGE_REJECTED),
+                                         mergeCommand);
+        assertRejectEventTypesForCommand(EnumSet.of(MERGE_REJECTED),
+                                         mergeCommand);
+    }
+
+    @Test
+    public void actionsAreCorrectMapped() {
+        assertThat(eventHandlerForType.size(), equalTo(3));
+        eventHandlerForType.get(OrderEventType.MERGE_OK).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.MERGE_CLOSE_OK).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.MERGE_REJECTED).accept(buyOrderEURUSD);
+
+        assertThat(mergeCommand.completedAction(), equalTo(completedActionMock));
+        assertThat(mergeCommand.errorAction(), equalTo(errorActionMock));
+
+        verify(mergeRejectActionMock).accept(buyOrderEURUSD);
+        verify(mergeActionMock).accept(buyOrderEURUSD);
+        verify(mergeCloseActionMock).accept(buyOrderEURUSD);
+    }
 }

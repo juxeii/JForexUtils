@@ -1,72 +1,98 @@
 package com.jforex.programming.order.command.test;
 
-import java.util.Map;
-import java.util.function.Consumer;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_TP;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_TP_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 
+import java.util.EnumSet;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetTPCommand;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.test.common.CommonUtilForTest;
 
-import rx.Observable;
+import rx.Completable;
 
-public class SetTPCommandTest extends CommonUtilForTest {
+public class SetTPCommandTest extends CommandTester {
 
-    private SetTPCommand command;
+    private SetTPCommand setTPCommand;
 
-    @Mock private Consumer<Throwable> errorActionMock;
-    @Mock private Consumer<IOrder> doneActionMock;
-    @Mock private Consumer<IOrder> rejectedActionMock;
-    private final Observable<OrderEvent> observable =
-            Observable.just(new OrderEvent(buyOrderEURUSD, OrderEventType.CHANGED_TP));
-    private Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
-    private final double newTP = 1.1234;
+    @Mock
+    private Consumer<IOrder> setTPRejectActionMock;
+    @Mock
+    private Consumer<IOrder> setTPActionMock;
+    private final Function<SetTPCommand, Completable> startFunction = command -> Completable.complete();
+    private final double newTP = 1.234;
 
-//    @Before
-//    public void SetTPProcess() {
-//        command = SetTPCommand
-//            .create(buyOrderEURUSD, newTP, observable)
-//            .onError(errorActionMock)
-//            .onTPChange(doneActionMock)
-//            .onTPReject(rejectedActionMock)
-//            .doRetries(3, 1500L)
-//            .build();
-//
-//        eventHandlerForType = command.eventHandlerForType();
-//    }
-//
-//    @Test
-//    public void emptyProcessHasNoRetriesAndActions() {
-//        final SetTPCommand emptyProcess = SetTPCommand
-//            .create(buyOrderEURUSD, newTP, observable)
-//            .build();
-//
-//        final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = emptyProcess.eventHandlerForType();
-//
-//        assertThat(emptyProcess.noOfRetries(), equalTo(0));
-//        assertThat(emptyProcess.delayInMillis(), equalTo(0L));
-//        assertTrue(eventHandlerForType.isEmpty());
-//    }
-//
-//    @Test
-//    public void processValuesAreCorrect() {
-//        assertThat(command.errorAction(), equalTo(errorActionMock));
-//        assertThat(command.order(), equalTo(buyOrderEURUSD));
-//        assertThat(command.newTP(), equalTo(newTP));
-//        assertThat(command.noOfRetries(), equalTo(3));
-//        assertThat(command.delayInMillis(), equalTo(1500L));
-//        assertThat(eventHandlerForType.size(), equalTo(2));
-//    }
-//
-//    @Test
-//    public void actionsAreCorrectMapped() {
-//        eventHandlerForType.get(OrderEventType.CHANGE_TP_REJECTED).accept(buyOrderEURUSD);
-//        eventHandlerForType.get(OrderEventType.CHANGED_TP).accept(buyOrderEURUSD);
-//
-//        verify(doneActionMock).accept(buyOrderEURUSD);
-//        verify(rejectedActionMock).accept(buyOrderEURUSD);
-//    }
+    @Before
+    public void setUp() {
+        setTPCommand = SetTPCommand
+            .create(buyOrderEURUSD,
+                    newTP,
+                    startFunction)
+            .doOnError(errorActionMock)
+            .doOnCompleted(completedActionMock)
+            .doOnSetTPReject(setTPRejectActionMock)
+            .doOnSetTP(setTPActionMock)
+            .retry(noOfRetries, retryDelay)
+            .build();
+
+        eventHandlerForType = setTPCommand.eventHandlerForType();
+    }
+
+    @Test
+    public void emptyCommandHasNoRetryParameters() {
+        final SetTPCommand emptyCommand = SetTPCommand
+            .create(buyOrderEURUSD,
+                    newTP,
+                    startFunction)
+            .build();
+
+        assertNoRetryParams(emptyCommand);
+    }
+
+    @Test
+    public void commandValuesAreCorrect() throws Exception {
+        assertThat(setTPCommand.order(), equalTo(buyOrderEURUSD));
+        assertThat(setTPCommand.newTP(), equalTo(newTP));
+        assertThat(setTPCommand.callReason(), equalTo(OrderCallReason.CHANGE_TP));
+        assertRetryParams(setTPCommand);
+
+        setTPCommand.callable().call();
+        verify(buyOrderEURUSD).setTakeProfitPrice(newTP);
+    }
+
+    @Test
+    public void orderEventTypeDataIsCorrect() {
+        assertEventTypesForCommand(EnumSet.of(CHANGED_TP,
+                                              CHANGE_TP_REJECTED,
+                                              NOTIFICATION),
+                                   setTPCommand);
+        assertFinishEventTypesForCommand(EnumSet.of(CHANGED_TP,
+                                                    CHANGE_TP_REJECTED),
+                                         setTPCommand);
+        assertRejectEventTypesForCommand(EnumSet.of(CHANGE_TP_REJECTED),
+                                         setTPCommand);
+    }
+
+    @Test
+    public void actionsAreCorrectMapped() {
+        assertThat(eventHandlerForType.size(), equalTo(2));
+        eventHandlerForType.get(OrderEventType.CHANGED_TP).accept(buyOrderEURUSD);
+        eventHandlerForType.get(OrderEventType.CHANGE_TP_REJECTED).accept(buyOrderEURUSD);
+
+        assertThat(setTPCommand.completedAction(), equalTo(completedActionMock));
+        assertThat(setTPCommand.errorAction(), equalTo(errorActionMock));
+
+        verify(setTPRejectActionMock).accept(buyOrderEURUSD);
+        verify(setTPActionMock).accept(buyOrderEURUSD);
+    }
 }
