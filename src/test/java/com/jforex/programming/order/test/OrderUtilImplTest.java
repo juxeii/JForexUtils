@@ -140,10 +140,11 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void gettingCompletableDoesNotCallOnOrderUtilHandler() {
+        public void whenNotSubscribedTheCompletableIsDeferred() {
             submitCommand.completable();
 
             verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(positionMock);
         }
 
         public class WhenSubscribed {
@@ -264,10 +265,11 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void gettingCompletableDoesNotCallOnOrderUtilHandler() {
+        public void whenNotSubscribedTheCompletableIsDeferred() {
             mergeCommand.completable();
 
             verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(positionMock);
         }
 
         public class WhenSubscribed {
@@ -358,10 +360,12 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void gettingCompletableDoesNotCallOnOrderUtilHandler() {
+        public void whenNotSubscribedTheCompletableIsDeferred() {
             closeCommand.completable();
 
             verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(positionMock);
+            verifyZeroInteractions(buyOrderEURUSD);
         }
 
         @Test
@@ -447,10 +451,12 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void gettingCompletableDoesNotCallOnOrderUtilHandler() {
+        public void whenNotSubscribedTheCompletableIsDeferred() {
             setLabelCommand.completable();
 
             verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(positionMock);
+            verifyZeroInteractions(buyOrderEURUSD);
         }
 
         @Test
@@ -516,10 +522,12 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void gettingCompletableDoesNotCallOnOrderUtilHandler() {
+        public void whenNotSubscribedTheCompletableIsDeferred() {
             setGTTCommand.completable();
 
             verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(positionMock);
+            verifyZeroInteractions(buyOrderEURUSD);
         }
 
         @Test
@@ -585,10 +593,12 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void gettingCompletableDoesNotCallOnOrderUtilHandler() {
+        public void whenNotSubscribedTheCompletableIsDeferred() {
             setAmountCommand.completable();
 
             verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(positionMock);
+            verifyZeroInteractions(buyOrderEURUSD);
         }
 
         @Test
@@ -654,10 +664,12 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void gettingCompletableDoesNotCallOnOrderUtilHandler() {
+        public void whenNotSubscribedTheCompletableIsDeferred() {
             setOpenPriceCommand.completable();
 
             verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(positionMock);
+            verifyZeroInteractions(buyOrderEURUSD);
         }
 
         @Test
@@ -723,10 +735,12 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void gettingCompletableDoesNotCallOnOrderUtilHandler() {
+        public void whenNotSubscribedTheCompletableIsDeferred() {
             setSLCommand.completable();
 
             verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(positionMock);
+            verifyZeroInteractions(buyOrderEURUSD);
         }
 
         @Test
@@ -792,10 +806,12 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void gettingCompletableDoesNotCallOnOrderUtilHandler() {
+        public void whenNotSubscribedTheCompletableIsDeferred() {
             setTPCommand.completable();
 
             verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(positionMock);
+            verifyZeroInteractions(buyOrderEURUSD);
         }
 
         @Test
@@ -895,18 +911,12 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void mergeIsDeferredToAlwaysHaveCurrentFilledOrdersWhenSubscribed() {
-            when(positionMock.filled()).thenReturn(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
+        public void whenNotSubscribedTheCompletableIsDeferred() {
+            orderUtilImpl.mergePosition(instrumentEURUSD,
+                                        OrderUtilImplTest.this::mergeCommandFactory);
 
-            final Completable completable = orderUtilImpl.mergePosition(instrumentEURUSD,
-                                                                        OrderUtilImplTest.this::mergeCommandFactory);
+            verifyZeroInteractions(orderUtilHandlerMock);
             verifyZeroInteractions(positionMock);
-            when(positionMock.filled()).thenReturn(Sets.newHashSet());
-            completable.subscribe(completeHandlerMock, errorHandlerMock);
-
-            verify(startActionMock, never()).call();
-            verify(completeHandlerMock).call();
-            verifyZeroInteractions(errorHandlerMock);
         }
     }
 
@@ -951,6 +961,16 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
             verifyZeroInteractions(errorHandlerMock);
         }
 
+        @Test
+        public void whenNotSubscribedTheCompletableIsDeferred() {
+            closePosition = orderUtilImpl.closePosition(instrumentEURUSD,
+                                                        OrderUtilImplTest.this::mergeCommandFactory,
+                                                        OrderUtilImplTest.this::closeCommandFactory);
+
+            verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(positionMock);
+        }
+
         public class ClosePositionWithMergeRequired {
 
             @Test
@@ -993,6 +1013,15 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
             verify(startActionMock, never()).call();
             verify(completeHandlerMock).call();
             verifyZeroInteractions(errorHandlerMock);
+        }
+
+        @Test
+        public void whenNotSubscribedTheCompletableIsDeferred() {
+            closeAllPositions = orderUtilImpl.closeAllPositions(OrderUtilImplTest.this::mergeCommandFactory,
+                                                                OrderUtilImplTest.this::closeCommandFactory);
+
+            verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(positionMock);
         }
 
         @Test

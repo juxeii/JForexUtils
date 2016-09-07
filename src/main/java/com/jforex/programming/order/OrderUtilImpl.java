@@ -72,17 +72,18 @@ public class OrderUtilImpl implements OrderUtil {
     }
 
     public final Completable submitOrder(final SubmitCommand command) {
-        final OrderParams orderParams = command.orderParams();
-        final Instrument instrument = orderParams.instrument();
-        final String orderLabel = orderParams.label();
-
-        final Observable<OrderEvent> observable = Observable.defer(() -> orderUtilHandler.callObservable(command)
-            .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
-            .doOnError(e -> logger.error("Submit task with label " + orderLabel
-                    + " for " + instrument + " failed!Exception: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
-                    + " for " + instrument + " was successful."))
-            .doOnNext(this::addOrderToPosition));
+        final Observable<OrderEvent> observable = Observable.defer(() -> {
+            final OrderParams orderParams = command.orderParams();
+            final Instrument instrument = orderParams.instrument();
+            final String orderLabel = orderParams.label();
+            return orderUtilHandler.callObservable(command)
+                .doOnSubscribe(() -> logger.info("Start submit task with label " + orderLabel + " for " + instrument))
+                .doOnError(e -> logger.error("Submit task with label " + orderLabel
+                        + " for " + instrument + " failed!Exception: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
+                        + " for " + instrument + " was successful."))
+                .doOnNext(this::addOrderToPosition);
+        });
 
         return addHandlersFromCommand(command, observable);
     }
@@ -96,23 +97,24 @@ public class OrderUtilImpl implements OrderUtil {
     }
 
     public final Completable mergeOrders(final MergeCommand command) {
-        final String mergeOrderLabel = command.mergeOrderLabel();
-        final Set<IOrder> toMergeOrders = command.toMergeOrders();
-
-        final Observable<OrderEvent> observable = Observable.defer(() -> toMergeOrders.size() < 2
-                ? Observable.empty()
-                : Observable
-                    .just(toMergeOrders)
-                    .doOnSubscribe(() -> position(toMergeOrders).markOrdersActive(toMergeOrders))
-                    .flatMap(orders -> orderUtilHandler.callObservable(command))
-                    .doOnNext(this::addOrderToPosition)
-                    .doOnTerminate(() -> position(toMergeOrders).markOrdersIdle(toMergeOrders))
-                    .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
-                            + " for position " + instrumentFromOrders(toMergeOrders) + "."))
-                    .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
-                            + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
-                    .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
-                            + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage())));
+        final Observable<OrderEvent> observable = Observable.defer(() -> {
+            final String mergeOrderLabel = command.mergeOrderLabel();
+            final Set<IOrder> toMergeOrders = command.toMergeOrders();
+            return toMergeOrders.size() < 2
+                    ? Observable.empty()
+                    : Observable
+                        .just(toMergeOrders)
+                        .doOnSubscribe(() -> position(toMergeOrders).markOrdersActive(toMergeOrders))
+                        .flatMap(orders -> orderUtilHandler.callObservable(command))
+                        .doOnNext(this::addOrderToPosition)
+                        .doOnTerminate(() -> position(toMergeOrders).markOrdersIdle(toMergeOrders))
+                        .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
+                                + " for position " + instrumentFromOrders(toMergeOrders) + "."))
+                        .doOnCompleted(() -> logger.info("Merging with label " + mergeOrderLabel
+                                + " for position " + instrumentFromOrders(toMergeOrders) + " was successful."))
+                        .doOnError(e -> logger.error("Merging with label " + mergeOrderLabel + " for position "
+                                + instrumentFromOrders(toMergeOrders) + " failed! Exception: " + e.getMessage()));
+        });
 
         return addHandlersFromCommand(command, observable);
     }
@@ -122,20 +124,21 @@ public class OrderUtilImpl implements OrderUtil {
     }
 
     public final Completable close(final CloseCommand command) {
-        final IOrder orderToClose = command.order();
-        final Instrument instrument = orderToClose.getInstrument();
-        final Position position = position(instrument);
-        final String label = orderToClose.getLabel();
-
-        final Observable<OrderEvent> observable = Observable.defer(() -> Observable
-            .just(orderToClose)
-            .filter(order -> !isClosed.test(order))
-            .doOnSubscribe(() -> position.markOrderActive(orderToClose))
-            .doOnSubscribe(() -> logger.info("Start to close order " + label + " with instrument " + instrument))
-            .flatMap(order -> orderUtilHandler.callObservable(command))
-            .doOnError(e -> logger.error("Failed to close order " + label + "!Excpetion: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Closed order " + label + " with instrument " + instrument))
-            .doOnTerminate(() -> position.markOrderIdle(orderToClose)));
+        final Observable<OrderEvent> observable = Observable.defer(() -> {
+            final IOrder orderToClose = command.order();
+            final Instrument instrument = orderToClose.getInstrument();
+            final Position position = position(instrument);
+            final String label = orderToClose.getLabel();
+            return Observable
+                .just(orderToClose)
+                .filter(order -> !isClosed.test(order))
+                .doOnSubscribe(() -> position.markOrderActive(orderToClose))
+                .doOnSubscribe(() -> logger.info("Start to close order " + label + " with instrument " + instrument))
+                .flatMap(order -> orderUtilHandler.callObservable(command))
+                .doOnError(e -> logger.error("Failed to close order " + label + "!Excpetion: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Closed order " + label + " with instrument " + instrument))
+                .doOnTerminate(() -> position.markOrderIdle(orderToClose));
+        });
 
         return addHandlersFromCommand(command, observable);
     }
@@ -148,21 +151,22 @@ public class OrderUtilImpl implements OrderUtil {
     }
 
     public final Completable setLabel(final SetLabelCommand command) {
-        final IOrder orderToSetLabel = command.order();
-        final Instrument instrument = orderToSetLabel.getInstrument();
-        final String label = orderToSetLabel.getLabel();
-        final String newLabel = command.newLabel();
-
-        final Observable<OrderEvent> observable = Observable.defer(() -> Observable
-            .just(orderToSetLabel)
-            .filter(order -> !isLabelSetTo(newLabel).test(order))
-            .flatMap(order -> orderUtilHandler.callObservable(command))
-            .doOnSubscribe(() -> logger.info("Start to change label from " + label + " to " + newLabel
-                    + " for order " + label + " and instrument " + instrument))
-            .doOnError(e -> logger.error("Failed to change label from " + label + " to " + newLabel
-                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Changed label from " + label + " to " + newLabel
-                    + " for order " + label + " and instrument " + instrument)));
+        final Observable<OrderEvent> observable = Observable.defer(() -> {
+            final IOrder orderToSetLabel = command.order();
+            final Instrument instrument = orderToSetLabel.getInstrument();
+            final String label = orderToSetLabel.getLabel();
+            final String newLabel = command.newLabel();
+            return Observable
+                .just(orderToSetLabel)
+                .filter(order -> !isLabelSetTo(newLabel).test(order))
+                .flatMap(order -> orderUtilHandler.callObservable(command))
+                .doOnSubscribe(() -> logger.info("Start to change label from " + label + " to " + newLabel
+                        + " for order " + label + " and instrument " + instrument))
+                .doOnError(e -> logger.error("Failed to change label from " + label + " to " + newLabel
+                        + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Changed label from " + label + " to " + newLabel
+                        + " for order " + label + " and instrument " + instrument));
+        });
 
         return addHandlersFromCommand(command, observable);
     }
@@ -175,22 +179,23 @@ public class OrderUtilImpl implements OrderUtil {
     }
 
     public final Completable setGTT(final SetGTTCommand command) {
-        final IOrder orderToSetGTT = command.order();
-        final Instrument instrument = orderToSetGTT.getInstrument();
-        final String label = orderToSetGTT.getLabel();
-        final long currentGTT = orderToSetGTT.getGoodTillTime();
-        final long newGTT = command.newGTT();
-
-        final Observable<OrderEvent> observable = Observable.defer(() -> Observable
-            .just(orderToSetGTT)
-            .filter(order -> !isGTTSetTo(newGTT).test(order))
-            .flatMap(order -> orderUtilHandler.callObservable(command))
-            .doOnSubscribe(() -> logger.info("Start to change GTT from " + currentGTT + " to " + newGTT
-                    + " for order " + label + " and instrument " + instrument))
-            .doOnError(e -> logger.error("Failed to change GTT from " + currentGTT + " to " + newGTT
-                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Changed GTT from " + currentGTT + " to " + newGTT
-                    + " for order " + label + " and instrument " + instrument)));
+        final Observable<OrderEvent> observable = Observable.defer(() -> {
+            final IOrder orderToSetGTT = command.order();
+            final Instrument instrument = orderToSetGTT.getInstrument();
+            final String label = orderToSetGTT.getLabel();
+            final long currentGTT = orderToSetGTT.getGoodTillTime();
+            final long newGTT = command.newGTT();
+            return Observable
+                .just(orderToSetGTT)
+                .filter(order -> !isGTTSetTo(newGTT).test(order))
+                .flatMap(order -> orderUtilHandler.callObservable(command))
+                .doOnSubscribe(() -> logger.info("Start to change GTT from " + currentGTT + " to " + newGTT
+                        + " for order " + label + " and instrument " + instrument))
+                .doOnError(e -> logger.error("Failed to change GTT from " + currentGTT + " to " + newGTT
+                        + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Changed GTT from " + currentGTT + " to " + newGTT
+                        + " for order " + label + " and instrument " + instrument));
+        });
 
         return addHandlersFromCommand(command, observable);
     }
@@ -203,22 +208,23 @@ public class OrderUtilImpl implements OrderUtil {
     }
 
     public final Completable setAmount(final SetAmountCommand command) {
-        final IOrder orderToSetAmount = command.order();
-        final Instrument instrument = orderToSetAmount.getInstrument();
-        final String label = orderToSetAmount.getLabel();
-        final double currentAmount = orderToSetAmount.getRequestedAmount();
-        final double newAmount = command.newAmount();
-
-        final Observable<OrderEvent> observable = Observable.defer(() -> Observable
-            .just(orderToSetAmount)
-            .filter(order -> !isAmountSetTo(newAmount).test(order))
-            .flatMap(order -> orderUtilHandler.callObservable(command))
-            .doOnSubscribe(() -> logger.info("Start to change amount from " + currentAmount + " to " + newAmount
-                    + " for order " + label + " and instrument " + instrument))
-            .doOnError(e -> logger.error("Failed to change amount from " + currentAmount + " to " + newAmount
-                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Changed amount from " + currentAmount + " to " + newAmount
-                    + " for order " + label + " and instrument " + instrument)));
+        final Observable<OrderEvent> observable = Observable.defer(() -> {
+            final IOrder orderToSetAmount = command.order();
+            final Instrument instrument = orderToSetAmount.getInstrument();
+            final String label = orderToSetAmount.getLabel();
+            final double currentAmount = orderToSetAmount.getRequestedAmount();
+            final double newAmount = command.newAmount();
+            return Observable
+                .just(orderToSetAmount)
+                .filter(order -> !isAmountSetTo(newAmount).test(order))
+                .flatMap(order -> orderUtilHandler.callObservable(command))
+                .doOnSubscribe(() -> logger.info("Start to change amount from " + currentAmount + " to " + newAmount
+                        + " for order " + label + " and instrument " + instrument))
+                .doOnError(e -> logger.error("Failed to change amount from " + currentAmount + " to " + newAmount
+                        + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Changed amount from " + currentAmount + " to " + newAmount
+                        + " for order " + label + " and instrument " + instrument));
+        });
 
         return addHandlersFromCommand(command, observable);
     }
@@ -231,22 +237,25 @@ public class OrderUtilImpl implements OrderUtil {
     }
 
     public final Completable setOpenPrice(final SetOpenPriceCommand command) {
-        final IOrder orderToSetOpenPrice = command.order();
-        final Instrument instrument = orderToSetOpenPrice.getInstrument();
-        final String label = orderToSetOpenPrice.getLabel();
-        final double currentOpenPrice = orderToSetOpenPrice.getOpenPrice();
-        final double newOpenPrice = command.newOpenPrice();
-
-        final Observable<OrderEvent> observable = Observable.defer(() -> Observable
-            .just(orderToSetOpenPrice)
-            .filter(order -> !isOpenPriceSetTo(newOpenPrice).test(order))
-            .flatMap(order -> orderUtilHandler.callObservable(command))
-            .doOnSubscribe(() -> logger.info("Start to change open price from " + currentOpenPrice + " to "
-                    + newOpenPrice + " for order " + label + " and instrument " + instrument))
-            .doOnError(e -> logger.error("Failed to change open price from " + currentOpenPrice + " to " + newOpenPrice
-                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Changed open price from " + currentOpenPrice + " to " + newOpenPrice
-                    + " for order " + label + " and instrument " + instrument)));
+        final Observable<OrderEvent> observable = Observable.defer(() -> {
+            final IOrder orderToSetOpenPrice = command.order();
+            final Instrument instrument = orderToSetOpenPrice.getInstrument();
+            final String label = orderToSetOpenPrice.getLabel();
+            final double currentOpenPrice = orderToSetOpenPrice.getOpenPrice();
+            final double newOpenPrice = command.newOpenPrice();
+            return Observable
+                .just(orderToSetOpenPrice)
+                .filter(order -> !isOpenPriceSetTo(newOpenPrice).test(order))
+                .flatMap(order -> orderUtilHandler.callObservable(command))
+                .doOnSubscribe(() -> logger.info("Start to change open price from " + currentOpenPrice + " to "
+                        + newOpenPrice + " for order " + label + " and instrument " + instrument))
+                .doOnError(e -> logger
+                    .error("Failed to change open price from " + currentOpenPrice + " to " + newOpenPrice
+                            + " for order " + label + " and instrument " + instrument + "!Excpetion: "
+                            + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Changed open price from " + currentOpenPrice + " to " + newOpenPrice
+                        + " for order " + label + " and instrument " + instrument));
+        });
 
         return addHandlersFromCommand(command, observable);
     }
@@ -259,22 +268,23 @@ public class OrderUtilImpl implements OrderUtil {
     }
 
     public final Completable setSL(final SetSLCommand command) {
-        final IOrder orderToSetSL = command.order();
-        final Instrument instrument = orderToSetSL.getInstrument();
-        final String label = orderToSetSL.getLabel();
-        final double currentSL = orderToSetSL.getStopLossPrice();
-        final double newSL = command.newSL();
-
-        final Observable<OrderEvent> observable = Observable.defer(() -> Observable
-            .just(orderToSetSL)
-            .filter(order -> !isSLSetTo(newSL).test(order))
-            .flatMap(order -> orderUtilHandler.callObservable(command))
-            .doOnSubscribe(() -> logger.info("Start to change SL from " + currentSL + " to " + newSL
-                    + " for order " + label + " and instrument " + instrument))
-            .doOnError(e -> logger.error("Failed to change SL from " + currentSL + " to " + newSL
-                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Changed SL from " + currentSL + " to " + newSL
-                    + " for order " + label + " and instrument " + instrument)));
+        final Observable<OrderEvent> observable = Observable.defer(() -> {
+            final IOrder orderToSetSL = command.order();
+            final Instrument instrument = orderToSetSL.getInstrument();
+            final String label = orderToSetSL.getLabel();
+            final double currentSL = orderToSetSL.getStopLossPrice();
+            final double newSL = command.newSL();
+            return Observable
+                .just(orderToSetSL)
+                .filter(order -> !isSLSetTo(newSL).test(order))
+                .flatMap(order -> orderUtilHandler.callObservable(command))
+                .doOnSubscribe(() -> logger.info("Start to change SL from " + currentSL + " to " + newSL
+                        + " for order " + label + " and instrument " + instrument))
+                .doOnError(e -> logger.error("Failed to change SL from " + currentSL + " to " + newSL
+                        + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Changed SL from " + currentSL + " to " + newSL
+                        + " for order " + label + " and instrument " + instrument));
+        });
 
         return addHandlersFromCommand(command, observable);
     }
@@ -287,22 +297,23 @@ public class OrderUtilImpl implements OrderUtil {
     }
 
     public final Completable setTP(final SetTPCommand command) {
-        final IOrder orderToSetTP = command.order();
-        final Instrument instrument = orderToSetTP.getInstrument();
-        final String label = orderToSetTP.getLabel();
-        final double currentTP = orderToSetTP.getTakeProfitPrice();
-        final double newTP = command.newTP();
-
-        final Observable<OrderEvent> observable = Observable.defer(() -> Observable
-            .just(orderToSetTP)
-            .filter(order -> !isTPSetTo(newTP).test(order))
-            .flatMap(order -> orderUtilHandler.callObservable(command))
-            .doOnSubscribe(() -> logger.info("Start to change TP from " + currentTP + " to " + newTP
-                    + " for order " + label + " and instrument " + instrument))
-            .doOnError(e -> logger.error("Failed to change TP from " + currentTP + " to " + newTP
-                    + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
-            .doOnCompleted(() -> logger.info("Changed TP from " + currentTP + " to " + newTP
-                    + " for order " + label + " and instrument " + instrument)));
+        final Observable<OrderEvent> observable = Observable.defer(() -> {
+            final IOrder orderToSetTP = command.order();
+            final Instrument instrument = orderToSetTP.getInstrument();
+            final String label = orderToSetTP.getLabel();
+            final double currentTP = orderToSetTP.getTakeProfitPrice();
+            final double newTP = command.newTP();
+            return Observable
+                .just(orderToSetTP)
+                .filter(order -> !isTPSetTo(newTP).test(order))
+                .flatMap(order -> orderUtilHandler.callObservable(command))
+                .doOnSubscribe(() -> logger.info("Start to change TP from " + currentTP + " to " + newTP
+                        + " for order " + label + " and instrument " + instrument))
+                .doOnError(e -> logger.error("Failed to change TP from " + currentTP + " to " + newTP
+                        + " for order " + label + " and instrument " + instrument + "!Excpetion: " + e.getMessage()))
+                .doOnCompleted(() -> logger.info("Changed TP from " + currentTP + " to " + newTP
+                        + " for order " + label + " and instrument " + instrument));
+        });
 
         return addHandlersFromCommand(command, observable);
     }
