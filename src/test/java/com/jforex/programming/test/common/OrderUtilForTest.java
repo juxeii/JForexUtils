@@ -93,6 +93,10 @@ public class OrderUtilForTest {
         return spyFromParams(buyParamsEURUSD());
     }
 
+    public final IOrder buyOrderEURUSD2() {
+        return spyFromParams(buyParamsEURUSD2());
+    }
+
     public final IOrder sellOrderEURUSD() {
         return spyFromParams(sellParamsEURUSD());
     }
@@ -103,40 +107,55 @@ public class OrderUtilForTest {
 
     public final OrderParams buyParamsEURUSD() {
         return OrderParams
-                .forInstrument(Instrument.EURUSD)
-                .withOrderCommand(OrderCommand.BUY)
-                .withAmount(0.1)
-                .withLabel("TestBuyLabelEURUSD")
-                .price(defaultOpenPrice)
-                .slippage(defaultSlippage)
-                .stopLossPrice(1.32456)
-                .takeProfitPrice(1.32556)
-                .goodTillTime(userSettings.defaultGTT())
-                .comment("Test comment for buy EURUSD")
-                .build();
+            .forInstrument(Instrument.EURUSD)
+            .withOrderCommand(OrderCommand.BUY)
+            .withAmount(0.1)
+            .withLabel("TestBuyLabelEURUSD")
+            .price(defaultOpenPrice)
+            .slippage(defaultSlippage)
+            .stopLossPrice(1.32456)
+            .takeProfitPrice(1.32556)
+            .goodTillTime(userSettings.defaultGTT())
+            .comment("Test comment for buy EURUSD")
+            .build();
+    }
+
+    public final OrderParams buyParamsEURUSD2() {
+        return OrderParams
+            .forInstrument(Instrument.EURUSD)
+            .withOrderCommand(OrderCommand.BUY)
+            .withAmount(0.12)
+            .withLabel("TestBuyLabelEURUSD2")
+            .price(defaultOpenPrice)
+            .slippage(defaultSlippage)
+            .stopLossPrice(1.32456)
+            .takeProfitPrice(1.32556)
+            .goodTillTime(userSettings.defaultGTT())
+            .comment("Test comment for buy EURUSD2")
+            .build();
     }
 
     public final OrderParams sellParamsEURUSD() {
         return OrderParams
-                .forInstrument(Instrument.EURUSD)
-                .withOrderCommand(OrderCommand.SELL)
-                .withAmount(0.12)
-                .withLabel("TestSellLabelEURUSD")
-                .price(defaultOpenPrice)
-                .slippage(defaultSlippage)
-                .stopLossPrice(1.32456)
-                .takeProfitPrice(1.32556)
-                .goodTillTime(userSettings.defaultGTT())
-                .comment("Test comment for sell EURUSD")
-                .build();
+            .forInstrument(Instrument.EURUSD)
+            .withOrderCommand(OrderCommand.SELL)
+            .withAmount(0.12)
+            .withLabel("TestSellLabelEURUSD")
+            .price(defaultOpenPrice)
+            .slippage(defaultSlippage)
+            .stopLossPrice(1.32456)
+            .takeProfitPrice(1.32556)
+            .goodTillTime(userSettings.defaultGTT())
+            .comment("Test comment for sell EURUSD")
+            .build();
     }
 
     public OrderParams sellParamsAUDUSD() {
         return OrderParams
-                .forInstrument(Instrument.AUDUSD)
-                .withOrderCommand(OrderCommand.SELL)
-                .withAmount(0.12)
-                .withLabel("TestSellLabelAUDUSD")
-                .build();
+            .forInstrument(Instrument.AUDUSD)
+            .withOrderCommand(OrderCommand.SELL)
+            .withAmount(0.12)
+            .withLabel("TestSellLabelAUDUSD")
+            .build();
     }
 }

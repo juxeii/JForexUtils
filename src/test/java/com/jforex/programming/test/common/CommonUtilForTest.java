@@ -91,6 +91,7 @@ public class CommonUtilForTest extends BDDMockito {
     protected final OrderParams buyParamsEURUSD = orderUtilForTest.buyParamsEURUSD();
     protected final OrderParams sellParamsEURUSD = orderUtilForTest.sellParamsEURUSD();
     protected final IOrder buyOrderEURUSD = orderUtilForTest.buyOrderEURUSD();
+    protected final IOrder buyOrderEURUSD2 = orderUtilForTest.buyOrderEURUSD2();
     protected final IOrder sellOrderEURUSD = orderUtilForTest.sellOrderEURUSD();
     protected final IOrder sellOrderAUDUSD = orderUtilForTest.sellOrderAUDUSD();
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();

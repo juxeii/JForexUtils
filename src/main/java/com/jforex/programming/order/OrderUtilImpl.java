@@ -23,6 +23,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.CommandUtil;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
 import com.jforex.programming.order.command.SetGTTCommand;
@@ -339,24 +340,19 @@ public class OrderUtilImpl implements OrderUtil {
                                            final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
                                            final Function<IOrder, CloseCommand> closeCommandFactory) {
         return Completable.defer(() -> {
-            final Position position = position(instrument);
-            final Set<IOrder> ordersToClose = position.filledOrOpened();
+            final Completable mergeCompletable = mergePosition(instrument, mergeCommandFactory);
+            final Completable closeCompletable = closePositionAfterMerge(instrument, closeCommandFactory);
+            return Completable.concat(mergeCompletable, closeCompletable);
+        });
+    }
 
-            if (ordersToClose.isEmpty()) {
-                return Completable.complete();
-            }
-            if (ordersToClose.size() == 1) {
-                return close(closeCommandFactory.apply(ordersToClose.iterator().next()));
-            } else {
-                final MergeCommand mergeCommand = mergeCommandFactory.apply(ordersToClose);
-                final Completable mergeCompletable = mergeOrders(mergeCommandFactory.apply(ordersToClose));
-                final Completable closeCompletable = Completable.defer(() -> {
-                    return Observable.fromCallable(() -> engineUtil.engine().getOrder(mergeCommand.mergeOrderLabel()))
-                        .flatMap(mergedOrder -> close(closeCommandFactory.apply(mergedOrder)).toObservable())
-                        .toCompletable();
-                });
-                return Completable.concat(mergeCompletable, closeCompletable);
-            }
+    private final Completable closePositionAfterMerge(final Instrument instrument,
+                                                      final Function<IOrder, CloseCommand> closeCommandFactory) {
+        return Completable.defer(() -> {
+            final Set<IOrder> ordersToClose = position(instrument).filledOrOpened();
+            final List<CloseCommand> closeCommands =
+                    CommandUtil.createBatchCommands(ordersToClose, closeCommandFactory);
+            return CommandUtil.runCommands(closeCommands);
         });
     }
 

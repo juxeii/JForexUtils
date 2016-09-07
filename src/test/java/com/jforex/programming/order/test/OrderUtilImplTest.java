@@ -911,8 +911,13 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
                 .thenReturn(emptyObservable());
             when(orderUtilHandlerMock.callObservable(isA(CloseCommand.class)))
                 .thenReturn(emptyObservable());
+            when(positionMock.filled()).thenReturn(positionOrders);
             when(positionMock.filledOrOpened()).thenReturn(positionOrders);
 
+            subscribe();
+        }
+
+        private void subscribe() {
             closePosition = orderUtilImpl.closePosition(instrumentEURUSD,
                                                         OrderUtilImplTest.this::mergeCommandFactory,
                                                         OrderUtilImplTest.this::closeCommandFactory);
@@ -922,6 +927,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         @Before
         public void setUp() {
             orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.FILLED);
+            orderUtilForTest.setState(buyOrderEURUSD2, IOrder.State.FILLED);
             orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.OPENED);
         }
 
@@ -956,9 +962,23 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
             @Test
             public void onCompleteIsCalledWhenAllCommandsComplete() throws JFException {
                 orderUtilForTest.setLabel(buyOrderEURUSD, mergeOrderLabel);
-                when(engineMock.getOrder(mergeOrderLabel)).thenReturn(buyOrderEURUSD);
+                when(orderUtilHandlerMock.callObservable(isA(MergeCommand.class)))
+                    .then(i -> {
+                        final MergeCommand command = (MergeCommand) i.getArguments()[0];
+                        final Set<IOrder> toMergeOrders = command.toMergeOrders();
+                        toMergeOrders.forEach(order -> {
+                            orderUtilForTest.setState(order, IOrder.State.CLOSED);
+                        });
+                        when(positionMock.filledOrOpened()).thenReturn(Sets.newHashSet(sellOrderEURUSD));
+                        return null;
+                    });
+                final Set<IOrder> positionOrders = Sets.newHashSet(buyOrderEURUSD, buyOrderEURUSD2, sellOrderEURUSD);
+                when(orderUtilHandlerMock.callObservable(isA(CloseCommand.class)))
+                    .thenReturn(emptyObservable());
+                when(positionMock.filled()).thenReturn(positionOrders);
+                when(positionMock.filledOrOpened()).thenReturn(positionOrders);
 
-                subscribeForObservable(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
+                subscribe();
 
                 verify(completeHandlerMock).call();
                 verifyZeroInteractions(errorHandlerMock);
@@ -1025,9 +1045,9 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             subscribe();
 
-//            verify(startActionMock).call();
-//            verify(completeHandlerMock).call();
-//            verifyZeroInteractions(errorHandlerMock);
+            // verify(startActionMock).call();
+            // verify(completeHandlerMock).call();
+            // verifyZeroInteractions(errorHandlerMock);
         }
     }
 }
