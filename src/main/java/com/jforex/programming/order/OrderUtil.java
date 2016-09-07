@@ -319,7 +319,7 @@ public class OrderUtil {
 
     public final Completable closeAllPositions(final Function<IOrder, CloseCommand> closeCreator) {
         final List<Completable> completables = positionFactory
-            .all()
+            .allPositions()
             .stream()
             .map(position -> closePosition(position.instrument(), closeCreator))
             .collect(Collectors.toList());

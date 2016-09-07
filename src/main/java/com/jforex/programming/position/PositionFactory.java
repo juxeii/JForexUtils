@@ -18,15 +18,15 @@ public class PositionFactory {
         this.orderEventObservable = orderEventObservable;
     }
 
+    public Collection<Position> allPositions() {
+        return positionByInstrument.values();
+    }
+
     public Position forInstrument(final Instrument instrument) {
         return positionByInstrument.computeIfAbsent(instrument, this::createNew);
     }
 
     private final Position createNew(final Instrument instrument) {
         return new Position(instrument, orderEventObservable);
-    }
-
-    public Collection<Position> all() {
-        return positionByInstrument.values();
     }
 }

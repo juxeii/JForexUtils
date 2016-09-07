@@ -65,6 +65,11 @@ public class JForexUtilTest extends QuoteProviderForTest {
     }
 
     @Test
+    public void returnedOrderUtilIsValid() {
+        assertNotNull(jForexUtil.orderUtil());
+    }
+
+    @Test
     public void onMessageRouting() {
         jForexUtil.onMessage(mock(IMessage.class));
     }
