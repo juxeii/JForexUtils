@@ -65,6 +65,7 @@ public class OrderUtilImpl implements OrderUtil {
         this.engineUtil = engineUtil;
     }
 
+    @Override
     public final SubmitOption submitBuilder(final OrderParams orderParams) {
         return SubmitCommand.create(orderParams,
                                     engineUtil,
@@ -87,6 +88,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final MergeOption mergeBuilder(final String mergeOrderLabel,
                                           final Set<IOrder> toMergeOrders) {
         return MergeCommand.create(mergeOrderLabel,
@@ -117,6 +119,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final CloseOption closeBuilder(final IOrder orderToClose) {
         return CloseCommand.create(orderToClose, this::close);
     }
@@ -140,6 +143,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final SetLabelOption setLabelBuilder(final IOrder order,
                                                 final String newLabel) {
         return SetLabelCommand.create(order,
@@ -167,6 +171,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final SetGTTOption setGTTBuilder(final IOrder order,
                                             final long newGTT) {
         return SetGTTCommand.create(order,
@@ -195,6 +200,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final SetAmountOption setAmountBuilder(final IOrder order,
                                                   final double newAmount) {
         return SetAmountCommand.create(order,
@@ -223,6 +229,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final SetOpenPriceOption setOpenPriceBuilder(final IOrder order,
                                                         final double newPrice) {
         return SetOpenPriceCommand.create(order,
@@ -253,6 +260,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final SetSLOption setSLBuilder(final IOrder order,
                                           final double newSL) {
         return SetSLCommand.create(order,
@@ -281,6 +289,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final SetTPOption setTPBuilder(final IOrder order,
                                           final double newTP) {
         return SetTPCommand.create(order,
@@ -309,6 +318,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final Completable mergePosition(final Instrument instrument,
                                            final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
         return Completable.defer(() -> {
@@ -324,6 +334,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final Completable mergeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
         return Completable.defer(() -> {
             final List<Completable> completables = positionFactory
@@ -336,6 +347,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final Completable closePosition(final Instrument instrument,
                                            final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
                                            final Function<IOrder, CloseCommand> closeCommandFactory) {
@@ -356,6 +368,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public final Completable closeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
                                                final Function<IOrder, CloseCommand> closeCommandFactory) {
         return Completable.defer(() -> {
@@ -369,6 +382,7 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    @Override
     public PositionOrders positionOrders(final Instrument instrument) {
         return positionFactory.forInstrument(instrument);
     }

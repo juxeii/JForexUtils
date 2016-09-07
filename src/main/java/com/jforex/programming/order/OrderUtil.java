@@ -47,6 +47,11 @@ public interface OrderUtil {
     public SetTPOption setTPBuilder(IOrder order,
                                     double newTP);
 
+    public Completable mergePosition(Instrument instrument,
+                                     Function<Set<IOrder>, MergeCommand> mergeCommandFactory);
+
+    public Completable mergeAllPositions(Function<Set<IOrder>, MergeCommand> mergeCommandFactory);
+
     public Completable closePosition(Instrument instrument,
                                      Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
                                      Function<IOrder, CloseCommand> closeCommandFactory);
