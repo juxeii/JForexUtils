@@ -35,9 +35,8 @@ public final class CommandUtil {
         return runCommandsConcatenated(Arrays.asList(commands));
     }
 
-    public static final <T extends CommonCommand> List<T>
-           createBatchCommands(final Set<IOrder> orders,
-                               final Function<IOrder, T> commandFactory) {
+    public static final <T extends CommonCommand> List<T> batchCommands(final Set<IOrder> orders,
+                                                                        final Function<IOrder, T> commandFactory) {
         return orders
             .stream()
             .map(commandFactory::apply)

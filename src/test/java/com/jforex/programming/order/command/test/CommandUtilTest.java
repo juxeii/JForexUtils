@@ -108,7 +108,7 @@ public class CommandUtilTest extends CommonUtilForTest {
         when(commandFactoryMock.apply(sellOrderEURUSD)).thenReturn(commandTwo);
         final Set<IOrder> batchOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
-        final List<CommonCommand> commands = CommandUtil.createBatchCommands(batchOrders, commandFactoryMock);
+        final List<CommonCommand> commands = CommandUtil.batchCommands(batchOrders, commandFactoryMock);
 
         assertThat(commands.size(), equalTo(2));
         assertTrue(commands.contains(commandOne));

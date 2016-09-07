@@ -351,7 +351,7 @@ public class OrderUtilImpl implements OrderUtil {
         return Completable.defer(() -> {
             final Set<IOrder> ordersToClose = position(instrument).filledOrOpened();
             final List<CloseCommand> closeCommands =
-                    CommandUtil.createBatchCommands(ordersToClose, closeCommandFactory);
+                    CommandUtil.batchCommands(ordersToClose, closeCommandFactory);
             return CommandUtil.runCommands(closeCommands);
         });
     }

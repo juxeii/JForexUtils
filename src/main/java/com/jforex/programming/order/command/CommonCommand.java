@@ -5,9 +5,6 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
@@ -31,8 +28,6 @@ public abstract class CommonCommand {
     private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
     private final Function<CommonCommand, Completable> startFunction;
 
-    protected static final Logger logger = LogManager.getLogger(CommonCommand.class);
-
     @SuppressWarnings("unchecked")
     protected CommonCommand(final CommonBuilder<?> builder) {
         callable = builder.callable;
@@ -48,23 +43,23 @@ public abstract class CommonCommand {
         startFunction = (Function<CommonCommand, Completable>) builder.startFunction;
     }
 
-    public Completable completable() {
+    public final Completable completable() {
         return startFunction.apply(this);
     }
 
-    public Action0 startAction() {
+    public final Action0 startAction() {
         return subscribeAction;
     }
 
-    public Action0 completedAction() {
+    public final Action0 completedAction() {
         return completedAction;
     }
 
-    public Consumer<OrderEvent> eventAction() {
+    public final Consumer<OrderEvent> eventAction() {
         return eventAction;
     }
 
-    public Consumer<Throwable> errorAction() {
+    public final Consumer<Throwable> errorAction() {
         return errorAction;
     }
 
