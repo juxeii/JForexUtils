@@ -17,7 +17,7 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 import rx.Completable;
 import rx.functions.Action0;
 
-public class CommonCommand implements OrderUtilCommand {
+public abstract class CommonCommand {
 
     private final Action0 startAction;
     private final Action0 completedAction;
@@ -48,7 +48,6 @@ public class CommonCommand implements OrderUtilCommand {
         startFunction = (Function<CommonCommand, Completable>) builder.startFunction;
     }
 
-    @Override
     public Completable completable() {
         return startFunction.apply(this);
     }

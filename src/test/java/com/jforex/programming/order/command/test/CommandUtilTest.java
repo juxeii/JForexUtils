@@ -18,7 +18,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.command.CommandUtil;
-import com.jforex.programming.order.command.OrderUtilCommand;
+import com.jforex.programming.order.command.CommonCommand;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import rx.Completable;
@@ -26,18 +26,18 @@ import rx.Completable;
 public class CommandUtilTest extends CommonUtilForTest {
 
     @Mock
-    private OrderUtilCommand commandOne;
+    private CommonCommand commandOne;
     @Mock
-    private OrderUtilCommand commandTwo;
+    private CommonCommand commandTwo;
     @Mock
     private Callable<Double> callableOne;
     @Mock
     private Callable<Double> callableTwo;
     @Mock
-    private Function<IOrder, OrderUtilCommand> commandFactoryMock;
+    private Function<IOrder, CommonCommand> commandFactoryMock;
     private Completable completableOne;
     private Completable completableTwo;
-    private List<OrderUtilCommand> commands;
+    private List<CommonCommand> commands;
 
     @Before
     public void setUp() {
@@ -108,7 +108,7 @@ public class CommandUtilTest extends CommonUtilForTest {
         when(commandFactoryMock.apply(sellOrderEURUSD)).thenReturn(commandTwo);
         final Set<IOrder> batchOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
-        final List<OrderUtilCommand> commands = CommandUtil.createBatchCommands(batchOrders, commandFactoryMock);
+        final List<CommonCommand> commands = CommandUtil.createBatchCommands(batchOrders, commandFactoryMock);
 
         assertThat(commands.size(), equalTo(2));
         assertTrue(commands.contains(commandOne));

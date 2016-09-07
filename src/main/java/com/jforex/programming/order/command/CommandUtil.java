@@ -15,27 +15,27 @@ public final class CommandUtil {
     private CommandUtil() {
     }
 
-    public static final List<Completable> commandsToCompletables(final List<? extends OrderUtilCommand> commands) {
+    public static final List<Completable> commandsToCompletables(final List<? extends CommonCommand> commands) {
         return commands
             .stream()
-            .map(OrderUtilCommand::completable)
+            .map(CommonCommand::completable)
             .collect(Collectors.toList());
     }
 
-    public static final Completable runCommands(final List<? extends OrderUtilCommand> commands) {
+    public static final Completable runCommands(final List<? extends CommonCommand> commands) {
         return Completable.merge(commandsToCompletables(commands));
     }
 
-    public static final Completable runCommandsConcatenated(final List<? extends OrderUtilCommand> commands) {
+    public static final Completable runCommandsConcatenated(final List<? extends CommonCommand> commands) {
         return Completable.concat(commandsToCompletables(commands));
     }
 
     @SafeVarargs
-    public static final <T extends OrderUtilCommand> Completable runCommandsConcatenated(final T... commands) {
+    public static final <T extends CommonCommand> Completable runCommandsConcatenated(final T... commands) {
         return runCommandsConcatenated(Arrays.asList(commands));
     }
 
-    public static final <T extends OrderUtilCommand> List<T>
+    public static final <T extends CommonCommand> List<T>
            createBatchCommands(final Set<IOrder> orders,
                                final Function<IOrder, T> commandFactory) {
         return orders
