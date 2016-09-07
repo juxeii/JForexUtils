@@ -33,6 +33,7 @@ import com.jforex.programming.test.common.RxTestUtil;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import rx.Completable;
 import rx.Observable;
+import rx.functions.Action0;
 import rx.observers.TestSubscriber;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
@@ -52,6 +53,12 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private Function<CloseCommand, Completable> startFunction;
     @Mock
     private Consumer<IOrder> closeActionMock;
+    @Mock
+    private Action0 startActionMock;
+    @Mock
+    private Action0 completedActionMock;
+    @Mock
+    private Consumer<Throwable> errorActionMock;
     @Captor
     private ArgumentCaptor<Callable<IOrder>> orderCallCaptor;
     @Captor
@@ -91,8 +98,11 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         public void setUp() {
             closeCommand = CloseCommand
                 .create(orderToClose, startFunction)
+                .doOnStart(startActionMock)
                 .doOnOrderEvent(orderEventConsumerMock)
                 .doOnClose(closeActionMock)
+                .doOnCompleted(completedActionMock)
+                .doOnError(errorActionMock)
                 .retry(2, retryDelay)
                 .build();
             callable = closeCommand.callable();
@@ -201,6 +211,8 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
                     subscriber.assertValueCount(0);
                     subscriber.assertError(OrderCallRejectException.class);
+                    verify(errorActionMock).accept(any());
+                    verifyZeroInteractions(completedActionMock);
                 }
 
                 @Test
@@ -211,6 +223,8 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                     subscriber.assertNoErrors();
                     subscriber.assertCompleted();
                     verify(orderEventConsumerMock).accept(orderEvent);
+                    verify(completedActionMock).call();
+                    verify(startActionMock, times(3)).call();
                 }
             }
         }
@@ -220,6 +234,11 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 closeCall.run();
+            }
+
+            @Test
+            public void startActionMockIsInvoked() {
+                verify(startActionMock).call();
             }
 
             @Test
@@ -266,6 +285,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 subscriber.assertNoErrors();
                 subscriber.assertCompleted();
                 verify(orderEventConsumerMock).accept(orderEvent);
+                verify(completedActionMock).call();
             }
 
             @Test

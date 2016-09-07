@@ -57,8 +57,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
     @Mock
     private Action1<Throwable> errorHandlerMock;
     @Mock
-    private Action0 startActionMock;
-    @Mock
     private Callable<IOrder> callableMock;
     private final String mergeOrderLabel = "mergeOrderLabel";
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
@@ -85,13 +83,11 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
     }
 
     private void verifyOnCompleteIsCalled() {
-        verify(startActionMock).call();
         verify(completeHandlerMock).call();
         verifyZeroInteractions(errorHandlerMock);
     }
 
     private void verifyOnErrorIsCalled() {
-        verify(startActionMock).call();
         verify(errorHandlerMock).call(jfException);
         verifyZeroInteractions(completeHandlerMock);
     }
@@ -99,14 +95,12 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
     private CloseCommand closeCommandFactory(final IOrder order) {
         return orderUtilImpl
             .closeBuilder(order)
-            .doOnStart(startActionMock)
             .build();
     }
 
     private MergeCommand mergeCommandFactory(final Set<IOrder> toMergeOrders) {
         return orderUtilImpl
             .mergeBuilder(mergeOrderLabel, toMergeOrders)
-            .doOnStart(startActionMock)
             .build();
     }
 
@@ -120,7 +114,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             submitCommand = orderUtilImpl
                 .submitBuilder(buyParamsEURUSD)
-                .doOnStart(startActionMock)
                 .build();
         }
 
@@ -226,7 +219,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             mergeCommand = orderUtilImpl
                 .mergeBuilder(mergeOrderLabel, toMergeOrders)
-                .doOnStart(startActionMock)
                 .build();
         }
 
@@ -239,7 +231,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void whenNotEnoughOrdersToMergeTheCommandCompletesEmpty() {
             mergeCommand = orderUtilImpl
                 .mergeBuilder(mergeOrderLabel, Sets.newHashSet(buyOrderEURUSD))
-                .doOnStart(startActionMock)
                 .build();
             mergeCommand
                 .completable()
@@ -350,7 +341,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void setUp() {
             closeCommand = orderUtilImpl
                 .closeBuilder(buyOrderEURUSD)
-                .doOnStart(startActionMock)
                 .build();
         }
 
@@ -441,7 +431,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void setUp() {
             setLabelCommand = orderUtilImpl
                 .setLabelBuilder(buyOrderEURUSD, newLabel)
-                .doOnStart(startActionMock)
                 .build();
         }
 
@@ -512,7 +501,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void setUp() {
             setGTTCommand = orderUtilImpl
                 .setGTTBuilder(buyOrderEURUSD, newGTT)
-                .doOnStart(startActionMock)
                 .build();
         }
 
@@ -583,7 +571,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void setUp() {
             setAmountCommand = orderUtilImpl
                 .setAmountBuilder(buyOrderEURUSD, newAmount)
-                .doOnStart(startActionMock)
                 .build();
         }
 
@@ -654,7 +641,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void setUp() {
             setOpenPriceCommand = orderUtilImpl
                 .setOpenPriceBuilder(buyOrderEURUSD, newOpenPrice)
-                .doOnStart(startActionMock)
                 .build();
         }
 
@@ -725,7 +711,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void setUp() {
             setSLCommand = orderUtilImpl
                 .setSLBuilder(buyOrderEURUSD, newSL)
-                .doOnStart(startActionMock)
                 .build();
         }
 
@@ -796,7 +781,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void setUp() {
             setTPCommand = orderUtilImpl
                 .setTPBuilder(buyOrderEURUSD, newTP)
-                .doOnStart(startActionMock)
                 .build();
         }
 
@@ -886,7 +870,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void onCompleteIsCalledWhenPositionHasNoOrders() {
             subscribeForObservable(Sets.newHashSet());
 
-            verify(startActionMock, never()).call();
             verify(completeHandlerMock).call();
             verifyZeroInteractions(errorHandlerMock);
         }
@@ -895,7 +878,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void onCompleteIsCalledMergeCompletes() {
             subscribeForObservable(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
 
-            verify(startActionMock).call();
             verify(completeHandlerMock).call();
             verifyZeroInteractions(errorHandlerMock);
         }
@@ -947,7 +929,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void onCompleteIsCalledWhenPositionHasNoOrders() {
             subscribeForObservable(Sets.newHashSet());
 
-            verify(startActionMock, never()).call();
             verify(completeHandlerMock).call();
             verifyZeroInteractions(errorHandlerMock);
         }
@@ -956,7 +937,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         public void ifPositionHasOneOrderNoMergeIsCalled() {
             subscribeForObservable(Sets.newHashSet(buyOrderEURUSD));
 
-            verify(startActionMock).call();
             verify(completeHandlerMock).call();
             verifyZeroInteractions(errorHandlerMock);
         }
@@ -980,7 +960,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
                 subscribeForObservable(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
 
-                verify(startActionMock, times(2)).call();
                 verify(completeHandlerMock).call();
                 verifyZeroInteractions(errorHandlerMock);
             }
@@ -1010,7 +989,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
 
             subscribe();
 
-            verify(startActionMock, never()).call();
             verify(completeHandlerMock).call();
             verifyZeroInteractions(errorHandlerMock);
         }

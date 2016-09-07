@@ -30,13 +30,15 @@ public class OrderUtilHandler {
     public Observable<OrderEvent> callObservable(final CommonCommand command) {
         final Observable<OrderEvent> observable = taskExecutor
             .onStrategyThread(command.callable())
-            .doOnSubscribe(command::startAction)
+            .doOnSubscribe(command.startAction()::call)
             .doOnNext(order -> registerOrder(order, command.callReason()))
             .flatMap(order -> gatewayObservable(order, command))
             .doOnNext(orderEvent -> callEventHandler(orderEvent, command.eventHandlerForType()))
             .doOnNext(command.eventAction()::accept);
 
-        return decorateRetry(command, observable);
+        return decorateObservableWithRetry(command, observable)
+            .doOnError(command.errorAction()::accept)
+            .doOnCompleted(command.completedAction()::call);
     }
 
     private final void registerOrder(final IOrder order,
@@ -63,10 +65,11 @@ public class OrderUtilHandler {
                 .accept(orderEvent.order());
     }
 
-    private final Observable<OrderEvent> decorateRetry(final CommonCommand command,
-                                                       final Observable<OrderEvent> observable) {
-        if (command.noOfRetries() > 0) {
-            final CommandRetry orderProcessRetry = new CommandRetry(command.noOfRetries(),
+    private final Observable<OrderEvent> decorateObservableWithRetry(final CommonCommand command,
+                                                                     final Observable<OrderEvent> observable) {
+        final int noOfRetries = command.noOfRetries();
+        if (noOfRetries > 0) {
+            final CommandRetry orderProcessRetry = new CommandRetry(noOfRetries,
                                                                     command.retryDelayInMillis());
             return observable
                 .flatMap(orderEvent -> rejectAsErrorObservable(command, orderEvent))

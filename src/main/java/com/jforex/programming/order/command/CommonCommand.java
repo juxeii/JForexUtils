@@ -19,7 +19,7 @@ import rx.functions.Action0;
 
 public abstract class CommonCommand {
 
-    private final Action0 startAction;
+    private final Action0 subscribeAction;
     private final Action0 completedAction;
     private final Consumer<Throwable> errorAction;
     private final Consumer<OrderEvent> eventAction;
@@ -38,7 +38,7 @@ public abstract class CommonCommand {
         callable = builder.callable;
         callReason = builder.callReason;
         orderEventTypeData = builder.orderEventTypeData;
-        startAction = builder.startAction;
+        subscribeAction = builder.startAction;
         completedAction = builder.completedAction;
         eventAction = builder.eventAction;
         errorAction = builder.errorAction;
@@ -53,7 +53,7 @@ public abstract class CommonCommand {
     }
 
     public Action0 startAction() {
-        return startAction;
+        return subscribeAction;
     }
 
     public Action0 completedAction() {
