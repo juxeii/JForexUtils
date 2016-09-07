@@ -40,8 +40,9 @@ public class SubmitCommandTest extends CommandTester {
     private Consumer<IOrder> submittedActionMock;
     @Mock
     private Consumer<IOrder> filledActionMock;
+    @Mock
+    private Function<SubmitCommand, Completable> startFunctionMock;
     private final Callable<IOrder> callable = () -> buyOrderEURUSD;
-    private final Function<SubmitCommand, Completable> startFunction = command -> Completable.complete();
 
     @Before
     public void setUp() {
@@ -50,7 +51,7 @@ public class SubmitCommandTest extends CommandTester {
         submitCommand = SubmitCommand
             .create(buyParamsEURUSD,
                     iengineUtilMock,
-                    startFunction)
+                    startFunctionMock)
             .doOnError(errorActionMock)
             .doOnCompleted(completedActionMock)
             .doOnSubmitReject(submitRejectActionMock)
@@ -74,7 +75,7 @@ public class SubmitCommandTest extends CommandTester {
         final SubmitCommand emptyCommand = SubmitCommand
             .create(buyParamsEURUSD,
                     iengineUtilMock,
-                    startFunction)
+                    startFunctionMock)
             .build();
 
         assertNoRetryParams(emptyCommand);

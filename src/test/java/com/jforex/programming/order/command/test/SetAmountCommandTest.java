@@ -29,7 +29,8 @@ public class SetAmountCommandTest extends CommandTester {
     private Consumer<IOrder> setAmountRejectActionMock;
     @Mock
     private Consumer<IOrder> setAmountActionMock;
-    private final Function<SetAmountCommand, Completable> startFunction = command -> Completable.complete();
+    @Mock
+    private Function<SetAmountCommand, Completable> startFunctionMock;
     private final double newAmount = 0.12;
 
     @Before
@@ -37,7 +38,7 @@ public class SetAmountCommandTest extends CommandTester {
         setAmountCommand = SetAmountCommand
             .create(buyOrderEURUSD,
                     newAmount,
-                    startFunction)
+                    startFunctionMock)
             .doOnError(errorActionMock)
             .doOnCompleted(completedActionMock)
             .doOnSetAmountReject(setAmountRejectActionMock)
@@ -53,7 +54,7 @@ public class SetAmountCommandTest extends CommandTester {
         final SetAmountCommand emptyCommand = SetAmountCommand
             .create(buyOrderEURUSD,
                     newAmount,
-                    startFunction)
+                    startFunctionMock)
             .build();
 
         assertNoRetryParams(emptyCommand);

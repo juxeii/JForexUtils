@@ -35,8 +35,9 @@ public class MergeCommandTest extends CommandTester {
     private Consumer<IOrder> mergeCloseActionMock;
     @Mock
     private Consumer<IOrder> mergeActionMock;
+    @Mock
+    private Function<MergeCommand, Completable> startFunctionMock;
     private final Callable<IOrder> callable = () -> buyOrderEURUSD;
-    private final Function<MergeCommand, Completable> startFunction = command -> Completable.complete();
     private final String mergeOrderLabel = "mergeOrderLabel";
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
@@ -48,7 +49,7 @@ public class MergeCommandTest extends CommandTester {
             .create(mergeOrderLabel,
                     toMergeOrders,
                     iengineUtilMock,
-                    startFunction)
+                    startFunctionMock)
             .doOnError(errorActionMock)
             .doOnCompleted(completedActionMock)
             .doOnMergeClose(mergeCloseActionMock)
@@ -71,7 +72,7 @@ public class MergeCommandTest extends CommandTester {
             .create(mergeOrderLabel,
                     toMergeOrders,
                     iengineUtilMock,
-                    startFunction)
+                    startFunctionMock)
             .build();
 
         assertNoRetryParams(emptyCommand);

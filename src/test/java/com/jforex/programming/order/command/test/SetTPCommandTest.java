@@ -29,7 +29,8 @@ public class SetTPCommandTest extends CommandTester {
     private Consumer<IOrder> setTPRejectActionMock;
     @Mock
     private Consumer<IOrder> setTPActionMock;
-    private final Function<SetTPCommand, Completable> startFunction = command -> Completable.complete();
+    @Mock
+    private Function<SetTPCommand, Completable> startFunctionMock;
     private final double newTP = 1.234;
 
     @Before
@@ -37,7 +38,7 @@ public class SetTPCommandTest extends CommandTester {
         setTPCommand = SetTPCommand
             .create(buyOrderEURUSD,
                     newTP,
-                    startFunction)
+                    startFunctionMock)
             .doOnError(errorActionMock)
             .doOnCompleted(completedActionMock)
             .doOnSetTPReject(setTPRejectActionMock)
@@ -53,7 +54,7 @@ public class SetTPCommandTest extends CommandTester {
         final SetTPCommand emptyCommand = SetTPCommand
             .create(buyOrderEURUSD,
                     newTP,
-                    startFunction)
+                    startFunctionMock)
             .build();
 
         assertNoRetryParams(emptyCommand);

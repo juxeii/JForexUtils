@@ -311,6 +311,10 @@ public class OrderUtil {
     public final Completable closePosition(final Instrument instrument,
                                            final Function<IOrder, CloseCommand> closeCreator) {
         final Position position = position(instrument);
+        if (position == null)
+            System.out.println("NULL pos");
+        if (position.instrument() == null)
+            System.out.println("NULLinst pos");
         final Set<IOrder> ordersToClose = position.filledOrOpened();
         final List<CloseCommand> closeCommands = CommandUtil.createBatchCommands(ordersToClose, closeCreator);
 

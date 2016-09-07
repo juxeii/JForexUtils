@@ -90,6 +90,13 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         verifyZeroInteractions(completeHandlerMock);
     }
 
+    private CloseCommand closeCommandFactory(final IOrder order) {
+        return orderUtil
+            .closeBuilder(order)
+            .doOnStart(startActionMock)
+            .build();
+    }
+
     public class SubmitOrderSetup {
 
         private SubmitCommand submitCommand;
@@ -828,19 +835,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         private Completable closePosition;
 
-        private CloseCommand closeCommandFactory(final IOrder order) {
-            return orderUtil
-                .closeBuilder(order)
-                .doOnStart(startActionMock)
-                .build();
-        }
-
         private void subscribeForObservable(final Set<IOrder> positionOrders) {
             when(orderUtilHandlerMock.callObservable(isA(CloseCommand.class)))
                 .thenReturn(emptyObservable());
             when(positionMock.filledOrOpened()).thenReturn(positionOrders);
 
-            closePosition = orderUtil.closePosition(instrumentEURUSD, this::closeCommandFactory);
+            closePosition = orderUtil.closePosition(instrumentEURUSD, OrderUtilTest.this::closeCommandFactory);
             closePosition.subscribe(completeHandlerMock, errorHandlerMock);
         }
 
@@ -864,6 +864,62 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             subscribeForObservable(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
 
             verify(startActionMock, times(2)).call();
+            verify(completeHandlerMock).call();
+            verifyZeroInteractions(errorHandlerMock);
+        }
+    }
+
+    public class CloseAllPositionsSetup {
+
+        private Completable closeAllPositions;
+
+        private void subscribe() {
+            closeAllPositions = orderUtil.closeAllPositions(OrderUtilTest.this::closeCommandFactory);
+            closeAllPositions.subscribe(completeHandlerMock, errorHandlerMock);
+        }
+
+        @Before
+        public void setUp() {
+            orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.FILLED);
+            orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.OPENED);
+        }
+
+        @Test
+        public void onCompleteIsCalledWhenNoPositionCreated() {
+            when(positionFactoryMock.allPositions())
+                .thenReturn(Sets.newHashSet());
+
+            subscribe();
+
+            verify(startActionMock, never()).call();
+            verify(completeHandlerMock).call();
+            verifyZeroInteractions(errorHandlerMock);
+        }
+
+        @Test
+        public void onCompleteIsCalledWhenAllPositionsAreClosed() {
+            final Position positionMockOne = mock(Position.class);
+            final Position positionMockTwo = mock(Position.class);
+
+            when(positionFactoryMock.forInstrument(instrumentEURUSD))
+                .thenReturn(positionMockOne);
+            when(positionFactoryMock.forInstrument(instrumentAUDUSD))
+                .thenReturn(positionMockTwo);
+
+            when(positionMockOne.instrument())
+                .thenReturn(instrumentEURUSD);
+            when(positionMockTwo.instrument())
+                .thenReturn(instrumentAUDUSD);
+            when(positionMockOne.filledOrOpened())
+                .thenReturn(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
+            when(positionMockTwo.filledOrOpened())
+                .thenReturn(Sets.newHashSet(sellOrderAUDUSD));
+            when(positionFactoryMock.allPositions())
+                .thenReturn(Sets.newHashSet(positionMockOne, positionMockTwo));
+
+            subscribe();
+
+            verify(startActionMock, times(3)).call();
             verify(completeHandlerMock).call();
             verifyZeroInteractions(errorHandlerMock);
         }

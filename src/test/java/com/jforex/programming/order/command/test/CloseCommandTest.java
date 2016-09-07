@@ -32,12 +32,13 @@ public class CloseCommandTest extends CommandTester {
     private Consumer<IOrder> partialCloseActionMock;
     @Mock
     private Consumer<IOrder> closeActionMock;
-    private final Function<CloseCommand, Completable> startFunction = command -> Completable.complete();
+    @Mock
+    private Function<CloseCommand, Completable> startFunctionMock;
 
     @Before
     public void setUp() {
         closeCommand = CloseCommand
-            .create(buyOrderEURUSD, startFunction)
+            .create(buyOrderEURUSD, startFunctionMock)
             .doOnError(errorActionMock)
             .doOnCompleted(completedActionMock)
             .doOnCloseReject(closeRejectActionMock)
@@ -52,7 +53,7 @@ public class CloseCommandTest extends CommandTester {
     @Test
     public void emptyCommandHasNoRetryParameters() {
         final CloseCommand emptyCommand = CloseCommand
-            .create(buyOrderEURUSD, startFunction)
+            .create(buyOrderEURUSD, startFunctionMock)
             .build();
 
         assertNoRetryParams(emptyCommand);

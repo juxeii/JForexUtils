@@ -29,7 +29,8 @@ public class SetGTTCommandTest extends CommandTester {
     private Consumer<IOrder> setGTTRejectActionMock;
     @Mock
     private Consumer<IOrder> setGTTActionMock;
-    private final Function<SetGTTCommand, Completable> startFunction = command -> Completable.complete();
+    @Mock
+    private Function<SetGTTCommand, Completable> startFunctionMock;
     private final long newGTT = 1L;
 
     @Before
@@ -37,7 +38,7 @@ public class SetGTTCommandTest extends CommandTester {
         setGTTCommand = SetGTTCommand
             .create(buyOrderEURUSD,
                     newGTT,
-                    startFunction)
+                    startFunctionMock)
             .doOnError(errorActionMock)
             .doOnCompleted(completedActionMock)
             .doOnSetGTTReject(setGTTRejectActionMock)
@@ -53,7 +54,7 @@ public class SetGTTCommandTest extends CommandTester {
         final SetGTTCommand emptyCommand = SetGTTCommand
             .create(buyOrderEURUSD,
                     newGTT,
-                    startFunction)
+                    startFunctionMock)
             .build();
 
         assertNoRetryParams(emptyCommand);

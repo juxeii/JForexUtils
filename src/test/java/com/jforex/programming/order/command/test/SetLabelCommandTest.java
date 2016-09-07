@@ -29,7 +29,8 @@ public class SetLabelCommandTest extends CommandTester {
     private Consumer<IOrder> setLabelRejectActionMock;
     @Mock
     private Consumer<IOrder> setLabelActionMock;
-    private final Function<SetLabelCommand, Completable> startFunction = command -> Completable.complete();
+    @Mock
+    private Function<SetLabelCommand, Completable> startFunctionMock;
     private final String newLabel = "newLabel";
 
     @Before
@@ -37,7 +38,7 @@ public class SetLabelCommandTest extends CommandTester {
         setLabelCommand = SetLabelCommand
             .create(buyOrderEURUSD,
                     newLabel,
-                    startFunction)
+                    startFunctionMock)
             .doOnError(errorActionMock)
             .doOnCompleted(completedActionMock)
             .doOnSetLabelReject(setLabelRejectActionMock)
@@ -53,7 +54,7 @@ public class SetLabelCommandTest extends CommandTester {
         final SetLabelCommand emptyCommand = SetLabelCommand
             .create(buyOrderEURUSD,
                     newLabel,
-                    startFunction)
+                    startFunctionMock)
             .build();
 
         assertNoRetryParams(emptyCommand);

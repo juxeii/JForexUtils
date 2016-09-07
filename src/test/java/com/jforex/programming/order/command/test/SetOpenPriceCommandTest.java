@@ -29,7 +29,8 @@ public class SetOpenPriceCommandTest extends CommandTester {
     private Consumer<IOrder> setOpenPriceRejectActionMock;
     @Mock
     private Consumer<IOrder> setOpenPriceActionMock;
-    private final Function<SetOpenPriceCommand, Completable> startFunction = command -> Completable.complete();
+    @Mock
+    private Function<SetOpenPriceCommand, Completable> startFunctionMock;
     private final double newOpenPrice = 1.234;
 
     @Before
@@ -37,7 +38,7 @@ public class SetOpenPriceCommandTest extends CommandTester {
         setOpenPriceCommand = SetOpenPriceCommand
             .create(buyOrderEURUSD,
                     newOpenPrice,
-                    startFunction)
+                    startFunctionMock)
             .doOnError(errorActionMock)
             .doOnCompleted(completedActionMock)
             .doOnSetOpenPriceReject(setOpenPriceRejectActionMock)
@@ -53,7 +54,7 @@ public class SetOpenPriceCommandTest extends CommandTester {
         final SetOpenPriceCommand emptyCommand = SetOpenPriceCommand
             .create(buyOrderEURUSD,
                     newOpenPrice,
-                    startFunction)
+                    startFunctionMock)
             .build();
 
         assertNoRetryParams(emptyCommand);

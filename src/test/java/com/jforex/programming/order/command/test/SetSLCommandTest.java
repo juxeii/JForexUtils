@@ -29,7 +29,8 @@ public class SetSLCommandTest extends CommandTester {
     private Consumer<IOrder> setSLRejectActionMock;
     @Mock
     private Consumer<IOrder> setSLActionMock;
-    private final Function<SetSLCommand, Completable> startFunction = command -> Completable.complete();
+    @Mock
+    private Function<SetSLCommand, Completable> startFunctionMock;
     private final double newSL = 1.234;
 
     @Before
@@ -37,7 +38,7 @@ public class SetSLCommandTest extends CommandTester {
         setSLCommand = SetSLCommand
             .create(buyOrderEURUSD,
                     newSL,
-                    startFunction)
+                    startFunctionMock)
             .doOnError(errorActionMock)
             .doOnCompleted(completedActionMock)
             .doOnSetSLReject(setSLRejectActionMock)
@@ -53,7 +54,7 @@ public class SetSLCommandTest extends CommandTester {
         final SetSLCommand emptyCommand = SetSLCommand
             .create(buyOrderEURUSD,
                     newSL,
-                    startFunction)
+                    startFunctionMock)
             .build();
 
         assertNoRetryParams(emptyCommand);

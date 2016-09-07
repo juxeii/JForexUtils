@@ -36,7 +36,6 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.OrderProcessState;
@@ -170,14 +169,6 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(AuthentificationUtil.FSMTrigger.CONNECT.toString());
     }
 
-    public final OrderCallRejectException createRejectException(final OrderEvent orderEvent) {
-        return new OrderCallRejectException("", orderEvent);
-    }
-
-    public final Observable<OrderEvent> neverObservable() {
-        return Observable.never();
-    }
-
     public final Observable<OrderEvent> emptyObservable() {
         return Observable.empty();
     }
@@ -194,9 +185,5 @@ public class CommonUtilForTest extends BDDMockito {
 
     public final Observable<OrderEvent> jfExceptionObservable() {
         return Observable.error(jfException);
-    }
-
-    public final Observable<OrderEvent> rejectObservable(final OrderEvent orderEvent) {
-        return Observable.error(createRejectException(orderEvent));
     }
 }
