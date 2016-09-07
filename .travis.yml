@@ -8,6 +8,9 @@ addons:
     packages:
       - oracle-java8-installer
 
+sudo: required
+dist: trusty
+
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
