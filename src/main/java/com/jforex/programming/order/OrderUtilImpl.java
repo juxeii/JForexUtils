@@ -323,6 +323,18 @@ public class OrderUtilImpl implements OrderUtil {
         });
     }
 
+    public final Completable mergeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
+        return Completable.defer(() -> {
+            final List<Completable> completables = positionFactory
+                .allPositions()
+                .stream()
+                .map(position -> mergePosition(position.instrument(), mergeCommandFactory))
+                .collect(Collectors.toList());
+
+            return Completable.merge(completables);
+        });
+    }
+
     public final Completable closePosition(final Instrument instrument,
                                            final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
                                            final Function<IOrder, CloseCommand> closeCommandFactory) {
@@ -350,13 +362,15 @@ public class OrderUtilImpl implements OrderUtil {
 
     public final Completable closeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
                                                final Function<IOrder, CloseCommand> closeCommandFactory) {
-        final List<Completable> completables = positionFactory
-            .allPositions()
-            .stream()
-            .map(position -> closePosition(position.instrument(), mergeCommandFactory, closeCommandFactory))
-            .collect(Collectors.toList());
+        return Completable.defer(() -> {
+            final List<Completable> completables = positionFactory
+                .allPositions()
+                .stream()
+                .map(position -> closePosition(position.instrument(), mergeCommandFactory, closeCommandFactory))
+                .collect(Collectors.toList());
 
-        return Completable.merge(completables);
+            return Completable.merge(completables);
+        });
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
