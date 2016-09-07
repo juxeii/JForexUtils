@@ -13,7 +13,6 @@ import com.jforex.programming.order.command.CommonCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.event.OrderEventTypeSets;
 
 import rx.Observable;
 
@@ -31,12 +30,13 @@ public class OrderUtilHandler {
     public Observable<OrderEvent> callObservable(final CommonCommand command) {
         final Observable<OrderEvent> observable = taskExecutor
             .onStrategyThread(command.callable())
+            .doOnSubscribe(command::startAction)
             .doOnNext(order -> registerOrder(order, command.callReason()))
             .flatMap(order -> gatewayObservable(order, command))
             .doOnNext(orderEvent -> callEventHandler(orderEvent, command.eventHandlerForType()))
             .doOnNext(command.eventAction()::accept);
 
-        return decorateRetry(observable, command.noOfRetries(), command.retryDelayInMillis());
+        return decorateRetry(command, observable);
     }
 
     private final void registerOrder(final IOrder order,
@@ -50,8 +50,8 @@ public class OrderUtilHandler {
         return orderEventGateway
             .observable()
             .filter(orderEvent -> orderEvent.order().equals(order))
-            .filter(orderEvent -> command.isEventForCommand(orderEvent.type()))
-            .takeUntil(orderEvent -> command.isFinishEvent(orderEvent.type()));
+            .filter(orderEvent -> command.isEventTypeForCommand(orderEvent.type()))
+            .takeUntil(orderEvent -> command.isFinishEventType(orderEvent.type()));
     }
 
     private final void callEventHandler(final OrderEvent orderEvent,
@@ -63,21 +63,21 @@ public class OrderUtilHandler {
                 .accept(orderEvent.order());
     }
 
-    private final Observable<OrderEvent> decorateRetry(final Observable<OrderEvent> observable,
-                                                       final int noOfRetries,
-                                                       final long delayInMillis) {
-        if (noOfRetries > 0) {
-            System.out.println("hello retry1");
-            final CommandRetry orderProcessRetry = new CommandRetry(noOfRetries, delayInMillis);
+    private final Observable<OrderEvent> decorateRetry(final CommonCommand command,
+                                                       final Observable<OrderEvent> observable) {
+        if (command.noOfRetries() > 0) {
+            final CommandRetry orderProcessRetry = new CommandRetry(command.noOfRetries(),
+                                                                    command.retryDelayInMillis());
             return observable
-                .flatMap(this::rejectAsErrorObservable)
+                .flatMap(orderEvent -> rejectAsErrorObservable(command, orderEvent))
                 .retryWhen(orderProcessRetry::retryOnRejectObservable);
         }
         return observable;
     }
 
-    private Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
-        return OrderEventTypeSets.rejectEvents.contains(orderEvent.type())
+    private Observable<OrderEvent> rejectAsErrorObservable(final CommonCommand command,
+                                                           final OrderEvent orderEvent) {
+        return command.isRejectEventType(orderEvent.type())
                 ? Observable.error(new OrderCallRejectException("Reject event", orderEvent))
                 : Observable.just(orderEvent);
     }

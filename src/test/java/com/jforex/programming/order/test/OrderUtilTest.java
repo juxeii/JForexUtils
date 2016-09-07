@@ -33,6 +33,7 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import rx.Completable;
 import rx.Observable;
 import rx.functions.Action0;
 import rx.functions.Action1;
@@ -56,6 +57,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private Action1<Throwable> errorHandlerMock;
     @Mock
     private Action0 startActionMock;
+    @Mock
+    private Callable<IOrder> callableMock;
 
     @Before
     public void setUp() {
@@ -90,7 +93,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public class SubmitOrderSetup {
 
         private SubmitCommand submitCommand;
-        private final Callable<IOrder> callable = () -> buyOrderEURUSD;
 
         @Before
         public void setUp() {
@@ -104,7 +106,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         private void setUpMocks() {
             when(iengineUtilMock.submitCallable(buyParamsEURUSD))
-                .thenReturn(callable);
+                .thenReturn(callableMock);
         }
 
         @Test
@@ -114,7 +116,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         @Test
         public void callableIsSet() {
-            assertThat(submitCommand.callable(), equalTo(callable));
+            assertThat(submitCommand.callable(), equalTo(callableMock));
         }
 
         @Test
@@ -196,7 +198,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public class MergeOrdersSetup {
 
         private MergeCommand mergeCommand;
-        private final Callable<IOrder> callable = () -> buyOrderEURUSD;
         private final String mergeOrderLabel = "mergeOrderLabel";
         private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
@@ -212,7 +213,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         private void setUpMocks() {
             when(iengineUtilMock.mergeCallable(mergeOrderLabel, toMergeOrders))
-                .thenReturn(callable);
+                .thenReturn(callableMock);
         }
 
         @Test
@@ -241,7 +242,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         @Test
         public void callableIsSet() {
-            assertThat(mergeCommand.callable(), equalTo(callable));
+            assertThat(mergeCommand.callable(), equalTo(callableMock));
         }
 
         @Test
@@ -820,6 +821,51 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 verifyOnErrorIsCalled();
             }
+        }
+    }
+
+    public class ClosePositionSetup {
+
+        private Completable closePosition;
+
+        private CloseCommand closeCommandFactory(final IOrder order) {
+            return orderUtil
+                .closeBuilder(order)
+                .doOnStart(startActionMock)
+                .build();
+        }
+
+        private void subscribeForObservable(final Set<IOrder> positionOrders) {
+            when(orderUtilHandlerMock.callObservable(isA(CloseCommand.class)))
+                .thenReturn(emptyObservable());
+            when(positionMock.filledOrOpened()).thenReturn(positionOrders);
+
+            closePosition = orderUtil.closePosition(instrumentEURUSD, this::closeCommandFactory);
+            closePosition.subscribe(completeHandlerMock, errorHandlerMock);
+        }
+
+        @Before
+        public void setUp() {
+            orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.FILLED);
+            orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.OPENED);
+        }
+
+        @Test
+        public void onCompleteIsCalledWhenPositionHasNoOrders() {
+            subscribeForObservable(Sets.newHashSet());
+
+            verify(startActionMock, never()).call();
+            verify(completeHandlerMock).call();
+            verifyZeroInteractions(errorHandlerMock);
+        }
+
+        @Test
+        public void onCompleteIsCalledWhenAllCommandsComplete() {
+            subscribeForObservable(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
+
+            verify(startActionMock, times(2)).call();
+            verify(completeHandlerMock).call();
+            verifyZeroInteractions(errorHandlerMock);
         }
     }
 }

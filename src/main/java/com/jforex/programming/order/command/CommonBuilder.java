@@ -53,7 +53,8 @@ public class CommonBuilder<T extends CommonOption<T>> {
         return (T) this;
     }
 
-    public T retry(final int noOfRetries, final long retryDelayInMillis) {
+    public T retry(final int noOfRetries,
+                   final long retryDelayInMillis) {
         this.noOfRetries = noOfRetries;
         this.retryDelayInMillis = retryDelayInMillis;
         return (T) this;

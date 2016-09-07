@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -47,6 +48,10 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private OrderEventGateway orderEventGatewayMock;
     @Mock
     private Consumer<OrderEvent> orderEventConsumerMock;
+    @Mock
+    private Function<CloseCommand, Completable> startFunction;
+    @Mock
+    private Consumer<IOrder> closeActionMock;
     @Captor
     private ArgumentCaptor<Callable<IOrder>> orderCallCaptor;
     @Captor
@@ -85,8 +90,9 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         @Before
         public void setUp() {
             closeCommand = CloseCommand
-                .create(orderToClose, command -> Completable.complete())
+                .create(orderToClose, startFunction)
                 .doOnOrderEvent(orderEventConsumerMock)
+                .doOnClose(closeActionMock)
                 .retry(2, retryDelay)
                 .build();
             callable = closeCommand.callable();
@@ -102,7 +108,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         @Test
         public void whenRejectedCommandCompletesWithNoRetryForCommandWithNoRetry() {
             closeCommand = CloseCommand
-                .create(orderToClose, command -> Completable.complete())
+                .create(orderToClose, startFunction)
                 .doOnOrderEvent(orderEventConsumerMock)
                 .build();
             callable = closeCommand.callable();
@@ -272,6 +278,13 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
                 subscriber.assertNoErrors();
                 subscriber.assertCompleted();
+            }
+
+            @Test
+            public void closeActionIsCalled() {
+                sendOrderEvent(orderToClose, OrderEventType.CLOSE_OK);
+
+                verify(closeActionMock).accept(buyOrderEURUSD);
             }
 
             @Test

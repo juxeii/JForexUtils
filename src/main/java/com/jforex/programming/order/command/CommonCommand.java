@@ -77,26 +77,26 @@ public class CommonCommand implements OrderUtilCommand {
         return callReason;
     }
 
-    public final boolean isEventForCommand(final OrderEventType orderEventType) {
+    public final boolean isEventTypeForCommand(final OrderEventType orderEventType) {
         return orderEventTypeData
             .allEventTypes()
             .contains(orderEventType);
     }
 
-    private final boolean isDoneEvent(final OrderEventType orderEventType) {
+    private final boolean isDoneEventType(final OrderEventType orderEventType) {
         return orderEventTypeData
             .doneEventTypes()
             .contains(orderEventType);
     }
 
-    public final boolean isRejectEvent(final OrderEventType orderEventType) {
+    public final boolean isRejectEventType(final OrderEventType orderEventType) {
         return orderEventTypeData
             .rejectEventTypes()
             .contains(orderEventType);
     }
 
-    public final boolean isFinishEvent(final OrderEventType orderEventType) {
-        return isDoneEvent(orderEventType) || isRejectEvent(orderEventType);
+    public final boolean isFinishEventType(final OrderEventType orderEventType) {
+        return isDoneEventType(orderEventType) || isRejectEventType(orderEventType);
     }
 
     public final int noOfRetries() {

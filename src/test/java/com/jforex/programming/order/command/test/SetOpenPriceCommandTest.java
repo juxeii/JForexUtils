@@ -94,5 +94,7 @@ public class SetOpenPriceCommandTest extends CommandTester {
 
         verify(setOpenPriceRejectActionMock).accept(buyOrderEURUSD);
         verify(setOpenPriceActionMock).accept(buyOrderEURUSD);
+
+        assertActionsNotNull(setOpenPriceCommand);
     }
 }

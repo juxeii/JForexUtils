@@ -94,5 +94,7 @@ public class SetTPCommandTest extends CommandTester {
 
         verify(setTPRejectActionMock).accept(buyOrderEURUSD);
         verify(setTPActionMock).accept(buyOrderEURUSD);
+
+        assertActionsNotNull(setTPCommand);
     }
 }

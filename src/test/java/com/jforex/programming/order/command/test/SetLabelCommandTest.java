@@ -94,5 +94,7 @@ public class SetLabelCommandTest extends CommandTester {
 
         verify(setLabelRejectActionMock).accept(buyOrderEURUSD);
         verify(setLabelActionMock).accept(buyOrderEURUSD);
+
+        assertActionsNotNull(setLabelCommand);
     }
 }

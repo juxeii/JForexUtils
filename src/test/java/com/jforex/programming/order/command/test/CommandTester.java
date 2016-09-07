@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.command.CommonCommand;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
@@ -34,17 +35,17 @@ public class CommandTester extends CommonUtilForTest {
 
     protected void assertEventTypesForCommand(final EnumSet<OrderEventType> eventTypes,
                                               final CommonCommand command) {
-        assertEventTypes(eventTypes, command::isEventForCommand);
+        assertEventTypes(eventTypes, command::isEventTypeForCommand);
     }
 
     protected void assertFinishEventTypesForCommand(final EnumSet<OrderEventType> eventTypes,
                                                     final CommonCommand command) {
-        assertEventTypes(eventTypes, command::isFinishEvent);
+        assertEventTypes(eventTypes, command::isFinishEventType);
     }
 
     protected void assertRejectEventTypesForCommand(final EnumSet<OrderEventType> eventTypes,
                                                     final CommonCommand command) {
-        assertEventTypes(eventTypes, command::isRejectEvent);
+        assertEventTypes(eventTypes, command::isRejectEventType);
     }
 
     protected void assertEventTypes(final EnumSet<OrderEventType> eventTypes,
@@ -62,5 +63,12 @@ public class CommandTester extends CommonUtilForTest {
     protected void assertRetryParams(final CommonCommand command) {
         assertThat(command.noOfRetries(), equalTo(noOfRetries));
         assertThat(command.retryDelayInMillis(), equalTo(retryDelay));
+    }
+
+    protected void assertActionsNotNull(final CommonCommand command) {
+        command.startAction().call();
+        command.eventAction().accept(new OrderEvent(buyOrderEURUSD, OrderEventType.SUBMIT_OK));
+        command.completedAction().call();
+        command.errorAction().accept(jfException);
     }
 }

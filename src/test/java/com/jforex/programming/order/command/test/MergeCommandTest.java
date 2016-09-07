@@ -114,5 +114,7 @@ public class MergeCommandTest extends CommandTester {
         verify(mergeRejectActionMock).accept(buyOrderEURUSD);
         verify(mergeActionMock).accept(buyOrderEURUSD);
         verify(mergeCloseActionMock).accept(buyOrderEURUSD);
+
+        assertActionsNotNull(mergeCommand);
     }
 }

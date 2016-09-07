@@ -94,5 +94,7 @@ public class SetSLCommandTest extends CommandTester {
 
         verify(setSLRejectActionMock).accept(buyOrderEURUSD);
         verify(setSLActionMock).accept(buyOrderEURUSD);
+
+        assertActionsNotNull(setSLCommand);
     }
 }

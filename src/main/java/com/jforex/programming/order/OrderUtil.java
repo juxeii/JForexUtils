@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -314,6 +315,16 @@ public class OrderUtil {
         final List<CloseCommand> closeCommands = CommandUtil.createBatchCommands(ordersToClose, closeCreator);
 
         return CommandUtil.runCommands(closeCommands);
+    }
+
+    public final Completable closeAllPositions(final Function<IOrder, CloseCommand> closeCreator) {
+        final List<Completable> completables = positionFactory
+            .all()
+            .stream()
+            .map(position -> closePosition(position.instrument(), closeCreator))
+            .collect(Collectors.toList());
+
+        return Completable.merge(completables);
     }
 
 //    public final Completable mergePosition(final Instrument instrument,

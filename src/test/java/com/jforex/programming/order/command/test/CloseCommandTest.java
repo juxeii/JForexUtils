@@ -95,5 +95,7 @@ public class CloseCommandTest extends CommandTester {
         verify(closeRejectActionMock).accept(buyOrderEURUSD);
         verify(closeActionMock).accept(buyOrderEURUSD);
         verify(partialCloseActionMock).accept(buyOrderEURUSD);
+
+        assertActionsNotNull(closeCommand);
     }
 }
