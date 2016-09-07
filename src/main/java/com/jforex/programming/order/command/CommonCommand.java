@@ -43,65 +43,65 @@ public abstract class CommonCommand {
         startFunction = (Function<CommonCommand, Completable>) builder.startFunction;
     }
 
-    public final Completable completable() {
+    public Completable completable() {
         return startFunction.apply(this);
     }
 
-    public final Action0 startAction() {
+    public Action0 startAction() {
         return subscribeAction;
     }
 
-    public final Action0 completedAction() {
+    public Action0 completedAction() {
         return completedAction;
     }
 
-    public final Consumer<OrderEvent> eventAction() {
+    public Consumer<OrderEvent> eventAction() {
         return eventAction;
     }
 
-    public final Consumer<Throwable> errorAction() {
+    public Consumer<Throwable> errorAction() {
         return errorAction;
     }
 
-    public final Callable<IOrder> callable() {
+    public Callable<IOrder> callable() {
         return callable;
     }
 
-    public final OrderCallReason callReason() {
+    public OrderCallReason callReason() {
         return callReason;
     }
 
-    public final boolean isEventTypeForCommand(final OrderEventType orderEventType) {
+    public boolean isEventTypeForCommand(final OrderEventType orderEventType) {
         return orderEventTypeData
             .allEventTypes()
             .contains(orderEventType);
     }
 
-    private final boolean isDoneEventType(final OrderEventType orderEventType) {
+    private boolean isDoneEventType(final OrderEventType orderEventType) {
         return orderEventTypeData
             .doneEventTypes()
             .contains(orderEventType);
     }
 
-    public final boolean isRejectEventType(final OrderEventType orderEventType) {
+    public boolean isRejectEventType(final OrderEventType orderEventType) {
         return orderEventTypeData
             .rejectEventTypes()
             .contains(orderEventType);
     }
 
-    public final boolean isFinishEventType(final OrderEventType orderEventType) {
+    public boolean isFinishEventType(final OrderEventType orderEventType) {
         return isDoneEventType(orderEventType) || isRejectEventType(orderEventType);
     }
 
-    public final int noOfRetries() {
+    public int noOfRetries() {
         return noOfRetries;
     }
 
-    public final long retryDelayInMillis() {
+    public long retryDelayInMillis() {
         return retryDelayInMillis;
     }
 
-    public final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType() {
+    public Map<OrderEventType, Consumer<IOrder>> eventHandlerForType() {
         return eventHandlerForType;
     }
 }
