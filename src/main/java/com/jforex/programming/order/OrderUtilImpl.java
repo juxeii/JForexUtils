@@ -13,7 +13,6 @@ import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -24,7 +23,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.command.CloseCommand;
-import com.jforex.programming.order.command.CommandUtil;
 import com.jforex.programming.order.command.CommonCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
@@ -309,41 +307,55 @@ public class OrderUtilImpl implements OrderUtil {
         return addHandlersFromCommand(command, observable);
     }
 
-    public final Completable closePosition(final Instrument instrument,
-                                           final Function<IOrder, CloseCommand> closeCreator) {
-        final Position position = position(instrument);
-        final Set<IOrder> ordersToClose = position.filledOrOpened();
-        final List<CloseCommand> closeCommands = CommandUtil.createBatchCommands(ordersToClose, closeCreator);
-
-        return CommandUtil.runCommands(closeCommands);
+    public final Completable mergePosition(final Instrument instrument,
+                                           final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
+        return Completable.defer(() -> {
+            final Position position = position(instrument);
+            final Set<IOrder> toMergeOrders = position.filled();
+            return toMergeOrders.size() < 2
+                    ? Completable.complete()
+                    : mergeOrders(mergeCommandFactory.apply(toMergeOrders))
+                        .doOnSubscribe(s -> logger.info("Start to merge position for " + instrument + "."))
+                        .doOnError(e -> logger.error("Failed to merge position for " + instrument
+                                + "!Excpetion: " + e.getMessage()))
+                        .doOnCompleted(() -> logger.info("Merged position for " + instrument + "."));
+        });
     }
 
-    public final Completable closeAllPositions(final Function<IOrder, CloseCommand> closeCreator) {
+    public final Completable closePosition(final Instrument instrument,
+                                           final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+                                           final Function<IOrder, CloseCommand> closeCommandFactory) {
+        return Completable.defer(() -> {
+            final Position position = position(instrument);
+            final Set<IOrder> ordersToClose = position.filledOrOpened();
+
+            if (ordersToClose.isEmpty()) {
+                return Completable.complete();
+            }
+            if (ordersToClose.size() == 1) {
+                return close(closeCommandFactory.apply(ordersToClose.iterator().next()));
+            } else {
+                final MergeCommand mergeCommand = mergeCommandFactory.apply(ordersToClose);
+                final Completable mergeCompletable = mergeOrders(mergeCommandFactory.apply(ordersToClose));
+                final Completable closeCompletable = Completable.defer(() -> {
+                    return Observable.fromCallable(() -> engineUtil.engine().getOrder(mergeCommand.mergeOrderLabel()))
+                        .flatMap(mergedOrder -> close(closeCommandFactory.apply(mergedOrder)).toObservable())
+                        .toCompletable();
+                });
+                return Completable.concat(mergeCompletable, closeCompletable);
+            }
+        });
+    }
+
+    public final Completable closeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+                                               final Function<IOrder, CloseCommand> closeCommandFactory) {
         final List<Completable> completables = positionFactory
             .allPositions()
             .stream()
-            .map(position -> closePosition(position.instrument(), closeCreator))
+            .map(position -> closePosition(position.instrument(), mergeCommandFactory, closeCommandFactory))
             .collect(Collectors.toList());
 
         return Completable.merge(completables);
-    }
-
-    public final Completable mergePosition(final Instrument instrument,
-                                           final String mergeOrderLabel,
-                                           final BiFunction<Set<IOrder>, String, MergeCommand> mergeCreator) {
-        final Position position = position(instrument);
-
-        return Completable.defer(() -> {
-            final Set<IOrder> toMergeOrders = position.filled();
-            if (toMergeOrders.size() < 2)
-                return Completable.complete();
-            final MergeCommand command = mergeCreator.apply(toMergeOrders, mergeOrderLabel);
-            return mergeOrders(command);
-//                .doOnSubscribe(s -> logger.info("Start to merge position for " + instrument))
-//                .doOnError(e -> logger.error("Failed to merge position for " + instrument
-//                        + "!Excpetion: " + e.getMessage()))
-//                .doOnCompleted(() -> logger.info("Merged position for " + instrument));
-        });
     }
 
     private final Completable addHandlersFromCommand(final CommonCommand command,

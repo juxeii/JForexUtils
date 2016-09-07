@@ -6,6 +6,7 @@ import java.util.function.Function;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.process.option.CloseOption;
 import com.jforex.programming.order.process.option.MergeOption;
 import com.jforex.programming.order.process.option.SetAmountOption;
@@ -47,9 +48,11 @@ public interface OrderUtil {
                                     double newTP);
 
     public Completable closePosition(Instrument instrument,
-                                     Function<IOrder, CloseCommand> closeCreator);
+                                     Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+                                     Function<IOrder, CloseCommand> closeCommandFactory);
 
-    public Completable closeAllPositions(Function<IOrder, CloseCommand> closeCreator);
+    public Completable closeAllPositions(Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+                                         Function<IOrder, CloseCommand> closeCommandFactory);
 
     public PositionOrders positionOrders(Instrument instrument);
 }
