@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IMessage;
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.JFHotSubject;
 import com.jforex.programming.order.call.OrderCallRequest;
 
@@ -35,7 +36,9 @@ public class OrderEventGateway {
 
     private void onOrderMessage(final IMessage message) {
         final OrderEvent orderEvent = messageToOrderEvent.fromMessage(message);
-        logger.debug("Received: " + orderEvent);
+        final IOrder order = orderEvent.order();
+        logger.debug("Received order event with label " + order.getLabel()
+                + " for " + order.getInstrument() + " " + orderEvent);
         orderEventPublisher.onNext(orderEvent);
     }
 }
