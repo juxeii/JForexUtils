@@ -15,8 +15,8 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.IEngineUtil;
-import com.jforex.programming.order.OrderUtilImpl;
 import com.jforex.programming.order.OrderUtilHandler;
+import com.jforex.programming.order.OrderUtilImpl;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
@@ -59,14 +59,16 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
     private Action0 startActionMock;
     @Mock
     private Callable<IOrder> callableMock;
+    private final String mergeOrderLabel = "mergeOrderLabel";
+    private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Before
     public void setUp() {
         setUpMocks();
 
         orderUtilImpl = new OrderUtilImpl(orderUtilHandlerMock,
-                                  positionFactoryMock,
-                                  iengineUtilMock);
+                                          positionFactoryMock,
+                                          iengineUtilMock);
     }
 
     public void setUpMocks() {
@@ -93,6 +95,14 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
     private CloseCommand closeCommandFactory(final IOrder order) {
         return orderUtilImpl
             .closeBuilder(order)
+            .doOnStart(startActionMock)
+            .build();
+    }
+
+    private MergeCommand mergeCommandFactory(final Set<IOrder> toMergeOrders,
+                                             final String mergeOrderLabel) {
+        return orderUtilImpl
+            .mergeBuilder(mergeOrderLabel, toMergeOrders)
             .doOnStart(startActionMock)
             .build();
     }
@@ -205,8 +215,6 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
     public class MergeOrdersSetup {
 
         private MergeCommand mergeCommand;
-        private final String mergeOrderLabel = "mergeOrderLabel";
-        private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
         @Before
         public void setUp() {
@@ -920,6 +928,46 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
             subscribe();
 
             verify(startActionMock, times(3)).call();
+            verify(completeHandlerMock).call();
+            verifyZeroInteractions(errorHandlerMock);
+        }
+    }
+
+    public class MergePositionSetup {
+
+        private Completable mergePosition;
+
+        private void subscribeForObservable(final Set<IOrder> positionOrders) {
+            when(orderUtilHandlerMock.callObservable(isA(MergeCommand.class)))
+                .thenReturn(emptyObservable());
+            when(positionMock.filled()).thenReturn(positionOrders);
+
+            mergePosition = orderUtilImpl.mergePosition(instrumentEURUSD,
+                                                        mergeOrderLabel,
+                                                        OrderUtilImplTest.this::mergeCommandFactory);
+            mergePosition.subscribe(completeHandlerMock, errorHandlerMock);
+        }
+
+        @Before
+        public void setUp() {
+            orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.FILLED);
+            orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.FILLED);
+        }
+
+        @Test
+        public void onCompleteIsCalledWhenPositionHasNoOrders() {
+            subscribeForObservable(Sets.newHashSet());
+
+            verify(startActionMock, never()).call();
+            verify(completeHandlerMock).call();
+            verifyZeroInteractions(errorHandlerMock);
+        }
+
+        @Test
+        public void onCompleteIsCalledMergeCompletes() {
+            subscribeForObservable(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
+
+            verify(startActionMock).call();
             verify(completeHandlerMock).call();
             verifyZeroInteractions(errorHandlerMock);
         }

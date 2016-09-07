@@ -13,6 +13,7 @@ import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -327,21 +328,23 @@ public class OrderUtilImpl implements OrderUtil {
         return Completable.merge(completables);
     }
 
-//    public final Completable mergePosition(final Instrument instrument,
-//                                           final String mergeOrderLabel,
-//                                           final BiFunction<Set<IOrder>, String, MergeCommand> mergeCreator) {
-//        final Position position = position(instrument);
-//
-//        return Completable.defer(() -> {
-//            final Set<IOrder> toMergeOrders = position.filled();
-//            final MergeCommand command = mergeCreator.apply(toMergeOrders, mergeOrderLabel);
-//            return mergeOrders(command)
+    public final Completable mergePosition(final Instrument instrument,
+                                           final String mergeOrderLabel,
+                                           final BiFunction<Set<IOrder>, String, MergeCommand> mergeCreator) {
+        final Position position = position(instrument);
+
+        return Completable.defer(() -> {
+            final Set<IOrder> toMergeOrders = position.filled();
+            if (toMergeOrders.size() < 2)
+                return Completable.complete();
+            final MergeCommand command = mergeCreator.apply(toMergeOrders, mergeOrderLabel);
+            return mergeOrders(command);
 //                .doOnSubscribe(s -> logger.info("Start to merge position for " + instrument))
 //                .doOnError(e -> logger.error("Failed to merge position for " + instrument
 //                        + "!Excpetion: " + e.getMessage()))
 //                .doOnCompleted(() -> logger.info("Merged position for " + instrument));
-//        });
-//    }
+        });
+    }
 
     private final Completable addHandlersFromCommand(final CommonCommand command,
                                                      final Observable<OrderEvent> observable) {
