@@ -18,11 +18,14 @@ import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.order.OrderUtilImpl;
+import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.OrderUtilBuilder;
+import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.event.MessageToOrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteHandler;
@@ -54,7 +57,10 @@ public class JForexUtil {
     private OrderEventGateway orderEventGateway;
     private TaskExecutor orderCallExecutor;
     private OrderUtilHandler orderUtilHandler;
-    private OrderUtilImpl orderUtil;
+    private OrderUtil orderUtil;
+    private OrderUtilBuilder orderUtilBuilder;
+    private PositionUtil positionUtil;
+    private OrderUtilCompletable orderUtilCompletable;
     private final MessageToOrderEvent messageToOrderEvent = new MessageToOrderEvent();
 
     private final CalculationUtil calculationUtil;
@@ -108,9 +114,9 @@ public class JForexUtil {
         positionFactory = new PositionFactory(orderEventGateway.observable());
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
         engineUtil = new IEngineUtil(engine);
-        orderUtil = new OrderUtilImpl(orderUtilHandler,
-                                  positionFactory,
-                                  engineUtil);
+        orderUtilCompletable = new OrderUtilCompletable(orderUtilHandler, positionFactory);
+        orderUtilBuilder = new OrderUtilBuilder(engineUtil, orderUtilCompletable);
+        orderUtil = new OrderUtil(orderUtilBuilder, positionUtil);
     }
 
     public IContext context() {
@@ -151,7 +157,7 @@ public class JForexUtil {
         return calculationUtil;
     }
 
-    public OrderUtilImpl orderUtil() {
+    public OrderUtil orderUtil() {
         return orderUtil;
     }
 

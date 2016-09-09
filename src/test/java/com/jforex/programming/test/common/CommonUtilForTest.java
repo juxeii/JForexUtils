@@ -34,7 +34,6 @@ import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
@@ -44,6 +43,7 @@ import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
+import rx.Completable;
 import rx.Observable;
 
 public class CommonUtilForTest extends BDDMockito {
@@ -70,8 +70,6 @@ public class CommonUtilForTest extends BDDMockito {
     protected TickQuoteHandler tickQuoteHandlerMock;
     @Mock
     protected BarQuoteHandler barQuoteHandlerMock;
-    @Mock
-    protected OrderUtilHandler orderUtilHandlerMock;
 
     protected JFException jfException = new JFException("JFException for test");
 
@@ -168,6 +166,14 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(OrderDirection.FLAT.toString());
         AuthentificationUtil.FSMTrigger
             .valueOf(AuthentificationUtil.FSMTrigger.CONNECT.toString());
+    }
+
+    public final Completable emptyCompletable() {
+        return Completable.complete();
+    }
+
+    public final Completable neverCompletable() {
+        return Completable.never();
     }
 
     public final Observable<OrderEvent> emptyObservable() {
