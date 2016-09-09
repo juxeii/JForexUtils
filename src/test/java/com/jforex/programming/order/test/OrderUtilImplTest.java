@@ -13,7 +13,6 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -31,6 +30,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
+import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -49,6 +49,8 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
     @Mock
     private PositionFactory positionFactoryMock;
     @Mock
+    private PositionUtil positionUtilMock;
+    @Mock
     private Position positionMock;
     @Mock
     private IEngineUtil iengineUtilMock;
@@ -60,6 +62,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
     private Callable<IOrder> callableMock;
     private final String mergeOrderLabel = "mergeOrderLabel";
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+    private final Completable testCompletable = Completable.fromCallable(() -> buyOrderEURUSD);
 
     @Before
     public void setUp() {
@@ -71,11 +74,15 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
     }
 
     public void setUpMocks() {
-        when(positionFactoryMock.forInstrument(instrumentEURUSD))
-            .thenReturn(positionMock);
+        when(positionFactoryMock.forInstrument(instrumentEURUSD)).thenReturn(positionMock);
 
-        when(iengineUtilMock.engine())
-            .thenReturn(engineMock);
+        when(iengineUtilMock.engine()).thenReturn(engineMock);
+
+        when(positionFactoryMock.positionUtil(any(), eq(positionFactoryMock)))
+            .thenReturn(positionUtilMock);
+
+        when(positionUtilMock.position(instrumentEURUSD))
+            .thenReturn(positionMock);
     }
 
     private Observable<OrderEvent> cretaeObservable(final OrderEventType type) {
@@ -154,7 +161,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
             private void verifyOrderIsAddedForEventType(final OrderEventType type) {
                 subscribeForObservable(cretaeObservable(type));
 
-                verify(positionMock).addOrder(buyOrderEURUSD);
+                verify(positionUtilMock).addOrderOfEventToPosition(any());
             }
 
             private void verifyNoOrderIsAddedForEventType(final OrderEventType type) {
@@ -318,7 +325,7 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
             public void onMergeTheOrderIsAddedToPosition() {
                 subscribeForObservable(cretaeObservable(OrderEventType.MERGE_OK));
 
-                verify(positionMock).addOrder(buyOrderEURUSD);
+                verify(positionUtilMock).addOrderOfEventToPosition(any());
             }
 
             @Test
@@ -842,212 +849,40 @@ public class OrderUtilImplTest extends InstrumentUtilForTest {
         }
     }
 
-    public class MergePositionSetup {
+    @Test
+    public void mergePositionCallsPositionUtil() {
+        when(positionUtilMock.mergePosition(eq(instrumentEURUSD), any()))
+            .thenReturn(testCompletable);
 
-        private Completable mergePosition;
+        final Completable completable = orderUtilImpl.mergePosition(instrumentEURUSD,
+                                                                    this::mergeCommandFactory);
 
-        private void subscribeForObservable(final Set<IOrder> positionOrders) {
-            when(orderUtilHandlerMock.callObservable(isA(MergeCommand.class)))
-                .thenReturn(emptyObservable());
-            when(positionMock.filled()).thenReturn(positionOrders);
-
-            subscribe();
-        }
-
-        private void subscribe() {
-            mergePosition = orderUtilImpl.mergePosition(instrumentEURUSD,
-                                                        OrderUtilImplTest.this::mergeCommandFactory);
-            mergePosition.subscribe(completeHandlerMock, errorHandlerMock);
-        }
-
-        @Before
-        public void setUp() {
-            orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.FILLED);
-            orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.FILLED);
-        }
-
-        @Test
-        public void onCompleteIsCalledWhenPositionHasNoOrders() {
-            subscribeForObservable(Sets.newHashSet());
-
-            verify(completeHandlerMock).call();
-            verifyZeroInteractions(errorHandlerMock);
-        }
-
-        @Test
-        public void onCompleteIsCalledMergeCompletes() {
-            subscribeForObservable(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
-
-            verify(completeHandlerMock).call();
-            verifyZeroInteractions(errorHandlerMock);
-        }
-
-        @Test
-        public void errorIsEmittedWhenMergeFails() {
-            when(orderUtilHandlerMock.callObservable(isA(MergeCommand.class)))
-                .thenReturn(jfExceptionObservable());
-            when(positionMock.filled()).thenReturn(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
-            subscribe();
-
-            verifyOnErrorIsCalled();
-        }
-
-        @Test
-        public void whenNotSubscribedTheCompletableIsDeferred() {
-            orderUtilImpl.mergePosition(instrumentEURUSD,
-                                        OrderUtilImplTest.this::mergeCommandFactory);
-
-            verifyZeroInteractions(orderUtilHandlerMock);
-            verifyZeroInteractions(positionMock);
-        }
+        assertThat(completable, equalTo(testCompletable));
     }
 
-    public class ClosePositionSetup {
+    @Test
+    public void closePositionCallsPositionUtil() {
+        when(positionUtilMock.closePosition(eq(instrumentEURUSD),
+                                            any(),
+                                            any()))
+                                                .thenReturn(testCompletable);
 
-        private Completable closePosition;
+        final Completable completable = orderUtilImpl.closePosition(instrumentEURUSD,
+                                                                    this::mergeCommandFactory,
+                                                                    this::closeCommandFactory);
 
-        private void subscribeForObservable(final Set<IOrder> positionOrders) {
-            when(orderUtilHandlerMock.callObservable(isA(MergeCommand.class)))
-                .thenReturn(emptyObservable());
-            when(orderUtilHandlerMock.callObservable(isA(CloseCommand.class)))
-                .thenReturn(emptyObservable());
-            when(positionMock.filled()).thenReturn(positionOrders);
-            when(positionMock.filledOrOpened()).thenReturn(positionOrders);
-
-            subscribe();
-        }
-
-        private void subscribe() {
-            closePosition = orderUtilImpl.closePosition(instrumentEURUSD,
-                                                        OrderUtilImplTest.this::mergeCommandFactory,
-                                                        OrderUtilImplTest.this::closeCommandFactory);
-            closePosition.subscribe(completeHandlerMock, errorHandlerMock);
-        }
-
-        @Before
-        public void setUp() {
-            orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.FILLED);
-            orderUtilForTest.setState(buyOrderEURUSD2, IOrder.State.FILLED);
-            orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.OPENED);
-        }
-
-        @Test
-        public void onCompleteIsCalledWhenPositionHasNoOrders() {
-            subscribeForObservable(Sets.newHashSet());
-
-            verify(completeHandlerMock).call();
-            verifyZeroInteractions(errorHandlerMock);
-        }
-
-        @Test
-        public void ifPositionHasOneOrderNoMergeIsCalled() {
-            subscribeForObservable(Sets.newHashSet(buyOrderEURUSD));
-
-            verify(completeHandlerMock).call();
-            verifyZeroInteractions(errorHandlerMock);
-        }
-
-        @Test
-        public void whenNotSubscribedTheCompletableIsDeferred() {
-            closePosition = orderUtilImpl.closePosition(instrumentEURUSD,
-                                                        OrderUtilImplTest.this::mergeCommandFactory,
-                                                        OrderUtilImplTest.this::closeCommandFactory);
-
-            verifyZeroInteractions(orderUtilHandlerMock);
-            verifyZeroInteractions(positionMock);
-        }
-
-        public class ClosePositionWithMergeRequired {
-
-            @Test
-            public void onCompleteIsCalledWhenAllCommandsComplete() throws JFException {
-                orderUtilForTest.setLabel(buyOrderEURUSD, mergeOrderLabel);
-                when(orderUtilHandlerMock.callObservable(isA(MergeCommand.class)))
-                    .then(i -> {
-                        final MergeCommand command = (MergeCommand) i.getArguments()[0];
-                        final Set<IOrder> toMergeOrders = command.toMergeOrders();
-                        toMergeOrders.forEach(order -> {
-                            orderUtilForTest.setState(order, IOrder.State.CLOSED);
-                        });
-                        when(positionMock.filledOrOpened()).thenReturn(Sets.newHashSet(sellOrderEURUSD));
-                        return null;
-                    });
-                final Set<IOrder> positionOrders = Sets.newHashSet(buyOrderEURUSD, buyOrderEURUSD2, sellOrderEURUSD);
-                when(orderUtilHandlerMock.callObservable(isA(CloseCommand.class)))
-                    .thenReturn(emptyObservable());
-                when(positionMock.filled()).thenReturn(positionOrders);
-                when(positionMock.filledOrOpened()).thenReturn(positionOrders);
-
-                subscribe();
-
-                verify(completeHandlerMock).call();
-                verifyZeroInteractions(errorHandlerMock);
-            }
-        }
+        assertThat(completable, equalTo(testCompletable));
     }
 
-    public class CloseAllPositionsSetup {
+    @Test
+    public void closeAllPositionsCallsPositionUtil() {
+        when(positionUtilMock.closeAllPositions(any(),
+                                                any()))
+                                                    .thenReturn(testCompletable);
 
-        private Completable closeAllPositions;
+        final Completable completable = orderUtilImpl.closeAllPositions(this::mergeCommandFactory,
+                                                                        this::closeCommandFactory);
 
-        private void subscribe() {
-            closeAllPositions = orderUtilImpl.closeAllPositions(OrderUtilImplTest.this::mergeCommandFactory,
-                                                                OrderUtilImplTest.this::closeCommandFactory);
-            closeAllPositions.subscribe(completeHandlerMock, errorHandlerMock);
-        }
-
-        @Before
-        public void setUp() {
-            orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.FILLED);
-            orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.OPENED);
-        }
-
-        @Test
-        public void onCompleteIsCalledWhenNoPositionCreated() {
-            when(positionFactoryMock.allPositions())
-                .thenReturn(Sets.newHashSet());
-
-            subscribe();
-
-            verify(completeHandlerMock).call();
-            verifyZeroInteractions(errorHandlerMock);
-        }
-
-        @Test
-        public void whenNotSubscribedTheCompletableIsDeferred() {
-            closeAllPositions = orderUtilImpl.closeAllPositions(OrderUtilImplTest.this::mergeCommandFactory,
-                                                                OrderUtilImplTest.this::closeCommandFactory);
-
-            verifyZeroInteractions(orderUtilHandlerMock);
-            verifyZeroInteractions(positionMock);
-        }
-
-        @Test
-        public void onCompleteIsCalledWhenAllPositionsAreClosed() {
-            final Position positionMockOne = mock(Position.class);
-            final Position positionMockTwo = mock(Position.class);
-
-            when(positionFactoryMock.forInstrument(instrumentEURUSD))
-                .thenReturn(positionMockOne);
-            when(positionFactoryMock.forInstrument(instrumentAUDUSD))
-                .thenReturn(positionMockTwo);
-
-            when(positionMockOne.instrument())
-                .thenReturn(instrumentEURUSD);
-            when(positionMockTwo.instrument())
-                .thenReturn(instrumentAUDUSD);
-            when(positionMockOne.filledOrOpened())
-                .thenReturn(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
-            when(positionMockTwo.filledOrOpened())
-                .thenReturn(Sets.newHashSet(sellOrderAUDUSD));
-            when(positionFactoryMock.allPositions())
-                .thenReturn(Sets.newHashSet(positionMockOne, positionMockTwo));
-
-            subscribe();
-
-            // verify(startActionMock).call();
-            // verify(completeHandlerMock).call();
-            // verifyZeroInteractions(errorHandlerMock);
-        }
+        assertThat(completable, equalTo(testCompletable));
     }
 }

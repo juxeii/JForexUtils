@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.OrderUtilImpl;
 import com.jforex.programming.order.event.OrderEvent;
 
 import rx.Observable;
@@ -16,6 +17,11 @@ public class PositionFactory {
 
     public PositionFactory(final Observable<OrderEvent> orderEventObservable) {
         this.orderEventObservable = orderEventObservable;
+    }
+
+    public PositionUtil positionUtil(final OrderUtilImpl orderUtilImpl,
+                                     final PositionFactory positionFactory) {
+        return new PositionUtil(orderUtilImpl, positionFactory);
     }
 
     public Collection<Position> allPositions() {
