@@ -37,7 +37,8 @@ public class MergeCommandTest extends CommandTester {
     private Consumer<IOrder> mergeActionMock;
     @Mock
     private Function<MergeCommand, Completable> startFunctionMock;
-    private final Callable<IOrder> callable = () -> buyOrderEURUSD;
+    @Mock
+    private Callable<IOrder> callable;
     private final String mergeOrderLabel = "mergeOrderLabel";
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 

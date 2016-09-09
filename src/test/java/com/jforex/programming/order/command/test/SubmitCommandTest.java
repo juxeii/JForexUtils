@@ -42,7 +42,8 @@ public class SubmitCommandTest extends CommandTester {
     private Consumer<IOrder> filledActionMock;
     @Mock
     private Function<SubmitCommand, Completable> startFunctionMock;
-    private final Callable<IOrder> callable = () -> buyOrderEURUSD;
+    @Mock
+    private Callable<IOrder> callable;
 
     @Before
     public void setUp() {

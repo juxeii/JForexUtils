@@ -5,9 +5,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderUtilCompletable;
@@ -22,8 +19,6 @@ public class PositionUtil {
     private final OrderUtilCompletable orderUtilCompletable;
     private final PositionFactory positionFactory;
 
-    private static final Logger logger = LogManager.getLogger(PositionUtil.class);
-
     public PositionUtil(final OrderUtilCompletable orderUtilCompletable,
                         final PositionFactory positionFactory) {
         this.orderUtilCompletable = orderUtilCompletable;
@@ -36,24 +31,24 @@ public class PositionUtil {
             final Set<IOrder> toMergeOrders = position(instrument).filled();
             return toMergeOrders.size() < 2
                     ? Completable.complete()
-                    : orderUtilCompletable.mergeOrders(mergeCommandFactory.apply(toMergeOrders))
-                        .doOnSubscribe(s -> logger.info("Start to merge position for " + instrument + "."))
-                        .doOnError(e -> logger.error("Failed to merge position for " + instrument
-                                + "!Excpetion: " + e.getMessage()))
-                        .doOnCompleted(() -> logger.info("Merged position for " + instrument + "."));
+                    : orderUtilCompletable.mergeOrders(mergeCommandFactory.apply(toMergeOrders));
         });
     }
 
     public Completable mergeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
         return Completable.defer(() -> {
-            final List<Completable> completables = positionFactory
-                .allPositions()
-                .stream()
-                .map(position -> mergePosition(position.instrument(), mergeCommandFactory))
-                .collect(Collectors.toList());
-
-            return Completable.merge(completables);
+            final Function<Position, Completable> mapper =
+                    position -> mergePosition(position.instrument(), mergeCommandFactory);
+            return Completable.merge(completablesForAllPositions(mapper));
         });
+    }
+
+    private List<Completable> completablesForAllPositions(final Function<Position, Completable> mapper) {
+        return positionFactory
+            .allPositions()
+            .stream()
+            .map(mapper::apply)
+            .collect(Collectors.toList());
     }
 
     public Completable closePosition(final Instrument instrument,
@@ -79,13 +74,11 @@ public class PositionUtil {
     public Completable closeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
                                          final Function<IOrder, CloseCommand> closeCommandFactory) {
         return Completable.defer(() -> {
-            final List<Completable> completables = positionFactory
-                .allPositions()
-                .stream()
-                .map(position -> closePosition(position.instrument(), mergeCommandFactory, closeCommandFactory))
-                .collect(Collectors.toList());
-
-            return Completable.merge(completables);
+            final Function<Position, Completable> mapper =
+                    position -> closePosition(position.instrument(),
+                                              mergeCommandFactory,
+                                              closeCommandFactory);
+            return Completable.merge(completablesForAllPositions(mapper));
         });
     }
 

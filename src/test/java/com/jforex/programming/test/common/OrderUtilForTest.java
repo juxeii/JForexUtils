@@ -101,6 +101,10 @@ public class OrderUtilForTest {
         return spyFromParams(sellParamsEURUSD());
     }
 
+    public final IOrder buyOrderAUDUSD() {
+        return spyFromParams(buyParamsAUDUSD());
+    }
+
     public final IOrder sellOrderAUDUSD() {
         return spyFromParams(sellParamsAUDUSD());
     }
@@ -147,6 +151,15 @@ public class OrderUtilForTest {
             .takeProfitPrice(1.32556)
             .goodTillTime(userSettings.defaultGTT())
             .comment("Test comment for sell EURUSD")
+            .build();
+    }
+
+    public OrderParams buyParamsAUDUSD() {
+        return OrderParams
+            .forInstrument(Instrument.AUDUSD)
+            .withOrderCommand(OrderCommand.BUY)
+            .withAmount(0.1)
+            .withLabel("TestBuyLabelAUDUSD")
             .build();
     }
 
