@@ -8,7 +8,6 @@ import static com.jforex.programming.order.OrderStaticUtil.isLabelSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isOpenPriceSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
-import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents;
 
 import java.util.Collection;
 import java.util.Set;
@@ -27,7 +26,6 @@ import com.jforex.programming.order.command.SetOpenPriceCommand;
 import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 
@@ -58,7 +56,6 @@ public class OrderUtilCompletable {
                         + " for " + instrument + " failed!Exception: " + e.getMessage()))
                 .doOnCompleted(() -> logger.info("Submit task with label " + orderLabel
                         + " for " + instrument + " was successful."))
-                .doOnNext(this::addOrderOfEventToPosition)
                 .toCompletable();
         });
     }
@@ -73,7 +70,6 @@ public class OrderUtilCompletable {
                         .just(toMergeOrders)
                         .doOnSubscribe(() -> positionOfOrders(toMergeOrders).markOrdersActive(toMergeOrders))
                         .flatMap(orders -> orderUtilHandler.callObservable(command))
-                        .doOnNext(this::addOrderOfEventToPosition)
                         .doOnTerminate(() -> positionOfOrders(toMergeOrders).markOrdersIdle(toMergeOrders))
                         .doOnSubscribe(() -> logger.info("Starting to merge with label " + mergeOrderLabel
                                 + " for position " + instrumentFromOrders(toMergeOrders) + "."))
@@ -237,12 +233,5 @@ public class OrderUtilCompletable {
 
     private Position positionOfOrders(final Collection<IOrder> orders) {
         return position(instrumentFromOrders(orders));
-    }
-
-    private void addOrderOfEventToPosition(final OrderEvent orderEvent) {
-        if (createEvents.contains(orderEvent.type())) {
-            final IOrder order = orderEvent.order();
-            position(order.getInstrument()).addOrder(order);
-        }
     }
 }

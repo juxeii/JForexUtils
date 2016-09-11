@@ -10,7 +10,6 @@ import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.command.CommonCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -41,10 +40,6 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
     public void setUpMocks() {
         when(positionFactoryMock.forInstrument(instrumentEURUSD))
             .thenReturn(positionMock);
-    }
-
-    private Observable<OrderEvent> cretaeObservableForEventType(final OrderEventType type) {
-        return eventObservable(buyOrderEURUSD, type);
     }
 
     private void setUtilHandlerMockObservableForCommand(final CommonCommand command,
@@ -84,55 +79,6 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             submitCompletable.subscribe();
 
             verify(orderUtilHandlerMock).callObservable(submitCommandMock);
-        }
-
-        public class AddOrderToPositionTests {
-
-            private void verifyOrderIsAddedForEventType(final OrderEventType type) {
-                setUtilHandlerMockObservable(cretaeObservableForEventType(type));
-
-                submitCompletable.subscribe();
-
-                verify(positionMock).addOrder(buyOrderEURUSD);
-            }
-
-            private void verifyOrderIsNotAddedForEventType(final OrderEventType type) {
-                setUtilHandlerMockObservable(cretaeObservableForEventType(type));
-
-                submitCompletable.subscribe();
-
-                verify(positionMock, never()).addOrder(buyOrderEURUSD);
-            }
-
-            @Test
-            public void onSubmitTheOrderIsAddedToPosition() {
-                verifyOrderIsAddedForEventType(OrderEventType.SUBMIT_OK);
-            }
-
-            @Test
-            public void onSubmitConditionalTheOrderIsAddedToPosition() {
-                verifyOrderIsAddedForEventType(OrderEventType.SUBMIT_CONDITIONAL_OK);
-            }
-
-            @Test
-            public void onSubmitRejectNoOrderIsAddedToPosition() {
-                verifyOrderIsNotAddedForEventType(OrderEventType.SUBMIT_REJECTED);
-            }
-
-            @Test
-            public void onFillRejectNoOrderIsAddedToPosition() {
-                verifyOrderIsNotAddedForEventType(OrderEventType.FILL_REJECTED);
-            }
-
-            @Test
-            public void onPartialFillNoOrderIsAddedToPosition() {
-                verifyOrderIsNotAddedForEventType(OrderEventType.PARTIAL_FILL_OK);
-            }
-
-            @Test
-            public void onFullyFillNoOrderIsAddedToPosition() {
-                verifyOrderIsNotAddedForEventType(OrderEventType.FULLY_FILLED);
-            }
         }
     }
 }
