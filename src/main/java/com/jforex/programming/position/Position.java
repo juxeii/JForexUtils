@@ -4,6 +4,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isCanceled;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
 import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isOpened;
+import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.Collection;
@@ -38,12 +39,32 @@ public class Position implements PositionOrders {
                     final Observable<OrderEvent> orderEventObservable) {
         this.instrument = instrument;
 
+        observeClosedOrdersForRemoval(orderEventObservable);
+        observeCreatedOrdersForInsertion(orderEventObservable);
+    }
+
+    private void observeClosedOrdersForRemoval(final Observable<OrderEvent> orderEventObservable) {
         orderEventObservable
             .map(OrderEvent::order)
             .filter(this::contains)
             .filter(isClosed.or(isCanceled)::test)
             .doOnNext(this::removeOrder)
             .subscribe();
+    }
+
+    private void observeCreatedOrdersForInsertion(final Observable<OrderEvent> orderEventObservable) {
+        orderEventObservable
+            .filter(orderEvent -> createEvents.contains(orderEvent.type()))
+            .filter(OrderEvent::isInternal)
+            .map(OrderEvent::order)
+            .doOnNext(this::addOrder)
+            .subscribe();
+    }
+
+    private synchronized void removeOrder(final IOrder order) {
+        orderRepository.remove(order);
+        logger.debug("Removed order " + order.getLabel() + " from position " + instrument
+                + " Orderstate: " + order.getState() + " repo size " + orderRepository.size());
     }
 
     public synchronized void addOrder(final IOrder order) {
@@ -71,12 +92,6 @@ public class Position implements PositionOrders {
     private synchronized void markOrder(final IOrder order,
                                         final OrderProcessState state) {
         orderRepository.computeIfPresent(order, (k, v) -> state);
-    }
-
-    private synchronized void removeOrder(final IOrder order) {
-        orderRepository.remove(order);
-        logger.debug("Removed order " + order.getLabel() + " from position " + instrument
-                + " Orderstate: " + order.getState() + " repo size " + orderRepository.size());
     }
 
     @Override
