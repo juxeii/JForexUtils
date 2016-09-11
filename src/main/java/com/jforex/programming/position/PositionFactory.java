@@ -18,7 +18,7 @@ public class PositionFactory {
         this.orderEventObservable = orderEventObservable;
     }
 
-    public Collection<Position> allPositions() {
+    public Collection<Position> all() {
         return positionByInstrument.values();
     }
 

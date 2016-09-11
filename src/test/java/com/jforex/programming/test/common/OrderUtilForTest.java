@@ -1,7 +1,10 @@
 package com.jforex.programming.test.common;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+
+import java.util.Set;
 
 import org.aeonbits.owner.ConfigFactory;
 
@@ -10,6 +13,8 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
+import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.settings.UserSettings;
 
 public class OrderUtilForTest {
@@ -170,5 +175,25 @@ public class OrderUtilForTest {
             .withAmount(0.12)
             .withLabel("TestSellLabelAUDUSD")
             .build();
+    }
+
+    public void setUpPositionFactory(final PositionFactory positionFactoryMock,
+                                     final Instrument instrument,
+                                     final Set<IOrder> positionOrders) {
+        final Position position = mock(Position.class);
+
+        when(positionFactoryMock.forInstrument(instrument)).thenReturn(position);
+        when(position.filled()).thenReturn(positionOrders);
+        when(position.instrument()).thenReturn(instrument);
+    }
+
+    public Position createPositionMock(final Instrument instrument,
+                                       final Set<IOrder> positionOrders) {
+        final Position position = mock(Position.class);
+
+        when(position.filled()).thenReturn(positionOrders);
+        when(position.instrument()).thenReturn(instrument);
+
+        return position;
     }
 }

@@ -77,22 +77,22 @@ public final class OrderUtil {
 
     public final Completable mergePosition(final Instrument instrument,
                                            final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
-        return positionUtil.mergePosition(instrument, mergeCommandFactory);
+        return positionUtil.merge(instrument, mergeCommandFactory);
     }
 
     public final Completable mergeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
-        return positionUtil.mergeAllPositions(mergeCommandFactory);
+        return positionUtil.mergeAll(mergeCommandFactory);
     }
 
     public final Completable closePosition(final Instrument instrument,
                                            final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
                                            final Function<IOrder, CloseCommand> closeCommandFactory) {
-        return positionUtil.closePosition(instrument, mergeCommandFactory, closeCommandFactory);
+        return positionUtil.close(instrument, mergeCommandFactory, closeCommandFactory);
     }
 
     public final Completable closeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
                                                final Function<IOrder, CloseCommand> closeCommandFactory) {
-        return positionUtil.closeAllPositions(mergeCommandFactory, closeCommandFactory);
+        return positionUtil.closeAll(mergeCommandFactory, closeCommandFactory);
     }
 
     public final PositionOrders positionOrders(final Instrument instrument) {

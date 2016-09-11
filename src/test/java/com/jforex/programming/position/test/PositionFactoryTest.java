@@ -34,7 +34,7 @@ public class PositionFactoryTest extends InstrumentUtilForTest {
 
     @Test
     public void allPositionsIsEmptyAfterCreation() {
-        assertTrue(positionFactory.allPositions().isEmpty());
+        assertTrue(positionFactory.all().isEmpty());
     }
 
     public class EURUSDRetreival {
@@ -53,7 +53,7 @@ public class PositionFactoryTest extends InstrumentUtilForTest {
 
         @Test
         public void allPositionsHasEURUSDPosition() {
-            final List<Position> positions = Lists.newArrayList(positionFactory.allPositions());
+            final List<Position> positions = Lists.newArrayList(positionFactory.all());
 
             assertThat(positions.size(), equalTo(1));
             assertTrue(positions.contains(positionEURUSD));
@@ -73,7 +73,7 @@ public class PositionFactoryTest extends InstrumentUtilForTest {
 
             @Test
             public void allPositionsHasEURUSDPosition() {
-                final List<Position> positions = Lists.newArrayList(positionFactory.allPositions());
+                final List<Position> positions = Lists.newArrayList(positionFactory.all());
 
                 assertThat(positions.size(), equalTo(1));
                 assertTrue(positions.contains(positionEURUSD));
@@ -96,7 +96,7 @@ public class PositionFactoryTest extends InstrumentUtilForTest {
 
             @Test
             public void allPositionsHasEURUSDAndAUDUSDPosition() {
-                final List<Position> positions = Lists.newArrayList(positionFactory.allPositions());
+                final List<Position> positions = Lists.newArrayList(positionFactory.all());
 
                 assertThat(positions.size(), equalTo(2));
                 assertTrue(positions.contains(positionEURUSD));

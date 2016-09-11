@@ -10,33 +10,30 @@ import com.dukascopy.api.IOrder;
 
 import rx.Completable;
 
-public final class CommandUtil {
+public class CommandUtil {
 
-    private CommandUtil() {
-    }
-
-    public static final List<Completable> commandsToCompletables(final List<? extends CommonCommand> commands) {
+    public List<Completable> commandsToCompletables(final List<? extends CommonCommand> commands) {
         return commands
             .stream()
             .map(CommonCommand::completable)
             .collect(Collectors.toList());
     }
 
-    public static final Completable runCommands(final List<? extends CommonCommand> commands) {
+    public Completable runCommands(final List<? extends CommonCommand> commands) {
         return Completable.merge(commandsToCompletables(commands));
     }
 
-    public static final Completable runCommandsConcatenated(final List<? extends CommonCommand> commands) {
+    public Completable runCommandsConcatenated(final List<? extends CommonCommand> commands) {
         return Completable.concat(commandsToCompletables(commands));
     }
 
-    @SafeVarargs
-    public static final <T extends CommonCommand> Completable runCommandsConcatenated(final T... commands) {
+    @SuppressWarnings("unchecked")
+    public <T extends CommonCommand> Completable runCommandsConcatenated(final T... commands) {
         return runCommandsConcatenated(Arrays.asList(commands));
     }
 
-    public static final <T extends CommonCommand> List<T> batchCommands(final Set<IOrder> orders,
-                                                                        final Function<IOrder, T> commandFactory) {
+    public <T extends CommonCommand> List<T> batchCommands(final Set<IOrder> orders,
+                                                           final Function<IOrder, T> commandFactory) {
         return orders
             .stream()
             .map(commandFactory::apply)

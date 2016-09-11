@@ -25,6 +25,8 @@ import rx.Completable;
 
 public class CommandUtilTest extends CommonUtilForTest {
 
+    private CommandUtil commandUtil;
+
     @Mock
     private CommonCommand commandOne;
     @Mock
@@ -46,6 +48,8 @@ public class CommandUtilTest extends CommonUtilForTest {
         commands = Lists.newArrayList(commandOne, commandTwo);
 
         setUpMocks();
+
+        commandUtil = new CommandUtil();
     }
 
     private void setUpMocks() {
@@ -61,13 +65,8 @@ public class CommandUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void testConstructorIsPrivate() throws Exception {
-        assertPrivateConstructor(CommandUtil.class);
-    }
-
-    @Test
     public void commandsToCompletablesReturnsCorrectList() {
-        final List<Completable> completables = CommandUtil.commandsToCompletables(commands);
+        final List<Completable> completables = commandUtil.commandsToCompletables(commands);
 
         assertThat(completables.size(), equalTo(2));
         assertTrue(completables.contains(completableOne));
@@ -76,7 +75,7 @@ public class CommandUtilTest extends CommonUtilForTest {
 
     @Test
     public void runCommandsMergesCompletables() throws Exception {
-        CommandUtil
+        commandUtil
             .runCommands(commands)
             .subscribe();
 
@@ -86,7 +85,7 @@ public class CommandUtilTest extends CommonUtilForTest {
 
     @Test
     public void runCommandsConcatenatedIsCorrect() throws Exception {
-        CommandUtil
+        commandUtil
             .runCommandsConcatenated(commands)
             .subscribe();
 
@@ -95,7 +94,7 @@ public class CommandUtilTest extends CommonUtilForTest {
 
     @Test
     public void runCommandsConcatenatedWithVarargsIsCorrect() throws Exception {
-        CommandUtil
+        commandUtil
             .runCommandsConcatenated(commandOne, commandTwo)
             .subscribe();
 
@@ -108,7 +107,7 @@ public class CommandUtilTest extends CommonUtilForTest {
         when(commandFactoryMock.apply(sellOrderEURUSD)).thenReturn(commandTwo);
         final Set<IOrder> batchOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
-        final List<CommonCommand> commands = CommandUtil.batchCommands(batchOrders, commandFactoryMock);
+        final List<CommonCommand> commands = commandUtil.batchCommands(batchOrders, commandFactoryMock);
 
         assertThat(commands.size(), equalTo(2));
         assertTrue(commands.contains(commandOne));

@@ -172,29 +172,29 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergePositionCallIsInvokingOnPositionUtil() {
-        when(positionUtilMock.mergePosition(instrumentEURUSD, mergeCommandFactory))
+        when(positionUtilMock.merge(instrumentEURUSD, mergeCommandFactory))
             .thenReturn(completableMock);
 
         final Completable completable = orderUtil.mergePosition(instrumentEURUSD, mergeCommandFactory);
 
-        verify(positionUtilMock).mergePosition(instrumentEURUSD, mergeCommandFactory);
+        verify(positionUtilMock).merge(instrumentEURUSD, mergeCommandFactory);
         assertThat(completable, equalTo(completableMock));
     }
 
     @Test
     public void mergeAllPositionsCallIsInvokingOnPositionUtil() {
-        when(positionUtilMock.mergeAllPositions(mergeCommandFactory))
+        when(positionUtilMock.mergeAll(mergeCommandFactory))
             .thenReturn(completableMock);
 
         final Completable completable = orderUtil.mergeAllPositions(mergeCommandFactory);
 
-        verify(positionUtilMock).mergeAllPositions(mergeCommandFactory);
+        verify(positionUtilMock).mergeAll(mergeCommandFactory);
         assertThat(completable, equalTo(completableMock));
     }
 
     @Test
     public void closePositionCallIsInvokingOnPositionUtil() {
-        when(positionUtilMock.closePosition(instrumentEURUSD,
+        when(positionUtilMock.close(instrumentEURUSD,
                                             mergeCommandFactory,
                                             closeCommandFactory))
                                                 .thenReturn(completableMock);
@@ -203,7 +203,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                                                                 mergeCommandFactory,
                                                                 closeCommandFactory);
 
-        verify(positionUtilMock).closePosition(instrumentEURUSD,
+        verify(positionUtilMock).close(instrumentEURUSD,
                                                mergeCommandFactory,
                                                closeCommandFactory);
         assertThat(completable, equalTo(completableMock));
@@ -211,13 +211,13 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void closeAllPositionsCallIsInvokingOnPositionUtil() {
-        when(positionUtilMock.closeAllPositions(mergeCommandFactory, closeCommandFactory))
+        when(positionUtilMock.closeAll(mergeCommandFactory, closeCommandFactory))
             .thenReturn(completableMock);
 
         final Completable completable = orderUtil.closeAllPositions(mergeCommandFactory,
                                                                     closeCommandFactory);
 
-        verify(positionUtilMock).closeAllPositions(mergeCommandFactory,
+        verify(positionUtilMock).closeAll(mergeCommandFactory,
                                                    closeCommandFactory);
         assertThat(completable, equalTo(completableMock));
     }
