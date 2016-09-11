@@ -40,13 +40,13 @@ public class PositionUtil {
     public Completable close(final Instrument instrument,
                              final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
                              final Function<IOrder, CloseCommand> closeCommandFactory) {
-        return positionClose.closePosition(instrument,
-                                           mergeCommandFactory,
-                                           closeCommandFactory);
+        return positionClose.close(instrument,
+                                   mergeCommandFactory,
+                                   closeCommandFactory);
     }
 
     public Completable closeAll(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
                                 final Function<IOrder, CloseCommand> closeCommandFactory) {
-        return positionClose.closeAllPositions(mergeCommandFactory, closeCommandFactory);
+        return positionClose.closeAll(mergeCommandFactory, closeCommandFactory);
     }
 }

@@ -27,35 +27,26 @@ public class PositionClose {
         this.commandUtil = commandUtil;
     }
 
-    public Completable closePosition(final Instrument instrument,
-                                     final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
-                                     final Function<IOrder, CloseCommand> closeCommandFactory) {
+    public Completable close(final Instrument instrument,
+                             final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+                             final Function<IOrder, CloseCommand> closeCommandFactory) {
         return Completable.defer(() -> {
             final Completable mergeCompletable = positionMerge.merge(instrument, mergeCommandFactory);
-            final Completable closeCompletable = closePositionAfterMerge(instrument, closeCommandFactory);
+            final Completable closeCompletable = commandUtil.runCommandsOfFactory(position(instrument).filledOrOpened(),
+                                                                                  closeCommandFactory);
             return Completable.concat(mergeCompletable, closeCompletable);
         });
     }
 
-    private final Completable closePositionAfterMerge(final Instrument instrument,
-                                                      final Function<IOrder, CloseCommand> closeCommandFactory) {
-        return Completable.defer(() -> {
-            final Set<IOrder> ordersToClose = position(instrument).filledOrOpened();
-            final List<CloseCommand> closeCommands =
-                    commandUtil.batchCommands(ordersToClose, closeCommandFactory);
-            return commandUtil.runCommands(closeCommands);
-        });
-    }
-
-    public Completable closeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
-                                         final Function<IOrder, CloseCommand> closeCommandFactory) {
+    public Completable closeAll(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+                                final Function<IOrder, CloseCommand> closeCommandFactory) {
         return Completable.defer(() -> {
             final List<Completable> completables = positionFactory
                 .all()
                 .stream()
-                .map(position -> closePosition(position.instrument(),
-                                               mergeCommandFactory,
-                                               closeCommandFactory))
+                .map(position -> close(position.instrument(),
+                                       mergeCommandFactory,
+                                       closeCommandFactory))
                 .collect(Collectors.toList());
             return Completable.merge(completables);
         });

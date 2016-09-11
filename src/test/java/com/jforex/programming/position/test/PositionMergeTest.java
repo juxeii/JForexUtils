@@ -123,8 +123,6 @@ public class PositionMergeTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(mergeCommandFactory.apply(any())).thenReturn(mergeCommandMock);
-
             mergeAllPositionsCompletable = positionMerge.mergeAll(mergeCommandFactory);
         }
 

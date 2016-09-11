@@ -184,6 +184,7 @@ public class OrderUtilForTest {
 
         when(positionFactoryMock.forInstrument(instrument)).thenReturn(position);
         when(position.filled()).thenReturn(positionOrders);
+        when(position.filledOrOpened()).thenReturn(positionOrders);
         when(position.instrument()).thenReturn(instrument);
     }
 
@@ -192,6 +193,7 @@ public class OrderUtilForTest {
         final Position position = mock(Position.class);
 
         when(position.filled()).thenReturn(positionOrders);
+        when(position.filledOrOpened()).thenReturn(positionOrders);
         when(position.instrument()).thenReturn(instrument);
 
         return position;

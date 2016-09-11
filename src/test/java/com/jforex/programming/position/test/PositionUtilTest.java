@@ -85,29 +85,29 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void closeCallIsInvokingOnPositionMerge() {
-        when(positionCloseMock.closePosition(instrumentEURUSD,
-                                             mergeCommandFactory,
-                                             closeCommandFactory))
-                                                 .thenReturn(completableMock);
+        when(positionCloseMock.close(instrumentEURUSD,
+                                     mergeCommandFactory,
+                                     closeCommandFactory))
+                                         .thenReturn(completableMock);
 
         final Completable completable = positionUtil.close(instrumentEURUSD,
                                                            mergeCommandFactory,
                                                            closeCommandFactory);
 
-        verify(positionCloseMock).closePosition(instrumentEURUSD,
-                                                mergeCommandFactory,
-                                                closeCommandFactory);
+        verify(positionCloseMock).close(instrumentEURUSD,
+                                        mergeCommandFactory,
+                                        closeCommandFactory);
         assertThat(completable, equalTo(completableMock));
     }
 
     @Test
     public void closeAllCallIsInvokingOnPositionMerge() {
-        when(positionCloseMock.closeAllPositions(mergeCommandFactory, closeCommandFactory))
+        when(positionCloseMock.closeAll(mergeCommandFactory, closeCommandFactory))
             .thenReturn(completableMock);
 
         final Completable completable = positionUtil.closeAll(mergeCommandFactory, closeCommandFactory);
 
-        verify(positionCloseMock).closeAllPositions(mergeCommandFactory, closeCommandFactory);
+        verify(positionCloseMock).closeAll(mergeCommandFactory, closeCommandFactory);
         assertThat(completable, equalTo(completableMock));
     }
 }
