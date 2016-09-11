@@ -187,7 +187,9 @@ public class CommonUtilForTest extends BDDMockito {
 
     public final Observable<OrderEvent> eventObservable(final IOrder order,
                                                         final OrderEventType type) {
-        final OrderEvent orderEvent = new OrderEvent(order, type);
+        final OrderEvent orderEvent = new OrderEvent(order,
+                                                     type,
+                                                     true);
         return eventObservable(orderEvent);
     }
 

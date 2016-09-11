@@ -84,7 +84,9 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
     private OrderEvent sendOrderEvent(final IOrder order,
                                       final OrderEventType orderEventType) {
-        final OrderEvent orderEvent = new OrderEvent(order, orderEventType);
+        final OrderEvent orderEvent = new OrderEvent(order,
+                                                     orderEventType,
+                                                     true);
         orderEventSubject.onNext(orderEvent);
         return orderEvent;
     }

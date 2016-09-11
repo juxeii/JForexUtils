@@ -38,7 +38,9 @@ public class CommandRetryTest extends CommonUtilForTest {
 
     public class RetryObservableSetup {
 
-        private final OrderEvent rejectEvent = new OrderEvent(buyOrderEURUSD, OrderEventType.CLOSE_REJECTED);
+        private final OrderEvent rejectEvent = new OrderEvent(buyOrderEURUSD,
+                                                              OrderEventType.CLOSE_REJECTED,
+                                                              true);
         private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
         private final OrderCallRejectException rejectException =
                 new OrderCallRejectException("Reject exception for test", rejectEvent);

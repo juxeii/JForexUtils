@@ -12,8 +12,8 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.MessageToOrderEvent;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
@@ -65,7 +65,9 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Test
     public void subscriberIsNotifiedOnOrderMessageData() {
-        final OrderEvent orderEventMock = new OrderEvent(orderUnderTest, OrderEventType.CHANGED_REJECTED);
+        final OrderEvent orderEventMock = new OrderEvent(orderUnderTest,
+                                                         OrderEventType.CHANGED_REJECTED,
+                                                         true);
 
         when(orderEventMapperMock.fromMessage(any()))
             .thenReturn(orderEventMock);

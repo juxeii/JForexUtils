@@ -67,7 +67,9 @@ public class CommandTester extends CommonUtilForTest {
 
     protected void assertActionsNotNull(final CommonCommand command) {
         command.startAction().call();
-        command.eventAction().accept(new OrderEvent(buyOrderEURUSD, OrderEventType.SUBMIT_OK));
+        command.eventAction().accept(new OrderEvent(buyOrderEURUSD,
+                                                    OrderEventType.SUBMIT_OK,
+                                                    true));
         command.completedAction().call();
         command.errorAction().accept(jfException);
     }

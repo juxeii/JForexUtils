@@ -7,29 +7,25 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IMessage.Reason;
 import com.dukascopy.api.IOrder;
-import com.google.common.collect.Sets;
-import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 
 public class MessageToOrderEvent {
 
-    private final Queue<OrderCallRequest> changeRequestQueue = new ConcurrentLinkedQueue<>();
-
-    private static final Set<OrderCallReason> changeReasons =
-            Sets.immutableEnumSet(OrderCallReason.CHANGE_GTT,
-                                  OrderCallReason.CHANGE_LABEL,
-                                  OrderCallReason.CHANGE_PRICE,
-                                  OrderCallReason.CHANGE_AMOUNT,
-                                  OrderCallReason.CHANGE_SL,
-                                  OrderCallReason.CHANGE_TP);
+    private final Queue<OrderCallRequest> callRequestQueue = new ConcurrentLinkedQueue<>();
 
     public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
-        if (changeReasons.contains(orderCallRequest.reason()))
-            changeRequestQueue.add(orderCallRequest);
+        callRequestQueue.add(orderCallRequest);
     }
 
     public OrderEvent fromMessage(final IMessage message) {
-        return new OrderEvent(message.getOrder(), calculateType(message));
+        return new OrderEvent(message.getOrder(),
+                              calculateType(message),
+                              isOrderInRequestQueue(message.getOrder()));
+    }
+
+    private final boolean isOrderInRequestQueue(final IOrder messageOrder) {
+        return !callRequestQueue.isEmpty()
+                && callRequestQueue.peek().order().equals(messageOrder);
     }
 
     private final OrderEventType calculateType(final IMessage message) {
@@ -43,14 +39,12 @@ public class MessageToOrderEvent {
         final IOrder order = message.getOrder();
         final OrderEventType orderEventType = OrderEventTypeMapper.byMessageType(message.getType(), order);
         return isTypeForChangeReason(order, orderEventType)
-                ? OrderEventTypeMapper.byCallReason(changeRequestQueue.poll().reason())
+                ? OrderEventTypeMapper.byCallReason(callRequestQueue.poll().reason())
                 : orderEventType;
     }
 
     private final boolean isTypeForChangeReason(final IOrder order,
                                                 final OrderEventType orderEventType) {
-        return !changeRequestQueue.isEmpty()
-                && changeRequestQueue.peek().order() == order
-                && orderEventType == OrderEventType.CHANGED_REJECTED;
+        return isOrderInRequestQueue(order) && orderEventType == OrderEventType.CHANGED_REJECTED;
     }
 }
