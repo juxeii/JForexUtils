@@ -1,5 +1,7 @@
 package com.jforex.programming.position.test;
 
+import static com.jforex.programming.order.event.OrderEventTypeSets.allEvents;
+import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -37,21 +39,49 @@ public class PositionTest extends InstrumentUtilForTest {
         position = new Position(instrumentEURUSD, orderEventSubject);
     }
 
-    public class AddingBuyOrder {
+    private void sendOrderEvent(final IOrder order,
+                                final OrderEventType orderEventType) {
+        final OrderEvent orderEvent = new OrderEvent(order,
+                                                     orderEventType,
+                                                     true);
+        orderEventSubject.onNext(orderEvent);
+    }
 
-        private void sendOrderEvent(final IOrder order,
-                                    final OrderEventType orderEventType) {
-            final OrderEvent orderEvent = new OrderEvent(order,
-                                                         orderEventType,
-                                                         true);
-            orderEventSubject.onNext(orderEvent);
-        }
+    @Test
+    public void createdOrdersAreAddedWhenInternal() {
+        createEvents.forEach(eventType -> {
+            sendOrderEvent(buyOrderEURUSD, eventType);
+            assertTrue(position.contains(buyOrderEURUSD));
+        });
+    }
+
+    @Test
+    public void createdOrdersAreNotAddedWhenNotInternal() {
+        createEvents.forEach(eventType -> {
+            orderEventSubject.onNext(new OrderEvent(buyOrderEURUSD,
+                                                    eventType,
+                                                    false));
+            assertFalse(position.contains(buyOrderEURUSD));
+        });
+    }
+
+    @Test
+    public void externalOrdersAreNotAdded() {
+        allEvents.forEach(eventType -> {
+            orderEventSubject.onNext(new OrderEvent(buyOrderEURUSD,
+                                                    eventType,
+                                                    false));
+            assertFalse(position.contains(buyOrderEURUSD));
+        });
+    }
+
+    public class AddingBuyOrder {
 
         @Before
         public void setUp() {
             orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.OPENED);
 
-            position.addOrder(buyOrderEURUSD);
+            sendOrderEvent(buyOrderEURUSD, OrderEventType.SUBMIT_OK);
         }
 
         @Test
@@ -146,7 +176,7 @@ public class PositionTest extends InstrumentUtilForTest {
                 public void setUp() {
                     orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.FILLED);
 
-                    position.addOrder(sellOrderEURUSD);
+                    sendOrderEvent(sellOrderEURUSD, OrderEventType.SUBMIT_OK);
                 }
 
                 @Test

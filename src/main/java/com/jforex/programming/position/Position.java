@@ -67,7 +67,7 @@ public class Position implements PositionOrders {
                 + " Orderstate: " + order.getState() + " repo size " + orderRepository.size());
     }
 
-    public synchronized void addOrder(final IOrder order) {
+    private synchronized void addOrder(final IOrder order) {
         orderRepository.put(order, OrderProcessState.IDLE);
         logger.debug("Added order " + order.getLabel() + " to position " + instrument
                 + " Orderstate: " + order.getState() + " repo size " + orderRepository.size());

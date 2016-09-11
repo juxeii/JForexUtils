@@ -28,7 +28,6 @@ import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 
 import java.util.EnumSet;
-import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -70,11 +69,11 @@ public final class OrderEventTypeSets {
                                   CHANGE_AMOUNT_REJECTED,
                                   CHANGE_PRICE_REJECTED);
 
-    public static final Set<OrderEventType> createEvents =
+    public static final ImmutableSet<OrderEventType> createEvents =
             Sets.immutableEnumSet(SUBMIT_OK,
                                   SUBMIT_CONDITIONAL_OK,
                                   MERGE_OK);
 
-    public static final Set<OrderEventType> finishEvents =
+    public static final ImmutableSet<OrderEventType> finishEvents =
             Sets.immutableEnumSet(Sets.union(doneEvents, rejectEvents));
 }
