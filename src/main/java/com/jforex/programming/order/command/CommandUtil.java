@@ -7,15 +7,22 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.OrderUtilCompletable;
 
 import rx.Completable;
 
 public class CommandUtil {
 
+    private final OrderUtilCompletable orderUtilCompletable;
+
+    public CommandUtil(final OrderUtilCompletable orderUtilCompletable) {
+        this.orderUtilCompletable = orderUtilCompletable;
+    }
+
     public List<Completable> commandsToCompletables(final List<? extends CommonCommand> commands) {
         return commands
             .stream()
-            .map(CommonCommand::completable)
+            .map(orderUtilCompletable::commandToCompletable)
             .collect(Collectors.toList());
     }
 

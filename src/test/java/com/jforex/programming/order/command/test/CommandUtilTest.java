@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.command.CommandUtil;
 import com.jforex.programming.order.command.CommonCommand;
 import com.jforex.programming.test.common.CommonUtilForTest;
@@ -27,6 +28,8 @@ public class CommandUtilTest extends CommonUtilForTest {
 
     private CommandUtil commandUtil;
 
+    @Mock
+    private OrderUtilCompletable orderUtilCompletableMock;
     @Mock
     private CommonCommand commandOne;
     @Mock
@@ -49,12 +52,12 @@ public class CommandUtilTest extends CommonUtilForTest {
 
         setUpMocks();
 
-        commandUtil = new CommandUtil();
+        commandUtil = new CommandUtil(orderUtilCompletableMock);
     }
 
     private void setUpMocks() {
-        when(commandOne.completable()).thenReturn(completableOne);
-        when(commandTwo.completable()).thenReturn(completableTwo);
+        when(orderUtilCompletableMock.commandToCompletable(commandOne)).thenReturn(completableOne);
+        when(orderUtilCompletableMock.commandToCompletable(commandTwo)).thenReturn(completableTwo);
     }
 
     private void verifyInOrderCall() throws Exception {

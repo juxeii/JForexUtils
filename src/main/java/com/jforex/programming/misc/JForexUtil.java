@@ -66,7 +66,7 @@ public class JForexUtil {
     private PositionMerge positionMerge;
     private PositionClose positionClose;
     private OrderUtilCompletable orderUtilCompletable;
-    private final CommandUtil commandUtil = new CommandUtil();
+    private CommandUtil commandUtil;
     private final MessageToOrderEvent messageToOrderEvent = new MessageToOrderEvent();
 
     private final CalculationUtil calculationUtil;
@@ -121,6 +121,7 @@ public class JForexUtil {
         orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
         engineUtil = new IEngineUtil(engine);
         orderUtilCompletable = new OrderUtilCompletable(orderUtilHandler, positionFactory);
+        commandUtil = new CommandUtil(orderUtilCompletable);
         orderUtilBuilder = new OrderUtilBuilder(engineUtil, orderUtilCompletable);
         positionMerge = new PositionMerge(orderUtilCompletable, positionFactory);
         positionClose = new PositionClose(positionMerge,

@@ -75,18 +75,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
             verifyZeroInteractions(callableMock);
             verifyZeroInteractions(orderUtilCompletableMock);
         }
-
-        @Test
-        public void onSubscribeSubmitOrderIsInvokedOnOrderUtilCompletable() {
-            when(orderUtilCompletableMock.submitOrder(submitCommand))
-                .thenReturn(emptyCompletable());
-
-            submitCommand
-                .completable()
-                .subscribe();
-
-            verify(orderUtilCompletableMock).submitOrder(submitCommand);
-        }
     }
 
     public class MergeBuilderTests {
@@ -125,18 +113,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
             verifyZeroInteractions(callableMock);
             verifyZeroInteractions(orderUtilCompletableMock);
         }
-
-        @Test
-        public void onSubscribeMergeOrdersIsInvokedOnOrderUtilCompletable() {
-            when(orderUtilCompletableMock.mergeOrders(mergeCommand))
-                .thenReturn(emptyCompletable());
-
-            mergeCommand
-                .completable()
-                .subscribe();
-
-            verify(orderUtilCompletableMock).mergeOrders(mergeCommand);
-        }
     }
 
     public class CloseBuilderTests {
@@ -159,18 +135,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
             verifyZeroInteractions(orderUtilCompletableMock);
-        }
-
-        @Test
-        public void onSubscribeCloseIsInvokedOnOrderUtilCompletable() {
-            when(orderUtilCompletableMock.close(closeCommand))
-                .thenReturn(emptyCompletable());
-
-            closeCommand
-                .completable()
-                .subscribe();
-
-            verify(orderUtilCompletableMock).close(closeCommand);
         }
     }
 
@@ -196,18 +160,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
             verifyZeroInteractions(callableMock);
             verifyZeroInteractions(orderUtilCompletableMock);
         }
-
-        @Test
-        public void onSubscribeCloseIsInvokedOnOrderUtilCompletable() {
-            when(orderUtilCompletableMock.setLabel(setLabelCommand))
-                .thenReturn(emptyCompletable());
-
-            setLabelCommand
-                .completable()
-                .subscribe();
-
-            verify(orderUtilCompletableMock).setLabel(setLabelCommand);
-        }
     }
 
     public class GTTBuilderTests {
@@ -231,18 +183,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
             verifyZeroInteractions(orderUtilCompletableMock);
-        }
-
-        @Test
-        public void onSubscribeCloseIsInvokedOnOrderUtilCompletable() {
-            when(orderUtilCompletableMock.setGTT(setGTTCommand))
-                .thenReturn(emptyCompletable());
-
-            setGTTCommand
-                .completable()
-                .subscribe();
-
-            verify(orderUtilCompletableMock).setGTT(setGTTCommand);
         }
     }
 
@@ -268,18 +208,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
             verifyZeroInteractions(callableMock);
             verifyZeroInteractions(orderUtilCompletableMock);
         }
-
-        @Test
-        public void onSubscribeCloseIsInvokedOnOrderUtilCompletable() {
-            when(orderUtilCompletableMock.setAmount(setAmountCommand))
-                .thenReturn(emptyCompletable());
-
-            setAmountCommand
-                .completable()
-                .subscribe();
-
-            verify(orderUtilCompletableMock).setAmount(setAmountCommand);
-        }
     }
 
     public class OpenPriceBuilderTests {
@@ -303,18 +231,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
             verifyZeroInteractions(orderUtilCompletableMock);
-        }
-
-        @Test
-        public void onSubscribeCloseIsInvokedOnOrderUtilCompletable() {
-            when(orderUtilCompletableMock.setOpenPrice(setOpenPriceCommand))
-                .thenReturn(emptyCompletable());
-
-            setOpenPriceCommand
-                .completable()
-                .subscribe();
-
-            verify(orderUtilCompletableMock).setOpenPrice(setOpenPriceCommand);
         }
     }
 
@@ -340,18 +256,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
             verifyZeroInteractions(callableMock);
             verifyZeroInteractions(orderUtilCompletableMock);
         }
-
-        @Test
-        public void onSubscribeCloseIsInvokedOnOrderUtilCompletable() {
-            when(orderUtilCompletableMock.setSL(setSLCommand))
-                .thenReturn(emptyCompletable());
-
-            setSLCommand
-                .completable()
-                .subscribe();
-
-            verify(orderUtilCompletableMock).setSL(setSLCommand);
-        }
     }
 
     public class TPBuilderTests {
@@ -375,18 +279,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
             verifyZeroInteractions(orderUtilCompletableMock);
-        }
-
-        @Test
-        public void onSubscribeCloseIsInvokedOnOrderUtilCompletable() {
-            when(orderUtilCompletableMock.setTP(setTPCommand))
-                .thenReturn(emptyCompletable());
-
-            setTPCommand
-                .completable()
-                .subscribe();
-
-            verify(orderUtilCompletableMock).setTP(setTPCommand);
         }
     }
 }

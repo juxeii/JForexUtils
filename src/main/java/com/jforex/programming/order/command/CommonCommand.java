@@ -3,7 +3,6 @@ package com.jforex.programming.order.command;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -11,7 +10,6 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-import rx.Completable;
 import rx.functions.Action0;
 
 public abstract class CommonCommand {
@@ -26,7 +24,6 @@ public abstract class CommonCommand {
     private final int noOfRetries;
     private final long retryDelayInMillis;
     private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
-    private final Function<CommonCommand, Completable> startFunction;
 
     @SuppressWarnings("unchecked")
     protected CommonCommand(final CommonBuilder<?> builder) {
@@ -40,11 +37,6 @@ public abstract class CommonCommand {
         noOfRetries = builder.noOfRetries;
         retryDelayInMillis = builder.retryDelayInMillis;
         eventHandlerForType = builder.eventHandlerForType;
-        startFunction = (Function<CommonCommand, Completable>) builder.startFunction;
-    }
-
-    public Completable completable() {
-        return startFunction.apply(this);
     }
 
     public Action0 startAction() {

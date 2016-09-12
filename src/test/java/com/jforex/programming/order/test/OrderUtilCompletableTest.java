@@ -12,6 +12,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.OrderUtilHandler;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.CommonCommand;
 import com.jforex.programming.order.command.MergeCommand;
@@ -52,7 +53,7 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        orderUtilCompletable = new OrderUtilCompletable(orderUtilHandlerMock, positionFactoryMock);
+        orderUtilCompletable = spy(new OrderUtilCompletable(orderUtilHandlerMock, positionFactoryMock));
     }
 
     public void setUpMocks() {
@@ -68,6 +69,14 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
         verifyZeroInteractions(orderUtilHandlerMock);
         verifyZeroInteractions(positionFactoryMock);
         verifyZeroInteractions(positionMock);
+    }
+
+    private void setUpCommandToCompletable(final CommonCommand command,
+                                           final OrderCallReason callReason) {
+        when(command.callReason()).thenReturn(callReason);
+        orderUtilCompletable
+            .commandToCompletable(command)
+            .subscribe();
     }
 
     public class SubmitTests {
@@ -94,6 +103,14 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             verify(orderUtilHandlerMock).callObservable(submitCommandMock);
             verify(completedActionMock).call();
         }
+
+        @Test
+        public void commandToCompletableMapsToSubmitCall() {
+            setUtilHandlerMockObservableForCommand(submitCommandMock, emptyObservable());
+            setUpCommandToCompletable(submitCommandMock, OrderCallReason.SUBMIT);
+
+            verify(orderUtilCompletable).submitOrder(submitCommandMock);
+        }
     }
 
     public class MergeTests {
@@ -112,6 +129,14 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
         public void completableIsDeferredWithNoInteractionsToMocks() {
             verifyZeroInteractions(mergeCommandMock);
             verifyNoInteractionsToMocks();
+        }
+
+        @Test
+        public void commandToCompletableMapsToMergeCall() {
+            setUtilHandlerMockObservableForCommand(mergeCommandMock, emptyObservable());
+            setUpCommandToCompletable(mergeCommandMock, OrderCallReason.MERGE);
+
+            verify(orderUtilCompletable).mergeOrders(mergeCommandMock);
         }
 
         public class NoOrdersToMerge {
@@ -255,6 +280,14 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             verify(positionMock, never()).markOrderIdle(orderToClose);
         }
 
+        @Test
+        public void commandToCompletableMapsToCloseCall() {
+            setUtilHandlerMockObservableForCommand(closeCommandMock, emptyObservable());
+            setUpCommandToCompletable(closeCommandMock, OrderCallReason.CLOSE);
+
+            verify(orderUtilCompletable).close(closeCommandMock);
+        }
+
         public class OrderIsFilled {
 
             @Before
@@ -331,6 +364,14 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             verify(orderUtilHandlerMock).callObservable(setLabelCommandMock);
             verify(completedActionMock).call();
         }
+
+        @Test
+        public void commandToCompletableMapsToCloseCall() {
+            setUtilHandlerMockObservableForCommand(setLabelCommandMock, emptyObservable());
+            setUpCommandToCompletable(setLabelCommandMock, OrderCallReason.CHANGE_LABEL);
+
+            verify(orderUtilCompletable).setLabel(setLabelCommandMock);
+        }
     }
 
     public class SetGTTTests {
@@ -371,6 +412,14 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
 
             verify(orderUtilHandlerMock).callObservable(setGTTCommandMock);
             verify(completedActionMock).call();
+        }
+
+        @Test
+        public void commandToCompletableMapsToCloseCall() {
+            setUtilHandlerMockObservableForCommand(setGTTCommandMock, emptyObservable());
+            setUpCommandToCompletable(setGTTCommandMock, OrderCallReason.CHANGE_GTT);
+
+            verify(orderUtilCompletable).setGTT(setGTTCommandMock);
         }
     }
 
@@ -413,6 +462,14 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             verify(orderUtilHandlerMock).callObservable(setAmountCommandMock);
             verify(completedActionMock).call();
         }
+
+        @Test
+        public void commandToCompletableMapsToCloseCall() {
+            setUtilHandlerMockObservableForCommand(setAmountCommandMock, emptyObservable());
+            setUpCommandToCompletable(setAmountCommandMock, OrderCallReason.CHANGE_AMOUNT);
+
+            verify(orderUtilCompletable).setAmount(setAmountCommandMock);
+        }
     }
 
     public class SetOpenPriceTests {
@@ -453,6 +510,14 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
 
             verify(orderUtilHandlerMock).callObservable(setOpenPriceCommandMock);
             verify(completedActionMock).call();
+        }
+
+        @Test
+        public void commandToCompletableMapsToCloseCall() {
+            setUtilHandlerMockObservableForCommand(setOpenPriceCommandMock, emptyObservable());
+            setUpCommandToCompletable(setOpenPriceCommandMock, OrderCallReason.CHANGE_PRICE);
+
+            verify(orderUtilCompletable).setOpenPrice(setOpenPriceCommandMock);
         }
     }
 
@@ -495,6 +560,14 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             verify(orderUtilHandlerMock).callObservable(setSLCommandMock);
             verify(completedActionMock).call();
         }
+
+        @Test
+        public void commandToCompletableMapsToCloseCall() {
+            setUtilHandlerMockObservableForCommand(setSLCommandMock, emptyObservable());
+            setUpCommandToCompletable(setSLCommandMock, OrderCallReason.CHANGE_SL);
+
+            verify(orderUtilCompletable).setSL(setSLCommandMock);
+        }
     }
 
     public class SetTPTests {
@@ -535,6 +608,14 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
 
             verify(orderUtilHandlerMock).callObservable(setTPCommandMock);
             verify(completedActionMock).call();
+        }
+
+        @Test
+        public void commandToCompletableMapsToCloseCall() {
+            setUtilHandlerMockObservableForCommand(setTPCommandMock, emptyObservable());
+            setUpCommandToCompletable(setTPCommandMock, OrderCallReason.CHANGE_TP);
+
+            verify(orderUtilCompletable).setTP(setTPCommandMock);
         }
     }
 }

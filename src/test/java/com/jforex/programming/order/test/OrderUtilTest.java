@@ -231,10 +231,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void commandCompletableCallIsInvokingOnCompletableUtil() {
         final CommonCommand commandMock = mock(CommonCommand.class);
-        when(orderUtilCompletableMock.commandCompletable(commandMock))
+        when(orderUtilCompletableMock.commandToCompletable(commandMock))
             .thenReturn(completableMock);
 
-        final Completable completable = orderUtil.commandCompletable(commandMock);
+        final Completable completable = orderUtil.commandToCompletable(commandMock);
 
         assertThat(completable, equalTo(completableMock));
     }

@@ -107,8 +107,8 @@ public final class OrderUtil {
                                      checkNotNull(closeCommandFactory));
     }
 
-    public final Completable commandCompletable(final CommonCommand command) {
-        return orderUtilCompletable.commandCompletable(checkNotNull(command));
+    public final Completable commandToCompletable(final CommonCommand command) {
+        return orderUtilCompletable.commandToCompletable(checkNotNull(command));
     }
 
     public final PositionOrders positionOrders(final Instrument instrument) {

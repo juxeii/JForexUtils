@@ -155,7 +155,7 @@ public class OrderUtilCompletable {
         });
     }
 
-    public Completable commandCompletable(final CommonCommand command) {
+    public Completable commandToCompletable(final CommonCommand command) {
         return completableByCallReason.get(command.callReason()).apply(command);
     }
 
