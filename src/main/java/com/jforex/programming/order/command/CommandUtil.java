@@ -26,13 +26,13 @@ public class CommandUtil {
             .collect(Collectors.toList());
     }
 
+    public Completable runCommands(final List<? extends CommonCommand> commands) {
+        return Completable.merge(commandsToCompletables(commands));
+    }
+
     public <T extends CommonCommand> Completable runCommandsOfFactory(final Set<IOrder> orders,
                                                                       final Function<IOrder, T> commandFactory) {
         return runCommands(batchCommands(orders, commandFactory));
-    }
-
-    public Completable runCommands(final List<? extends CommonCommand> commands) {
-        return Completable.merge(commandsToCompletables(commands));
     }
 
     public Completable runCommandsConcatenated(final List<? extends CommonCommand> commands) {

@@ -52,7 +52,7 @@ public class CommandUtilTest extends CommonUtilForTest {
 
         setUpMocks();
 
-        commandUtil = new CommandUtil(orderUtilCompletableMock);
+        commandUtil = spy(new CommandUtil(orderUtilCompletableMock));
     }
 
     private void setUpMocks() {
@@ -84,6 +84,20 @@ public class CommandUtilTest extends CommonUtilForTest {
 
         verify(callableOne).call();
         verify(callableTwo).call();
+    }
+
+    @Test
+    public void runCommandsOfFactoryMergesCompletables() throws Exception {
+        final Set<IOrder> orders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+        when(commandFactoryMock.apply(buyOrderEURUSD)).thenReturn(commandOne);
+        when(commandFactoryMock.apply(sellOrderEURUSD)).thenReturn(commandTwo);
+
+        commandUtil
+            .runCommandsOfFactory(orders, commandFactoryMock)
+            .subscribe();
+
+        verify(commandUtil).batchCommands(orders, commandFactoryMock);
+        verify(commandUtil).runCommands(any());
     }
 
     @Test
