@@ -34,7 +34,7 @@ public class PositionClose {
             final Completable mergeCompletable = positionMerge.merge(instrument, mergeCommandFactory);
             final Completable closeCompletable = commandUtil.runCommandsOfFactory(position(instrument).filledOrOpened(),
                                                                                   closeCommandFactory);
-            return Completable.concat(mergeCompletable, closeCompletable);
+            return Completable.merge(mergeCompletable, closeCompletable);
         });
     }
 
