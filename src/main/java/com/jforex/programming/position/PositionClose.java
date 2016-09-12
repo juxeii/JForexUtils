@@ -33,7 +33,7 @@ public class PositionClose {
                              final Function<IOrder, CloseCommand> closeCommandFactory) {
         return Completable.defer(() -> {
             final Completable mergeCompletable = positionMerge.merge(instrument, mergeCommandFactory);
-            final Completable closeCompletable = commandUtil.runCommandsOfFactory(position(instrument).filledOrOpened(),
+            final Completable closeCompletable = commandUtil.mergeCommandsOfFactory(position(instrument).filledOrOpened(),
                                                                                   closeCommandFactory);
             return Completable.merge(Lists.newArrayList(mergeCompletable, closeCompletable));
         });

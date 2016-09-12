@@ -26,26 +26,26 @@ public class CommandUtil {
             .collect(Collectors.toList());
     }
 
-    public Completable runCommands(final List<? extends CommonCommand> commands) {
+    public Completable mergeCommands(final List<? extends CommonCommand> commands) {
         return Completable.merge(commandsToCompletables(commands));
     }
 
-    public <T extends CommonCommand> Completable runCommandsOfFactory(final Set<IOrder> orders,
-                                                                      final Function<IOrder, T> commandFactory) {
-        return runCommands(batchCommands(orders, commandFactory));
+    public <T extends CommonCommand> Completable mergeCommandsOfFactory(final Set<IOrder> orders,
+                                                                        final Function<IOrder, T> commandFactory) {
+        return mergeCommands(commandsOfFactory(orders, commandFactory));
     }
 
-    public Completable runCommandsConcatenated(final List<? extends CommonCommand> commands) {
+    public Completable concatCommands(final List<? extends CommonCommand> commands) {
         return Completable.concat(commandsToCompletables(commands));
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends CommonCommand> Completable runCommandsConcatenated(final T... commands) {
-        return runCommandsConcatenated(Arrays.asList(commands));
+    public <T extends CommonCommand> Completable concatCommands(final T... commands) {
+        return concatCommands(Arrays.asList(commands));
     }
 
-    public <T extends CommonCommand> List<T> batchCommands(final Set<IOrder> orders,
-                                                           final Function<IOrder, T> commandFactory) {
+    public <T extends CommonCommand> List<T> commandsOfFactory(final Set<IOrder> orders,
+                                                               final Function<IOrder, T> commandFactory) {
         return orders
             .stream()
             .map(commandFactory::apply)

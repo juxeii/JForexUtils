@@ -79,7 +79,7 @@ public class CommandUtilTest extends CommonUtilForTest {
     @Test
     public void runCommandsMergesCompletables() throws Exception {
         commandUtil
-            .runCommands(commands)
+            .mergeCommands(commands)
             .subscribe();
 
         verify(callableOne).call();
@@ -93,17 +93,17 @@ public class CommandUtilTest extends CommonUtilForTest {
         when(commandFactoryMock.apply(sellOrderEURUSD)).thenReturn(commandTwo);
 
         commandUtil
-            .runCommandsOfFactory(orders, commandFactoryMock)
+            .mergeCommandsOfFactory(orders, commandFactoryMock)
             .subscribe();
 
-        verify(commandUtil).batchCommands(orders, commandFactoryMock);
-        verify(commandUtil).runCommands(any());
+        verify(commandUtil).commandsOfFactory(orders, commandFactoryMock);
+        verify(commandUtil).mergeCommands(any());
     }
 
     @Test
     public void runCommandsConcatenatedIsCorrect() throws Exception {
         commandUtil
-            .runCommandsConcatenated(commands)
+            .concatCommands(commands)
             .subscribe();
 
         verifyInOrderCall();
@@ -112,7 +112,7 @@ public class CommandUtilTest extends CommonUtilForTest {
     @Test
     public void runCommandsConcatenatedWithVarargsIsCorrect() throws Exception {
         commandUtil
-            .runCommandsConcatenated(commandOne, commandTwo)
+            .concatCommands(commandOne, commandTwo)
             .subscribe();
 
         verifyInOrderCall();
@@ -124,7 +124,7 @@ public class CommandUtilTest extends CommonUtilForTest {
         when(commandFactoryMock.apply(sellOrderEURUSD)).thenReturn(commandTwo);
         final Set<IOrder> batchOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
-        final List<CommonCommand> commands = commandUtil.batchCommands(batchOrders, commandFactoryMock);
+        final List<CommonCommand> commands = commandUtil.commandsOfFactory(batchOrders, commandFactoryMock);
 
         assertThat(commands.size(), equalTo(2));
         assertTrue(commands.contains(commandOne));
