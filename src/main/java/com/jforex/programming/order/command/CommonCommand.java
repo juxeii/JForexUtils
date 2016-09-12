@@ -25,7 +25,6 @@ public abstract class CommonCommand {
     private final long retryDelayInMillis;
     private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
-    @SuppressWarnings("unchecked")
     protected CommonCommand(final CommonBuilder<?> builder) {
         callable = builder.callable;
         callReason = builder.callReason;
