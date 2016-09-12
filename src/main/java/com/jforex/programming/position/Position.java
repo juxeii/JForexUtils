@@ -54,6 +54,7 @@ public class Position implements PositionOrders {
 
     private void observeCreatedOrdersForInsertion(final Observable<OrderEvent> orderEventObservable) {
         orderEventObservable
+            .filter(orderEvent -> orderEvent.order().getInstrument() == instrument)
             .filter(orderEvent -> createEvents.contains(orderEvent.type()))
             .filter(OrderEvent::isInternal)
             .map(OrderEvent::order)

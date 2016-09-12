@@ -75,6 +75,14 @@ public class PositionTest extends InstrumentUtilForTest {
         });
     }
 
+    @Test
+    public void orderOfOtherPositionAreNotAdded() {
+        orderEventSubject.onNext(new OrderEvent(buyOrderAUDUSD,
+                                                OrderEventType.SUBMIT_OK,
+                                                true));
+        assertFalse(position.contains(buyOrderAUDUSD));
+    }
+
     public class AddingBuyOrder {
 
         @Before

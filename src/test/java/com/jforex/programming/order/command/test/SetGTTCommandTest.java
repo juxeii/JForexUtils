@@ -40,7 +40,7 @@ public class SetGTTCommandTest extends CommandTester {
                     newGTT,
                     startFunctionMock)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnSetGTTReject(setGTTRejectActionMock)
             .doOnSetGTT(setGTTActionMock)
             .retry(noOfRetries, retryDelay)

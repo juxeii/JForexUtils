@@ -52,7 +52,7 @@ public class MergeCommandTest extends CommandTester {
                     iengineUtilMock,
                     startFunctionMock)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnMergeClose(mergeCloseActionMock)
             .doOnMerge(mergeActionMock)
             .doOnMergeReject(mergeRejectActionMock)

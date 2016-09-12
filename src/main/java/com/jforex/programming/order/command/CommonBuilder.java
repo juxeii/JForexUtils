@@ -38,7 +38,7 @@ public class CommonBuilder<T extends CommonOption<T>> {
         return (T) this;
     }
 
-    public T doOnCompleted(final Action completedAction) {
+    public T doOnComplete(final Action completedAction) {
         this.completedAction = checkNotNull(completedAction);
         return (T) this;
     }

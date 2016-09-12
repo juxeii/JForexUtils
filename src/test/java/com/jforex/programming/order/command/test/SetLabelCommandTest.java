@@ -40,7 +40,7 @@ public class SetLabelCommandTest extends CommandTester {
                     newLabel,
                     startFunctionMock)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnSetLabelReject(setLabelRejectActionMock)
             .doOnSetLabel(setLabelActionMock)
             .retry(noOfRetries, retryDelay)

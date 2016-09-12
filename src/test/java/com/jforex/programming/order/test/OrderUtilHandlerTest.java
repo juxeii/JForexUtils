@@ -104,7 +104,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 .doOnStart(startActionMock)
                 .doOnOrderEvent(orderEventConsumerMock)
                 .doOnClose(closeActionMock)
-                .doOnCompleted(completedActionMock)
+                .doOnComplete(completedActionMock)
                 .doOnError(errorActionMock)
                 .retry(2, retryDelay)
                 .build();

@@ -40,7 +40,7 @@ public class SetOpenPriceCommandTest extends CommandTester {
                     newOpenPrice,
                     startFunctionMock)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnSetOpenPriceReject(setOpenPriceRejectActionMock)
             .doOnSetOpenPrice(setOpenPriceActionMock)
             .retry(noOfRetries, retryDelay)

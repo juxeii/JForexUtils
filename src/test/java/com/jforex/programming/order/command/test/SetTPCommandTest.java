@@ -40,7 +40,7 @@ public class SetTPCommandTest extends CommandTester {
                     newTP,
                     startFunctionMock)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnSetTPReject(setTPRejectActionMock)
             .doOnSetTP(setTPActionMock)
             .retry(noOfRetries, retryDelay)

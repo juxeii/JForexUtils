@@ -54,7 +54,7 @@ public class SubmitCommandTest extends CommandTester {
                     iengineUtilMock,
                     startFunctionMock)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnSubmitReject(submitRejectActionMock)
             .doOnFillReject(fillRejectActionMock)
             .doOnSubmit(submittedActionMock)

@@ -40,7 +40,7 @@ public class SetSLCommandTest extends CommandTester {
                     newSL,
                     startFunctionMock)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnSetSLReject(setSLRejectActionMock)
             .doOnSetSL(setSLActionMock)
             .retry(noOfRetries, retryDelay)

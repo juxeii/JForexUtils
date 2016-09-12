@@ -40,7 +40,7 @@ public class SetAmountCommandTest extends CommandTester {
                     newAmount,
                     startFunctionMock)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnSetAmountReject(setAmountRejectActionMock)
             .doOnSetAmount(setAmountActionMock)
             .retry(noOfRetries, retryDelay)

@@ -10,7 +10,7 @@ public interface CommonOption<T> {
 
     public T doOnStart(Action startAction);
 
-    public T doOnCompleted(Action completedAction);
+    public T doOnComplete(Action completedAction);
 
     public T doOnOrderEvent(Consumer<OrderEvent> orderEventAction);
 

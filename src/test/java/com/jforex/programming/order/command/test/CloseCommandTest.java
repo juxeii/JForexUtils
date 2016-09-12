@@ -40,7 +40,7 @@ public class CloseCommandTest extends CommandTester {
         closeCommand = CloseCommand
             .create(buyOrderEURUSD, startFunctionMock)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnCloseReject(closeRejectActionMock)
             .doOnPartialClose(partialCloseActionMock)
             .doOnClose(closeActionMock)
