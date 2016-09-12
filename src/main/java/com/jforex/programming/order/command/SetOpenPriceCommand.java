@@ -29,11 +29,11 @@ public class SetOpenPriceCommand extends CommonCommand {
         newOpenPrice = builder.newOpenPrice;
     }
 
-    public final IOrder order() {
+    public IOrder order() {
         return order;
     }
 
-    public final double newOpenPrice() {
+    public double newOpenPrice() {
         return newOpenPrice;
     }
 

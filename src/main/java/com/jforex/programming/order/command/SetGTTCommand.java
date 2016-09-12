@@ -29,11 +29,11 @@ public class SetGTTCommand extends CommonCommand {
         newGTT = builder.newGTT;
     }
 
-    public final IOrder order() {
+    public IOrder order() {
         return order;
     }
 
-    public final long newGTT() {
+    public long newGTT() {
         return newGTT;
     }
 

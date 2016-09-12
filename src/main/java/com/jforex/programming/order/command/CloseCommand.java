@@ -28,7 +28,7 @@ public class CloseCommand extends CommonCommand {
         order = builder.order;
     }
 
-    public final IOrder order() {
+    public IOrder order() {
         return order;
     }
 

@@ -29,11 +29,11 @@ public class SetSLCommand extends CommonCommand {
         newSL = builder.newSL;
     }
 
-    public final IOrder order() {
+    public IOrder order() {
         return order;
     }
 
-    public final double newSL() {
+    public double newSL() {
         return newSL;
     }
 

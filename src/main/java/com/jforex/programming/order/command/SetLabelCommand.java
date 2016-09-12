@@ -29,11 +29,11 @@ public class SetLabelCommand extends CommonCommand {
         newLabel = builder.newLabel;
     }
 
-    public final IOrder order() {
+    public IOrder order() {
         return order;
     }
 
-    public final String newLabel() {
+    public String newLabel() {
         return newLabel;
     }
 

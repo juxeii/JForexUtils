@@ -29,11 +29,11 @@ public class SetAmountCommand extends CommonCommand {
         newAmount = builder.newAmount;
     }
 
-    public final IOrder order() {
+    public IOrder order() {
         return order;
     }
 
-    public final double newAmount() {
+    public double newAmount() {
         return newAmount;
     }
 

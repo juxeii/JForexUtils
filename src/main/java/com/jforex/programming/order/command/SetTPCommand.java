@@ -29,11 +29,11 @@ public class SetTPCommand extends CommonCommand {
         newTP = builder.newTP;
     }
 
-    public final IOrder order() {
+    public IOrder order() {
         return order;
     }
 
-    public final double newTP() {
+    public double newTP() {
         return newTP;
     }
 
