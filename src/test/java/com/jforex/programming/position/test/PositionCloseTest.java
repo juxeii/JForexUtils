@@ -21,7 +21,7 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Completable;
-import io.reactivex.functions.Action;
+import io.reactivex.subscribers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PositionCloseTest extends InstrumentUtilForTest {
@@ -42,8 +42,7 @@ public class PositionCloseTest extends InstrumentUtilForTest {
     private MergeCommand mergeCommandMock;
     @Mock
     private CloseCommand closeCommandMock;
-    @Mock
-    private Action completedActionMock;
+    private TestSubscriber<Void> testSubscriber;
 
     @Before
     public void setUp() {
@@ -108,9 +107,9 @@ public class PositionCloseTest extends InstrumentUtilForTest {
             setUpMergeCompletables(emptyCompletable());
             setUpCommandUtilCompletables(emptyCompletable());
 
-            closePositionCompletable.subscribe(completedActionMock);
+            testSubscriber = closePositionCompletable.test();
 
-            verify(completedActionMock).run();
+            testSubscriber.assertComplete();
         }
 
         @Test
@@ -120,11 +119,12 @@ public class PositionCloseTest extends InstrumentUtilForTest {
             setUpMergeCompletables(emptyCompletable());
             setUpCommandUtilCompletables(emptyCompletable());
 
-            closePositionCompletable.subscribe(completedActionMock);
+            testSubscriber = closePositionCompletable.test();
 
             verify(positionMergeMock).merge(instrumentEURUSD, mergeCommandFactory);
             verify(commandUtilMock).runCommandsOfFactory(filledOrOpenedOrders, closeCommandFactory);
-            verify(completedActionMock).run();
+            testSubscriber.assertComplete();
+            testSubscriber.assertComplete();
         }
     }
 
@@ -146,11 +146,11 @@ public class PositionCloseTest extends InstrumentUtilForTest {
         public void onSubscribeWithNoPositionsCompletesImmediately() throws Exception {
             expectPositions(Sets.newHashSet());
 
-            closeAllPositionsCompletable.subscribe(completedActionMock);
+            testSubscriber = closeAllPositionsCompletable.test();
 
             verifyZeroInteractions(positionMergeMock);
             verifyZeroInteractions(commandUtilMock);
-            verify(completedActionMock).run();
+            testSubscriber.assertComplete();
         }
 
         public class TwoPositionsPresent {
@@ -179,9 +179,9 @@ public class PositionCloseTest extends InstrumentUtilForTest {
                 setUpMergeCompletables(neverCompletable(), neverCompletable());
                 setUpCommandUtilCompletables(neverCompletable(), neverCompletable());
 
-                closeAllPositionsCompletable.subscribe(completedActionMock);
+                testSubscriber = closeAllPositionsCompletable.test();
 
-                verifyZeroInteractions(completedActionMock);
+                testSubscriber.assertNotComplete();
                 verify(positionMergeMock, times(2)).merge(any(), eq(mergeCommandFactory));
                 verify(commandUtilMock, times(2)).runCommandsOfFactory(any(), eq(closeCommandFactory));
             }
@@ -191,27 +191,27 @@ public class PositionCloseTest extends InstrumentUtilForTest {
                 setUpMergeCompletables(emptyCompletable(), emptyCompletable());
                 setUpCommandUtilCompletables(emptyCompletable(), emptyCompletable());
 
-                closeAllPositionsCompletable.subscribe(completedActionMock);
+                testSubscriber = closeAllPositionsCompletable.test();
 
-                verify(completedActionMock).run();
+                testSubscriber.assertComplete();
             }
 
             @Test
             public void whenFirstButNotSecondCompletesTheCallIsNotCompleted() {
                 setUpMergeCompletables(emptyCompletable(), neverCompletable());
 
-                closeAllPositionsCompletable.subscribe(completedActionMock);
+                testSubscriber = closeAllPositionsCompletable.test();
 
-                verifyZeroInteractions(completedActionMock);
+                testSubscriber.assertNotComplete();
             }
 
             @Test
             public void whenSecondButNotFirstCompletesTheCallIsNotCompleted() {
                 setUpMergeCompletables(neverCompletable(), emptyCompletable());
 
-                closeAllPositionsCompletable.subscribe(completedActionMock);
+                testSubscriber = closeAllPositionsCompletable.test();
 
-                verifyZeroInteractions(completedActionMock);
+                testSubscriber.assertNotComplete();
             }
         }
     }

@@ -24,7 +24,6 @@ import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -226,9 +225,6 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
     public class CloseTests {
 
         private final IOrder orderToClose = buyOrderEURUSD;
-        private final OrderEvent closeEvent = new OrderEvent(orderToClose,
-                                                             OrderEventType.CLOSE_OK,
-                                                             true);
         private final CloseCommand closeCommandMock = mock(CloseCommand.class);
 
         @Before
@@ -245,12 +241,12 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
         }
 
         private void verifyOrderUtilHandlerCallIsEmbeddedInMarkingOrderActiveAndIdle() throws Exception {
-            setUtilHandlerMockObservableAndSubscribe(eventObservable(closeEvent));
+            setUtilHandlerMockObservableAndSubscribe(emptyObservable());
 
             final InOrder inOrder = inOrder(positionMock, orderUtilHandlerMock);
 
-            inOrder.verify(positionMock).markOrderActive(orderToClose);
             inOrder.verify(orderUtilHandlerMock).callObservable(closeCommandMock);
+            inOrder.verify(positionMock).markOrderActive(orderToClose);
             inOrder.verify(positionMock).markOrderIdle(orderToClose);
             verify(completedActionMock).run();
         }

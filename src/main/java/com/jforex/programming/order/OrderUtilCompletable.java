@@ -88,9 +88,9 @@ public class OrderUtilCompletable {
             return Observable
                 .just(orderToClose)
                 .filter(order -> !isClosed.test(order))
-                .doOnNext(order -> position.markOrderActive(orderToClose))
-                .flatMap(order -> orderUtilHandler.callObservable(command))
-                .doOnNext(orderEvent -> position.markOrderIdle(orderToClose))
+                .flatMap(order -> orderUtilHandler.callObservable(command)
+                    .doOnSubscribe(d -> position.markOrderActive(orderToClose))
+                    .doOnTerminate(() -> position.markOrderIdle(orderToClose)))
                 .toCompletable();
         });
     }

@@ -19,7 +19,7 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Completable;
-import io.reactivex.functions.Action;
+import io.reactivex.subscribers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PositionMergeTest extends InstrumentUtilForTest {
@@ -34,8 +34,7 @@ public class PositionMergeTest extends InstrumentUtilForTest {
     private Function<Set<IOrder>, MergeCommand> mergeCommandFactory;
     @Mock
     private MergeCommand mergeCommandMock;
-    @Mock
-    private Action completedActionMock;
+    private TestSubscriber<Void> testSubscriber;
 
     @Before
     public void setUp() {
@@ -87,10 +86,10 @@ public class PositionMergeTest extends InstrumentUtilForTest {
             expectFilledOrders(toMergeOrders);
             setUpMergePositionCompletables(emptyCompletable());
 
-            mergePositionCompletable.subscribe(completedActionMock);
+            testSubscriber = mergePositionCompletable.test();
 
             verify(orderUtilCompletableMock).mergeOrders(mergeCommandMock);
-            verify(completedActionMock).run();
+            testSubscriber.assertComplete();
         }
     }
 
@@ -112,10 +111,10 @@ public class PositionMergeTest extends InstrumentUtilForTest {
         public void onSubscribeWithNoPositionsCompletesImmediately() throws Exception {
             expectPositions(Sets.newHashSet());
 
-            mergeAllPositionsCompletable.subscribe(completedActionMock);
+            testSubscriber = mergeAllPositionsCompletable.test();
 
             verifyZeroInteractions(orderUtilCompletableMock);
-            verify(completedActionMock).run();
+            testSubscriber.assertComplete();
         }
 
         public class TwoPositionsPresent {
@@ -139,37 +138,37 @@ public class PositionMergeTest extends InstrumentUtilForTest {
             public void testThatMergeCompletablesAreNotConcatenated() {
                 setUpMergePositionCompletables(neverCompletable(), neverCompletable());
 
-                mergeAllPositionsCompletable.subscribe(completedActionMock);
+                testSubscriber = mergeAllPositionsCompletable.test();
 
                 verify(orderUtilCompletableMock, times(2)).mergeOrders(mergeCommandMock);
-                verifyZeroInteractions(completedActionMock);
+                testSubscriber.assertNotComplete();
             }
 
             @Test
             public void whenBothPositionsAreMergedTheCallIsCompleted() throws Exception {
                 setUpMergePositionCompletables(emptyCompletable(), emptyCompletable());
 
-                mergeAllPositionsCompletable.subscribe(completedActionMock);
+                testSubscriber = mergeAllPositionsCompletable.test();
 
-                verify(completedActionMock).run();
+                testSubscriber.assertComplete();
             }
 
             @Test
             public void whenFirstButNotSecondCompletesTheCallIsNotCompleted() {
                 setUpMergePositionCompletables(emptyCompletable(), neverCompletable());
 
-                mergeAllPositionsCompletable.subscribe(completedActionMock);
+                testSubscriber = mergeAllPositionsCompletable.test();
 
-                verifyZeroInteractions(completedActionMock);
+                testSubscriber.assertNotComplete();
             }
 
             @Test
             public void whenSecondButNotFirstCompletesTheCallIsNotCompleted() {
                 setUpMergePositionCompletables(neverCompletable(), emptyCompletable());
 
-                mergeAllPositionsCompletable.subscribe(completedActionMock);
+                testSubscriber = mergeAllPositionsCompletable.test();
 
-                verifyZeroInteractions(completedActionMock);
+                testSubscriber.assertNotComplete();
             }
         }
     }
