@@ -1,4 +1,4 @@
-package com.jforex.programming.order.process.option;
+package com.jforex.programming.order.command.option;
 
 import java.util.function.Consumer;
 

@@ -72,11 +72,6 @@ public class PositionMergeTest extends InstrumentUtilForTest {
             mergePositionCompletable = positionMerge.merge(instrumentEURUSD, mergeCommandFactory);
         }
 
-        private void verifyInteractionsForNotEnoughMergeOrders() {
-            verifyZeroInteractions(orderUtilCompletableMock);
-            verify(completedActionMock).call();
-        }
-
         private void expectFilledOrders(final Set<IOrder> filledOrders) {
             orderUtilForTest.setUpPositionFactory(positionFactoryMock, instrumentEURUSD, filledOrders);
         }
@@ -84,24 +79,6 @@ public class PositionMergeTest extends InstrumentUtilForTest {
         @Test
         public void completableIsDeferredWithNoInteractionsToMocks() {
             verifyDeferredCompletable();
-        }
-
-        @Test
-        public void onSubscribeWithNoMergeOrdersCompletesImmediately() {
-            expectFilledOrders(Sets.newHashSet());
-
-            mergePositionCompletable.subscribe(completedActionMock);
-
-            verifyInteractionsForNotEnoughMergeOrders();
-        }
-
-        @Test
-        public void onSubscribeWithOneMergeOrderCompletesImmediately() {
-            expectFilledOrders(Sets.newHashSet(buyOrderEURUSD));
-
-            mergePositionCompletable.subscribe(completedActionMock);
-
-            verifyInteractionsForNotEnoughMergeOrders();
         }
 
         @Test

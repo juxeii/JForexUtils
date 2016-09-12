@@ -13,15 +13,15 @@ import com.jforex.programming.order.command.SetOpenPriceCommand;
 import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
-import com.jforex.programming.order.process.option.CloseOption;
-import com.jforex.programming.order.process.option.MergeOption;
-import com.jforex.programming.order.process.option.SetAmountOption;
-import com.jforex.programming.order.process.option.SetGTTOption;
-import com.jforex.programming.order.process.option.SetLabelOption;
-import com.jforex.programming.order.process.option.SetOpenPriceOption;
-import com.jforex.programming.order.process.option.SetSLOption;
-import com.jforex.programming.order.process.option.SetTPOption;
-import com.jforex.programming.order.process.option.SubmitOption;
+import com.jforex.programming.order.command.option.CloseOption;
+import com.jforex.programming.order.command.option.MergeOption;
+import com.jforex.programming.order.command.option.SetAmountOption;
+import com.jforex.programming.order.command.option.SetGTTOption;
+import com.jforex.programming.order.command.option.SetLabelOption;
+import com.jforex.programming.order.command.option.SetOpenPriceOption;
+import com.jforex.programming.order.command.option.SetSLOption;
+import com.jforex.programming.order.command.option.SetTPOption;
+import com.jforex.programming.order.command.option.SubmitOption;
 
 public class OrderUtilBuilder {
 

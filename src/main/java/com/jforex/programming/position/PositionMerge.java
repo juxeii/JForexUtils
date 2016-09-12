@@ -27,9 +27,8 @@ public class PositionMerge {
                              final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
         return Completable.defer(() -> {
             final Set<IOrder> toMergeOrders = positionFactory.forInstrument(instrument).filled();
-            return toMergeOrders.size() < 2
-                    ? Completable.complete()
-                    : orderUtilCompletable.mergeOrders(mergeCommandFactory.apply(toMergeOrders));
+            final MergeCommand command = mergeCommandFactory.apply(toMergeOrders);
+            return orderUtilCompletable.mergeOrders(command);
         });
     }
 

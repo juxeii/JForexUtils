@@ -10,10 +10,10 @@ import java.util.function.Function;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Maps;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.command.option.CommonOption;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-import com.jforex.programming.order.process.option.CommonOption;
 
 import rx.Completable;
 import rx.functions.Action0;

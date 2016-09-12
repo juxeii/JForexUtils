@@ -12,9 +12,9 @@ import java.util.function.Function;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.command.option.SetGTTOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-import com.jforex.programming.order.process.option.SetGTTOption;
 
 import rx.Completable;
 

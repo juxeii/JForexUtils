@@ -14,9 +14,9 @@ import java.util.function.Function;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.command.option.MergeOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-import com.jforex.programming.order.process.option.MergeOption;
 
 import rx.Completable;
 
