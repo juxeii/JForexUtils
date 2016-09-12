@@ -8,7 +8,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.JFHotSubject;
 import com.jforex.programming.order.call.OrderCallRequest;
 
-import rx.Observable;
+import io.reactivex.Flowable;
 
 public class OrderEventGateway {
 
@@ -17,7 +17,7 @@ public class OrderEventGateway {
 
     private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);
 
-    public OrderEventGateway(final Observable<IMessage> messageObservable,
+    public OrderEventGateway(final Flowable<IMessage> messageObservable,
                              final OrderEventFactory orderEventMapper) {
         this.messageToOrderEvent = orderEventMapper;
 
@@ -26,8 +26,8 @@ public class OrderEventGateway {
             .subscribe(this::onOrderMessage);
     }
 
-    public Observable<OrderEvent> observable() {
-        return orderEventPublisher.observable();
+    public Flowable<OrderEvent> observable() {
+        return orderEventPublisher.flowable();
     }
 
     public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {

@@ -11,12 +11,13 @@ import com.jforex.programming.client.JFSystemListener;
 import com.jforex.programming.client.StrategyRunData;
 import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.connection.ConnectionState;
+import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.observers.TestSubscriber;
+import io.reactivex.subscribers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
-public class JFSystemListenerTest {
+public class JFSystemListenerTest extends CommonUtilForTest {
 
     private JFSystemListener jfSystemListener;
 
@@ -28,17 +29,17 @@ public class JFSystemListenerTest {
         jfSystemListener = new JFSystemListener();
 
         jfSystemListener
-                .strategyRunDataObservable()
-                .subscribe(runDataSubscriber);
+            .strategyRunDataFlowable()
+            .subscribe(runDataSubscriber);
         jfSystemListener
-                .connectionStateObservable()
-                .subscribe(connectionStateSubscriber);
+            .connectionStateFlowable()
+            .subscribe(connectionStateSubscriber);
     }
 
     private void assertSubscriberCount(final TestSubscriber<?> subscriber,
                                        final int itemIndex) {
         subscriber.assertNoErrors();
-        subscriber.assertNotCompleted();
+        subscriber.assertNotComplete();
         subscriber.assertValueCount(itemIndex + 1);
     }
 
@@ -50,10 +51,7 @@ public class JFSystemListenerTest {
                                    final int itemIndex) {
             assertSubscriberCount(runDataSubscriber, itemIndex);
 
-            final StrategyRunData runData =
-                    runDataSubscriber
-                            .getOnNextEvents()
-                            .get(itemIndex);
+            final StrategyRunData runData = getOnNextEvent(runDataSubscriber, itemIndex);
             assertThat(runData.processID(), equalTo(processID));
             assertThat(runData.state(), equalTo(runState));
         }
@@ -82,7 +80,7 @@ public class JFSystemListenerTest {
                                            final int itemIndex) {
             assertSubscriberCount(connectionStateSubscriber, itemIndex);
 
-            assertThat(connectionStateSubscriber.getOnNextEvents().get(itemIndex),
+            assertThat(getOnNextEvent(connectionStateSubscriber, itemIndex),
                        equalTo(connectionState));
         }
 

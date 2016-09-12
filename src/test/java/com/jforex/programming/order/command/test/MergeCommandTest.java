@@ -23,7 +23,7 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class MergeCommandTest extends CommandTester {
 
@@ -68,7 +68,7 @@ public class MergeCommandTest extends CommandTester {
     }
 
     @Test
-    public void emptyCommandHasNoRetryParameters() {
+    public void emptyCommandHasNoRetryParameters() throws Exception {
         final MergeCommand emptyCommand = MergeCommand
             .create(mergeOrderLabel,
                     toMergeOrders,

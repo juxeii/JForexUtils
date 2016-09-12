@@ -21,7 +21,7 @@ import com.jforex.programming.order.command.option.SubmitOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class SubmitCommand extends CommonCommand {
 

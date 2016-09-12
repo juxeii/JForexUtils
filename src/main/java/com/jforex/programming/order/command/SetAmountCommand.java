@@ -16,7 +16,7 @@ import com.jforex.programming.order.command.option.SetAmountOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class SetAmountCommand extends CommonCommand {
 

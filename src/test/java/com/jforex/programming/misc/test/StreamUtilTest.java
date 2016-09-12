@@ -21,7 +21,7 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.observers.TestSubscriber;
+import io.reactivex.subscribers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class StreamUtilTest extends CommonUtilForTest {
@@ -39,16 +39,18 @@ public class StreamUtilTest extends CommonUtilForTest {
         final int maxRetries = 3;
         final TestSubscriber<Integer> subscriber = new TestSubscriber<>();
 
-        StreamUtil.retryCounterObservable(maxRetries).subscribe(subscriber);
+        StreamUtil
+            .retryCounterObservable(maxRetries)
+            .subscribe(subscriber);
 
-        subscriber.assertCompleted();
+        subscriber.assertComplete();
         subscriber.assertNoErrors();
         subscriber.assertValueCount(maxRetries + 1);
 
-        assertThat(subscriber.getOnNextEvents().get(0), equalTo(1));
-        assertThat(subscriber.getOnNextEvents().get(1), equalTo(2));
-        assertThat(subscriber.getOnNextEvents().get(2), equalTo(3));
-        assertThat(subscriber.getOnNextEvents().get(3), equalTo(4));
+        assertThat(getOnNextEvent(subscriber, 0), equalTo(1));
+        assertThat(getOnNextEvent(subscriber, 1), equalTo(2));
+        assertThat(getOnNextEvent(subscriber, 2), equalTo(3));
+        assertThat(getOnNextEvent(subscriber, 3), equalTo(4));
     }
 
     @Test
@@ -58,9 +60,9 @@ public class StreamUtilTest extends CommonUtilForTest {
         StreamUtil.waitObservable(1000L, TimeUnit.MILLISECONDS).subscribe(subscriber);
 
         RxTestUtil.advanceTimeBy(900L, TimeUnit.MILLISECONDS);
-        subscriber.assertNotCompleted();
+        subscriber.assertNotComplete();
         RxTestUtil.advanceTimeBy(100L, TimeUnit.MILLISECONDS);
-        subscriber.assertCompleted();
+        subscriber.assertComplete();
     }
 
     @Test

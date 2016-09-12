@@ -22,7 +22,7 @@ import com.jforex.programming.order.command.CommandUtil;
 import com.jforex.programming.order.command.CommonCommand;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class CommandUtilTest extends CommonUtilForTest {
 

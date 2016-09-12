@@ -19,12 +19,12 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
-import rx.functions.Action0;
+import io.reactivex.functions.Action;
 
 public class CommandTester extends CommonUtilForTest {
 
     @Mock
-    protected Action0 completedActionMock;
+    protected Action completedActionMock;
     @Mock
     protected Consumer<Throwable> errorActionMock;
     @Mock
@@ -65,12 +65,12 @@ public class CommandTester extends CommonUtilForTest {
         assertThat(command.retryDelayInMillis(), equalTo(retryDelay));
     }
 
-    protected void assertActionsNotNull(final CommonCommand command) {
-        command.startAction().call();
+    protected void assertActionsNotNull(final CommonCommand command) throws Exception {
+        command.startAction().run();
         command.eventAction().accept(new OrderEvent(buyOrderEURUSD,
                                                     OrderEventType.SUBMIT_OK,
                                                     true));
-        command.completedAction().call();
+        command.completedAction().run();
         command.errorAction().accept(jfException);
     }
 }

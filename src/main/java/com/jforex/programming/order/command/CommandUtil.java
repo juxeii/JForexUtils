@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderUtilCompletable;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class CommandUtil {
 

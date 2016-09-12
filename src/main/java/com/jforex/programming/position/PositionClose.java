@@ -7,11 +7,12 @@ import java.util.stream.Collectors;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.google.common.collect.Lists;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.CommandUtil;
 import com.jforex.programming.order.command.MergeCommand;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class PositionClose {
 
@@ -34,7 +35,7 @@ public class PositionClose {
             final Completable mergeCompletable = positionMerge.merge(instrument, mergeCommandFactory);
             final Completable closeCompletable = commandUtil.runCommandsOfFactory(position(instrument).filledOrOpened(),
                                                                                   closeCommandFactory);
-            return Completable.merge(mergeCompletable, closeCompletable);
+            return Completable.merge(Lists.newArrayList(mergeCompletable, closeCompletable));
         });
     }
 

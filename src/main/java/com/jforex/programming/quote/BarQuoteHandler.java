@@ -8,16 +8,16 @@ import java.util.stream.Collectors;
 import com.dukascopy.api.IBar;
 import com.jforex.programming.misc.JForexUtil;
 
-import rx.Observable;
+import io.reactivex.Flowable;
 
 public class BarQuoteHandler implements BarQuoteProvider {
 
     private final JForexUtil jforexUtil;
-    private final Observable<BarQuote> barQuoteObservable;
+    private final Flowable<BarQuote> barQuoteObservable;
     private final BarQuoteRepository barQuoteRepository;
 
     public BarQuoteHandler(final JForexUtil jforexUtil,
-                           final Observable<BarQuote> barQuoteObservable,
+                           final Flowable<BarQuote> barQuoteObservable,
                            final BarQuoteRepository barQuoteRepository) {
         this.jforexUtil = jforexUtil;
         this.barQuoteObservable = barQuoteObservable;
@@ -32,8 +32,8 @@ public class BarQuoteHandler implements BarQuoteProvider {
     }
 
     @Override
-    public Observable<BarQuote> observableForParamsList(final List<BarParams> barParamsList) {
-        final List<Observable<BarQuote>> paramsObservables = checkNotNull(barParamsList)
+    public Flowable<BarQuote> observableForParamsList(final List<BarParams> barParamsList) {
+        final List<Flowable<BarQuote>> paramsObservables = checkNotNull(barParamsList)
             .stream()
             .map(barParams -> {
                 if (barParams.period().name() == null)
@@ -43,11 +43,11 @@ public class BarQuoteHandler implements BarQuoteProvider {
             })
             .collect(Collectors.toList());
 
-        return Observable.merge(paramsObservables);
+        return Flowable.merge(paramsObservables);
     }
 
     @Override
-    public Observable<BarQuote> observable() {
+    public Flowable<BarQuote> observable() {
         return barQuoteObservable;
     }
 }

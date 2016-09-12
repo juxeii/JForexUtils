@@ -18,8 +18,8 @@ import com.jforex.programming.position.PositionMerge;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.Completable;
-import rx.functions.Action0;
+import io.reactivex.Completable;
+import io.reactivex.functions.Action;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PositionMergeTest extends InstrumentUtilForTest {
@@ -35,7 +35,7 @@ public class PositionMergeTest extends InstrumentUtilForTest {
     @Mock
     private MergeCommand mergeCommandMock;
     @Mock
-    private Action0 completedActionMock;
+    private Action completedActionMock;
 
     @Before
     public void setUp() {
@@ -82,7 +82,7 @@ public class PositionMergeTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void onSubscribeOrderUtilCompletableIsCalled() {
+        public void onSubscribeOrderUtilCompletableIsCalled() throws Exception {
             final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
             expectFilledOrders(toMergeOrders);
             setUpMergePositionCompletables(emptyCompletable());
@@ -90,7 +90,7 @@ public class PositionMergeTest extends InstrumentUtilForTest {
             mergePositionCompletable.subscribe(completedActionMock);
 
             verify(orderUtilCompletableMock).mergeOrders(mergeCommandMock);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
     }
 
@@ -109,13 +109,13 @@ public class PositionMergeTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void onSubscribeWithNoPositionsCompletesImmediately() {
+        public void onSubscribeWithNoPositionsCompletesImmediately() throws Exception {
             expectPositions(Sets.newHashSet());
 
             mergeAllPositionsCompletable.subscribe(completedActionMock);
 
             verifyZeroInteractions(orderUtilCompletableMock);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
 
         public class TwoPositionsPresent {
@@ -146,12 +146,12 @@ public class PositionMergeTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void whenBothPositionsAreMergedTheCallIsCompleted() {
+            public void whenBothPositionsAreMergedTheCallIsCompleted() throws Exception {
                 setUpMergePositionCompletables(emptyCompletable(), emptyCompletable());
 
                 mergeAllPositionsCompletable.subscribe(completedActionMock);
 
-                verify(completedActionMock).call();
+                verify(completedActionMock).run();
             }
 
             @Test

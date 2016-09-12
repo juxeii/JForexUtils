@@ -10,7 +10,7 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.command.MergeCommand;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class PositionMerge {
 

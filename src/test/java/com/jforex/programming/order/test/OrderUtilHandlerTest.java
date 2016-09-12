@@ -31,12 +31,12 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.Completable;
-import rx.Observable;
-import rx.functions.Action0;
-import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.functions.Action;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
+import io.reactivex.subscribers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderUtilHandlerTest extends InstrumentUtilForTest {
@@ -54,9 +54,9 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     @Mock
     private Consumer<IOrder> closeActionMock;
     @Mock
-    private Action0 startActionMock;
+    private Action startActionMock;
     @Mock
-    private Action0 completedActionMock;
+    private Action completedActionMock;
     @Mock
     private Consumer<Throwable> errorActionMock;
     @Captor
@@ -67,7 +67,8 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private Callable<IOrder> callable;
     private final IOrder orderToClose = buyOrderEURUSD;
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
-    private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
+
+    private final Subject<OrderEvent> orderEventSubject = PublishSubject.create();
 
     @Before
     public void setUp() {
@@ -134,7 +135,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             final OrderEvent orderEvent = sendOrderEvent(orderToClose, OrderEventType.CLOSE_REJECTED);
 
             subscriber.assertNoErrors();
-            subscriber.assertCompleted();
+            subscriber.assertComplete();
             verify(orderEventConsumerMock).accept(orderEvent);
         }
 
@@ -223,10 +224,10 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                     final OrderEvent orderEvent = sendOrderEvent(orderToClose, OrderEventType.CLOSE_OK);
 
                     subscriber.assertNoErrors();
-                    subscriber.assertCompleted();
+                    subscriber.assertComplete();
                     verify(orderEventConsumerMock).accept(orderEvent);
-                    verify(completedActionMock).call();
-                    verify(startActionMock, times(3)).call();
+                    verify(completedActionMock).run();
+                    verify(startActionMock, times(3)).run();
                 }
             }
         }
@@ -240,7 +241,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void startActionMockIsInvoked() {
-                verify(startActionMock).call();
+                verify(startActionMock).run();
             }
 
             @Test
@@ -259,7 +260,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void subscriberNotYetCompletedWhenNoEventWasSent() {
-                subscriber.assertNotCompleted();
+                subscriber.assertNotComplete();
             }
 
             @Test
@@ -276,7 +277,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 final OrderEvent orderEvent = sendOrderEvent(orderToClose, OrderEventType.PARTIAL_CLOSE_OK);
 
                 subscriber.assertValueCount(1);
-                subscriber.assertNotCompleted();
+                subscriber.assertNotComplete();
                 verify(orderEventConsumerMock).accept(orderEvent);
             }
 
@@ -285,9 +286,9 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 final OrderEvent orderEvent = sendOrderEvent(orderToClose, OrderEventType.CLOSE_OK);
 
                 subscriber.assertNoErrors();
-                subscriber.assertCompleted();
+                subscriber.assertComplete();
                 verify(orderEventConsumerMock).accept(orderEvent);
-                verify(completedActionMock).call();
+                verify(completedActionMock).run();
             }
 
             @Test
@@ -299,7 +300,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 subscriber.assertValueCount(1);
 
                 subscriber.assertNoErrors();
-                subscriber.assertCompleted();
+                subscriber.assertComplete();
             }
 
             @Test
@@ -313,14 +314,14 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             public void eventOfOtherOrderIsIgnored() {
                 sendOrderEvent(orderUtilForTest.sellOrderAUDUSD(), OrderEventType.CLOSE_OK);
 
-                subscriber.assertNotCompleted();
+                subscriber.assertNotComplete();
             }
 
             @Test
             public void unknownOrderEventIsIgnored() {
                 final OrderEvent orderEvent = sendOrderEvent(orderToClose, OrderEventType.CHANGED_GTT);
 
-                subscriber.assertNotCompleted();
+                subscriber.assertNotComplete();
                 verify(orderEventConsumerMock, never()).accept(orderEvent);
             }
         }

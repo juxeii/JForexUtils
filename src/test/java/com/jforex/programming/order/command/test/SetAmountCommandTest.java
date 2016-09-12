@@ -19,7 +19,7 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetAmountCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class SetAmountCommandTest extends CommandTester {
 
@@ -50,7 +50,7 @@ public class SetAmountCommandTest extends CommandTester {
     }
 
     @Test
-    public void emptyCommandHasNoRetryParameters() {
+    public void emptyCommandHasNoRetryParameters() throws Exception {
         final SetAmountCommand emptyCommand = SetAmountCommand
             .create(buyOrderEURUSD,
                     newAmount,

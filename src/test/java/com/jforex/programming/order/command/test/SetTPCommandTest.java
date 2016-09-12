@@ -19,7 +19,7 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class SetTPCommandTest extends CommandTester {
 
@@ -50,7 +50,7 @@ public class SetTPCommandTest extends CommandTester {
     }
 
     @Test
-    public void emptyCommandHasNoRetryParameters() {
+    public void emptyCommandHasNoRetryParameters() throws Exception {
         final SetTPCommand emptyCommand = SetTPCommand
             .create(buyOrderEURUSD,
                     newTP,

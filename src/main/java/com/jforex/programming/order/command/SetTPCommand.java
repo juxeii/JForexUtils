@@ -16,7 +16,7 @@ import com.jforex.programming.order.command.option.SetTPOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class SetTPCommand extends CommonCommand {
 

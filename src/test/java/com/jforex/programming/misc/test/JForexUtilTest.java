@@ -22,7 +22,7 @@ import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.observers.TestSubscriber;
+import io.reactivex.subscribers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class JForexUtilTest extends QuoteProviderForTest {
@@ -140,7 +140,9 @@ public class JForexUtilTest extends QuoteProviderForTest {
         @Before
         public void setUp() {
             barQuoteProvider = jForexUtil.barQuoteProvider();
-            barQuoteProvider.observable().subscribe(subscriber);
+            barQuoteProvider
+                .observable()
+                .subscribe(subscriber);
             instrumentUtil = jForexUtil.instrumentUtil(instrumentEURUSD);
             pushBar = () -> jForexUtil.onBar(instrumentEURUSD,
                                              barQuotePeriod,
@@ -154,9 +156,9 @@ public class JForexUtilTest extends QuoteProviderForTest {
             subscriber.assertNoErrors();
             subscriber.assertValueCount(2);
 
-            assertEqualBarQuotes(subscriber.getOnNextEvents().get(0),
+            assertEqualBarQuotes(getOnNextEvent(subscriber, 0),
                                  askBarQuoteEURUSD);
-            assertEqualBarQuotes(subscriber.getOnNextEvents().get(1),
+            assertEqualBarQuotes(getOnNextEvent(subscriber, 1),
                                  bidBarQuoteEURUSD);
         }
 
@@ -200,7 +202,9 @@ public class JForexUtilTest extends QuoteProviderForTest {
         @Before
         public void setUp() {
             tickQuoteProvider = jForexUtil.tickQuoteProvider();
-            tickQuoteProvider.observable().subscribe(subscriber);
+            tickQuoteProvider
+                .observable()
+                .subscribe(subscriber);
             instrumentUtil = jForexUtil.instrumentUtil(instrumentEURUSD);
 
             jForexUtil.onTick(instrumentEURUSD, tickEURUSD);
@@ -211,7 +215,7 @@ public class JForexUtilTest extends QuoteProviderForTest {
             subscriber.assertNoErrors();
             subscriber.assertValueCount(1);
 
-            assertEqualTickQuotes(subscriber.getOnNextEvents().get(0),
+            assertEqualTickQuotes(getOnNextEvent(subscriber, 0),
                                   tickQuoteEURUSD);
         }
 

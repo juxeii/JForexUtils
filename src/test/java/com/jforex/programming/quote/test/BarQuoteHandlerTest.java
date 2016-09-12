@@ -17,15 +17,16 @@ import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
+import io.reactivex.Observable;
+import io.reactivex.subscribers.TestSubscriber;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import rx.Observable;
-import rx.observers.TestSubscriber;
 
 public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     private BarQuoteHandler barQuoteHandler;
 
-    @Mock private BarQuoteRepository barQuoteRepositoryMock;
+    @Mock
+    private BarQuoteRepository barQuoteRepositoryMock;
     private final TestSubscriber<BarQuote> filteredQuoteSubscriber = new TestSubscriber<>();
     private final TestSubscriber<BarQuote> unFilteredQuoteSubscriber = new TestSubscriber<>();
     private final Observable<BarQuote> quoteObservable =
@@ -56,9 +57,9 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     private void assertCommonEmittedBars(final TestSubscriber<BarQuote> subscriber) {
         subscriber.assertNoErrors();
 
-        assertThat(subscriber.getOnNextEvents().get(0),
+        assertThat(getOnNextEvent(subscriber, 0),
                    equalTo(askBarQuoteEURUSD));
-        assertThat(subscriber.getOnNextEvents().get(1),
+        assertThat(getOnNextEvent(subscriber, 1),
                    equalTo(askBarQuoteAUDUSD));
     }
 

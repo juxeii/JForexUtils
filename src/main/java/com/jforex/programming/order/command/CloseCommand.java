@@ -17,7 +17,7 @@ import com.jforex.programming.order.command.option.CloseOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class CloseCommand extends CommonCommand {
 

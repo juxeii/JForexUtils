@@ -22,7 +22,7 @@ import com.jforex.programming.order.command.option.SubmitOption;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public final class OrderUtil {
 

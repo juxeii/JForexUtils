@@ -14,7 +14,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Observable;
+import io.reactivex.Flowable;
 
 public class OrderUtilHandler {
 
@@ -27,10 +27,10 @@ public class OrderUtilHandler {
         this.orderEventGateway = orderEventGateway;
     }
 
-    public Observable<OrderEvent> callObservable(final CommonCommand command) {
-        final Observable<OrderEvent> observable = taskExecutor
+    public Flowable<OrderEvent> callObservable(final CommonCommand command) {
+        final Flowable<OrderEvent> observable = taskExecutor
             .onStrategyThread(command.callable())
-            .doOnSubscribe(command.startAction()::call)
+            .doOnSubscribe(d -> command.startAction().run())
             .doOnNext(order -> registerOrder(order, command.callReason()))
             .flatMap(order -> gatewayObservable(order, command))
             .doOnNext(orderEvent -> callEventHandler(orderEvent, command.eventHandlerForType()))
@@ -38,7 +38,7 @@ public class OrderUtilHandler {
 
         return decorateObservableWithRetry(command, observable)
             .doOnError(command.errorAction()::accept)
-            .doOnCompleted(command.completedAction()::call);
+            .doOnComplete(command.completedAction()::run);
     }
 
     private final void registerOrder(final IOrder order,
@@ -47,13 +47,13 @@ public class OrderUtilHandler {
         orderEventGateway.registerOrderCallRequest(orderCallRequest);
     }
 
-    private final Observable<OrderEvent> gatewayObservable(final IOrder order,
-                                                           final CommonCommand command) {
+    private final Flowable<OrderEvent> gatewayObservable(final IOrder order,
+                                                         final CommonCommand command) {
         return orderEventGateway
             .observable()
             .filter(orderEvent -> orderEvent.order().equals(order))
             .filter(orderEvent -> command.isEventTypeForCommand(orderEvent.type()))
-            .takeUntil(orderEvent -> command.isFinishEventType(orderEvent.type()));
+            .takeUntil((final OrderEvent orderEvent) -> command.isFinishEventType(orderEvent.type()));
     }
 
     private final void callEventHandler(final OrderEvent orderEvent,
@@ -65,8 +65,8 @@ public class OrderUtilHandler {
                 .accept(orderEvent.order());
     }
 
-    private final Observable<OrderEvent> decorateObservableWithRetry(final CommonCommand command,
-                                                                     final Observable<OrderEvent> observable) {
+    private final Flowable<OrderEvent> decorateObservableWithRetry(final CommonCommand command,
+                                                                   final Flowable<OrderEvent> observable) {
         final int noOfRetries = command.noOfRetries();
         if (noOfRetries > 0) {
             final CommandRetry orderProcessRetry = new CommandRetry(noOfRetries,
@@ -78,10 +78,10 @@ public class OrderUtilHandler {
         return observable;
     }
 
-    private Observable<OrderEvent> rejectAsErrorObservable(final CommonCommand command,
-                                                           final OrderEvent orderEvent) {
+    private Flowable<OrderEvent> rejectAsErrorObservable(final CommonCommand command,
+                                                         final OrderEvent orderEvent) {
         return command.isRejectEventType(orderEvent.type())
-                ? Observable.error(new OrderCallRejectException("Reject event", orderEvent))
-                : Observable.just(orderEvent);
+                ? Flowable.error(new OrderCallRejectException("Reject event", orderEvent))
+                : Flowable.just(orderEvent);
     }
 }

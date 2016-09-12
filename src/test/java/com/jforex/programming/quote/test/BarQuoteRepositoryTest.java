@@ -9,16 +9,16 @@ import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.Observable;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
 public class BarQuoteRepositoryTest extends QuoteProviderForTest {
 
     private BarQuoteRepository barQuoteRepository;
 
-    private final Subject<BarQuote, BarQuote> quoteObservable = PublishSubject.create();
+    private final Subject<BarQuote> quoteObservable = PublishSubject.create();
 
     @Before
     public void setUp() {
@@ -30,7 +30,7 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
         @Test
         public void askQuoteForEURUSDComesFromHistory() {
             when(historyUtilMock.latestBarObservable(askBarEURUSDParams))
-                    .thenReturn(Observable.just(askBarEURUSD));
+                .thenReturn(Observable.just(askBarEURUSD));
 
             final BarQuote receivedQuoteEURUSD = barQuoteRepository.get(askBarEURUSDParams);
 
@@ -41,7 +41,7 @@ public class BarQuoteRepositoryTest extends QuoteProviderForTest {
         @Test
         public void bidQuoteForAUDUSDComesFromHistory() {
             when(historyUtilMock.latestBarObservable(bidBarAUDUSDParams))
-                    .thenReturn(Observable.just(bidBarAUDUSD));
+                .thenReturn(Observable.just(bidBarAUDUSD));
 
             final BarQuote receivedQuoteAUDUSD = barQuoteRepository.get(bidBarAUDUSDParams);
 

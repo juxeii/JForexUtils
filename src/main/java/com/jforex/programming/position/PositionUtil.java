@@ -8,7 +8,7 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class PositionUtil {
 

@@ -4,22 +4,23 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.observables.ConnectableObservable;
+import io.reactivex.Flowable;
+import io.reactivex.flowables.ConnectableFlowable;
+import io.reactivex.subscribers.DisposableSubscriber;
 
 public final class JFHotSubject<T> {
 
-    private final ConnectableObservable<T> hotObservable;
-    private final Set<Subscriber<? super T>> subscribers = Sets.newConcurrentHashSet();
+    private final ConnectableFlowable<T> hotObservable;
+    private final Set<DisposableSubscriber<? super T>> subscribers = Sets.newConcurrentHashSet();
 
     public JFHotSubject() {
-        final Observable<T> coldObservable = Observable.create(subscriber -> subscribers.add(subscriber));
+        final Flowable<T> coldObservable =
+                Flowable.unsafeCreate(subscriber -> subscribers.add((DisposableSubscriber<? super T>) subscriber));
         hotObservable = coldObservable.publish();
         hotObservable.connect();
     }
 
-    public final Observable<T> observable() {
+    public final Flowable<T> flowable() {
         return hotObservable;
     }
 
@@ -28,6 +29,6 @@ public final class JFHotSubject<T> {
     }
 
     public final void unsubscribe() {
-        subscribers.forEach(Subscriber::unsubscribe);
+        // subscribers.forEach(Subscriber::unsubscribe);
     }
 }

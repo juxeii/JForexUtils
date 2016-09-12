@@ -19,7 +19,7 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetGTTCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class SetGTTCommandTest extends CommandTester {
 
@@ -50,7 +50,7 @@ public class SetGTTCommandTest extends CommandTester {
     }
 
     @Test
-    public void emptyCommandHasNoRetryParameters() {
+    public void emptyCommandHasNoRetryParameters() throws Exception {
         final SetGTTCommand emptyCommand = SetGTTCommand
             .create(buyOrderEURUSD,
                     newGTT,

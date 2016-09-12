@@ -8,21 +8,21 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import rx.Completable;
-import rx.Observable;
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
 
 public final class StreamUtil {
 
     private StreamUtil() {
     }
 
-    public static final Observable<Integer> retryCounterObservable(final int maxRetries) {
-        return Observable.range(1, maxRetries + 1);
+    public static final Flowable<Integer> retryCounterFlowable(final int maxRetries) {
+        return Flowable.range(1, maxRetries + 1);
     }
 
-    public static final Observable<Long> waitObservable(final long delay,
-                                                        final TimeUnit timeUnit) {
-        return Observable
+    public static final Flowable<Long> waitFlowable(final long delay,
+                                                    final TimeUnit timeUnit) {
+        return Flowable
             .interval(delay, timeUnit)
             .take(1);
     }
@@ -42,12 +42,12 @@ public final class StreamUtil {
         });
     }
 
-    public static final Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair,
-                                                           final long delay,
-                                                           final TimeUnit timeUnit,
-                                                           final int maxRetries) {
+    public static final Flowable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair,
+                                                         final long delay,
+                                                         final TimeUnit timeUnit,
+                                                         final int maxRetries) {
         return retryPair.getRight() > maxRetries
-                ? Observable.error(retryPair.getLeft())
-                : waitObservable(delay, timeUnit);
+                ? Flowable.error(retryPair.getLeft())
+                : waitFlowable(delay, timeUnit);
     }
 }

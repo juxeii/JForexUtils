@@ -18,7 +18,7 @@ import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.observers.TestSubscriber;
+import io.reactivex.subscribers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class TaskExecutorTest extends CommonUtilForTest {
@@ -59,11 +59,11 @@ public class TaskExecutorTest extends CommonUtilForTest {
     }
 
     private void assertOrderEmissionAndCompletion() {
-        orderSubscriber.assertCompleted();
+        orderSubscriber.assertComplete();
         orderSubscriber.assertNoErrors();
         orderSubscriber.assertValueCount(1);
 
-        assertThat(orderSubscriber.getOnNextEvents().get(0), equalTo(buyOrderEURUSD));
+        assertThat(getOnNextEvent(orderSubscriber, 0), equalTo(buyOrderEURUSD));
     }
 
     @Test

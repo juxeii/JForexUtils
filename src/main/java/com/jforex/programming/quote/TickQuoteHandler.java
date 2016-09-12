@@ -8,14 +8,14 @@ import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 
-import rx.Observable;
+import io.reactivex.Flowable;
 
 public class TickQuoteHandler implements TickQuoteProvider {
 
-    private final Observable<TickQuote> tickQuoteObservable;
+    private final Flowable<TickQuote> tickQuoteObservable;
     private final TickQuoteRepository tickQuoteRepository;
 
-    public TickQuoteHandler(final Observable<TickQuote> tickQuoteObservable,
+    public TickQuoteHandler(final Flowable<TickQuote> tickQuoteObservable,
                             final TickQuoteRepository tickQuoteRepository) {
         this.tickQuoteObservable = tickQuoteObservable;
         this.tickQuoteRepository = tickQuoteRepository;
@@ -24,8 +24,8 @@ public class TickQuoteHandler implements TickQuoteProvider {
     @Override
     public ITick tick(final Instrument instrument) {
         return tickQuoteRepository
-                .get(checkNotNull(instrument))
-                .tick();
+            .get(checkNotNull(instrument))
+            .tick();
     }
 
     @Override
@@ -50,15 +50,15 @@ public class TickQuoteHandler implements TickQuoteProvider {
     }
 
     @Override
-    public Observable<TickQuote> observable() {
+    public Flowable<TickQuote> observable() {
         return tickQuoteObservable;
     }
 
     @Override
-    public Observable<TickQuote> observableForInstruments(final Set<Instrument> instruments) {
+    public Flowable<TickQuote> observableForInstruments(final Set<Instrument> instruments) {
         checkNotNull(instruments);
 
         return tickQuoteObservable
-                .filter(tickQuote -> instruments.contains(tickQuote.instrument()));
+            .filter(tickQuote -> instruments.contains(tickQuote.instrument()));
     }
 }

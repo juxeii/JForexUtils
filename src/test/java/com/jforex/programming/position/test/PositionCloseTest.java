@@ -20,8 +20,8 @@ import com.jforex.programming.position.PositionMerge;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.Completable;
-import rx.functions.Action0;
+import io.reactivex.Completable;
+import io.reactivex.functions.Action;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PositionCloseTest extends InstrumentUtilForTest {
@@ -43,7 +43,7 @@ public class PositionCloseTest extends InstrumentUtilForTest {
     @Mock
     private CloseCommand closeCommandMock;
     @Mock
-    private Action0 completedActionMock;
+    private Action completedActionMock;
 
     @Before
     public void setUp() {
@@ -102,7 +102,7 @@ public class PositionCloseTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void onSubscribeWithNoOrdersToCloseCompletesImmediately() {
+        public void onSubscribeWithNoOrdersToCloseCompletesImmediately() throws Exception {
             final Set<IOrder> filledOrOpenedOrders = Sets.newHashSet();
             expectFilledOrOpenedOrders(filledOrOpenedOrders);
             setUpMergeCompletables(emptyCompletable());
@@ -110,11 +110,11 @@ public class PositionCloseTest extends InstrumentUtilForTest {
 
             closePositionCompletable.subscribe(completedActionMock);
 
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
 
         @Test
-        public void onSubscribePositionMergeCompletableIsCalled() {
+        public void onSubscribePositionMergeCompletableIsCalled() throws Exception {
             final Set<IOrder> filledOrOpenedOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
             expectFilledOrOpenedOrders(filledOrOpenedOrders);
             setUpMergeCompletables(emptyCompletable());
@@ -124,7 +124,7 @@ public class PositionCloseTest extends InstrumentUtilForTest {
 
             verify(positionMergeMock).merge(instrumentEURUSD, mergeCommandFactory);
             verify(commandUtilMock).runCommandsOfFactory(filledOrOpenedOrders, closeCommandFactory);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
     }
 
@@ -143,14 +143,14 @@ public class PositionCloseTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void onSubscribeWithNoPositionsCompletesImmediately() {
+        public void onSubscribeWithNoPositionsCompletesImmediately() throws Exception {
             expectPositions(Sets.newHashSet());
 
             closeAllPositionsCompletable.subscribe(completedActionMock);
 
             verifyZeroInteractions(positionMergeMock);
             verifyZeroInteractions(commandUtilMock);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
 
         public class TwoPositionsPresent {
@@ -187,13 +187,13 @@ public class PositionCloseTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void whenBothPositionsAreClosedTheCallIsCompleted() {
+            public void whenBothPositionsAreClosedTheCallIsCompleted() throws Exception {
                 setUpMergeCompletables(emptyCompletable(), emptyCompletable());
                 setUpCommandUtilCompletables(emptyCompletable(), emptyCompletable());
 
                 closeAllPositionsCompletable.subscribe(completedActionMock);
 
-                verify(completedActionMock).call();
+                verify(completedActionMock).run();
             }
 
             @Test

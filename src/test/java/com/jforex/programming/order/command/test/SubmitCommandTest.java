@@ -24,7 +24,7 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class SubmitCommandTest extends CommandTester {
 
@@ -72,7 +72,7 @@ public class SubmitCommandTest extends CommandTester {
     }
 
     @Test
-    public void emptyCommandHasNoRetryParameters() {
+    public void emptyCommandHasNoRetryParameters() throws Exception {
         final SubmitCommand emptyCommand = SubmitCommand
             .create(buyParamsEURUSD,
                     iengineUtilMock,

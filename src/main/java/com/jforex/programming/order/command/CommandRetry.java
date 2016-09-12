@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 
-import rx.Observable;
+import io.reactivex.Flowable;
 
 public class CommandRetry {
 
@@ -26,22 +26,22 @@ public class CommandRetry {
         this.delayInMillis = delayInMillis;
     }
 
-    public final Observable<Long> retryOnRejectObservable(final Observable<? extends Throwable> errors) {
+    public final Flowable<Long> retryOnRejectObservable(final Flowable<? extends Throwable> errors) {
         return checkNotNull(errors)
             .flatMap(this::filterCallErrorType)
-            .zipWith(StreamUtil.retryCounterObservable(noOfRetries), Pair::of)
+            .zipWith(StreamUtil.retryCounterFlowable(noOfRetries), Pair::of)
             .flatMap(retryPair -> StreamUtil.evaluateRetryPair(retryPair,
                                                                delayInMillis,
                                                                TimeUnit.MILLISECONDS,
                                                                noOfRetries));
     }
 
-    private final Observable<? extends Throwable> filterCallErrorType(final Throwable error) {
+    private final Flowable<? extends Throwable> filterCallErrorType(final Throwable error) {
         if (error instanceof OrderCallRejectException) {
             logPositionTaskRetry((OrderCallRejectException) error);
-            return Observable.just(error);
+            return Flowable.just(error);
         }
-        return Observable.error(error);
+        return Flowable.error(error);
     }
 
     private final void logPositionTaskRetry(final OrderCallRejectException rejectException) {

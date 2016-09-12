@@ -24,15 +24,15 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PositionTest extends InstrumentUtilForTest {
 
     private Position position;
 
-    private final Subject<OrderEvent, OrderEvent> orderEventSubject = PublishSubject.create();
+    private final Subject<OrderEvent> orderEventSubject = PublishSubject.create();
 
     @Before
     public void setUp() throws JFException {

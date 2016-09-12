@@ -2,6 +2,8 @@ package com.jforex.programming.connection;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.reactivestreams.Publisher;
+
 import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
@@ -9,8 +11,8 @@ import com.jforex.programming.misc.JFHotSubject;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.StreamUtil;
 
-import rx.Completable;
-import rx.Observable;
+import io.reactivex.Completable;
+import io.reactivex.Flowable;
 
 public class AuthentificationUtil {
 
@@ -27,14 +29,14 @@ public class AuthentificationUtil {
     }
 
     public AuthentificationUtil(final IClient client,
-                                final Observable<ConnectionState> connectionStateObs) {
+                                final Flowable<ConnectionState> connectionStateObs) {
         this.client = client;
 
         initConnectionStateObs(connectionStateObs);
         configureFSM();
     }
 
-    private final void initConnectionStateObs(final Observable<ConnectionState> connectionStateObs) {
+    private final void initConnectionStateObs(final Flowable<ConnectionState> connectionStateObs) {
         connectionStateObs.subscribe(connectionState -> {
             if (connectionState == ConnectionState.CONNECTED)
                 fsm.fire(FSMTrigger.CONNECT);
@@ -45,22 +47,22 @@ public class AuthentificationUtil {
 
     private final void configureFSM() {
         fsmConfig
-                .configure(LoginState.LOGGED_OUT)
-                .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_OUT))
-                .permit(FSMTrigger.CONNECT, LoginState.LOGGED_IN)
-                .ignore(FSMTrigger.DISCONNECT)
-                .ignore(FSMTrigger.LOGOUT);
+            .configure(LoginState.LOGGED_OUT)
+            .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_OUT))
+            .permit(FSMTrigger.CONNECT, LoginState.LOGGED_IN)
+            .ignore(FSMTrigger.DISCONNECT)
+            .ignore(FSMTrigger.LOGOUT);
 
         fsmConfig
-                .configure(LoginState.LOGGED_IN)
-                .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_IN))
-                .permit(FSMTrigger.LOGOUT, LoginState.LOGGED_OUT)
-                .ignore(FSMTrigger.CONNECT)
-                .ignore(FSMTrigger.DISCONNECT);
+            .configure(LoginState.LOGGED_IN)
+            .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_IN))
+            .permit(FSMTrigger.LOGOUT, LoginState.LOGGED_OUT)
+            .ignore(FSMTrigger.CONNECT)
+            .ignore(FSMTrigger.DISCONNECT);
     }
 
-    public final Observable<LoginState> loginStateObservable() {
-        return loginStateSubject.observable();
+    public final Publisher<LoginState> loginStateFlowable() {
+        return loginStateSubject.flowable();
     }
 
     public LoginState loginState() {

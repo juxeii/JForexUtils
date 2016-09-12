@@ -25,7 +25,7 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
 
-import rx.Observable;
+import io.reactivex.Flowable;
 
 public class Position implements PositionOrders {
 
@@ -36,14 +36,14 @@ public class Position implements PositionOrders {
     private static final Logger logger = LogManager.getLogger(Position.class);
 
     public Position(final Instrument instrument,
-                    final Observable<OrderEvent> orderEventObservable) {
+                    final Flowable<OrderEvent> orderEventObservable) {
         this.instrument = instrument;
 
         observeClosedOrdersForRemoval(orderEventObservable);
         observeCreatedOrdersForInsertion(orderEventObservable);
     }
 
-    private void observeClosedOrdersForRemoval(final Observable<OrderEvent> orderEventObservable) {
+    private void observeClosedOrdersForRemoval(final Flowable<OrderEvent> orderEventObservable) {
         orderEventObservable
             .map(OrderEvent::order)
             .filter(this::contains)
@@ -52,7 +52,7 @@ public class Position implements PositionOrders {
             .subscribe();
     }
 
-    private void observeCreatedOrdersForInsertion(final Observable<OrderEvent> orderEventObservable) {
+    private void observeCreatedOrdersForInsertion(final Flowable<OrderEvent> orderEventObservable) {
         orderEventObservable
             .filter(orderEvent -> createEvents.contains(orderEvent.type()))
             .filter(OrderEvent::isInternal)

@@ -4,7 +4,7 @@ import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IContext;
 
-import rx.Observable;
+import io.reactivex.Flowable;
 
 public class TaskExecutor {
 
@@ -14,13 +14,13 @@ public class TaskExecutor {
         this.context = context;
     }
 
-    public <T> Observable<T> onStrategyThread(final Callable<T> callable) {
+    public <T> Flowable<T> onStrategyThread(final Callable<T> callable) {
         return JForexUtil.isStrategyThread()
                 ? onCurrentThread(callable)
-                : Observable.defer(() -> Observable.from(context.executeTask(callable)));
+                : Flowable.defer(() -> Flowable.fromFuture(context.executeTask(callable)));
     }
 
-    public <T> Observable<T> onCurrentThread(final Callable<T> callable) {
-        return Observable.fromCallable(callable);
+    public <T> Flowable<T> onCurrentThread(final Callable<T> callable) {
+        return Flowable.fromCallable(callable);
     }
 }

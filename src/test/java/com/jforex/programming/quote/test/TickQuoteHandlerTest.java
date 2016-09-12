@@ -14,8 +14,8 @@ import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
-import rx.Observable;
-import rx.observers.TestSubscriber;
+import io.reactivex.Observable;
+import io.reactivex.subscribers.TestSubscriber;
 
 public class TickQuoteHandlerTest extends QuoteProviderForTest {
 

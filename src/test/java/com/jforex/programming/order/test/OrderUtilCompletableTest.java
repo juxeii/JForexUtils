@@ -30,9 +30,9 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.Completable;
-import rx.Observable;
-import rx.functions.Action0;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.functions.Action;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderUtilCompletableTest extends InstrumentUtilForTest {
@@ -46,7 +46,7 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
     @Mock
     private Position positionMock;
     @Mock
-    private Action0 completedActionMock;
+    private Action completedActionMock;
     private Completable callCompletable;
 
     @Before
@@ -95,13 +95,13 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void onSubscribeOrderUtilHandlerIsCalled() {
+        public void onSubscribeOrderUtilHandlerIsCalled() throws Exception {
             setUtilHandlerMockObservableForCommand(submitCommandMock, emptyObservable());
 
             callCompletable.subscribe(completedActionMock);
 
             verify(orderUtilHandlerMock).callObservable(submitCommandMock);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
 
         @Test
@@ -147,8 +147,8 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void callCompletesImmediately() {
-                verify(completedActionMock).call();
+            public void callCompletesImmediately() throws Exception {
+                verify(completedActionMock).run();
             }
 
             @Test
@@ -172,8 +172,8 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void callCompletesImmediately() {
-                verify(completedActionMock).call();
+            public void callCompletesImmediately() throws Exception {
+                verify(completedActionMock).run();
             }
 
             @Test
@@ -202,7 +202,7 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void orderUtilHandlerCallIsEmbeddedInMarkingOrdersActiveAndIdle() {
+            public void orderUtilHandlerCallIsEmbeddedInMarkingOrdersActiveAndIdle() throws Exception {
                 setUtilHandlerMockObservableAndSubscribe(emptyObservable());
 
                 final InOrder inOrder = inOrder(positionMock, orderUtilHandlerMock);
@@ -210,7 +210,7 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
                 inOrder.verify(positionMock).markOrdersActive(toMergeOrders);
                 inOrder.verify(orderUtilHandlerMock).callObservable(mergeCommandMock);
                 inOrder.verify(positionMock).markOrdersIdle(toMergeOrders);
-                verify(completedActionMock).call();
+                verify(completedActionMock).run();
             }
 
             @Test
@@ -244,7 +244,7 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             callCompletable.subscribe(completedActionMock);
         }
 
-        private void verifyOrderUtilHandlerCallIsEmbeddedInMarkingOrderActiveAndIdle() {
+        private void verifyOrderUtilHandlerCallIsEmbeddedInMarkingOrderActiveAndIdle() throws Exception {
             setUtilHandlerMockObservableAndSubscribe(eventObservable(closeEvent));
 
             final InOrder inOrder = inOrder(positionMock, orderUtilHandlerMock);
@@ -252,7 +252,7 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             inOrder.verify(positionMock).markOrderActive(orderToClose);
             inOrder.verify(orderUtilHandlerMock).callObservable(closeCommandMock);
             inOrder.verify(positionMock).markOrderIdle(orderToClose);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
 
         private void verifyOrderIsMarkedIdleOnlyWhenOrderUtilHandlerTerminated() {
@@ -269,12 +269,12 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void whenOrderAlreadyClosedTheCallCompletesImmediately() {
+        public void whenOrderAlreadyClosedTheCallCompletesImmediately() throws Exception {
             orderUtilForTest.setState(orderToClose, IOrder.State.CLOSED);
 
             callCompletable.subscribe(completedActionMock);
 
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
             verify(orderUtilHandlerMock, never()).callObservable(closeCommandMock);
             verify(positionMock, never()).markOrderActive(orderToClose);
             verify(positionMock, never()).markOrderIdle(orderToClose);
@@ -296,7 +296,7 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void orderUtilHandlerCallIsEmbeddedInMarkingOrderActiveAndIdle() {
+            public void orderUtilHandlerCallIsEmbeddedInMarkingOrderActiveAndIdle() throws Exception {
                 verifyOrderUtilHandlerCallIsEmbeddedInMarkingOrderActiveAndIdle();
             }
 
@@ -314,7 +314,7 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void orderUtilHandlerCallIsEmbeddedInMarkingOrderActiveAndIdle() {
+            public void orderUtilHandlerCallIsEmbeddedInMarkingOrderActiveAndIdle() throws Exception {
                 verifyOrderUtilHandlerCallIsEmbeddedInMarkingOrderActiveAndIdle();
             }
 
@@ -346,23 +346,23 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void whenNewLabelIsAlreadySetTheCallCompletesImmediately() {
+        public void whenNewLabelIsAlreadySetTheCallCompletesImmediately() throws Exception {
             orderUtilForTest.setLabel(orderToSetLabel, newLabel);
 
             callCompletable.subscribe(completedActionMock);
 
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
             verify(orderUtilHandlerMock, never()).callObservable(setLabelCommandMock);
         }
 
         @Test
-        public void orderUtilHandlerIsCalledOnNewLabel() {
+        public void orderUtilHandlerIsCalledOnNewLabel() throws Exception {
             setUtilHandlerMockObservableForCommand(setLabelCommandMock, emptyObservable());
 
             callCompletable.subscribe(completedActionMock);
 
             verify(orderUtilHandlerMock).callObservable(setLabelCommandMock);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
 
         @Test
@@ -395,23 +395,23 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void whenNewGTTIsAlreadySetTheCallCompletesImmediately() {
+        public void whenNewGTTIsAlreadySetTheCallCompletesImmediately() throws Exception {
             orderUtilForTest.setGTT(orderToSetGTT, newGTT);
 
             callCompletable.subscribe(completedActionMock);
 
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
             verify(orderUtilHandlerMock, never()).callObservable(setGTTCommandMock);
         }
 
         @Test
-        public void orderUtilHandlerIsCalledOnNewGTT() {
+        public void orderUtilHandlerIsCalledOnNewGTT() throws Exception {
             setUtilHandlerMockObservableForCommand(setGTTCommandMock, emptyObservable());
 
             callCompletable.subscribe(completedActionMock);
 
             verify(orderUtilHandlerMock).callObservable(setGTTCommandMock);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
 
         @Test
@@ -444,23 +444,23 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void whenNewAmountIsAlreadySetTheCallCompletesImmediately() {
+        public void whenNewAmountIsAlreadySetTheCallCompletesImmediately() throws Exception {
             orderUtilForTest.setRequestedAmount(orderToSetAmount, newAmount);
 
             callCompletable.subscribe(completedActionMock);
 
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
             verify(orderUtilHandlerMock, never()).callObservable(setAmountCommandMock);
         }
 
         @Test
-        public void orderUtilHandlerIsCalledOnNewAmount() {
+        public void orderUtilHandlerIsCalledOnNewAmount() throws Exception {
             setUtilHandlerMockObservableForCommand(setAmountCommandMock, emptyObservable());
 
             callCompletable.subscribe(completedActionMock);
 
             verify(orderUtilHandlerMock).callObservable(setAmountCommandMock);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
 
         @Test
@@ -493,23 +493,23 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void whenNewOpenPriceIsAlreadySetTheCallCompletesImmediately() {
+        public void whenNewOpenPriceIsAlreadySetTheCallCompletesImmediately() throws Exception {
             orderUtilForTest.setOpenPrice(orderToSetOpenPrice, newOpenPrice);
 
             callCompletable.subscribe(completedActionMock);
 
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
             verify(orderUtilHandlerMock, never()).callObservable(setOpenPriceCommandMock);
         }
 
         @Test
-        public void orderUtilHandlerIsCalledOnNewOpenPrice() {
+        public void orderUtilHandlerIsCalledOnNewOpenPrice() throws Exception {
             setUtilHandlerMockObservableForCommand(setOpenPriceCommandMock, emptyObservable());
 
             callCompletable.subscribe(completedActionMock);
 
             verify(orderUtilHandlerMock).callObservable(setOpenPriceCommandMock);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
 
         @Test
@@ -542,23 +542,23 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void whenNewSLIsAlreadySetTheCallCompletesImmediately() {
+        public void whenNewSLIsAlreadySetTheCallCompletesImmediately() throws Exception {
             orderUtilForTest.setSL(orderToSetSL, newSL);
 
             callCompletable.subscribe(completedActionMock);
 
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
             verify(orderUtilHandlerMock, never()).callObservable(setSLCommandMock);
         }
 
         @Test
-        public void orderUtilHandlerIsCalledOnNewSL() {
+        public void orderUtilHandlerIsCalledOnNewSL() throws Exception {
             setUtilHandlerMockObservableForCommand(setSLCommandMock, emptyObservable());
 
             callCompletable.subscribe(completedActionMock);
 
             verify(orderUtilHandlerMock).callObservable(setSLCommandMock);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
 
         @Test
@@ -591,23 +591,23 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void whenNewTPIsAlreadySetTheCallCompletesImmediately() {
+        public void whenNewTPIsAlreadySetTheCallCompletesImmediately() throws Exception {
             orderUtilForTest.setTP(orderToSetTP, newTP);
 
             callCompletable.subscribe(completedActionMock);
 
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
             verify(orderUtilHandlerMock, never()).callObservable(setTPCommandMock);
         }
 
         @Test
-        public void orderUtilHandlerIsCalledOnNewTP() {
+        public void orderUtilHandlerIsCalledOnNewTP() throws Exception {
             setUtilHandlerMockObservableForCommand(setTPCommandMock, emptyObservable());
 
             callCompletable.subscribe(completedActionMock);
 
             verify(orderUtilHandlerMock).callObservable(setTPCommandMock);
-            verify(completedActionMock).call();
+            verify(completedActionMock).run();
         }
 
         @Test

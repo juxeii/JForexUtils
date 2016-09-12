@@ -43,8 +43,9 @@ import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
-import rx.Completable;
-import rx.Observable;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.subscribers.TestSubscriber;
 
 public class CommonUtilForTest extends BDDMockito {
 
@@ -169,31 +170,37 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(AuthentificationUtil.FSMTrigger.CONNECT.toString());
     }
 
-    public final Completable emptyCompletable() {
+    protected final Completable emptyCompletable() {
         return Completable.complete();
     }
 
-    public final Completable neverCompletable() {
+    protected final Completable neverCompletable() {
         return Completable.never();
     }
 
-    public final Observable<OrderEvent> emptyObservable() {
+    protected final Observable<OrderEvent> emptyObservable() {
         return Observable.empty();
     }
 
-    public final Observable<OrderEvent> neverObservable() {
+    protected final Observable<OrderEvent> neverObservable() {
         return Observable.never();
     }
 
-    public final Observable<OrderEvent> eventObservable(final OrderEvent orderEvent) {
+    protected final Observable<OrderEvent> eventObservable(final OrderEvent orderEvent) {
         return Observable.just(orderEvent);
     }
 
-    public final Observable<OrderEvent> eventObservable(final IOrder order,
-                                                        final OrderEventType type) {
+    protected final Observable<OrderEvent> eventObservable(final IOrder order,
+                                                           final OrderEventType type) {
         final OrderEvent orderEvent = new OrderEvent(order,
                                                      type,
                                                      true);
         return eventObservable(orderEvent);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> T getOnNextEvent(final TestSubscriber<T> subscriber,
+                                   final int index) {
+        return (T) subscriber.getEvents().get(0).get(index);
     }
 }

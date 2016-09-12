@@ -20,7 +20,7 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class CloseCommandTest extends CommandTester {
 
@@ -51,7 +51,7 @@ public class CloseCommandTest extends CommandTester {
     }
 
     @Test
-    public void emptyCommandHasNoRetryParameters() {
+    public void emptyCommandHasNoRetryParameters() throws Exception {
         final CloseCommand emptyCommand = CloseCommand
             .create(buyOrderEURUSD, startFunctionMock)
             .build();
