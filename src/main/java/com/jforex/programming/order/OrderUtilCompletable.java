@@ -10,11 +10,17 @@ import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.CommonCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
 import com.jforex.programming.order.command.SetGTTCommand;
@@ -33,6 +39,19 @@ public class OrderUtilCompletable {
 
     private final OrderUtilHandler orderUtilHandler;
     private final PositionFactory positionFactory;
+
+    private final Map<OrderCallReason, Function<CommonCommand, Completable>> completableByCallReason =
+            Maps.immutableEnumMap(ImmutableMap.<OrderCallReason, Function<CommonCommand, Completable>> builder()
+                .put(OrderCallReason.SUBMIT, cmd -> submitOrder((SubmitCommand) cmd))
+                .put(OrderCallReason.MERGE, cmd -> mergeOrders((MergeCommand) cmd))
+                .put(OrderCallReason.CLOSE, cmd -> close((CloseCommand) cmd))
+                .put(OrderCallReason.CHANGE_LABEL, cmd -> setLabel((SetLabelCommand) cmd))
+                .put(OrderCallReason.CHANGE_GTT, cmd -> setGTT((SetGTTCommand) cmd))
+                .put(OrderCallReason.CHANGE_AMOUNT, cmd -> setAmount((SetAmountCommand) cmd))
+                .put(OrderCallReason.CHANGE_PRICE, cmd -> setOpenPrice((SetOpenPriceCommand) cmd))
+                .put(OrderCallReason.CHANGE_SL, cmd -> setSL((SetSLCommand) cmd))
+                .put(OrderCallReason.CHANGE_TP, cmd -> setTP((SetTPCommand) cmd))
+                .build());
 
     public OrderUtilCompletable(final OrderUtilHandler orderUtilHandler,
                                 final PositionFactory positionFactory) {
@@ -134,6 +153,10 @@ public class OrderUtilCompletable {
                 .flatMap(order -> orderUtilHandler.callObservable(command))
                 .toCompletable();
         });
+    }
+
+    public Completable commandCompletable(final CommonCommand command) {
+        return completableByCallReason.get(command.callReason()).apply(command);
     }
 
     private Position position(final Instrument instrument) {

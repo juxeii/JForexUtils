@@ -15,7 +15,9 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilBuilder;
+import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.CommonCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.option.CloseOption;
 import com.jforex.programming.order.command.option.MergeOption;
@@ -43,6 +45,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
+    private OrderUtilCompletable orderUtilCompletableMock;
+    @Mock
     private Completable completableMock;
     @Mock
     private Function<Set<IOrder>, MergeCommand> mergeCommandFactory;
@@ -51,7 +55,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
-        orderUtil = new OrderUtil(orderUtilBuilderMock, positionUtilMock);
+        orderUtil = new OrderUtil(orderUtilBuilderMock,
+                                  positionUtilMock,
+                                  orderUtilCompletableMock);
     }
 
     @Test
@@ -195,17 +201,17 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void closePositionCallIsInvokingOnPositionUtil() {
         when(positionUtilMock.close(instrumentEURUSD,
-                                            mergeCommandFactory,
-                                            closeCommandFactory))
-                                                .thenReturn(completableMock);
+                                    mergeCommandFactory,
+                                    closeCommandFactory))
+                                        .thenReturn(completableMock);
 
         final Completable completable = orderUtil.closePosition(instrumentEURUSD,
                                                                 mergeCommandFactory,
                                                                 closeCommandFactory);
 
         verify(positionUtilMock).close(instrumentEURUSD,
-                                               mergeCommandFactory,
-                                               closeCommandFactory);
+                                       mergeCommandFactory,
+                                       closeCommandFactory);
         assertThat(completable, equalTo(completableMock));
     }
 
@@ -218,7 +224,18 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                                                                     closeCommandFactory);
 
         verify(positionUtilMock).closeAll(mergeCommandFactory,
-                                                   closeCommandFactory);
+                                          closeCommandFactory);
+        assertThat(completable, equalTo(completableMock));
+    }
+
+    @Test
+    public void commandCompletableCallIsInvokingOnCompletableUtil() {
+        final CommonCommand commandMock = mock(CommonCommand.class);
+        when(orderUtilCompletableMock.commandCompletable(commandMock))
+            .thenReturn(completableMock);
+
+        final Completable completable = orderUtil.commandCompletable(commandMock);
+
         assertThat(completable, equalTo(completableMock));
     }
 

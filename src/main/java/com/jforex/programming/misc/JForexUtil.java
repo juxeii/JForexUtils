@@ -129,7 +129,9 @@ public class JForexUtil {
         positionUtil = new PositionUtil(positionMerge,
                                         positionClose,
                                         positionFactory);
-        orderUtil = new OrderUtil(orderUtilBuilder, positionUtil);
+        orderUtil = new OrderUtil(orderUtilBuilder,
+                                  positionUtil,
+                                  orderUtilCompletable);
     }
 
     public IContext context() {
