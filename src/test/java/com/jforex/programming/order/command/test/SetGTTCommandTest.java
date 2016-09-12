@@ -58,6 +58,7 @@ public class SetGTTCommandTest extends CommandTester {
             .build();
 
         assertNoRetryParams(emptyCommand);
+        assertActionsNotNull(emptyCommand);
     }
 
     @Test
@@ -95,7 +96,5 @@ public class SetGTTCommandTest extends CommandTester {
 
         verify(setGTTRejectActionMock).accept(buyOrderEURUSD);
         verify(setGTTActionMock).accept(buyOrderEURUSD);
-
-        assertActionsNotNull(setGTTCommand);
     }
 }

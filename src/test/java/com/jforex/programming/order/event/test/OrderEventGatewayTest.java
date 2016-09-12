@@ -12,7 +12,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.event.MessageToOrderEvent;
+import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
@@ -27,7 +27,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
     private OrderEventGateway orderEventGateway;
 
     @Mock
-    private MessageToOrderEvent orderEventMapperMock;
+    private OrderEventFactory orderEventMapperMock;
     private final IOrder orderUnderTest = buyOrderEURUSD;
     private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
     private final Subject<IMessage, IMessage> messageSubject = PublishSubject.create();

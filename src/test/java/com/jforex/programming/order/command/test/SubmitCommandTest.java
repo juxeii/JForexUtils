@@ -80,6 +80,7 @@ public class SubmitCommandTest extends CommandTester {
             .build();
 
         assertNoRetryParams(emptyCommand);
+        assertActionsNotNull(emptyCommand);
     }
 
     @Test
@@ -128,7 +129,5 @@ public class SubmitCommandTest extends CommandTester {
         verify(submittedActionMock, times(2)).accept(buyOrderEURUSD);
         verify(partialFillActionMock).accept(buyOrderEURUSD);
         verify(filledActionMock).accept(buyOrderEURUSD);
-
-        assertActionsNotNull(submitCommand);
     }
 }

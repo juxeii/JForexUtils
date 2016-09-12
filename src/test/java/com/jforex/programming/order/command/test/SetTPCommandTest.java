@@ -58,6 +58,7 @@ public class SetTPCommandTest extends CommandTester {
             .build();
 
         assertNoRetryParams(emptyCommand);
+        assertActionsNotNull(emptyCommand);
     }
 
     @Test
@@ -95,7 +96,5 @@ public class SetTPCommandTest extends CommandTester {
 
         verify(setTPRejectActionMock).accept(buyOrderEURUSD);
         verify(setTPActionMock).accept(buyOrderEURUSD);
-
-        assertActionsNotNull(setTPCommand);
     }
 }

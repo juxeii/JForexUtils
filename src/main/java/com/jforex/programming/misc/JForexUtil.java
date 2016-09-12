@@ -23,7 +23,7 @@ import com.jforex.programming.order.OrderUtilBuilder;
 import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.command.CommandUtil;
-import com.jforex.programming.order.event.MessageToOrderEvent;
+import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionClose;
 import com.jforex.programming.position.PositionFactory;
@@ -67,7 +67,7 @@ public class JForexUtil {
     private PositionClose positionClose;
     private OrderUtilCompletable orderUtilCompletable;
     private CommandUtil commandUtil;
-    private final MessageToOrderEvent messageToOrderEvent = new MessageToOrderEvent();
+    private final OrderEventFactory messageToOrderEvent = new OrderEventFactory();
 
     private final CalculationUtil calculationUtil;
 

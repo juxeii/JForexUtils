@@ -58,6 +58,7 @@ public class SetAmountCommandTest extends CommandTester {
             .build();
 
         assertNoRetryParams(emptyCommand);
+        assertActionsNotNull(emptyCommand);
     }
 
     @Test
@@ -95,7 +96,5 @@ public class SetAmountCommandTest extends CommandTester {
 
         verify(setAmountRejectActionMock).accept(buyOrderEURUSD);
         verify(setAmountActionMock).accept(buyOrderEURUSD);
-
-        assertActionsNotNull(setAmountCommand);
     }
 }

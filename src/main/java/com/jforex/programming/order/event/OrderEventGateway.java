@@ -13,12 +13,12 @@ import rx.Observable;
 public class OrderEventGateway {
 
     private final JFHotSubject<OrderEvent> orderEventPublisher = new JFHotSubject<>();
-    private final MessageToOrderEvent messageToOrderEvent;
+    private final OrderEventFactory messageToOrderEvent;
 
     private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);
 
     public OrderEventGateway(final Observable<IMessage> messageObservable,
-                             final MessageToOrderEvent orderEventMapper) {
+                             final OrderEventFactory orderEventMapper) {
         this.messageToOrderEvent = orderEventMapper;
 
         messageObservable

@@ -13,8 +13,8 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.event.MessageToOrderEvent;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeMapper;
 import com.jforex.programming.order.event.OrderEventTypeSets;
@@ -23,15 +23,15 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderEventMapperTest extends CommonUtilForTest {
+public class OrderEventFactoryTest extends CommonUtilForTest {
 
-    private MessageToOrderEvent orderEventMapper;
+    private OrderEventFactory orderEventFactory;
 
     private final IOrder orderForTest = buyOrderEURUSD;
 
     @Before
     public void setUp() {
-        orderEventMapper = new MessageToOrderEvent();
+        orderEventFactory = new OrderEventFactory();
     }
 
     private IMessage createMessage(final IMessage.Type messageType,
@@ -46,7 +46,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
                                       final IMessage.Reason... messageReasons) {
         final IMessage message = createMessage(messageType, messageReasons);
 
-        final OrderEvent orderEvent = orderEventMapper.fromMessage(message);
+        final OrderEvent orderEvent = orderEventFactory.fromMessage(message);
 
         assertThat(orderEvent.type(), equalTo(expectedType));
     }
@@ -54,13 +54,13 @@ public class OrderEventMapperTest extends CommonUtilForTest {
     private void
             assertCorrectMappingForChangeRejectRefinement(final OrderCallReason orderCallReason,
                                                           final OrderEventType expectedType) {
-        orderEventMapper
+        orderEventFactory
             .registerOrderCallRequest(new OrderCallRequest(orderForTest, orderCallReason));
         assertCorrectMapping(expectedType, IMessage.Type.ORDER_CHANGED_REJECTED);
     }
 
     private void registerCallRequest(final OrderCallReason orderCallReason) {
-        orderEventMapper
+        orderEventFactory
             .registerOrderCallRequest(new OrderCallRequest(orderForTest, orderCallReason));
     }
 
@@ -270,7 +270,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
                                                  IMessage.Type.ORDER_CHANGED_REJECTED,
                                                  Sets.newHashSet());
 
-        final OrderEvent actualEvent = orderEventMapper.fromMessage(message);
+        final OrderEvent actualEvent = orderEventFactory.fromMessage(message);
 
         assertThat(actualEvent.type(), equalTo(OrderEventType.CHANGED_REJECTED));
     }
@@ -279,7 +279,7 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
         private OrderEvent getEvent(final IMessage.Type messageType,
                                     final IMessage.Reason... messageReasons) {
-            return orderEventMapper.fromMessage(createMessage(messageType, messageReasons));
+            return orderEventFactory.fromMessage(createMessage(messageType, messageReasons));
         }
 
         @Before
@@ -317,8 +317,8 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
                 @Test
                 public void eventTypeIsLabelRejected() {
-                    // assertThat(changeLabelEvent.type(),
-                    // equalTo(OrderEventType.CHANGE_LABEL_REJECTED));
+                    assertThat(changeLabelEvent.type(),
+                               equalTo(OrderEventType.CHANGE_LABEL_REJECTED));
                 }
 
                 public class OnChangeOpenPriceRejected {
@@ -332,8 +332,8 @@ public class OrderEventMapperTest extends CommonUtilForTest {
 
                     @Test
                     public void eventTypeIsOpenPriceRejected() {
-//                        assertThat(changeOpenPriceEvent.type(),
-//                                   equalTo(OrderEventType.CHANGE_PRICE_REJECTED));
+                        assertThat(changeOpenPriceEvent.type(),
+                                   equalTo(OrderEventType.CHANGE_PRICE_REJECTED));
                     }
 
                     public class OnChangeSL {

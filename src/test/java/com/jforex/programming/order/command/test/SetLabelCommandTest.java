@@ -58,6 +58,7 @@ public class SetLabelCommandTest extends CommandTester {
             .build();
 
         assertNoRetryParams(emptyCommand);
+        assertActionsNotNull(emptyCommand);
     }
 
     @Test
@@ -95,7 +96,5 @@ public class SetLabelCommandTest extends CommandTester {
 
         verify(setLabelRejectActionMock).accept(buyOrderEURUSD);
         verify(setLabelActionMock).accept(buyOrderEURUSD);
-
-        assertActionsNotNull(setLabelCommand);
     }
 }

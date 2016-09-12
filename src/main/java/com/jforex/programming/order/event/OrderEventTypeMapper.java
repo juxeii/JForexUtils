@@ -97,7 +97,7 @@ public final class OrderEventTypeMapper {
         return orderEventByReason.get(reason);
     }
 
-    public static final OrderEventType byCallReason(final OrderCallReason orderCallReason) {
+    public static final OrderEventType byChangeCallReason(final OrderCallReason orderCallReason) {
         return changeRejectEventByReason.get(orderCallReason);
     }
 }
