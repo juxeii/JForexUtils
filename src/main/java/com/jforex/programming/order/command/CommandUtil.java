@@ -19,33 +19,33 @@ public class CommandUtil {
         this.orderUtilCompletable = orderUtilCompletable;
     }
 
-    public List<Completable> commandsToCompletables(final List<? extends CommonCommand> commands) {
+    public List<Completable> toCompletables(final List<? extends CommonCommand> commands) {
         return commands
             .stream()
             .map(orderUtilCompletable::commandToCompletable)
             .collect(Collectors.toList());
     }
 
-    public Completable mergeCommands(final List<? extends CommonCommand> commands) {
-        return Completable.merge(commandsToCompletables(commands));
+    public Completable merge(final List<? extends CommonCommand> commands) {
+        return Completable.merge(toCompletables(commands));
     }
 
-    public <T extends CommonCommand> Completable mergeCommandsOfFactory(final Set<IOrder> orders,
-                                                                        final Function<IOrder, T> commandFactory) {
-        return mergeCommands(commandsOfFactory(orders, commandFactory));
+    public <T extends CommonCommand> Completable mergeFromFactory(final Set<IOrder> orders,
+                                                                  final Function<IOrder, T> commandFactory) {
+        return merge(fromFactory(orders, commandFactory));
     }
 
     public Completable concatCommands(final List<? extends CommonCommand> commands) {
-        return Completable.concat(commandsToCompletables(commands));
+        return Completable.concat(toCompletables(commands));
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends CommonCommand> Completable concatCommands(final T... commands) {
+    @SafeVarargs
+    public final <T extends CommonCommand> Completable concatCommands(final T... commands) {
         return concatCommands(Arrays.asList(commands));
     }
 
-    public <T extends CommonCommand> List<T> commandsOfFactory(final Set<IOrder> orders,
-                                                               final Function<IOrder, T> commandFactory) {
+    public <T extends CommonCommand> List<T> fromFactory(final Set<IOrder> orders,
+                                                         final Function<IOrder, T> commandFactory) {
         return orders
             .stream()
             .map(commandFactory::apply)

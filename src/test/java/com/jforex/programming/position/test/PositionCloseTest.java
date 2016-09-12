@@ -66,7 +66,7 @@ public class PositionCloseTest extends InstrumentUtilForTest {
 
     private void setUpCommandUtilCompletables(final Completable firstCompletable,
                                               final Completable... completables) {
-        when(commandUtilMock.mergeCommandsOfFactory(any(), eq(closeCommandFactory)))
+        when(commandUtilMock.mergeFromFactory(any(), eq(closeCommandFactory)))
             .thenReturn(firstCompletable, completables);
     }
 
@@ -122,7 +122,7 @@ public class PositionCloseTest extends InstrumentUtilForTest {
             testSubscriber = closePositionCompletable.test();
 
             verify(positionMergeMock).merge(instrumentEURUSD, mergeCommandFactory);
-            verify(commandUtilMock).mergeCommandsOfFactory(filledOrOpenedOrders, closeCommandFactory);
+            verify(commandUtilMock).mergeFromFactory(filledOrOpenedOrders, closeCommandFactory);
             testSubscriber.assertComplete();
             testSubscriber.assertComplete();
         }
@@ -183,7 +183,7 @@ public class PositionCloseTest extends InstrumentUtilForTest {
 
                 testSubscriber.assertNotComplete();
                 verify(positionMergeMock, times(2)).merge(any(), eq(mergeCommandFactory));
-                verify(commandUtilMock, times(2)).mergeCommandsOfFactory(any(), eq(closeCommandFactory));
+                verify(commandUtilMock, times(2)).mergeFromFactory(any(), eq(closeCommandFactory));
             }
 
             @Test
