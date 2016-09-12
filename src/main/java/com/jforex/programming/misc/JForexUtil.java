@@ -177,6 +177,10 @@ public class JForexUtil {
         return orderUtil;
     }
 
+    public CommandUtil commandUtil() {
+        return commandUtil;
+    }
+
     public void onStop() {
         tickQuoteSubject.unsubscribe();
         barQuoteSubject.unsubscribe();
