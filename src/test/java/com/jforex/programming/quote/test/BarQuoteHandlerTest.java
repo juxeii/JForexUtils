@@ -18,7 +18,7 @@ import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import io.reactivex.Observable;
-import io.reactivex.subscribers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class BarQuoteHandlerTest extends QuoteProviderForTest {
@@ -27,8 +27,8 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     @Mock
     private BarQuoteRepository barQuoteRepositoryMock;
-    private final TestSubscriber<BarQuote> filteredQuoteSubscriber = new TestSubscriber<>();
-    private final TestSubscriber<BarQuote> unFilteredQuoteSubscriber = new TestSubscriber<>();
+    private final TestObserver<BarQuote> filteredQuoteSubscriber = TestObserver.create();
+    private final TestObserver<BarQuote> unFilteredQuoteSubscriber = TestObserver.create();
     private final Observable<BarQuote> quoteObservable =
             Observable.just(askBarQuoteEURUSD,
                             askBarQuoteAUDUSD,
@@ -54,7 +54,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
             .subscribe(unFilteredQuoteSubscriber);
     }
 
-    private void assertCommonEmittedBars(final TestSubscriber<BarQuote> subscriber) {
+    private void assertCommonEmittedBars(final TestObserver<BarQuote> subscriber) {
         subscriber.assertNoErrors();
 
         assertThat(getOnNextEvent(subscriber, 0),
@@ -101,9 +101,9 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
         assertCommonEmittedBars(unFilteredQuoteSubscriber);
 
-        assertThat(unFilteredQuoteSubscriber.getOnNextEvents().get(2),
+        assertThat(getOnNextEvent(unFilteredQuoteSubscriber, 2),
                    equalTo(askBarQuoteEURUSDCustomPeriod));
-        assertThat(unFilteredQuoteSubscriber.getOnNextEvents().get(3),
+        assertThat(getOnNextEvent(unFilteredQuoteSubscriber, 3),
                    equalTo(bidBarQuoteEURUSD));
     }
 

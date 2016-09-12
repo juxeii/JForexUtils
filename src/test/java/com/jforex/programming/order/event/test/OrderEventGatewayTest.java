@@ -18,9 +18,9 @@ import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
+import io.reactivex.observers.TestObserver;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
-import io.reactivex.subscribers.TestSubscriber;
 
 public class OrderEventGatewayTest extends CommonUtilForTest {
 
@@ -29,7 +29,7 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
     @Mock
     private OrderEventFactory orderEventMapperMock;
     private final IOrder orderUnderTest = buyOrderEURUSD;
-    private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
+    private final TestObserver<OrderEvent> subscriber = TestObserver.create();
     private final Subject<IMessage> messageSubject = PublishSubject.create();
     private final IMessage message = mockForIMessage(orderUnderTest,
                                                      IMessage.Type.ORDER_CHANGED_REJECTED,

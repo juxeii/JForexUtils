@@ -33,7 +33,7 @@ import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 public class OrderUtilCompletable {
 
@@ -72,7 +72,7 @@ public class OrderUtilCompletable {
             final Set<IOrder> toMergeOrders = command.toMergeOrders();
             return toMergeOrders.size() < 2
                     ? Completable.complete()
-                    : Flowable
+                    : Observable
                         .just(toMergeOrders)
                         .doOnSubscribe(d -> positionOfOrders(toMergeOrders).markOrdersActive(toMergeOrders))
                         .flatMap(orders -> orderUtilHandler.callObservable(command))
@@ -85,7 +85,7 @@ public class OrderUtilCompletable {
         return Completable.defer(() -> {
             final IOrder orderToClose = command.order();
             final Position position = position(orderToClose.getInstrument());
-            return Flowable
+            return Observable
                 .just(orderToClose)
                 .filter(order -> !isClosed.test(order))
                 .doOnNext(order -> position.markOrderActive(orderToClose))
@@ -97,7 +97,7 @@ public class OrderUtilCompletable {
 
     public Completable setLabel(final SetLabelCommand command) {
         return Completable.defer(() -> {
-            return Flowable
+            return Observable
                 .just(command.order())
                 .filter(order -> !isLabelSetTo(command.newLabel()).test(order))
                 .flatMap(order -> orderUtilHandler.callObservable(command))
@@ -107,7 +107,7 @@ public class OrderUtilCompletable {
 
     public Completable setGTT(final SetGTTCommand command) {
         return Completable.defer(() -> {
-            return Flowable
+            return Observable
                 .just(command.order())
                 .filter(order -> !isGTTSetTo(command.newGTT()).test(order))
                 .flatMap(order -> orderUtilHandler.callObservable(command))
@@ -117,7 +117,7 @@ public class OrderUtilCompletable {
 
     public Completable setAmount(final SetAmountCommand command) {
         return Completable.defer(() -> {
-            return Flowable
+            return Observable
                 .just(command.order())
                 .filter(order -> !isAmountSetTo(command.newAmount()).test(order))
                 .flatMap(order -> orderUtilHandler.callObservable(command))
@@ -127,7 +127,7 @@ public class OrderUtilCompletable {
 
     public Completable setOpenPrice(final SetOpenPriceCommand command) {
         return Completable.defer(() -> {
-            return Flowable
+            return Observable
                 .just(command.order())
                 .filter(order -> !isOpenPriceSetTo(command.newOpenPrice()).test(order))
                 .flatMap(order -> orderUtilHandler.callObservable(command))
@@ -137,7 +137,7 @@ public class OrderUtilCompletable {
 
     public Completable setSL(final SetSLCommand command) {
         return Completable.defer(() -> {
-            return Flowable
+            return Observable
                 .just(command.order())
                 .filter(order -> !isSLSetTo(command.newSL()).test(order))
                 .flatMap(order -> orderUtilHandler.callObservable(command))
@@ -147,7 +147,7 @@ public class OrderUtilCompletable {
 
     public Completable setTP(final SetTPCommand command) {
         return Completable.defer(() -> {
-            return Flowable
+            return Observable
                 .just(command.order())
                 .filter(order -> !isTPSetTo(command.newTP()).test(order))
                 .flatMap(order -> orderUtilHandler.callObservable(command))

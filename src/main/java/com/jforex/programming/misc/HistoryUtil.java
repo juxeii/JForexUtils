@@ -22,7 +22,7 @@ import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.settings.UserSettings;
 
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 public class HistoryUtil {
 
@@ -37,16 +37,16 @@ public class HistoryUtil {
         this.history = history;
     }
 
-    public Flowable<TickQuote> tickQuotesObservable(final Set<Instrument> instruments) {
-        return Flowable
+    public Observable<TickQuote> tickQuotesObservable(final Set<Instrument> instruments) {
+        return Observable
             .fromIterable(instruments)
             .flatMap(this::lastestTickObservable)
             .zipWith(instruments,
                      (tick, instrument) -> new TickQuote(instrument, tick));
     }
 
-    public Flowable<ITick> lastestTickObservable(final Instrument instrument) {
-        return Flowable
+    public Observable<ITick> lastestTickObservable(final Instrument instrument) {
+        return Observable
             .fromCallable(() -> latestHistoryTick(instrument))
             .doOnError(e -> logger.error(e.getMessage()
                     + "! Will retry latest tick from history now..."))
@@ -62,12 +62,12 @@ public class HistoryUtil {
         return tick;
     }
 
-    public Flowable<IBar> latestBarObservable(final BarParams barParams) {
+    public Observable<IBar> latestBarObservable(final BarParams barParams) {
         final Instrument instrument = barParams.instrument();
         final Period period = barParams.period();
         final OfferSide offerSide = barParams.offerSide();
 
-        return Flowable
+        return Observable
             .fromCallable(() -> latestHistoryBar(instrument, period, offerSide))
             .doOnError(e -> logger.error(e.getMessage()
                     + "! Will retry latest bar from history now..."))
@@ -88,9 +88,9 @@ public class HistoryUtil {
         return bar;
     }
 
-    public final Flowable<Long> retryOnHistoryFailObservable(final Flowable<? extends Throwable> errors) {
+    public final Observable<Long> retryOnHistoryFailObservable(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
-            .zipWith(StreamUtil.retryCounterFlowable(5), Pair::of)
+            .zipWith(StreamUtil.retryCounterObservable(5), Pair::of)
             .flatMap(retryPair -> StreamUtil.evaluateRetryPair(retryPair,
                                                                delayOnHistoryFailRetry,
                                                                TimeUnit.MILLISECONDS,

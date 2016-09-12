@@ -4,13 +4,13 @@ import java.util.List;
 
 import com.dukascopy.api.IBar;
 
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 public interface BarQuoteProvider {
 
     public IBar bar(BarParams barParams);
 
-    public Flowable<BarQuote> observableForParamsList(List<BarParams> barParamsList);
+    public Observable<BarQuote> observableForParamsList(List<BarParams> barParamsList);
 
-    public Flowable<BarQuote> observable();
+    public Observable<BarQuote> observable();
 }

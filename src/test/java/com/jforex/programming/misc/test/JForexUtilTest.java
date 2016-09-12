@@ -22,7 +22,7 @@ import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import io.reactivex.subscribers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
 public class JForexUtilTest extends QuoteProviderForTest {
@@ -134,7 +134,7 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
         private BarQuoteProvider barQuoteProvider;
         private InstrumentUtil instrumentUtil;
-        private final TestSubscriber<BarQuote> subscriber = new TestSubscriber<>();
+        private final TestObserver<BarQuote> subscriber = TestObserver.create();
         private Runnable pushBar;
 
         @Before
@@ -197,7 +197,7 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
         private TickQuoteProvider tickQuoteProvider;
         private InstrumentUtil instrumentUtil;
-        private final TestSubscriber<TickQuote> subscriber = new TestSubscriber<>();
+        private final TestObserver<TickQuote> subscriber = TestObserver.create();
 
         @Before
         public void setUp() {

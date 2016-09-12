@@ -22,14 +22,14 @@ import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
-import io.reactivex.subscribers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 
 public class HistoryUtilTest extends QuoteProviderForTest {
 
     private HistoryUtil historyUtil;
 
-    private final TestSubscriber<ITick> tickSubscriber = new TestSubscriber<>();
-    private final TestSubscriber<IBar> barSubscriber = new TestSubscriber<>();
+    private final TestObserver<ITick> tickSubscriber = TestObserver.create();
+    private final TestObserver<IBar> barSubscriber = TestObserver.create();
 
     @Before
     public void setUp() {

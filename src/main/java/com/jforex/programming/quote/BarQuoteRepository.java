@@ -8,14 +8,14 @@ import org.apache.commons.collections4.keyvalue.MultiKey;
 import com.dukascopy.api.IBar;
 import com.jforex.programming.misc.HistoryUtil;
 
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 public class BarQuoteRepository {
 
     private final HistoryUtil historyUtil;
     private final Map<MultiKey<Object>, BarQuote> barQuotes = new ConcurrentHashMap<>();
 
-    public BarQuoteRepository(final Flowable<BarQuote> barQuoteObservable,
+    public BarQuoteRepository(final Observable<BarQuote> barQuoteObservable,
                               final HistoryUtil historyUtil) {
         this.historyUtil = historyUtil;
 

@@ -6,7 +6,7 @@ import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 public interface TickQuoteProvider {
 
@@ -19,7 +19,7 @@ public interface TickQuoteProvider {
     public double forOfferSide(Instrument instrument,
                                OfferSide offerSide);
 
-    public Flowable<TickQuote> observableForInstruments(Set<Instrument> instruments);
+    public Observable<TickQuote> observableForInstruments(Set<Instrument> instruments);
 
-    public Flowable<TickQuote> observable();
+    public Observable<TickQuote> observable();
 }

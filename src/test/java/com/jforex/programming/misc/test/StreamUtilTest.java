@@ -21,7 +21,7 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import io.reactivex.subscribers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
 public class StreamUtilTest extends CommonUtilForTest {
@@ -37,7 +37,7 @@ public class StreamUtilTest extends CommonUtilForTest {
     @Test
     public void retryCounterObservableCountsCorrect() {
         final int maxRetries = 3;
-        final TestSubscriber<Integer> subscriber = new TestSubscriber<>();
+        final TestObserver<Integer> subscriber = TestObserver.create();
 
         StreamUtil
             .retryCounterObservable(maxRetries)
@@ -55,7 +55,7 @@ public class StreamUtilTest extends CommonUtilForTest {
 
     @Test
     public void waitObservableIsCorrect() {
-        final TestSubscriber<Long> subscriber = new TestSubscriber<>();
+        final TestObserver<Long> subscriber = TestObserver.create();
 
         StreamUtil.waitObservable(1000L, TimeUnit.MILLISECONDS).subscribe(subscriber);
 

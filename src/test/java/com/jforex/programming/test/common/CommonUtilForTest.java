@@ -45,7 +45,7 @@ import com.jforex.programming.settings.UserSettings;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.subscribers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 
 public class CommonUtilForTest extends BDDMockito {
 
@@ -199,8 +199,8 @@ public class CommonUtilForTest extends BDDMockito {
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> T getOnNextEvent(final TestSubscriber<T> subscriber,
+    protected <T> T getOnNextEvent(final TestObserver<T> observer,
                                    final int index) {
-        return (T) subscriber.getEvents().get(0).get(index);
+        return (T) observer.getEvents().get(0).get(index);
     }
 }

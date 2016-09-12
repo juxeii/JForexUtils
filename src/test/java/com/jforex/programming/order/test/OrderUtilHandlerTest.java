@@ -34,9 +34,9 @@ import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.functions.Action;
+import io.reactivex.observers.TestObserver;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
-import io.reactivex.subscribers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderUtilHandlerTest extends InstrumentUtilForTest {
@@ -66,7 +66,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private CloseCommand closeCommand;
     private Callable<IOrder> callable;
     private final IOrder orderToClose = buyOrderEURUSD;
-    private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
+    private final TestObserver<OrderEvent> subscriber = TestObserver.create();
 
     private final Subject<OrderEvent> orderEventSubject = PublishSubject.create();
 
@@ -219,7 +219,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 }
 
                 @Test
-                public void subscriberCompletesOnDoneEvent() {
+                public void subscriberCompletesOnDoneEvent() throws Exception {
                     advanceRetryDelayTime();
                     final OrderEvent orderEvent = sendOrderEvent(orderToClose, OrderEventType.CLOSE_OK);
 
@@ -240,7 +240,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void startActionMockIsInvoked() {
+            public void startActionMockIsInvoked() throws Exception {
                 verify(startActionMock).run();
             }
 
@@ -265,7 +265,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void noNotificationIfUnsubscribedEarly() {
-                subscriber.unsubscribe();
+                subscriber.dispose();
 
                 sendOrderEvent(orderToClose, OrderEventType.CLOSE_OK);
 
@@ -282,7 +282,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void subscriberCompletesOnDoneEvent() {
+            public void subscriberCompletesOnDoneEvent() throws Exception {
                 final OrderEvent orderEvent = sendOrderEvent(orderToClose, OrderEventType.CLOSE_OK);
 
                 subscriber.assertNoErrors();

@@ -99,19 +99,19 @@ public class JForexUtil {
     }
 
     private void initInfrastructure() {
-        orderEventGateway = new OrderEventGateway(messageSubject.flowable(), messageToOrderEvent);
+        orderEventGateway = new OrderEventGateway(messageSubject.observable(), messageToOrderEvent);
     }
 
     private void initQuoteProvider() {
-        tickQuoteRepository = new TickQuoteRepository(tickQuoteSubject.flowable(),
+        tickQuoteRepository = new TickQuoteRepository(tickQuoteSubject.observable(),
                                                       historyUtil,
                                                       context.getSubscribedInstruments());
-        tickQuoteHandler = new TickQuoteHandler(tickQuoteSubject.flowable(),
+        tickQuoteHandler = new TickQuoteHandler(tickQuoteSubject.observable(),
                                                 tickQuoteRepository);
-        barQuoteRepository = new BarQuoteRepository(barQuoteSubject.flowable(),
+        barQuoteRepository = new BarQuoteRepository(barQuoteSubject.observable(),
                                                     historyUtil);
         barQuoteHandler = new BarQuoteHandler(this,
-                                              barQuoteSubject.flowable(),
+                                              barQuoteSubject.observable(),
                                               barQuoteRepository);
     }
 

@@ -16,7 +16,7 @@ import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
 
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 
@@ -50,11 +50,11 @@ public class ClientUtil {
     }
 
     private final void initAuthentification() {
-        authentificationUtil = new AuthentificationUtil(client, connectionStateFlowable());
+        authentificationUtil = new AuthentificationUtil(client, connectionStateObservable());
     }
 
     private void keepConnection() {
-        connectionStateFlowable().subscribe(connectionState -> {
+        connectionStateObservable().subscribe(connectionState -> {
             logger.debug(connectionState + " message received.");
             if (connectionState == ConnectionState.DISCONNECTED
                     && authentificationUtil.loginState() == LoginState.LOGGED_IN) {
@@ -68,12 +68,12 @@ public class ClientUtil {
         return jfSystemListener;
     }
 
-    public final Flowable<ConnectionState> connectionStateFlowable() {
-        return jfSystemListener.connectionStateFlowable();
+    public final Observable<ConnectionState> connectionStateObservable() {
+        return jfSystemListener.connectionStateObservable();
     }
 
-    public final Flowable<StrategyRunData> strategyInfoFlowable() {
-        return jfSystemListener.strategyRunDataFlowable();
+    public final Observable<StrategyRunData> strategyInfoObservable() {
+        return jfSystemListener.strategyRunDataObservable();
     }
 
     public final AuthentificationUtil authentificationUtil() {

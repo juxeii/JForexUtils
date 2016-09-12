@@ -19,7 +19,7 @@ import com.jforex.programming.test.common.RxTestUtil;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
-import io.reactivex.subscribers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
 public class CommandRetryTest extends CommonUtilForTest {
@@ -41,7 +41,7 @@ public class CommandRetryTest extends CommonUtilForTest {
         private final OrderEvent rejectEvent = new OrderEvent(buyOrderEURUSD,
                                                               OrderEventType.CLOSE_REJECTED,
                                                               true);
-        private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
+        private final TestObserver<IOrder> orderSubscriber = TestObserver.create();
         private final OrderCallRejectException rejectException =
                 new OrderCallRejectException("Reject exception for test", rejectEvent);
         private Runnable retryCall;

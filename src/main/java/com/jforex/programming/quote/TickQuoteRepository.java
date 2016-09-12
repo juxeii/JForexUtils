@@ -7,13 +7,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.HistoryUtil;
 
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 public class TickQuoteRepository {
 
     private final Map<Instrument, TickQuote> quotesByInstrument = new ConcurrentHashMap<>();
 
-    public TickQuoteRepository(final Flowable<TickQuote> tickQuoteObservable,
+    public TickQuoteRepository(final Observable<TickQuote> tickQuoteObservable,
                                final HistoryUtil historyUtil,
                                final Set<Instrument> subscribedInstruments) {
         historyUtil

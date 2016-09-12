@@ -8,14 +8,14 @@ import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 public class TickQuoteHandler implements TickQuoteProvider {
 
-    private final Flowable<TickQuote> tickQuoteObservable;
+    private final Observable<TickQuote> tickQuoteObservable;
     private final TickQuoteRepository tickQuoteRepository;
 
-    public TickQuoteHandler(final Flowable<TickQuote> tickQuoteObservable,
+    public TickQuoteHandler(final Observable<TickQuote> tickQuoteObservable,
                             final TickQuoteRepository tickQuoteRepository) {
         this.tickQuoteObservable = tickQuoteObservable;
         this.tickQuoteRepository = tickQuoteRepository;
@@ -50,12 +50,12 @@ public class TickQuoteHandler implements TickQuoteProvider {
     }
 
     @Override
-    public Flowable<TickQuote> observable() {
+    public Observable<TickQuote> observable() {
         return tickQuoteObservable;
     }
 
     @Override
-    public Flowable<TickQuote> observableForInstruments(final Set<Instrument> instruments) {
+    public Observable<TickQuote> observableForInstruments(final Set<Instrument> instruments) {
         checkNotNull(instruments);
 
         return tickQuoteObservable

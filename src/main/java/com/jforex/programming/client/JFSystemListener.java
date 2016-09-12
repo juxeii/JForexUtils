@@ -4,19 +4,19 @@ import com.dukascopy.api.system.ISystemListener;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.misc.JFHotSubject;
 
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 public final class JFSystemListener implements ISystemListener {
 
     private final JFHotSubject<StrategyRunData> strategyRunDataSubject = new JFHotSubject<>();
     private final JFHotSubject<ConnectionState> connectionStateSubject = new JFHotSubject<>();
 
-    public final Flowable<StrategyRunData> strategyRunDataFlowable() {
-        return strategyRunDataSubject.flowable();
+    public final Observable<StrategyRunData> strategyRunDataObservable() {
+        return strategyRunDataSubject.observable();
     }
 
-    public final Flowable<ConnectionState> connectionStateFlowable() {
-        return connectionStateSubject.flowable();
+    public final Observable<ConnectionState> connectionStateObservable() {
+        return connectionStateSubject.observable();
     }
 
     @Override

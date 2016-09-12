@@ -2,8 +2,6 @@ package com.jforex.programming.connection;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.reactivestreams.Publisher;
-
 import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
@@ -12,7 +10,7 @@ import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.StreamUtil;
 
 import io.reactivex.Completable;
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 public class AuthentificationUtil {
 
@@ -29,14 +27,14 @@ public class AuthentificationUtil {
     }
 
     public AuthentificationUtil(final IClient client,
-                                final Flowable<ConnectionState> connectionStateObs) {
+                                final Observable<ConnectionState> connectionStateObs) {
         this.client = client;
 
         initConnectionStateObs(connectionStateObs);
         configureFSM();
     }
 
-    private final void initConnectionStateObs(final Flowable<ConnectionState> connectionStateObs) {
+    private final void initConnectionStateObs(final Observable<ConnectionState> connectionStateObs) {
         connectionStateObs.subscribe(connectionState -> {
             if (connectionState == ConnectionState.CONNECTED)
                 fsm.fire(FSMTrigger.CONNECT);
@@ -61,8 +59,8 @@ public class AuthentificationUtil {
             .ignore(FSMTrigger.DISCONNECT);
     }
 
-    public final Publisher<LoginState> loginStateFlowable() {
-        return loginStateSubject.flowable();
+    public final Observable<LoginState> loginStateObservable() {
+        return loginStateSubject.observable();
     }
 
     public LoginState loginState() {

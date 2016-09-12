@@ -14,29 +14,29 @@ import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import io.reactivex.subscribers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
 public class JFSystemListenerTest extends CommonUtilForTest {
 
     private JFSystemListener jfSystemListener;
 
-    private final TestSubscriber<StrategyRunData> runDataSubscriber = new TestSubscriber<>();
-    private final TestSubscriber<ConnectionState> connectionStateSubscriber = new TestSubscriber<>();
+    private final TestObserver<StrategyRunData> runDataSubscriber = TestObserver.create();
+    private final TestObserver<ConnectionState> connectionStateSubscriber = TestObserver.create();
 
     @Before
     public void setUp() {
         jfSystemListener = new JFSystemListener();
 
         jfSystemListener
-            .strategyRunDataFlowable()
+            .strategyRunDataObservable()
             .subscribe(runDataSubscriber);
         jfSystemListener
-            .connectionStateFlowable()
+            .connectionStateObservable()
             .subscribe(connectionStateSubscriber);
     }
 
-    private void assertSubscriberCount(final TestSubscriber<?> subscriber,
+    private void assertSubscriberCount(final TestObserver<?> subscriber,
                                        final int itemIndex) {
         subscriber.assertNoErrors();
         subscriber.assertNotComplete();

@@ -7,14 +7,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 
-import io.reactivex.Flowable;
+import io.reactivex.Observable;
 
 public class PositionFactory {
 
-    private final Flowable<OrderEvent> orderEventObservable;
+    private final Observable<OrderEvent> orderEventObservable;
     private final Map<Instrument, Position> positionByInstrument = new ConcurrentHashMap<>();
 
-    public PositionFactory(final Flowable<OrderEvent> orderEventObservable) {
+    public PositionFactory(final Observable<OrderEvent> orderEventObservable) {
         this.orderEventObservable = orderEventObservable;
     }
 

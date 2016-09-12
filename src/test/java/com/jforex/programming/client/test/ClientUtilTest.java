@@ -23,7 +23,7 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Completable;
-import io.reactivex.subscribers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 
@@ -33,8 +33,8 @@ public class ClientUtilTest extends CommonUtilForTest {
     private ClientUtil clientUtil;
 
     private JFSystemListener jfSystemListener;
-    private final TestSubscriber<ConnectionState> connectionStateSubscriber = new TestSubscriber<>();
-    private final TestSubscriber<StrategyRunData> runDataSubscriber = new TestSubscriber<>();
+    private final TestObserver<ConnectionState> connectionStateSubscriber = TestObserver.create();
+    private final TestObserver<StrategyRunData> runDataSubscriber = TestObserver.create();
     private final String cacheDirectory = "cacheDirectory";
     private final BufferedImage bufferedImage = new BufferedImage(2, 2, 2);
 
@@ -43,10 +43,10 @@ public class ClientUtilTest extends CommonUtilForTest {
         clientUtil = new ClientUtil(clientMock, cacheDirectory);
 
         clientUtil
-            .connectionStateFlowable()
+            .connectionStateObservable()
             .subscribe(connectionStateSubscriber);
         clientUtil
-            .strategyInfoFlowable()
+            .strategyInfoObservable()
             .subscribe(runDataSubscriber);
         jfSystemListener = clientUtil.systemListener();
     }
