@@ -7,15 +7,15 @@ import com.jforex.programming.order.command.SubmitCommand;
 
 public interface SubmitOption extends CommonOption<SubmitOption> {
 
-    public SubmitOption doOnSubmitReject(Consumer<IOrder> submitRejectAction);
+    public SubmitOption doOnSubmitReject(Consumer<IOrder> submitRejectConsumer);
 
-    public SubmitOption doOnFillReject(Consumer<IOrder> fillRejectAction);
+    public SubmitOption doOnFillReject(Consumer<IOrder> fillRejectConsumer);
 
-    public SubmitOption doOnSubmit(Consumer<IOrder> submitOKAction);
+    public SubmitOption doOnSubmit(Consumer<IOrder> submitConsumer);
 
-    public SubmitOption doOnPartialFill(Consumer<IOrder> partialFillAction);
+    public SubmitOption doOnPartialFill(Consumer<IOrder> partialFillConsumer);
 
-    public SubmitOption doOnFill(Consumer<IOrder> fillAction);
+    public SubmitOption doOnFill(Consumer<IOrder> fillConsumer);
 
     public SubmitCommand build();
 }

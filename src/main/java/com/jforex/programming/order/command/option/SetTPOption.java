@@ -7,9 +7,9 @@ import com.jforex.programming.order.command.SetTPCommand;
 
 public interface SetTPOption extends CommonOption<SetTPOption> {
 
-    public SetTPOption doOnSetTPReject(Consumer<IOrder> rejectAction);
+    public SetTPOption doOnSetTPReject(Consumer<IOrder> rejectConsumer);
 
-    public SetTPOption doOnSetTP(Consumer<IOrder> doneAction);
+    public SetTPOption doOnSetTP(Consumer<IOrder> doneConsumer);
 
     public SetTPCommand build();
 }

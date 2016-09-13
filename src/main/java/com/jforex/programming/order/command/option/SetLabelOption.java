@@ -7,9 +7,9 @@ import com.jforex.programming.order.command.SetLabelCommand;
 
 public interface SetLabelOption extends CommonOption<SetLabelOption> {
 
-    public SetLabelOption doOnSetLabelReject(Consumer<IOrder> rejectAction);
+    public SetLabelOption doOnSetLabelReject(Consumer<IOrder> rejectConsumer);
 
-    public SetLabelOption doOnSetLabel(Consumer<IOrder> doneAction);
+    public SetLabelOption doOnSetLabel(Consumer<IOrder> doneConsumer);
 
     public SetLabelCommand build();
 }

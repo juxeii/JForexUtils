@@ -7,11 +7,11 @@ import com.jforex.programming.order.command.MergeCommand;
 
 public interface MergeOption extends CommonOption<MergeOption> {
 
-    public MergeOption doOnMergeReject(Consumer<IOrder> mergeRejectAction);
+    public MergeOption doOnMergeReject(Consumer<IOrder> mergeRejectConsumer);
 
-    public MergeOption doOnMerge(Consumer<IOrder> mergedAction);
+    public MergeOption doOnMerge(Consumer<IOrder> mergedConsumer);
 
-    public MergeOption doOnMergeClose(Consumer<IOrder> mergeClosedAction);
+    public MergeOption doOnMergeClose(Consumer<IOrder> mergeClosedConsumer);
 
     public MergeCommand build();
 }

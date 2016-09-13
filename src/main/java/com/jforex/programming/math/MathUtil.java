@@ -4,9 +4,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.math.BigDecimal;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.paukov.combinatorics.Factory;
-import org.paukov.combinatorics.Generator;
+import org.paukov.combinatorics3.Generator;
 
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
@@ -23,13 +23,12 @@ public final class MathUtil {
 
     public static final <T> Set<Set<T>> kPowerSet(final Set<T> sourceSet,
                                                   final int setSize) {
-        checkNotNull(sourceSet);
-
-        final Set<Set<T>> kPowerSet = Sets.newHashSet();
-        final Generator<T> generator =
-                Factory.createSimpleCombinationGenerator(Factory.createVector(sourceSet), setSize);
-        generator.forEach(kSubSet -> kPowerSet.add(Sets.newHashSet(kSubSet.getVector())));
-        return kPowerSet;
+        return Generator
+            .combination(checkNotNull(sourceSet))
+            .simple(setSize)
+            .stream()
+            .map(Sets::newHashSet)
+            .collect(Collectors.toSet());
     }
 
     public static final double rateOfReturn(final double currentValue,

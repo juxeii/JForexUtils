@@ -12,9 +12,9 @@ public interface CommonOption<T> {
 
     public T doOnComplete(Action completedAction);
 
-    public T doOnOrderEvent(Consumer<OrderEvent> orderEventAction);
+    public T doOnOrderEvent(Consumer<OrderEvent> orderEventConsumer);
 
-    public T doOnError(Consumer<Throwable> errorAction);
+    public T doOnError(Consumer<Throwable> errorConsumer);
 
     public T retry(int noOfRetries,
                    long delayInMillis);

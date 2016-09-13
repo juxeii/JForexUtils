@@ -103,7 +103,7 @@ public final class InstrumentUtil {
     }
 
     public static final int numberOfDigits(final Instrument instrument) {
-        return instrument.getPipScale() + 1;
+        return checkNotNull(instrument).getPipScale() + 1;
     }
 
     public static final String toStringNoSeparator(final Instrument instrument) {

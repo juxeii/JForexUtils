@@ -7,9 +7,9 @@ import com.jforex.programming.order.command.SetSLCommand;
 
 public interface SetSLOption extends CommonOption<SetSLOption> {
 
-    public SetSLOption doOnSetSLReject(Consumer<IOrder> rejectAction);
+    public SetSLOption doOnSetSLReject(Consumer<IOrder> rejectConsumer);
 
-    public SetSLOption doOnSetSL(Consumer<IOrder> doneAction);
+    public SetSLOption doOnSetSL(Consumer<IOrder> doneConsumer);
 
     public SetSLCommand build();
 }

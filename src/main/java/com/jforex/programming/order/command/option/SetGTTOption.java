@@ -7,9 +7,9 @@ import com.jforex.programming.order.command.SetGTTCommand;
 
 public interface SetGTTOption extends CommonOption<SetGTTOption> {
 
-    public SetGTTOption doOnSetGTTReject(Consumer<IOrder> rejectAction);
+    public SetGTTOption doOnSetGTTReject(Consumer<IOrder> rejectConsumer);
 
-    public SetGTTOption doOnSetGTT(Consumer<IOrder> doneAction);
+    public SetGTTOption doOnSetGTT(Consumer<IOrder> doneConsumer);
 
     public SetGTTCommand build();
 }

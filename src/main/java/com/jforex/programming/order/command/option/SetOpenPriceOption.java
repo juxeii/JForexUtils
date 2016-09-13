@@ -7,9 +7,9 @@ import com.jforex.programming.order.command.SetOpenPriceCommand;
 
 public interface SetOpenPriceOption extends CommonOption<SetOpenPriceOption> {
 
-    public SetOpenPriceOption doOnSetOpenPriceReject(Consumer<IOrder> rejectAction);
+    public SetOpenPriceOption doOnSetOpenPriceReject(Consumer<IOrder> rejectConsumer);
 
-    public SetOpenPriceOption doOnSetOpenPrice(Consumer<IOrder> doneAction);
+    public SetOpenPriceOption doOnSetOpenPrice(Consumer<IOrder> doneConsumer);
 
     public SetOpenPriceCommand build();
 }

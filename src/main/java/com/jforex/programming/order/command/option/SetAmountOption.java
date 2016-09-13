@@ -7,9 +7,9 @@ import com.jforex.programming.order.command.SetAmountCommand;
 
 public interface SetAmountOption extends CommonOption<SetAmountOption> {
 
-    public SetAmountOption doOnSetAmountReject(Consumer<IOrder> rejectAction);
+    public SetAmountOption doOnSetAmountReject(Consumer<IOrder> rejectConsumer);
 
-    public SetAmountOption doOnSetAmount(Consumer<IOrder> doneAction);
+    public SetAmountOption doOnSetAmount(Consumer<IOrder> doneConsumer);
 
     public SetAmountCommand build();
 }
