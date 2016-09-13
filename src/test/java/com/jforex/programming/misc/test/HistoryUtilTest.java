@@ -94,8 +94,10 @@ public class HistoryUtilTest extends QuoteProviderForTest {
             .subscribe(quote -> quotesByInstrument.put(quote.instrument(), quote));
 
         assertThat(quotesByInstrument.size(), equalTo(2));
-        assertEqualTickQuotes(quotesByInstrument.get(instrumentEURUSD), tickQuoteEURUSD);
-        assertEqualTickQuotes(quotesByInstrument.get(instrumentAUDUSD), tickQuoteAUDUSD);
+        assertThat(quotesByInstrument.get(instrumentEURUSD),
+                   equalTo(tickQuoteEURUSD));
+        assertThat(quotesByInstrument.get(instrumentAUDUSD),
+                   equalTo(tickQuoteAUDUSD));
     }
 
     @Test

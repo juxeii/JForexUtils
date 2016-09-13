@@ -161,10 +161,10 @@ public class JForexUtilTest extends QuoteProviderForTest {
             subscriber.assertNoErrors();
             subscriber.assertValueCount(2);
 
-            assertEqualBarQuotes(getOnNextEvent(subscriber, 0),
-                                 askBarQuoteEURUSD);
-            assertEqualBarQuotes(getOnNextEvent(subscriber, 1),
-                                 bidBarQuoteEURUSD);
+            assertThat(getOnNextEvent(subscriber, 0),
+                       equalTo(askBarQuoteEURUSD));
+            assertThat(getOnNextEvent(subscriber, 1),
+                       equalTo(bidBarQuoteEURUSD));
         }
 
         @Test
@@ -220,8 +220,8 @@ public class JForexUtilTest extends QuoteProviderForTest {
             subscriber.assertNoErrors();
             subscriber.assertValueCount(1);
 
-            assertEqualTickQuotes(getOnNextEvent(subscriber, 0),
-                                  tickQuoteEURUSD);
+            assertThat(getOnNextEvent(subscriber, 0),
+                       equalTo(tickQuoteEURUSD));
         }
 
         @Test

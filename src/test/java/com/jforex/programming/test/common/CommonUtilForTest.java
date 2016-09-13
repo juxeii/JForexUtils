@@ -46,6 +46,7 @@ import com.jforex.programming.settings.UserSettings;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class CommonUtilForTest extends BDDMockito {
 
@@ -202,5 +203,13 @@ public class CommonUtilForTest extends BDDMockito {
     protected <T> T getOnNextEvent(final TestObserver<T> observer,
                                    final int index) {
         return (T) observer.getEvents().get(0).get(index);
+    }
+
+    public <T> void testEqualsContract(final T instance) {
+        EqualsVerifier
+            .forClass(instance.getClass())
+            .verify();
+
+        logger.info("toString() for " + instance.toString());
     }
 }

@@ -19,7 +19,6 @@ import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
-import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
@@ -117,12 +116,5 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
             .subscribe(filteredQuoteSubscriber);
 
         verify(jforexUtilMock).subscribeToBarsFeed(askBarEURUSDCustomPeriodParams);
-    }
-
-    @Test
-    public void testEqualsContractForBarParams() {
-        EqualsVerifier
-            .forClass(BarParams.class)
-            .verify();
     }
 }
