@@ -113,31 +113,36 @@ public class PositionCloseTest extends InstrumentUtilForTest {
             testSubscriber.assertComplete();
         }
 
-        @Test
-        public void onSubscribePositionMergeCompletableIsCalled() throws Exception {
-            final Set<IOrder> filledOrOpenedOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
-            expectFilledOrOpenedOrders(filledOrOpenedOrders);
-            setUpMergeCompletables(emptyCompletable());
-            setUpCommandUtilCompletables(emptyCompletable());
+        public class SubscribeSetup {
 
-            testSubscriber = closePositionCompletable.test();
+            private final Set<IOrder> filledOrOpenedOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
-            verify(positionMergeMock).merge(instrumentEURUSD, mergeCommandFactory);
-            verify(commandUtilMock).mergeFromFactory(filledOrOpenedOrders, closeCommandFactory);
-            testSubscriber.assertComplete();
-            testSubscriber.assertComplete();
-        }
+            @Before
+            public void setUp() {
+                expectFilledOrOpenedOrders(filledOrOpenedOrders);
+            }
 
-        @Test
-        public void onSubscribeDoesQueryForFilledOrOpenedOrdersYet() throws Exception {
-            final Set<IOrder> filledOrOpenedOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
-            expectFilledOrOpenedOrders(filledOrOpenedOrders);
-            setUpMergeCompletables(neverCompletable());
+            @Test
+            public void positionMergeCompletableIsCalled() {
+                setUpMergeCompletables(emptyCompletable());
+                setUpCommandUtilCompletables(emptyCompletable());
 
-            testSubscriber = closePositionCompletable.test();
+                testSubscriber = closePositionCompletable.test();
 
-            verifyZeroInteractions(positionFactoryMock);
-            testSubscriber.assertNotComplete();
+                testSubscriber.assertComplete();
+                verify(positionMergeMock).merge(instrumentEURUSD, mergeCommandFactory);
+                verify(commandUtilMock).mergeFromFactory(filledOrOpenedOrders, closeCommandFactory);
+            }
+
+            @Test
+            public void noQueryForFilledOrOpenedOrdersYet() {
+                setUpMergeCompletables(neverCompletable());
+
+                testSubscriber = closePositionCompletable.test();
+
+                testSubscriber.assertNotComplete();
+                verifyZeroInteractions(positionFactoryMock);
+            }
         }
     }
 
