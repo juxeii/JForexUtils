@@ -29,10 +29,10 @@ public class JFSystemListenerTest extends CommonUtilForTest {
         jfSystemListener = new JFSystemListener();
 
         jfSystemListener
-            .strategyRunDataObservable()
+            .observeStrategyRunData()
             .subscribe(runDataSubscriber);
         jfSystemListener
-            .connectionStateObservable()
+            .observeConnectionState()
             .subscribe(connectionStateSubscriber);
     }
 

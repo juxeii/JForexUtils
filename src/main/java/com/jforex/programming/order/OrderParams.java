@@ -2,7 +2,6 @@ package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -10,6 +9,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
@@ -159,10 +159,8 @@ public final class OrderParams implements Cloneable {
         private long goodTillTime;
         private String comment;
 
-        private static final PlatformSettings platformSettings =
-                ConfigFactory.create(PlatformSettings.class);
-        private static final UserSettings userSettings =
-                ConfigFactory.create(UserSettings.class);
+        private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
+        private static final UserSettings userSettings = JForexUtil.userSettings;
 
         private Builder(final Instrument instrument) {
             this.instrument = instrument;

@@ -5,13 +5,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import org.aeonbits.owner.ConfigFactory;
 import org.paukov.combinatorics.Factory;
 import org.paukov.combinatorics.Generator;
 
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.instrument.InstrumentUtil;
+import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
 
 public final class MathUtil {
@@ -19,7 +19,7 @@ public final class MathUtil {
     private MathUtil() {
     }
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
 
     public static final <T> Set<Set<T>> kPowerSet(final Set<T> sourceSet,
                                                   final int setSize) {
@@ -40,9 +40,9 @@ public final class MathUtil {
     public static final double roundDouble(final double rawValue,
                                            final int digitPrecision) {
         return BigDecimal
-                .valueOf(rawValue)
-                .setScale(digitPrecision, BigDecimal.ROUND_HALF_UP)
-                .doubleValue();
+            .valueOf(rawValue)
+            .setScale(digitPrecision, BigDecimal.ROUND_HALF_UP)
+            .doubleValue();
     }
 
     public static final double roundAmount(final double rawAmount) {
@@ -63,8 +63,8 @@ public final class MathUtil {
     public static final boolean isValueDivisibleByX(final double value,
                                                     final double divisor) {
         return BigDecimal
-                .valueOf(value)
-                .remainder(BigDecimal.valueOf(divisor))
-                .doubleValue() == 0;
+            .valueOf(value)
+            .remainder(BigDecimal.valueOf(divisor))
+            .doubleValue() == 0;
     }
 }

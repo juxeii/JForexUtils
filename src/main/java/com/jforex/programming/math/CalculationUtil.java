@@ -6,8 +6,6 @@ import static com.jforex.programming.math.MathUtil.roundAmount;
 import static com.jforex.programming.math.MathUtil.roundPips;
 import static com.jforex.programming.math.MathUtil.roundPrice;
 
-import org.aeonbits.owner.ConfigFactory;
-
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
@@ -15,6 +13,7 @@ import com.jforex.programming.instrument.InstrumentFactory;
 import com.jforex.programming.math.ConversionBuilder.FromSource;
 import com.jforex.programming.math.PipDistanceBuilder.To;
 import com.jforex.programming.math.PipValueBuilder.OfInstrument;
+import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.settings.PlatformSettings;
 
@@ -22,7 +21,7 @@ public final class CalculationUtil {
 
     private final TickQuoteHandler tickQuoteProvider;
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
 
     public CalculationUtil(final TickQuoteHandler tickQuoteProvider) {
         this.tickQuoteProvider = tickQuoteProvider;
@@ -48,8 +47,8 @@ public final class CalculationUtil {
                                          final ICurrency targetCurrency,
                                          final OfferSide offerSide) {
         final Instrument conversionInstrument = InstrumentFactory
-                .maybeFromCurrencies(sourceCurrency, targetCurrency)
-                .get();
+            .maybeFromCurrencies(sourceCurrency, targetCurrency)
+            .get();
         final double conversionQuote =
                 tickQuoteProvider.forOfferSide(conversionInstrument, offerSide);
         return targetCurrency.equals(conversionInstrument.getPrimaryJFCurrency())
@@ -71,9 +70,9 @@ public final class CalculationUtil {
         double pipValueAmount = amount * instrument.getPipValue();
         if (!targetCurrency.equals(instrument.getSecondaryJFCurrency()))
             pipValueAmount = convertAmount(pipValueAmount)
-                    .fromCurrency(instrument.getSecondaryJFCurrency())
-                    .toCurrency(targetCurrency)
-                    .forOfferSide(pipValueBuilder.offerSide());
+                .fromCurrency(instrument.getSecondaryJFCurrency())
+                .toCurrency(targetCurrency)
+                .forOfferSide(pipValueBuilder.offerSide());
 
         return roundAmount(pipValueAmount);
     }

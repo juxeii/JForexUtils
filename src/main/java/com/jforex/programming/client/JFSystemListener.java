@@ -8,34 +8,34 @@ import io.reactivex.Observable;
 
 public final class JFSystemListener implements ISystemListener {
 
-    private final JFHotObservable<StrategyRunData> strategyRunDataSubject = new JFHotObservable<>();
-    private final JFHotObservable<ConnectionState> connectionStateSubject = new JFHotObservable<>();
+    private final JFHotObservable<StrategyRunData> strategyRunDataObservable = new JFHotObservable<>();
+    private final JFHotObservable<ConnectionState> connectionStateObservable = new JFHotObservable<>();
 
-    public final Observable<StrategyRunData> strategyRunDataObservable() {
-        return strategyRunDataSubject.observable();
+    public final Observable<StrategyRunData> observeStrategyRunData() {
+        return strategyRunDataObservable.observable();
     }
 
-    public final Observable<ConnectionState> connectionStateObservable() {
-        return connectionStateSubject.observable();
+    public final Observable<ConnectionState> observeConnectionState() {
+        return connectionStateObservable.observable();
     }
 
     @Override
     public final void onStart(final long processId) {
-        strategyRunDataSubject.onNext(new StrategyRunData(processId, StrategyRunState.STARTED));
+        strategyRunDataObservable.onNext(new StrategyRunData(processId, StrategyRunState.STARTED));
     }
 
     @Override
     public final void onStop(final long processId) {
-        strategyRunDataSubject.onNext(new StrategyRunData(processId, StrategyRunState.STOPPED));
+        strategyRunDataObservable.onNext(new StrategyRunData(processId, StrategyRunState.STOPPED));
     }
 
     @Override
     public final void onConnect() {
-        connectionStateSubject.onNext(ConnectionState.CONNECTED);
+        connectionStateObservable.onNext(ConnectionState.CONNECTED);
     }
 
     @Override
     public final void onDisconnect() {
-        connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+        connectionStateObservable.onNext(ConnectionState.DISCONNECTED);
     }
 }

@@ -20,7 +20,7 @@ import io.reactivex.Observable;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 
-public class ClientUtil {
+public final class ClientUtil {
 
     private final IClient client;
 
@@ -50,11 +50,11 @@ public class ClientUtil {
     }
 
     private final void initAuthentification() {
-        authentificationUtil = new AuthentificationUtil(client, connectionStateObservable());
+        authentificationUtil = new AuthentificationUtil(client, observeConnectionState());
     }
 
-    private void keepConnection() {
-        connectionStateObservable().subscribe(connectionState -> {
+    private final void keepConnection() {
+        observeConnectionState().subscribe(connectionState -> {
             logger.debug(connectionState + " message received.");
             if (connectionState == ConnectionState.DISCONNECTED
                     && authentificationUtil.loginState() == LoginState.LOGGED_IN) {
@@ -64,23 +64,19 @@ public class ClientUtil {
         });
     }
 
-    public final JFSystemListener systemListener() {
+    public final JFSystemListener jfSystemListener() {
         return jfSystemListener;
-    }
-
-    public final Observable<ConnectionState> connectionStateObservable() {
-        return jfSystemListener.connectionStateObservable();
-    }
-
-    public final Observable<StrategyRunData> strategyInfoObservable() {
-        return jfSystemListener.strategyRunDataObservable();
     }
 
     public final AuthentificationUtil authentificationUtil() {
         return authentificationUtil;
     }
 
-    public final Completable loginCompletable(final LoginCredentials loginCredentials) {
+    private final Observable<ConnectionState> observeConnectionState() {
+        return jfSystemListener.observeConnectionState();
+    }
+
+    public final Completable observeLogin(final LoginCredentials loginCredentials) {
         return authentificationUtil.loginCompletable(checkNotNull(loginCredentials));
     }
 

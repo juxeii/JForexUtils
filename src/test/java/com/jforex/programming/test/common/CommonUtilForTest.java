@@ -96,7 +96,7 @@ public class CommonUtilForTest extends BDDMockito {
     protected final IOrder buyOrderAUDUSD = orderUtilForTest.buyOrderAUDUSD();
     protected final IOrder sellOrderAUDUSD = orderUtilForTest.sellOrderAUDUSD();
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
-    protected static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    protected static final PlatformSettings platformSettings = JForexUtil.platformSettings;
     protected static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
     protected static final double noSL = platformSettings.noSLPrice();
     protected static final double noTP = platformSettings.noTPPrice();
@@ -200,12 +200,12 @@ public class CommonUtilForTest extends BDDMockito {
     }
 
     @SuppressWarnings("unchecked")
-    protected <T> T getOnNextEvent(final TestObserver<T> observer,
-                                   final int index) {
+    protected final <T> T getOnNextEvent(final TestObserver<T> observer,
+                                         final int index) {
         return (T) observer.getEvents().get(0).get(index);
     }
 
-    public <T> void testEqualsContract(final T instance) {
+    protected final <T> void testEqualsContract(final T instance) {
         EqualsVerifier
             .forClass(instance.getClass())
             .verify();

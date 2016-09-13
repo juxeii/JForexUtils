@@ -42,13 +42,13 @@ public class ClientUtilTest extends CommonUtilForTest {
     public void setUp() {
         clientUtil = new ClientUtil(clientMock, cacheDirectory);
 
-        clientUtil
-            .connectionStateObservable()
+        jfSystemListener = clientUtil.jfSystemListener();
+        jfSystemListener
+            .observeConnectionState()
             .subscribe(connectionStateSubscriber);
-        clientUtil
-            .strategyInfoObservable()
+        jfSystemListener
+            .observeStrategyRunData()
             .subscribe(runDataSubscriber);
-        jfSystemListener = clientUtil.systemListener();
     }
 
     @Test
@@ -69,7 +69,7 @@ public class ClientUtilTest extends CommonUtilForTest {
 
     @Test
     public void loginCompletableIsValid() {
-        assertThat(clientUtil.loginCompletable(loginCredentials), instanceOf(Completable.class));
+        assertThat(clientUtil.observeLogin(loginCredentials), instanceOf(Completable.class));
     }
 
     @Test
