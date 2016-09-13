@@ -64,7 +64,6 @@ public final class OrderEvent {
     @Override
     public String toString() {
         final ToStringBuilder toStringBuilder = new ToStringBuilder(this, ToStringStyle.DEFAULT_STYLE);
-        toStringBuilder.append("order", order);
         toStringBuilder.append("type", type);
         toStringBuilder.append("isInternal", isInternal);
 
