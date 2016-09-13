@@ -18,7 +18,7 @@ import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.Observable;
+import io.reactivex.Observable;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PositionFactoryTest extends InstrumentUtilForTest {

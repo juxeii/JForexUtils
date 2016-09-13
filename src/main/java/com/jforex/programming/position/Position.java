@@ -22,10 +22,11 @@ import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
 import com.jforex.programming.order.OrderDirection;
+import com.jforex.programming.order.OrderProcessState;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class Position implements PositionOrders {
 
@@ -54,6 +55,7 @@ public class Position implements PositionOrders {
 
     private void observeCreatedOrdersForInsertion(final Observable<OrderEvent> orderEventObservable) {
         orderEventObservable
+            .filter(orderEvent -> orderEvent.order().getInstrument() == instrument)
             .filter(orderEvent -> createEvents.contains(orderEvent.type()))
             .filter(OrderEvent::isInternal)
             .map(OrderEvent::order)

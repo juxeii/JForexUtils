@@ -7,7 +7,6 @@ import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
@@ -15,8 +14,6 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.option.SetLabelOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-
-import rx.Completable;
 
 public class SetLabelCommand extends CommonCommand {
 
@@ -38,11 +35,9 @@ public class SetLabelCommand extends CommonCommand {
     }
 
     public static final SetLabelOption create(final IOrder order,
-                                              final String newLabel,
-                                              final Function<SetLabelCommand, Completable> startFunction) {
+                                              final String newLabel) {
         return new Builder(checkNotNull(order),
-                           checkNotNull(newLabel),
-                           startFunction);
+                           checkNotNull(newLabel));
     }
 
     private static class Builder extends CommonBuilder<SetLabelOption>
@@ -52,8 +47,7 @@ public class SetLabelCommand extends CommonCommand {
         private final String newLabel;
 
         private Builder(final IOrder order,
-                        final String newLabel,
-                        final Function<SetLabelCommand, Completable> startFunction) {
+                        final String newLabel) {
             this.order = order;
             this.newLabel = newLabel;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setLabel(newLabel), order);
@@ -61,7 +55,6 @@ public class SetLabelCommand extends CommonCommand {
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CHANGED_LABEL),
                                                              EnumSet.of(CHANGE_LABEL_REJECTED),
                                                              EnumSet.of(NOTIFICATION));
-            this.startFunction = startFunction;
         }
 
         @Override

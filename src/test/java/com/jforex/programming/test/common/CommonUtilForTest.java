@@ -34,17 +34,19 @@ import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.order.OrderProcessState;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.position.OrderProcessState;
-import com.jforex.programming.quote.BarQuoteHandler;
-import com.jforex.programming.quote.TickQuoteHandler;
+import com.jforex.programming.quote.BarQuoteProvider;
+import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
-import rx.Completable;
-import rx.Observable;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
+import nl.jqno.equalsverifier.EqualsVerifier;
 
 public class CommonUtilForTest extends BDDMockito {
 
@@ -67,9 +69,9 @@ public class CommonUtilForTest extends BDDMockito {
     @Mock
     protected HistoryUtil historyUtilMock;
     @Mock
-    protected TickQuoteHandler tickQuoteHandlerMock;
+    protected TickQuoteProvider tickQuoteHandlerMock;
     @Mock
-    protected BarQuoteHandler barQuoteHandlerMock;
+    protected BarQuoteProvider barQuoteHandlerMock;
 
     protected JFException jfException = new JFException("JFException for test");
 
@@ -94,7 +96,7 @@ public class CommonUtilForTest extends BDDMockito {
     protected final IOrder buyOrderAUDUSD = orderUtilForTest.buyOrderAUDUSD();
     protected final IOrder sellOrderAUDUSD = orderUtilForTest.sellOrderAUDUSD();
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
-    protected static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    protected static final PlatformSettings platformSettings = JForexUtil.platformSettings;
     protected static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
     protected static final double noSL = platformSettings.noSLPrice();
     protected static final double noTP = platformSettings.noTPPrice();
@@ -169,31 +171,45 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(AuthentificationUtil.FSMTrigger.CONNECT.toString());
     }
 
-    public final Completable emptyCompletable() {
+    protected final Completable emptyCompletable() {
         return Completable.complete();
     }
 
-    public final Completable neverCompletable() {
+    protected final Completable neverCompletable() {
         return Completable.never();
     }
 
-    public final Observable<OrderEvent> emptyObservable() {
+    protected final Observable<OrderEvent> emptyObservable() {
         return Observable.empty();
     }
 
-    public final Observable<OrderEvent> neverObservable() {
+    protected final Observable<OrderEvent> neverObservable() {
         return Observable.never();
     }
 
-    public final Observable<OrderEvent> eventObservable(final OrderEvent orderEvent) {
+    protected final Observable<OrderEvent> eventObservable(final OrderEvent orderEvent) {
         return Observable.just(orderEvent);
     }
 
-    public final Observable<OrderEvent> eventObservable(final IOrder order,
-                                                        final OrderEventType type) {
+    protected final Observable<OrderEvent> eventObservable(final IOrder order,
+                                                           final OrderEventType type) {
         final OrderEvent orderEvent = new OrderEvent(order,
                                                      type,
                                                      true);
         return eventObservable(orderEvent);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected final <T> T getOnNextEvent(final TestObserver<T> observer,
+                                         final int index) {
+        return (T) observer.getEvents().get(0).get(index);
+    }
+
+    protected final <T> void testEqualsContract(final T instance) {
+        EqualsVerifier
+            .forClass(instance.getClass())
+            .verify();
+
+        logger.info("toString() for " + instance.toString());
     }
 }

@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Maps;
@@ -15,14 +14,13 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-import rx.Completable;
-import rx.functions.Action0;
+import io.reactivex.functions.Action;
 
 @SuppressWarnings("unchecked")
 public class CommonBuilder<T extends CommonOption<T>> {
 
-    protected Action0 startAction = () -> {};
-    protected Action0 completedAction = () -> {};
+    protected Action startAction = () -> {};
+    protected Action completedAction = () -> {};
     protected Consumer<OrderEvent> eventAction = o -> {};
     protected Consumer<Throwable> errorAction = o -> {};
     protected int noOfRetries;
@@ -31,14 +29,13 @@ public class CommonBuilder<T extends CommonOption<T>> {
     protected OrderCallReason callReason;
     protected OrderEventTypeData orderEventTypeData;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = Maps.newEnumMap(OrderEventType.class);
-    protected Function<? extends CommonCommand, Completable> startFunction;
 
-    public T doOnStart(final Action0 startAction) {
+    public T doOnStart(final Action startAction) {
         this.startAction = checkNotNull(startAction);
         return (T) this;
     }
 
-    public T doOnCompleted(final Action0 completedAction) {
+    public T doOnComplete(final Action completedAction) {
         this.completedAction = checkNotNull(completedAction);
         return (T) this;
     }

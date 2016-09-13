@@ -15,10 +15,6 @@ public class IEngineUtil {
         this.engine = engine;
     }
 
-    public IEngine engine() {
-        return engine;
-    }
-
     public Callable<IOrder> submitCallable(final OrderParams orderParams) {
         return () -> engine.submitOrder(orderParams.label(),
                                         orderParams.instrument(),

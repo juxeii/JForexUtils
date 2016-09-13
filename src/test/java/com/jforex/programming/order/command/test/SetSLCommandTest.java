@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,8 +18,6 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Completable;
-
 public class SetSLCommandTest extends CommandTester {
 
     private SetSLCommand setSLCommand;
@@ -29,18 +26,14 @@ public class SetSLCommandTest extends CommandTester {
     private Consumer<IOrder> setSLRejectActionMock;
     @Mock
     private Consumer<IOrder> setSLActionMock;
-    @Mock
-    private Function<SetSLCommand, Completable> startFunctionMock;
     private final double newSL = 1.234;
 
     @Before
     public void setUp() {
         setSLCommand = SetSLCommand
-            .create(buyOrderEURUSD,
-                    newSL,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newSL)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnSetSLReject(setSLRejectActionMock)
             .doOnSetSL(setSLActionMock)
             .retry(noOfRetries, retryDelay)
@@ -50,11 +43,9 @@ public class SetSLCommandTest extends CommandTester {
     }
 
     @Test
-    public void emptyCommandHasNoRetryParameters() {
+    public void emptyCommandHasNoRetryParameters() throws Exception {
         final SetSLCommand emptyCommand = SetSLCommand
-            .create(buyOrderEURUSD,
-                    newSL,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newSL)
             .build();
 
         assertNoRetryParams(emptyCommand);

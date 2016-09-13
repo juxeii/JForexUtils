@@ -16,16 +16,16 @@ import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.Observable;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
 public class TickQuoteRepositoryTest extends QuoteProviderForTest {
 
     private TickQuoteRepository tickQuoteRepository;
 
-    private final Subject<TickQuote, TickQuote> quoteObservable = PublishSubject.create();
+    private final Subject<TickQuote> quoteObservable = PublishSubject.create();
     private final Set<Instrument> subscribedInstruments = Sets.newHashSet(instrumentEURUSD,
                                                                           instrumentAUDUSD);
 
@@ -40,7 +40,7 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
 
     private void setUpMocks() {
         when(historyUtilMock.tickQuotesObservable(subscribedInstruments))
-                .thenReturn(Observable.just(tickQuoteEURUSD, tickQuoteAUDUSD));
+            .thenReturn(Observable.just(tickQuoteEURUSD, tickQuoteAUDUSD));
     }
 
     public class BeforeTicksReceived {

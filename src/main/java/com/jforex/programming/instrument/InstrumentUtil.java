@@ -14,14 +14,14 @@ import com.jforex.programming.currency.CurrencyFactory;
 import com.jforex.programming.currency.CurrencyUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.quote.BarParams;
-import com.jforex.programming.quote.BarQuoteHandler;
-import com.jforex.programming.quote.TickQuoteHandler;
+import com.jforex.programming.quote.BarQuoteProvider;
+import com.jforex.programming.quote.TickQuoteProvider;
 
 public final class InstrumentUtil {
 
     private final Instrument instrument;
-    private final TickQuoteHandler tickQuoteProvider;
-    private final BarQuoteHandler barQuoteProvider;
+    private final TickQuoteProvider tickQuoteProvider;
+    private final BarQuoteProvider barQuoteProvider;
     private final Currency baseJavaCurrency;
     private final Currency quoteJavaCurrency;
     private final int numberOfDigits;
@@ -32,8 +32,8 @@ public final class InstrumentUtil {
     private static final String pairsSeparator = Instrument.getPairsSeparator();
 
     public InstrumentUtil(final Instrument instrument,
-                          final TickQuoteHandler tickQuoteProvider,
-                          final BarQuoteHandler barQuoteProvider) {
+                          final TickQuoteProvider tickQuoteProvider,
+                          final BarQuoteProvider barQuoteProvider) {
         this.instrument = instrument;
         this.tickQuoteProvider = tickQuoteProvider;
         this.barQuoteProvider = barQuoteProvider;

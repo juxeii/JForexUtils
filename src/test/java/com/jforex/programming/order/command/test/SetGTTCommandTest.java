@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,8 +18,6 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetGTTCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Completable;
-
 public class SetGTTCommandTest extends CommandTester {
 
     private SetGTTCommand setGTTCommand;
@@ -29,18 +26,14 @@ public class SetGTTCommandTest extends CommandTester {
     private Consumer<IOrder> setGTTRejectActionMock;
     @Mock
     private Consumer<IOrder> setGTTActionMock;
-    @Mock
-    private Function<SetGTTCommand, Completable> startFunctionMock;
     private final long newGTT = 1L;
 
     @Before
     public void setUp() {
         setGTTCommand = SetGTTCommand
-            .create(buyOrderEURUSD,
-                    newGTT,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newGTT)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnSetGTTReject(setGTTRejectActionMock)
             .doOnSetGTT(setGTTActionMock)
             .retry(noOfRetries, retryDelay)
@@ -50,11 +43,9 @@ public class SetGTTCommandTest extends CommandTester {
     }
 
     @Test
-    public void emptyCommandHasNoRetryParameters() {
+    public void emptyCommandHasNoRetryParameters() throws Exception {
         final SetGTTCommand emptyCommand = SetGTTCommand
-            .create(buyOrderEURUSD,
-                    newGTT,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newGTT)
             .build();
 
         assertNoRetryParams(emptyCommand);

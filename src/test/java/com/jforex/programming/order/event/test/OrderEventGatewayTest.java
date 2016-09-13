@@ -12,15 +12,15 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
-import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
+import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 
 public class OrderEventGatewayTest extends CommonUtilForTest {
 
@@ -29,8 +29,8 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
     @Mock
     private OrderEventFactory orderEventMapperMock;
     private final IOrder orderUnderTest = buyOrderEURUSD;
-    private final TestSubscriber<OrderEvent> subscriber = new TestSubscriber<>();
-    private final Subject<IMessage, IMessage> messageSubject = PublishSubject.create();
+    private final TestObserver<OrderEvent> subscriber = TestObserver.create();
+    private final Subject<IMessage> messageSubject = PublishSubject.create();
     private final IMessage message = mockForIMessage(orderUnderTest,
                                                      IMessage.Type.ORDER_CHANGED_REJECTED,
                                                      Sets.newHashSet());
@@ -56,7 +56,9 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
                                                          IMessage.Type.CALENDAR,
                                                          Sets.newHashSet());
 
-        orderEventGateway.observable().subscribe(subscriber);
+        orderEventGateway
+            .observable()
+            .subscribe(subscriber);
         messageSubject.onNext(calendarMessage);
 
         subscriber.assertNoErrors();
@@ -72,12 +74,14 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
         when(orderEventMapperMock.fromMessage(any()))
             .thenReturn(orderEventMock);
 
-        orderEventGateway.observable().subscribe(subscriber);
+        orderEventGateway
+            .observable()
+            .subscribe(subscriber);
         messageSubject.onNext(message);
 
         subscriber.assertNoErrors();
         subscriber.assertValueCount(1);
-        final OrderEvent orderEvent = subscriber.getOnNextEvents().get(0);
+        final OrderEvent orderEvent = getOnNextEvent(subscriber, 0);
 
         assertThat(orderEvent.order(), equalTo(orderUnderTest));
         assertThat(orderEvent.type(), equalTo(OrderEventType.CHANGED_REJECTED));

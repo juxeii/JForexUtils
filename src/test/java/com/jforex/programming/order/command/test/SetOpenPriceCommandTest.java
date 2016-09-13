@@ -19,7 +19,7 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetOpenPriceCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class SetOpenPriceCommandTest extends CommandTester {
 
@@ -36,11 +36,9 @@ public class SetOpenPriceCommandTest extends CommandTester {
     @Before
     public void setUp() {
         setOpenPriceCommand = SetOpenPriceCommand
-            .create(buyOrderEURUSD,
-                    newOpenPrice,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newOpenPrice)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnSetOpenPriceReject(setOpenPriceRejectActionMock)
             .doOnSetOpenPrice(setOpenPriceActionMock)
             .retry(noOfRetries, retryDelay)
@@ -50,11 +48,9 @@ public class SetOpenPriceCommandTest extends CommandTester {
     }
 
     @Test
-    public void emptyCommandHasNoRetryParameters() {
+    public void emptyCommandHasNoRetryParameters() throws Exception {
         final SetOpenPriceCommand emptyCommand = SetOpenPriceCommand
-            .create(buyOrderEURUSD,
-                    newOpenPrice,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newOpenPrice)
             .build();
 
         assertNoRetryParams(emptyCommand);

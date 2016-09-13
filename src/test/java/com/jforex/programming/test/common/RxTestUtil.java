@@ -2,8 +2,8 @@ package com.jforex.programming.test.common;
 
 import java.util.concurrent.TimeUnit;
 
-import rx.plugins.RxJavaHooks;
-import rx.schedulers.TestScheduler;
+import io.reactivex.plugins.RxJavaPlugins;
+import io.reactivex.schedulers.TestScheduler;
 
 public final class RxTestUtil {
 
@@ -11,7 +11,7 @@ public final class RxTestUtil {
     private static final TestScheduler testScheduler = new TestScheduler();
 
     public RxTestUtil() {
-        RxJavaHooks.setOnComputationScheduler(scheduler -> testScheduler);
+        RxJavaPlugins.setComputationSchedulerHandler(scheduler -> testScheduler);
     }
 
     public static final RxTestUtil get() {

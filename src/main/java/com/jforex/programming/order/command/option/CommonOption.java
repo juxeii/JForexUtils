@@ -4,13 +4,13 @@ import java.util.function.Consumer;
 
 import com.jforex.programming.order.event.OrderEvent;
 
-import rx.functions.Action0;
+import io.reactivex.functions.Action;
 
 public interface CommonOption<T> {
 
-    public T doOnStart(Action0 startAction);
+    public T doOnStart(Action startAction);
 
-    public T doOnCompleted(Action0 completedAction);
+    public T doOnComplete(Action completedAction);
 
     public T doOnOrderEvent(Consumer<OrderEvent> orderEventAction);
 

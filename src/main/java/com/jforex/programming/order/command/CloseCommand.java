@@ -8,7 +8,6 @@ import static com.jforex.programming.order.event.OrderEventType.PARTIAL_CLOSE_OK
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
@@ -16,8 +15,6 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.option.CloseOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-
-import rx.Completable;
 
 public class CloseCommand extends CommonCommand {
 
@@ -32,9 +29,8 @@ public class CloseCommand extends CommonCommand {
         return order;
     }
 
-    public static final CloseOption create(final IOrder orderToClose,
-                                           final Function<CloseCommand, Completable> startFunction) {
-        return new Builder(checkNotNull(orderToClose), startFunction);
+    public static final CloseOption create(final IOrder orderToClose) {
+        return new Builder(checkNotNull(orderToClose));
     }
 
     public static class Builder extends CommonBuilder<CloseOption>
@@ -42,15 +38,13 @@ public class CloseCommand extends CommonCommand {
 
         private final IOrder order;
 
-        private Builder(final IOrder order,
-                        final Function<CloseCommand, Completable> startFunction) {
+        private Builder(final IOrder order) {
             this.order = order;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.close(), order);
             this.callReason = OrderCallReason.CLOSE;
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CLOSE_OK),
                                                              EnumSet.of(CLOSE_REJECTED),
                                                              EnumSet.of(NOTIFICATION, PARTIAL_CLOSE_OK));
-            this.startFunction = startFunction;
         }
 
         @Override

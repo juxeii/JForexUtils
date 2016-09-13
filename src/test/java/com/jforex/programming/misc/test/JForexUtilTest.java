@@ -22,7 +22,7 @@ import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.observers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
 public class JForexUtilTest extends QuoteProviderForTest {
@@ -67,6 +67,11 @@ public class JForexUtilTest extends QuoteProviderForTest {
     @Test
     public void returnedOrderUtilIsValid() {
         assertNotNull(jForexUtil.orderUtil());
+    }
+
+    @Test
+    public void returnedCommandUtilIsValid() {
+        assertNotNull(jForexUtil.commandUtil());
     }
 
     @Test
@@ -134,13 +139,15 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
         private BarQuoteProvider barQuoteProvider;
         private InstrumentUtil instrumentUtil;
-        private final TestSubscriber<BarQuote> subscriber = new TestSubscriber<>();
+        private final TestObserver<BarQuote> subscriber = TestObserver.create();
         private Runnable pushBar;
 
         @Before
         public void setUp() {
             barQuoteProvider = jForexUtil.barQuoteProvider();
-            barQuoteProvider.observable().subscribe(subscriber);
+            barQuoteProvider
+                .observable()
+                .subscribe(subscriber);
             instrumentUtil = jForexUtil.instrumentUtil(instrumentEURUSD);
             pushBar = () -> jForexUtil.onBar(instrumentEURUSD,
                                              barQuotePeriod,
@@ -154,10 +161,10 @@ public class JForexUtilTest extends QuoteProviderForTest {
             subscriber.assertNoErrors();
             subscriber.assertValueCount(2);
 
-            assertEqualBarQuotes(subscriber.getOnNextEvents().get(0),
-                                 askBarQuoteEURUSD);
-            assertEqualBarQuotes(subscriber.getOnNextEvents().get(1),
-                                 bidBarQuoteEURUSD);
+            assertThat(getOnNextEvent(subscriber, 0),
+                       equalTo(askBarQuoteEURUSD));
+            assertThat(getOnNextEvent(subscriber, 1),
+                       equalTo(bidBarQuoteEURUSD));
         }
 
         @Test
@@ -195,12 +202,14 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
         private TickQuoteProvider tickQuoteProvider;
         private InstrumentUtil instrumentUtil;
-        private final TestSubscriber<TickQuote> subscriber = new TestSubscriber<>();
+        private final TestObserver<TickQuote> subscriber = TestObserver.create();
 
         @Before
         public void setUp() {
             tickQuoteProvider = jForexUtil.tickQuoteProvider();
-            tickQuoteProvider.observable().subscribe(subscriber);
+            tickQuoteProvider
+                .observable()
+                .subscribe(subscriber);
             instrumentUtil = jForexUtil.instrumentUtil(instrumentEURUSD);
 
             jForexUtil.onTick(instrumentEURUSD, tickEURUSD);
@@ -211,8 +220,8 @@ public class JForexUtilTest extends QuoteProviderForTest {
             subscriber.assertNoErrors();
             subscriber.assertValueCount(1);
 
-            assertEqualTickQuotes(subscriber.getOnNextEvents().get(0),
-                                  tickQuoteEURUSD);
+            assertThat(getOnNextEvent(subscriber, 0),
+                       equalTo(tickQuoteEURUSD));
         }
 
         @Test

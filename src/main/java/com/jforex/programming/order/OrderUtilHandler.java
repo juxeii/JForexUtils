@@ -14,7 +14,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class OrderUtilHandler {
 
@@ -30,7 +30,7 @@ public class OrderUtilHandler {
     public Observable<OrderEvent> callObservable(final CommonCommand command) {
         final Observable<OrderEvent> observable = taskExecutor
             .onStrategyThread(command.callable())
-            .doOnSubscribe(command.startAction()::call)
+            .doOnSubscribe(d -> command.startAction().run())
             .doOnNext(order -> registerOrder(order, command.callReason()))
             .flatMap(order -> gatewayObservable(order, command))
             .doOnNext(orderEvent -> callEventHandler(orderEvent, command.eventHandlerForType()))
@@ -38,7 +38,7 @@ public class OrderUtilHandler {
 
         return decorateObservableWithRetry(command, observable)
             .doOnError(command.errorAction()::accept)
-            .doOnCompleted(command.completedAction()::call);
+            .doOnComplete(command.completedAction()::run);
     }
 
     private final void registerOrder(final IOrder order,
@@ -53,7 +53,7 @@ public class OrderUtilHandler {
             .observable()
             .filter(orderEvent -> orderEvent.order().equals(order))
             .filter(orderEvent -> command.isEventTypeForCommand(orderEvent.type()))
-            .takeUntil(orderEvent -> command.isFinishEventType(orderEvent.type()));
+            .takeUntil((final OrderEvent orderEvent) -> command.isFinishEventType(orderEvent.type()));
     }
 
     private final void callEventHandler(final OrderEvent orderEvent,

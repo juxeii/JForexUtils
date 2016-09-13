@@ -22,14 +22,14 @@ import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
-import rx.observers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 
 public class HistoryUtilTest extends QuoteProviderForTest {
 
     private HistoryUtil historyUtil;
 
-    private final TestSubscriber<ITick> tickSubscriber = new TestSubscriber<>();
-    private final TestSubscriber<IBar> barSubscriber = new TestSubscriber<>();
+    private final TestObserver<ITick> tickSubscriber = TestObserver.create();
+    private final TestObserver<IBar> barSubscriber = TestObserver.create();
 
     @Before
     public void setUp() {
@@ -38,26 +38,26 @@ public class HistoryUtilTest extends QuoteProviderForTest {
 
     private void assertTickSubscriber() {
         tickSubscriber.assertNoErrors();
-        tickSubscriber.assertCompleted();
-        tickSubscriber.assertValueCount(1);
-        assertThat(tickSubscriber.getOnNextEvents().get(0), equalTo(tickEURUSD));
+        tickSubscriber.assertComplete();
+
+        tickSubscriber.assertValue(tickEURUSD);
     }
 
     private void assertBarSubscriber() {
         barSubscriber.assertNoErrors();
-        barSubscriber.assertCompleted();
-        barSubscriber.assertValueCount(1);
-        assertThat(barSubscriber.getOnNextEvents().get(0), equalTo(askBarEURUSD));
+        barSubscriber.assertComplete();
+
+        barSubscriber.assertValue(askBarEURUSD);
     }
 
     @Test
     public void latestTickIsCorrect() throws JFException {
         when(historyMock.getLastTick(instrumentEURUSD))
-                .thenReturn(tickEURUSD);
+            .thenReturn(tickEURUSD);
 
         historyUtil
-                .lastestTickObservable(instrumentEURUSD)
-                .subscribe(tickSubscriber);
+            .lastestTickObservable(instrumentEURUSD)
+            .subscribe(tickSubscriber);
 
         assertTickSubscriber();
     }
@@ -65,14 +65,14 @@ public class HistoryUtilTest extends QuoteProviderForTest {
     @Test
     public void latestTickWithRetriesIsCorrect() throws JFException {
         when(historyMock.getLastTick(instrumentEURUSD))
-                .thenThrow(jfException)
-                .thenThrow(jfException)
-                .thenReturn(null)
-                .thenReturn(tickEURUSD);
+            .thenThrow(jfException)
+            .thenThrow(jfException)
+            .thenReturn(null)
+            .thenReturn(tickEURUSD);
 
         historyUtil
-                .lastestTickObservable(instrumentEURUSD)
-                .subscribe(tickSubscriber);
+            .lastestTickObservable(instrumentEURUSD)
+            .subscribe(tickSubscriber);
 
         RxTestUtil.advanceTimeBy(5000L, TimeUnit.MILLISECONDS);
 
@@ -84,28 +84,30 @@ public class HistoryUtilTest extends QuoteProviderForTest {
     public void tickQuotesMapIsCorrect() throws JFException {
         final Set<Instrument> instruments = Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD);
         when(historyMock.getLastTick(instrumentEURUSD))
-                .thenReturn(tickEURUSD);
+            .thenReturn(tickEURUSD);
         when(historyMock.getLastTick(instrumentAUDUSD))
-                .thenReturn(tickAUDUSD);
+            .thenReturn(tickAUDUSD);
         final Map<Instrument, TickQuote> quotesByInstrument = new HashMap<>();
 
         historyUtil
-                .tickQuotesObservable(instruments)
-                .subscribe(quote -> quotesByInstrument.put(quote.instrument(), quote));
+            .tickQuotesObservable(instruments)
+            .subscribe(quote -> quotesByInstrument.put(quote.instrument(), quote));
 
         assertThat(quotesByInstrument.size(), equalTo(2));
-        assertEqualTickQuotes(quotesByInstrument.get(instrumentEURUSD), tickQuoteEURUSD);
-        assertEqualTickQuotes(quotesByInstrument.get(instrumentAUDUSD), tickQuoteAUDUSD);
+        assertThat(quotesByInstrument.get(instrumentEURUSD),
+                   equalTo(tickQuoteEURUSD));
+        assertThat(quotesByInstrument.get(instrumentAUDUSD),
+                   equalTo(tickQuoteAUDUSD));
     }
 
     @Test
     public void latestBarIsCorrect() throws JFException {
         when(historyMock.getBar(instrumentEURUSD, barQuotePeriod, OfferSide.ASK, 1))
-                .thenReturn(askBarEURUSD);
+            .thenReturn(askBarEURUSD);
 
         historyUtil
-                .latestBarObservable(askBarEURUSDParams)
-                .subscribe(barSubscriber);
+            .latestBarObservable(askBarEURUSDParams)
+            .subscribe(barSubscriber);
 
         assertBarSubscriber();
     }
@@ -113,14 +115,14 @@ public class HistoryUtilTest extends QuoteProviderForTest {
     @Test
     public void latestBarWithRetriesIsCorrect() throws JFException {
         when(historyMock.getBar(instrumentEURUSD, barQuotePeriod, OfferSide.ASK, 1))
-                .thenThrow(jfException)
-                .thenThrow(jfException)
-                .thenReturn(null)
-                .thenReturn(askBarEURUSD);
+            .thenThrow(jfException)
+            .thenThrow(jfException)
+            .thenReturn(null)
+            .thenReturn(askBarEURUSD);
 
         historyUtil
-                .latestBarObservable(askBarEURUSDParams)
-                .subscribe(barSubscriber);
+            .latestBarObservable(askBarEURUSDParams)
+            .subscribe(barSubscriber);
 
         RxTestUtil.advanceTimeBy(5000L, TimeUnit.MILLISECONDS);
 

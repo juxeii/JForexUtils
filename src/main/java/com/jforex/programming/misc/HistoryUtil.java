@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,13 +21,13 @@ import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.settings.UserSettings;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class HistoryUtil {
 
     private final IHistory history;
 
-    private static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    private static final UserSettings userSettings = JForexUtil.userSettings;
     private static final long delayOnHistoryFailRetry = userSettings.delayOnHistoryFailRetry();
     private static final int maxRetriesOnHistoryFail = userSettings.maxRetriesOnHistoryFail();
     private static final Logger logger = LogManager.getLogger(HistoryUtil.class);
@@ -39,7 +38,7 @@ public class HistoryUtil {
 
     public Observable<TickQuote> tickQuotesObservable(final Set<Instrument> instruments) {
         return Observable
-            .from(instruments)
+            .fromIterable(instruments)
             .flatMap(this::lastestTickObservable)
             .zipWith(instruments,
                      (tick, instrument) -> new TickQuote(instrument, tick));

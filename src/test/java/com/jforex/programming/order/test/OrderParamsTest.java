@@ -10,8 +10,6 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-
 public class OrderParamsTest extends InstrumentUtilForTest {
 
     private OrderParams orderParams;
@@ -128,9 +126,8 @@ public class OrderParamsTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testEqualsContract() {
-        EqualsVerifier
-            .forClass(OrderParams.class)
-            .verify();
+    public void isEqualsContractOK() {
+        fillOrderParamsWithOptionalValues();
+        testEqualsContract(orderParams);
     }
 }

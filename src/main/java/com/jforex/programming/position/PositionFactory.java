@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class PositionFactory {
 

@@ -7,7 +7,6 @@ import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
@@ -15,8 +14,6 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.option.SetOpenPriceOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-
-import rx.Completable;
 
 public class SetOpenPriceCommand extends CommonCommand {
 
@@ -38,11 +35,8 @@ public class SetOpenPriceCommand extends CommonCommand {
     }
 
     public static final SetOpenPriceOption create(final IOrder order,
-                                                  final double newOpenPrice,
-                                                  final Function<SetOpenPriceCommand, Completable> startFunction) {
-        return new Builder(checkNotNull(order),
-                           newOpenPrice,
-                           startFunction);
+                                                  final double newOpenPrice) {
+        return new Builder(checkNotNull(order), newOpenPrice);
     }
 
     private static class Builder extends CommonBuilder<SetOpenPriceOption>
@@ -52,8 +46,7 @@ public class SetOpenPriceCommand extends CommonCommand {
         private final double newOpenPrice;
 
         private Builder(final IOrder order,
-                        final double newOpenPrice,
-                        final Function<SetOpenPriceCommand, Completable> startFunction) {
+                        final double newOpenPrice) {
             this.order = order;
             this.newOpenPrice = newOpenPrice;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setOpenPrice(newOpenPrice), order);
@@ -61,7 +54,6 @@ public class SetOpenPriceCommand extends CommonCommand {
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CHANGED_PRICE),
                                                              EnumSet.of(CHANGE_PRICE_REJECTED),
                                                              EnumSet.of(NOTIFICATION));
-            this.startFunction = startFunction;
         }
 
         @Override

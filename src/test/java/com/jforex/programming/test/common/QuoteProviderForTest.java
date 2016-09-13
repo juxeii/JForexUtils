@@ -1,8 +1,5 @@
 package com.jforex.programming.test.common;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
@@ -34,25 +31,25 @@ public class QuoteProviderForTest extends CurrencyUtilForTest {
     public final Period custom3MinutePeriod = Period.createCustomPeriod(Unit.Minute, 3);
 
     public final BarParams askBarEURUSDParams = BarParams
-            .forInstrument(instrumentEURUSD)
-            .period(barQuotePeriod)
-            .offerSide(OfferSide.ASK);
+        .forInstrument(instrumentEURUSD)
+        .period(barQuotePeriod)
+        .offerSide(OfferSide.ASK);
     public final BarParams bidBarEURUSDParams = BarParams
-            .forInstrument(instrumentEURUSD)
-            .period(barQuotePeriod)
-            .offerSide(OfferSide.BID);
+        .forInstrument(instrumentEURUSD)
+        .period(barQuotePeriod)
+        .offerSide(OfferSide.BID);
     public final BarParams askBarAUDUSDParams = BarParams
-            .forInstrument(instrumentAUDUSD)
-            .period(barQuotePeriod)
-            .offerSide(OfferSide.ASK);
+        .forInstrument(instrumentAUDUSD)
+        .period(barQuotePeriod)
+        .offerSide(OfferSide.ASK);
     public final BarParams bidBarAUDUSDParams = BarParams
-            .forInstrument(instrumentAUDUSD)
-            .period(barQuotePeriod)
-            .offerSide(OfferSide.BID);
+        .forInstrument(instrumentAUDUSD)
+        .period(barQuotePeriod)
+        .offerSide(OfferSide.BID);
     public final BarParams askBarEURUSDCustomPeriodParams = BarParams
-            .forInstrument(instrumentEURUSD)
-            .period(custom3MinutePeriod)
-            .offerSide(OfferSide.ASK);
+        .forInstrument(instrumentEURUSD)
+        .period(custom3MinutePeriod)
+        .offerSide(OfferSide.ASK);
 
     public final BarQuote askBarQuoteEURUSD = new BarQuote(askBarEURUSD, askBarEURUSDParams);
     public final BarQuote bidBarQuoteEURUSD = new BarQuote(bidBarEURUSD, bidBarEURUSDParams);
@@ -60,26 +57,6 @@ public class QuoteProviderForTest extends CurrencyUtilForTest {
     public final BarQuote bidBarQuoteAUDUSD = new BarQuote(bidBarAUDUSD, bidBarAUDUSDParams);
     public final BarQuote askBarQuoteEURUSDCustomPeriod =
             new BarQuote(askBarEURUSD, askBarEURUSDCustomPeriodParams);
-
-    public void assertEqualBarQuotes(final BarQuote receivedBarQuote,
-                                     final BarQuote expectedBarQuote) {
-        assertThat(receivedBarQuote.instrument(),
-                   equalTo(expectedBarQuote.instrument()));
-        assertThat(receivedBarQuote.period(),
-                   equalTo(expectedBarQuote.period()));
-        assertThat(receivedBarQuote.offerSide(),
-                   equalTo(expectedBarQuote.offerSide()));
-        assertThat(receivedBarQuote.bar(),
-                   equalTo(expectedBarQuote.bar()));
-    }
-
-    public void assertEqualTickQuotes(final TickQuote receivedTickQuote,
-                                      final TickQuote expectedTickQuote) {
-        assertThat(receivedTickQuote.instrument(),
-                   equalTo(expectedTickQuote.instrument()));
-        assertThat(receivedTickQuote.tick(),
-                   equalTo(expectedTickQuote.tick()));
-    }
 
     public void setTickExpectations(final TickQuote tickQuote) {
         final ITick tick = tickQuote.tick();
@@ -91,9 +68,9 @@ public class QuoteProviderForTest extends CurrencyUtilForTest {
         when(tickQuoteHandlerMock.ask(instrument)).thenReturn(ask);
         when(tickQuoteHandlerMock.bid(instrument)).thenReturn(bid);
         when(tickQuoteHandlerMock.forOfferSide(instrument, OfferSide.ASK))
-                .thenReturn(ask);
+            .thenReturn(ask);
         when(tickQuoteHandlerMock.forOfferSide(instrument, OfferSide.BID))
-                .thenReturn(bid);
+            .thenReturn(bid);
     }
 
     protected ITick mockForITick(final double bid,

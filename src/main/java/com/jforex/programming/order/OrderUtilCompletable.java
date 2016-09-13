@@ -11,7 +11,6 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -32,8 +31,8 @@ import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 
-import rx.Completable;
-import rx.Observable;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
 
 public class OrderUtilCompletable {
 
@@ -69,12 +68,12 @@ public class OrderUtilCompletable {
 
     public Completable mergeOrders(final MergeCommand command) {
         return Completable.defer(() -> {
-            final Set<IOrder> toMergeOrders = command.toMergeOrders();
+            final Collection<IOrder> toMergeOrders = command.toMergeOrders();
             return toMergeOrders.size() < 2
                     ? Completable.complete()
                     : Observable
                         .just(toMergeOrders)
-                        .doOnSubscribe(() -> positionOfOrders(toMergeOrders).markOrdersActive(toMergeOrders))
+                        .doOnSubscribe(d -> positionOfOrders(toMergeOrders).markOrdersActive(toMergeOrders))
                         .flatMap(orders -> orderUtilHandler.callObservable(command))
                         .doOnTerminate(() -> positionOfOrders(toMergeOrders).markOrdersIdle(toMergeOrders))
                         .toCompletable();
@@ -88,9 +87,9 @@ public class OrderUtilCompletable {
             return Observable
                 .just(orderToClose)
                 .filter(order -> !isClosed.test(order))
-                .doOnNext(order -> position.markOrderActive(orderToClose))
-                .flatMap(order -> orderUtilHandler.callObservable(command))
-                .doOnNext(orderEvent -> position.markOrderIdle(orderToClose))
+                .flatMap(order -> orderUtilHandler.callObservable(command)
+                    .doOnSubscribe(d -> position.markOrderActive(orderToClose))
+                    .doOnTerminate(() -> position.markOrderIdle(orderToClose)))
                 .toCompletable();
         });
     }

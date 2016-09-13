@@ -1,15 +1,15 @@
 package com.jforex.programming.order.command;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderUtilCompletable;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 public class CommandUtil {
 
@@ -19,36 +19,46 @@ public class CommandUtil {
         this.orderUtilCompletable = orderUtilCompletable;
     }
 
-    public List<Completable> commandsToCompletables(final List<? extends CommonCommand> commands) {
-        return commands
-            .stream()
-            .map(orderUtilCompletable::commandToCompletable)
-            .collect(Collectors.toList());
+    public Completable merge(final Collection<? extends CommonCommand> commands) {
+        return Completable.merge(toCompletables(commands));
     }
 
-    public Completable runCommands(final List<? extends CommonCommand> commands) {
-        return Completable.merge(commandsToCompletables(commands));
+    @SafeVarargs
+    public final <T extends CommonCommand> Completable merge(final T... commands) {
+        return merge(Arrays.asList(commands));
     }
 
-    public <T extends CommonCommand> Completable runCommandsOfFactory(final Set<IOrder> orders,
-                                                                      final Function<IOrder, T> commandFactory) {
-        return runCommands(batchCommands(orders, commandFactory));
+    public <T extends CommonCommand> Completable mergeFromFactory(final Collection<IOrder> orders,
+                                                                  final Function<IOrder, T> commandFactory) {
+        return merge(fromFactory(orders, commandFactory));
     }
 
-    public Completable runCommandsConcatenated(final List<? extends CommonCommand> commands) {
-        return Completable.concat(commandsToCompletables(commands));
+    public Completable concat(final List<? extends CommonCommand> commands) {
+        return Completable.concat(toCompletables(commands));
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends CommonCommand> Completable runCommandsConcatenated(final T... commands) {
-        return runCommandsConcatenated(Arrays.asList(commands));
+    @SafeVarargs
+    public final <T extends CommonCommand> Completable concat(final T... commands) {
+        return concat(Arrays.asList(commands));
     }
 
-    public <T extends CommonCommand> List<T> batchCommands(final Set<IOrder> orders,
-                                                           final Function<IOrder, T> commandFactory) {
+    public <T extends CommonCommand> Completable concatFromFactory(final List<IOrder> orders,
+                                                                   final Function<IOrder, T> commandFactory) {
+        return concat(fromFactory(orders, commandFactory));
+    }
+
+    public <T extends CommonCommand> List<T> fromFactory(final Collection<IOrder> orders,
+                                                         final Function<IOrder, T> commandFactory) {
         return orders
             .stream()
             .map(commandFactory::apply)
+            .collect(Collectors.toList());
+    }
+
+    public List<Completable> toCompletables(final Collection<? extends CommonCommand> commands) {
+        return commands
+            .stream()
+            .map(orderUtilCompletable::commandToCompletable)
             .collect(Collectors.toList());
     }
 }

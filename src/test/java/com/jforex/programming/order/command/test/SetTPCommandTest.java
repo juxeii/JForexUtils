@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,8 +18,6 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import rx.Completable;
-
 public class SetTPCommandTest extends CommandTester {
 
     private SetTPCommand setTPCommand;
@@ -29,18 +26,14 @@ public class SetTPCommandTest extends CommandTester {
     private Consumer<IOrder> setTPRejectActionMock;
     @Mock
     private Consumer<IOrder> setTPActionMock;
-    @Mock
-    private Function<SetTPCommand, Completable> startFunctionMock;
     private final double newTP = 1.234;
 
     @Before
     public void setUp() {
         setTPCommand = SetTPCommand
-            .create(buyOrderEURUSD,
-                    newTP,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newTP)
             .doOnError(errorActionMock)
-            .doOnCompleted(completedActionMock)
+            .doOnComplete(completedActionMock)
             .doOnSetTPReject(setTPRejectActionMock)
             .doOnSetTP(setTPActionMock)
             .retry(noOfRetries, retryDelay)
@@ -50,11 +43,9 @@ public class SetTPCommandTest extends CommandTester {
     }
 
     @Test
-    public void emptyCommandHasNoRetryParameters() {
+    public void emptyCommandHasNoRetryParameters() throws Exception {
         final SetTPCommand emptyCommand = SetTPCommand
-            .create(buyOrderEURUSD,
-                    newTP,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newTP)
             .build();
 
         assertNoRetryParams(emptyCommand);

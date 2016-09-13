@@ -6,10 +6,9 @@ import static com.jforex.programming.order.event.OrderEventType.MERGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
 import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
+import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
@@ -18,12 +17,10 @@ import com.jforex.programming.order.command.option.MergeOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-import rx.Completable;
-
 public class MergeCommand extends CommonCommand {
 
     private final String mergeOrderLabel;
-    private final Set<IOrder> toMergeOrders;
+    private final Collection<IOrder> toMergeOrders;
 
     private MergeCommand(final Builder builder) {
         super(builder);
@@ -35,30 +32,27 @@ public class MergeCommand extends CommonCommand {
         return mergeOrderLabel;
     }
 
-    public Set<IOrder> toMergeOrders() {
+    public Collection<IOrder> toMergeOrders() {
         return toMergeOrders;
     }
 
     public static final MergeOption create(final String mergeOrderLabel,
-                                           final Set<IOrder> toMergeOrders,
-                                           final IEngineUtil engineUtil,
-                                           final Function<MergeCommand, Completable> startFunction) {
+                                           final Collection<IOrder> toMergeOrders,
+                                           final IEngineUtil engineUtil) {
         return new Builder(checkNotNull(mergeOrderLabel),
                            checkNotNull(toMergeOrders),
-                           engineUtil,
-                           startFunction);
+                           engineUtil);
     }
 
     private static class Builder extends CommonBuilder<MergeOption>
-                                 implements MergeOption {
+            implements MergeOption {
 
         private final String mergeOrderLabel;
-        private final Set<IOrder> toMergeOrders;
+        private final Collection<IOrder> toMergeOrders;
 
         private Builder(final String mergeOrderLabel,
-                        final Set<IOrder> toMergeOrders,
-                        final IEngineUtil engineUtil,
-                        final Function<MergeCommand, Completable> startFunction) {
+                        final Collection<IOrder> toMergeOrders,
+                        final IEngineUtil engineUtil) {
             this.mergeOrderLabel = mergeOrderLabel;
             this.toMergeOrders = toMergeOrders;
             this.callable = engineUtil.mergeCallable(mergeOrderLabel, toMergeOrders);
@@ -66,7 +60,6 @@ public class MergeCommand extends CommonCommand {
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(MERGE_OK, MERGE_CLOSE_OK),
                                                              EnumSet.of(MERGE_REJECTED),
                                                              EnumSet.of(NOTIFICATION));
-            this.startFunction = startFunction;
         }
 
         @Override

@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.misc.HistoryUtil;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class TickQuoteRepository {
 
@@ -17,8 +17,8 @@ public class TickQuoteRepository {
                                final HistoryUtil historyUtil,
                                final Set<Instrument> subscribedInstruments) {
         historyUtil
-                .tickQuotesObservable(subscribedInstruments)
-                .subscribe(quote -> quotesByInstrument.put(quote.instrument(), quote));
+            .tickQuotesObservable(subscribedInstruments)
+            .subscribe(quote -> quotesByInstrument.put(quote.instrument(), quote));
 
         tickQuoteObservable.subscribe(this::onTickQuote);
     }

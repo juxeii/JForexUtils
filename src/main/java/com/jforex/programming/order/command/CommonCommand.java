@@ -10,12 +10,12 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-import rx.functions.Action0;
+import io.reactivex.functions.Action;
 
 public abstract class CommonCommand {
 
-    private final Action0 subscribeAction;
-    private final Action0 completedAction;
+    private final Action subscribeAction;
+    private final Action completedAction;
     private final Consumer<Throwable> errorAction;
     private final Consumer<OrderEvent> eventAction;
     private final Callable<IOrder> callable;
@@ -38,11 +38,11 @@ public abstract class CommonCommand {
         eventHandlerForType = builder.eventHandlerForType;
     }
 
-    public Action0 startAction() {
+    public Action startAction() {
         return subscribeAction;
     }
 
-    public Action0 completedAction() {
+    public Action completedAction() {
         return completedAction;
     }
 

@@ -11,7 +11,7 @@ import org.apache.logging.log4j.Logger;
 import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class CommandRetry {
 

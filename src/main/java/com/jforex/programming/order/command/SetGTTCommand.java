@@ -7,7 +7,6 @@ import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
@@ -15,8 +14,6 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.option.SetGTTOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-
-import rx.Completable;
 
 public class SetGTTCommand extends CommonCommand {
 
@@ -38,11 +35,8 @@ public class SetGTTCommand extends CommonCommand {
     }
 
     public static final SetGTTOption create(final IOrder order,
-                                            final long newGTT,
-                                            final Function<SetGTTCommand, Completable> startFunction) {
-        return new Builder(checkNotNull(order),
-                           newGTT,
-                           startFunction);
+                                            final long newGTT) {
+        return new Builder(checkNotNull(order), newGTT);
     }
 
     private static class Builder extends CommonBuilder<SetGTTOption>
@@ -52,8 +46,7 @@ public class SetGTTCommand extends CommonCommand {
         private final long newGTT;
 
         private Builder(final IOrder order,
-                        final long newGTT,
-                        final Function<SetGTTCommand, Completable> startFunction) {
+                        final long newGTT) {
             this.order = order;
             this.newGTT = newGTT;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setGoodTillTime(newGTT), order);
@@ -61,7 +54,6 @@ public class SetGTTCommand extends CommonCommand {
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CHANGED_GTT),
                                                              EnumSet.of(CHANGE_GTT_REJECTED),
                                                              EnumSet.of(NOTIFICATION));
-            this.startFunction = startFunction;
         }
 
         @Override

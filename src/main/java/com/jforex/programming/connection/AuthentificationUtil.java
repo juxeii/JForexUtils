@@ -5,17 +5,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
-import com.jforex.programming.misc.JFHotSubject;
+import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.StreamUtil;
 
-import rx.Completable;
-import rx.Observable;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
 
 public class AuthentificationUtil {
 
     private final IClient client;
-    private final JFHotSubject<LoginState> loginStateSubject = new JFHotSubject<>();
+    private final JFHotObservable<LoginState> loginStateSubject = new JFHotObservable<>();
     private final StateMachineConfig<LoginState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
     private final StateMachine<LoginState, FSMTrigger> fsm = new StateMachine<>(LoginState.LOGGED_OUT, fsmConfig);
 
@@ -45,21 +45,21 @@ public class AuthentificationUtil {
 
     private final void configureFSM() {
         fsmConfig
-                .configure(LoginState.LOGGED_OUT)
-                .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_OUT))
-                .permit(FSMTrigger.CONNECT, LoginState.LOGGED_IN)
-                .ignore(FSMTrigger.DISCONNECT)
-                .ignore(FSMTrigger.LOGOUT);
+            .configure(LoginState.LOGGED_OUT)
+            .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_OUT))
+            .permit(FSMTrigger.CONNECT, LoginState.LOGGED_IN)
+            .ignore(FSMTrigger.DISCONNECT)
+            .ignore(FSMTrigger.LOGOUT);
 
         fsmConfig
-                .configure(LoginState.LOGGED_IN)
-                .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_IN))
-                .permit(FSMTrigger.LOGOUT, LoginState.LOGGED_OUT)
-                .ignore(FSMTrigger.CONNECT)
-                .ignore(FSMTrigger.DISCONNECT);
+            .configure(LoginState.LOGGED_IN)
+            .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_IN))
+            .permit(FSMTrigger.LOGOUT, LoginState.LOGGED_OUT)
+            .ignore(FSMTrigger.CONNECT)
+            .ignore(FSMTrigger.DISCONNECT);
     }
 
-    public final Observable<LoginState> loginStateObservable() {
+    public final Observable<LoginState> observeLoginState() {
         return loginStateSubject.observable();
     }
 
@@ -72,7 +72,7 @@ public class AuthentificationUtil {
                 ? loginRunnableWithPin(loginCredentials)
                 : loginRunnableNoPin(loginCredentials);
 
-        return StreamUtil.completableForJFRunnable(connectRunnable);
+        return StreamUtil.observeJFRunnable(connectRunnable);
     }
 
     private JFRunnable loginRunnableWithPin(final LoginCredentials loginCredentials) {

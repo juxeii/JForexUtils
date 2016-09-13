@@ -31,11 +31,9 @@ import com.jforex.programming.position.PositionMerge;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.quote.TickQuote;
-import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.settings.PlatformSettings;
@@ -51,9 +49,9 @@ public class JForexUtil {
     private IDataService dataService;
     private IEngineUtil engineUtil;
 
-    private TickQuoteHandler tickQuoteHandler;
+    private TickQuoteProvider tickQuoteHandler;
     private TickQuoteRepository tickQuoteRepository;
-    private BarQuoteHandler barQuoteHandler;
+    private BarQuoteProvider barQuoteHandler;
     private BarQuoteRepository barQuoteRepository;
 
     private PositionFactory positionFactory;
@@ -71,9 +69,9 @@ public class JForexUtil {
 
     private final CalculationUtil calculationUtil;
 
-    private final JFHotSubject<TickQuote> tickQuoteSubject = new JFHotSubject<>();
-    private final JFHotSubject<BarQuote> barQuoteSubject = new JFHotSubject<>();
-    private final JFHotSubject<IMessage> messageSubject = new JFHotSubject<>();
+    private final JFHotObservable<TickQuote> tickQuoteObservable = new JFHotObservable<>();
+    private final JFHotObservable<BarQuote> barQuoteObservable = new JFHotObservable<>();
+    private final JFHotObservable<IMessage> messageObservable = new JFHotObservable<>();
 
     public static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     public static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
@@ -99,20 +97,20 @@ public class JForexUtil {
     }
 
     private void initInfrastructure() {
-        orderEventGateway = new OrderEventGateway(messageSubject.observable(), messageToOrderEvent);
+        orderEventGateway = new OrderEventGateway(messageObservable.observable(), messageToOrderEvent);
     }
 
     private void initQuoteProvider() {
-        tickQuoteRepository = new TickQuoteRepository(tickQuoteSubject.observable(),
+        tickQuoteRepository = new TickQuoteRepository(tickQuoteObservable.observable(),
                                                       historyUtil,
                                                       context.getSubscribedInstruments());
-        tickQuoteHandler = new TickQuoteHandler(tickQuoteSubject.observable(),
-                                                tickQuoteRepository);
-        barQuoteRepository = new BarQuoteRepository(barQuoteSubject.observable(),
+        tickQuoteHandler = new TickQuoteProvider(tickQuoteObservable.observable(),
+                                                 tickQuoteRepository);
+        barQuoteRepository = new BarQuoteRepository(barQuoteObservable.observable(),
                                                     historyUtil);
-        barQuoteHandler = new BarQuoteHandler(this,
-                                              barQuoteSubject.observable(),
-                                              barQuoteRepository);
+        barQuoteHandler = new BarQuoteProvider(this,
+                                               barQuoteObservable.observable(),
+                                               barQuoteRepository);
     }
 
     private void initOrderRelated() {
@@ -122,7 +120,7 @@ public class JForexUtil {
         engineUtil = new IEngineUtil(engine);
         orderUtilCompletable = new OrderUtilCompletable(orderUtilHandler, positionFactory);
         commandUtil = new CommandUtil(orderUtilCompletable);
-        orderUtilBuilder = new OrderUtilBuilder(engineUtil, orderUtilCompletable);
+        orderUtilBuilder = new OrderUtilBuilder(engineUtil);
         positionMerge = new PositionMerge(orderUtilCompletable, positionFactory);
         positionClose = new PositionClose(positionMerge,
                                           positionFactory,
@@ -177,14 +175,18 @@ public class JForexUtil {
         return orderUtil;
     }
 
+    public CommandUtil commandUtil() {
+        return commandUtil;
+    }
+
     public void onStop() {
-        tickQuoteSubject.unsubscribe();
-        barQuoteSubject.unsubscribe();
-        messageSubject.unsubscribe();
+        tickQuoteObservable.unsubscribe();
+        barQuoteObservable.unsubscribe();
+        messageObservable.unsubscribe();
     }
 
     public void onMessage(final IMessage message) {
-        messageSubject.onNext(checkNotNull(message));
+        messageObservable.onNext(checkNotNull(message));
     }
 
     public void onTick(final Instrument instrument,
@@ -194,7 +196,7 @@ public class JForexUtil {
 
         if (shouldForwardQuote(tick.getTime())) {
             final TickQuote tickQuote = new TickQuote(instrument, tick);
-            tickQuoteSubject.onNext(tickQuote);
+            tickQuoteObservable.onNext(tickQuote);
         }
     }
 
@@ -233,7 +235,7 @@ public class JForexUtil {
                 .period(period)
                 .offerSide(offerside);
             final BarQuote askBarQuote = new BarQuote(askBar, quoteParams);
-            barQuoteSubject.onNext(askBarQuote);
+            barQuoteObservable.onNext(askBarQuote);
         }
     }
 

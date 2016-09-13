@@ -21,7 +21,7 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.observers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
 public class StreamUtilTest extends CommonUtilForTest {
@@ -37,37 +37,34 @@ public class StreamUtilTest extends CommonUtilForTest {
     @Test
     public void retryCounterObservableCountsCorrect() {
         final int maxRetries = 3;
-        final TestSubscriber<Integer> subscriber = new TestSubscriber<>();
+        final TestObserver<Integer> subscriber = TestObserver.create();
 
-        StreamUtil.retryCounterObservable(maxRetries).subscribe(subscriber);
+        StreamUtil
+            .retryCounterObservable(maxRetries)
+            .subscribe(subscriber);
 
-        subscriber.assertCompleted();
+        subscriber.assertComplete();
         subscriber.assertNoErrors();
-        subscriber.assertValueCount(maxRetries + 1);
-
-        assertThat(subscriber.getOnNextEvents().get(0), equalTo(1));
-        assertThat(subscriber.getOnNextEvents().get(1), equalTo(2));
-        assertThat(subscriber.getOnNextEvents().get(2), equalTo(3));
-        assertThat(subscriber.getOnNextEvents().get(3), equalTo(4));
+        subscriber.assertValues(1, 2, 3, 4);
     }
 
     @Test
     public void waitObservableIsCorrect() {
-        final TestSubscriber<Long> subscriber = new TestSubscriber<>();
+        final TestObserver<Long> subscriber = TestObserver.create();
 
         StreamUtil.waitObservable(1000L, TimeUnit.MILLISECONDS).subscribe(subscriber);
 
         RxTestUtil.advanceTimeBy(900L, TimeUnit.MILLISECONDS);
-        subscriber.assertNotCompleted();
+        subscriber.assertNotComplete();
         RxTestUtil.advanceTimeBy(100L, TimeUnit.MILLISECONDS);
-        subscriber.assertCompleted();
+        subscriber.assertComplete();
     }
 
     @Test
     public void completableFromJFRunnableIsCorrect() throws Exception {
         final JFRunnable jfRunnableMock = mock(JFRunnable.class);
 
-        StreamUtil.completableForJFRunnable(jfRunnableMock).subscribe();
+        StreamUtil.observeJFRunnable(jfRunnableMock).subscribe();
 
         verify(jfRunnableMock).run();
     }

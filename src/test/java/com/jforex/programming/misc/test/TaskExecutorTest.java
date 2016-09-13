@@ -1,8 +1,5 @@
 package com.jforex.programming.misc.test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -18,7 +15,7 @@ import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.observers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
 public class TaskExecutorTest extends CommonUtilForTest {
@@ -29,7 +26,7 @@ public class TaskExecutorTest extends CommonUtilForTest {
     private Callable<IOrder> orderCallMock;
     @Mock
     private Future<IOrder> futureMock;
-    private final TestSubscriber<IOrder> orderSubscriber = new TestSubscriber<>();
+    private final TestObserver<IOrder> orderSubscriber = TestObserver.create();
     private final Runnable onStrategyThreadCall = () -> taskExecutor
         .onStrategyThread(orderCallMock)
         .subscribe(orderSubscriber);
@@ -41,7 +38,7 @@ public class TaskExecutorTest extends CommonUtilForTest {
     public void setUp() throws Exception {
         setUpMocks();
 
-        taskExecutor = spy(new TaskExecutor(contextMock));
+        taskExecutor = new TaskExecutor(contextMock);
     }
 
     private void setUpMocks() throws Exception {
@@ -59,11 +56,9 @@ public class TaskExecutorTest extends CommonUtilForTest {
     }
 
     private void assertOrderEmissionAndCompletion() {
-        orderSubscriber.assertCompleted();
+        orderSubscriber.assertComplete();
         orderSubscriber.assertNoErrors();
-        orderSubscriber.assertValueCount(1);
-
-        assertThat(orderSubscriber.getOnNextEvents().get(0), equalTo(buyOrderEURUSD));
+        orderSubscriber.assertValue(buyOrderEURUSD);
     }
 
     @Test

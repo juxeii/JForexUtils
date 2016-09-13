@@ -8,7 +8,7 @@ import org.apache.commons.collections4.keyvalue.MultiKey;
 import com.dukascopy.api.IBar;
 import com.jforex.programming.misc.HistoryUtil;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class BarQuoteRepository {
 
@@ -42,9 +42,8 @@ public class BarQuoteRepository {
 
     private BarQuote quoteFromHistory(final BarParams barParams) {
         final IBar historyBar = historyUtil
-                .latestBarObservable(barParams)
-                .toBlocking()
-                .first();
+            .latestBarObservable(barParams)
+            .blockingFirst();
         final BarQuote barQuote = new BarQuote(historyBar, barParams);
         onBarQuote(barQuote);
 

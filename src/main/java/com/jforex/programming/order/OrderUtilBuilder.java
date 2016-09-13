@@ -1,6 +1,6 @@
 package com.jforex.programming.order;
 
-import java.util.Set;
+import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
@@ -25,72 +25,54 @@ import com.jforex.programming.order.command.option.SubmitOption;
 
 public class OrderUtilBuilder {
 
-    private final OrderUtilCompletable orderUtilCompletable;
     private final IEngineUtil engineUtil;
 
-    public OrderUtilBuilder(final IEngineUtil engineUtil,
-                            final OrderUtilCompletable orderUtilCompletable) {
+    public OrderUtilBuilder(final IEngineUtil engineUtil) {
         this.engineUtil = engineUtil;
-        this.orderUtilCompletable = orderUtilCompletable;
     }
 
     public SubmitOption submitBuilder(final OrderParams orderParams) {
-        return SubmitCommand.create(orderParams,
-                                    engineUtil,
-                                    orderUtilCompletable::submitOrder);
+        return SubmitCommand.create(orderParams, engineUtil);
     }
 
     public MergeOption mergeBuilder(final String mergeOrderLabel,
-                                    final Set<IOrder> toMergeOrders) {
+                                    final Collection<IOrder> toMergeOrders) {
         return MergeCommand.create(mergeOrderLabel,
                                    toMergeOrders,
-                                   engineUtil,
-                                   orderUtilCompletable::mergeOrders);
+                                   engineUtil);
     }
 
     public CloseOption closeBuilder(final IOrder orderToClose) {
-        return CloseCommand.create(orderToClose, orderUtilCompletable::close);
+        return CloseCommand.create(orderToClose);
     }
 
     public SetLabelOption setLabelBuilder(final IOrder order,
                                           final String newLabel) {
-        return SetLabelCommand.create(order,
-                                      newLabel,
-                                      orderUtilCompletable::setLabel);
+        return SetLabelCommand.create(order, newLabel);
     }
 
     public SetGTTOption setGTTBuilder(final IOrder order,
                                       final long newGTT) {
-        return SetGTTCommand.create(order,
-                                    newGTT,
-                                    orderUtilCompletable::setGTT);
+        return SetGTTCommand.create(order, newGTT);
     }
 
     public SetAmountOption setAmountBuilder(final IOrder order,
                                             final double newAmount) {
-        return SetAmountCommand.create(order,
-                                       newAmount,
-                                       orderUtilCompletable::setAmount);
+        return SetAmountCommand.create(order, newAmount);
     }
 
     public SetOpenPriceOption setOpenPriceBuilder(final IOrder order,
                                                   final double newPrice) {
-        return SetOpenPriceCommand.create(order,
-                                          newPrice,
-                                          orderUtilCompletable::setOpenPrice);
+        return SetOpenPriceCommand.create(order, newPrice);
     }
 
     public SetSLOption setSLBuilder(final IOrder order,
                                     final double newSL) {
-        return SetSLCommand.create(order,
-                                   newSL,
-                                   orderUtilCompletable::setSL);
+        return SetSLCommand.create(order, newSL);
     }
 
     public SetTPOption setTPBuilder(final IOrder order,
                                     final double newTP) {
-        return SetTPCommand.create(order,
-                                   newTP,
-                                   orderUtilCompletable::setTP);
+        return SetTPCommand.create(order, newTP);
     }
 }

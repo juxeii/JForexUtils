@@ -2,40 +2,40 @@ package com.jforex.programming.client;
 
 import com.dukascopy.api.system.ISystemListener;
 import com.jforex.programming.connection.ConnectionState;
-import com.jforex.programming.misc.JFHotSubject;
+import com.jforex.programming.misc.JFHotObservable;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public final class JFSystemListener implements ISystemListener {
 
-    private final JFHotSubject<StrategyRunData> strategyRunDataSubject = new JFHotSubject<>();
-    private final JFHotSubject<ConnectionState> connectionStateSubject = new JFHotSubject<>();
+    private final JFHotObservable<StrategyRunData> strategyRunDataObservable = new JFHotObservable<>();
+    private final JFHotObservable<ConnectionState> connectionStateObservable = new JFHotObservable<>();
 
-    public final Observable<StrategyRunData> strategyRunDataObservable() {
-        return strategyRunDataSubject.observable();
+    public final Observable<StrategyRunData> observeStrategyRunData() {
+        return strategyRunDataObservable.observable();
     }
 
-    public final Observable<ConnectionState> connectionStateObservable() {
-        return connectionStateSubject.observable();
+    public final Observable<ConnectionState> observeConnectionState() {
+        return connectionStateObservable.observable();
     }
 
     @Override
     public final void onStart(final long processId) {
-        strategyRunDataSubject.onNext(new StrategyRunData(processId, StrategyRunState.STARTED));
+        strategyRunDataObservable.onNext(new StrategyRunData(processId, StrategyRunState.STARTED));
     }
 
     @Override
     public final void onStop(final long processId) {
-        strategyRunDataSubject.onNext(new StrategyRunData(processId, StrategyRunState.STOPPED));
+        strategyRunDataObservable.onNext(new StrategyRunData(processId, StrategyRunState.STOPPED));
     }
 
     @Override
     public final void onConnect() {
-        connectionStateSubject.onNext(ConnectionState.CONNECTED);
+        connectionStateObservable.onNext(ConnectionState.CONNECTED);
     }
 
     @Override
     public final void onDisconnect() {
-        connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+        connectionStateObservable.onNext(ConnectionState.DISCONNECTED);
     }
 }

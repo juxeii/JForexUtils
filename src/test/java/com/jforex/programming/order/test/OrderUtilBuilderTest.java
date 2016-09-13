@@ -15,7 +15,6 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.OrderUtilBuilder;
-import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.SetAmountCommand;
@@ -37,13 +36,11 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
     @Mock
     private IEngineUtil engineUtilMock;
     @Mock
-    private OrderUtilCompletable orderUtilCompletableMock;
-    @Mock
     private Callable<IOrder> callableMock;
 
     @Before
     public void setUp() {
-        orerUtilBuilder = new OrderUtilBuilder(engineUtilMock, orderUtilCompletableMock);
+        orerUtilBuilder = new OrderUtilBuilder(engineUtilMock);
     }
 
     public class SubmitBuilderTests {
@@ -73,7 +70,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         @Test
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
-            verifyZeroInteractions(orderUtilCompletableMock);
         }
     }
 
@@ -111,7 +107,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         @Test
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
-            verifyZeroInteractions(orderUtilCompletableMock);
         }
     }
 
@@ -134,7 +129,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         @Test
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
-            verifyZeroInteractions(orderUtilCompletableMock);
         }
     }
 
@@ -158,7 +152,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         @Test
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
-            verifyZeroInteractions(orderUtilCompletableMock);
         }
     }
 
@@ -182,7 +175,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         @Test
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
-            verifyZeroInteractions(orderUtilCompletableMock);
         }
     }
 
@@ -206,7 +198,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         @Test
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
-            verifyZeroInteractions(orderUtilCompletableMock);
         }
     }
 
@@ -230,7 +221,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         @Test
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
-            verifyZeroInteractions(orderUtilCompletableMock);
         }
     }
 
@@ -254,7 +244,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         @Test
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
-            verifyZeroInteractions(orderUtilCompletableMock);
         }
     }
 
@@ -278,7 +267,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         @Test
         public void noInteractionsHappensAtCreation() {
             verifyZeroInteractions(callableMock);
-            verifyZeroInteractions(orderUtilCompletableMock);
         }
     }
 }

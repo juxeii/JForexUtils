@@ -22,10 +22,10 @@ import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import io.reactivex.Completable;
+import io.reactivex.observers.TestObserver;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
-import rx.Completable;
-import rx.observers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class ClientUtilTest extends CommonUtilForTest {
@@ -33,8 +33,8 @@ public class ClientUtilTest extends CommonUtilForTest {
     private ClientUtil clientUtil;
 
     private JFSystemListener jfSystemListener;
-    private final TestSubscriber<ConnectionState> connectionStateSubscriber = new TestSubscriber<>();
-    private final TestSubscriber<StrategyRunData> runDataSubscriber = new TestSubscriber<>();
+    private final TestObserver<ConnectionState> connectionStateSubscriber = TestObserver.create();
+    private final TestObserver<StrategyRunData> runDataSubscriber = TestObserver.create();
     private final String cacheDirectory = "cacheDirectory";
     private final BufferedImage bufferedImage = new BufferedImage(2, 2, 2);
 
@@ -42,19 +42,19 @@ public class ClientUtilTest extends CommonUtilForTest {
     public void setUp() {
         clientUtil = new ClientUtil(clientMock, cacheDirectory);
 
-        clientUtil
-                .connectionStateObservable()
-                .subscribe(connectionStateSubscriber);
-        clientUtil
-                .strategyInfoObservable()
-                .subscribe(runDataSubscriber);
-        jfSystemListener = clientUtil.systemListener();
+        jfSystemListener = clientUtil.jfSystemListener();
+        jfSystemListener
+            .observeConnectionState()
+            .subscribe(connectionStateSubscriber);
+        jfSystemListener
+            .observeStrategyRunData()
+            .subscribe(runDataSubscriber);
     }
 
     @Test
     public void cacheDirectoryIsInitialized() {
         verify(clientMock)
-                .setCacheDirectory(argLambda(file -> file.getName().equals(cacheDirectory)));
+            .setCacheDirectory(argLambda(file -> file.getName().equals(cacheDirectory)));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class ClientUtilTest extends CommonUtilForTest {
 
     @Test
     public void loginCompletableIsValid() {
-        assertThat(clientUtil.loginCompletable(loginCredentials), instanceOf(Completable.class));
+        assertThat(clientUtil.observeLogin(loginCredentials), instanceOf(Completable.class));
     }
 
     @Test
@@ -127,10 +127,7 @@ public class ClientUtilTest extends CommonUtilForTest {
         @Test
         public void connectMessageIsPublished() {
             connectionStateSubscriber.assertNoErrors();
-            connectionStateSubscriber.assertValueCount(1);
-
-            assertThat(connectionStateSubscriber.getOnNextEvents().get(0),
-                       equalTo(ConnectionState.CONNECTED));
+            connectionStateSubscriber.assertValue(ConnectionState.CONNECTED);
         }
 
         public class AfterDisConnectMessage {
@@ -143,10 +140,8 @@ public class ClientUtilTest extends CommonUtilForTest {
             @Test
             public void disConnectMessageIsPublished() {
                 connectionStateSubscriber.assertNoErrors();
-                connectionStateSubscriber.assertValueCount(2);
-
-                assertThat(connectionStateSubscriber.getOnNextEvents().get(1),
-                           equalTo(ConnectionState.DISCONNECTED));
+                connectionStateSubscriber.assertValues(ConnectionState.CONNECTED,
+                                                       ConnectionState.DISCONNECTED);
             }
 
             @Test
@@ -162,9 +157,10 @@ public class ClientUtilTest extends CommonUtilForTest {
 
         private void assertRunData(final StrategyRunState strategyRunState,
                                    final int index) {
-            assertThat(runDataSubscriber.getOnNextEvents().get(index).state(),
+
+            assertThat(getOnNextEvent(runDataSubscriber, index).state(),
                        equalTo(strategyRunState));
-            assertThat(runDataSubscriber.getOnNextEvents().get(index).processID(),
+            assertThat(getOnNextEvent(runDataSubscriber, index).processID(),
                        equalTo(processID));
         }
 

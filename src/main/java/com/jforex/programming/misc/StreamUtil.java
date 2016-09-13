@@ -8,8 +8,8 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import rx.Completable;
-import rx.Observable;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
 
 public final class StreamUtil {
 
@@ -33,7 +33,7 @@ public final class StreamUtil {
                 : Stream.empty();
     }
 
-    public static final Completable completableForJFRunnable(final JFRunnable jfRunnable) {
+    public static final Completable observeJFRunnable(final JFRunnable jfRunnable) {
         checkNotNull(jfRunnable);
 
         return Completable.fromCallable(() -> {

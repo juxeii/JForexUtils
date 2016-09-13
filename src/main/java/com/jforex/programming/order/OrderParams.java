@@ -2,10 +2,14 @@ package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.aeonbits.owner.ConfigFactory;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
@@ -137,11 +141,11 @@ public final class OrderParams implements Cloneable {
     }
 
     private static class Builder implements
-            WithOrderCommand,
-            WithAmount,
-            WithLabel,
-            WithOptions,
-            Clone {
+                                 WithOrderCommand,
+                                 WithAmount,
+                                 WithLabel,
+                                 WithOptions,
+                                 Clone {
 
         private String label;
         private Instrument instrument;
@@ -155,10 +159,8 @@ public final class OrderParams implements Cloneable {
         private long goodTillTime;
         private String comment;
 
-        private static final PlatformSettings platformSettings =
-                ConfigFactory.create(PlatformSettings.class);
-        private static final UserSettings userSettings =
-                ConfigFactory.create(UserSettings.class);
+        private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
+        private static final UserSettings userSettings = JForexUtil.userSettings;
 
         private Builder(final Instrument instrument) {
             this.instrument = instrument;
@@ -250,71 +252,61 @@ public final class OrderParams implements Cloneable {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        long temp;
-        temp = Double.doubleToLongBits(amount);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        result = prime * result + ((comment == null) ? 0 : comment.hashCode());
-        result = prime * result + (int) (goodTillTime ^ (goodTillTime >>> 32));
-        result = prime * result + ((instrument == null) ? 0 : instrument.hashCode());
-        result = prime * result + ((label == null) ? 0 : label.hashCode());
-        result = prime * result + ((orderCommand == null) ? 0 : orderCommand.hashCode());
-        temp = Double.doubleToLongBits(price);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(slippage);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(stopLossPrice);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(takeProfitPrice);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        return result;
-    }
-
-    @Override
     public boolean equals(final Object obj) {
         if (this == obj)
             return true;
         if (obj == null)
             return false;
-        if (getClass() != obj.getClass())
+        if (!(obj instanceof OrderParams))
             return false;
+
         final OrderParams other = (OrderParams) obj;
-        if (Double.doubleToLongBits(amount) != Double.doubleToLongBits(other.amount))
-            return false;
-        if (comment == null) {
-            if (other.comment != null)
-                return false;
-        } else if (!comment.equals(other.comment))
-            return false;
-        if (goodTillTime != other.goodTillTime)
-            return false;
-        if (instrument != other.instrument)
-            return false;
-        if (label == null) {
-            if (other.label != null)
-                return false;
-        } else if (!label.equals(other.label))
-            return false;
-        if (orderCommand != other.orderCommand)
-            return false;
-        if (Double.doubleToLongBits(price) != Double.doubleToLongBits(other.price))
-            return false;
-        if (Double.doubleToLongBits(slippage) != Double.doubleToLongBits(other.slippage))
-            return false;
-        if (Double.doubleToLongBits(stopLossPrice) != Double.doubleToLongBits(other.stopLossPrice))
-            return false;
-        if (Double.doubleToLongBits(takeProfitPrice) != Double.doubleToLongBits(other.takeProfitPrice))
-            return false;
-        return true;
+        final EqualsBuilder builder = new EqualsBuilder();
+        builder.append(amount, other.amount);
+        builder.append(comment, other.comment);
+        builder.append(goodTillTime, other.goodTillTime);
+        builder.append(instrument, other.instrument);
+        builder.append(label, other.label);
+        builder.append(orderCommand, other.orderCommand);
+        builder.append(price, other.price);
+        builder.append(slippage, other.slippage);
+        builder.append(stopLossPrice, other.stopLossPrice);
+        builder.append(takeProfitPrice, other.takeProfitPrice);
+
+        return builder.isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        final HashCodeBuilder builder = new HashCodeBuilder();
+        builder.append(instrument);
+        builder.append(label);
+        builder.append(orderCommand);
+        builder.append(amount);
+        builder.append(goodTillTime);
+        builder.append(price);
+        builder.append(slippage);
+        builder.append(stopLossPrice);
+        builder.append(takeProfitPrice);
+        builder.append(comment);
+
+        return builder.toHashCode();
     }
 
     @Override
     public String toString() {
-        return "OrderParams [label=" + label + ", instrument=" + instrument + ", orderCommand=" + orderCommand
-                + ", amount=" + amount + ", price=" + price + ", slippage=" + slippage + ", stopLossPrice="
-                + stopLossPrice + ", takeProfitPrice=" + takeProfitPrice + ", goodTillTime=" + goodTillTime
-                + ", comment=" + comment + "]";
+        final ToStringBuilder toStringBuilder = new ToStringBuilder(this, ToStringStyle.DEFAULT_STYLE);
+        toStringBuilder.append("instrument", instrument);
+        toStringBuilder.append("label", label);
+        toStringBuilder.append("orderCommand", orderCommand);
+        toStringBuilder.append("amount", amount);
+        toStringBuilder.append("goodTillTime", goodTillTime);
+        toStringBuilder.append("price", price);
+        toStringBuilder.append("amount", amount);
+        toStringBuilder.append("slippage", slippage);
+        toStringBuilder.append("stopLossPrice", stopLossPrice);
+        toStringBuilder.append("takeProfitPrice", takeProfitPrice);
+
+        return toStringBuilder.toString();
     }
 }

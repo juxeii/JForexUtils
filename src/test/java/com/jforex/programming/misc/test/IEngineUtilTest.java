@@ -24,11 +24,6 @@ public class IEngineUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void engineInstanceIsCorrect() {
-        assertThat(iengineUtil.engine(), equalTo(engineMock));
-    }
-
-    @Test
     public void submitCallableIsCorrect() throws Exception {
         when(engineMock.submitOrder(buyParamsEURUSD.label(),
                                     buyParamsEURUSD.instrument(),

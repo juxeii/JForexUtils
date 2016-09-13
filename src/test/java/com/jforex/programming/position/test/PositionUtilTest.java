@@ -3,7 +3,7 @@ package com.jforex.programming.position.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.Set;
+import java.util.Collection;
 import java.util.function.Function;
 
 import org.junit.Before;
@@ -23,7 +23,7 @@ import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.Completable;
+import io.reactivex.Completable;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PositionUtilTest extends InstrumentUtilForTest {
@@ -39,7 +39,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
     @Mock
     private Completable completableMock;
     @Mock
-    private Function<Set<IOrder>, MergeCommand> mergeCommandFactory;
+    private Function<Collection<IOrder>, MergeCommand> mergeCommandFactory;
     @Mock
     private Function<IOrder, CloseCommand> closeCommandFactory;
 

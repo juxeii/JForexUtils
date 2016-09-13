@@ -18,24 +18,27 @@ import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import rx.Completable;
-import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
+import io.reactivex.Completable;
+import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
+import io.reactivex.subscribers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class AuthentificationUtilTest extends CommonUtilForTest {
 
     private AuthentificationUtil authentificationUtil;
 
-    private final Subject<ConnectionState, ConnectionState> connectionStateObs = PublishSubject.create();
-    private final TestSubscriber<LoginState> loginStateSubscriber = new TestSubscriber<>();
+    private final Subject<ConnectionState> connectionStateObs = PublishSubject.create();
+    private final TestObserver<LoginState> loginStateSubscriber = TestObserver.create();
 
     @Before
     public void setUp() {
         authentificationUtil = new AuthentificationUtil(clientMock, connectionStateObs);
 
-        authentificationUtil.loginStateObservable().subscribe(loginStateSubscriber);
+        authentificationUtil
+            .observeLoginState()
+            .subscribe(loginStateSubscriber);
     }
 
     private void verifyConnectCall(final LoginCredentials loginCredentials,
@@ -86,8 +89,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
                                                   final LoginCredentials loginCredentials) throws Exception {
         setExceptionOnConnect(loginCredentials, exceptionType);
 
-        final TestSubscriber<?> loginSubscriber = new TestSubscriber<>();
-        loginCall.get().subscribe(loginSubscriber);
+        final TestSubscriber<?> loginSubscriber = loginCall.get().test();
 
         loginSubscriber.assertError(exceptionType);
     }
@@ -97,7 +99,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         loginStateSubscriber.assertNoErrors();
         loginStateSubscriber.assertValueCount(eventIndex + 1);
 
-        assertThat(loginStateSubscriber.getOnNextEvents().get(eventIndex),
+        assertThat(getOnNextEvent(loginStateSubscriber, eventIndex),
                    equalTo(loginState));
     }
 
@@ -137,11 +139,11 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     public class AfterLogin {
 
-        protected final TestSubscriber<?> loginCompletionSubscriber = new TestSubscriber<>();
+        protected TestSubscriber<?> loginCompletionSubscriber;
 
         @Before
         public void setUp() {
-            login().subscribe(loginCompletionSubscriber);
+            loginCompletionSubscriber = login().test();
 
             loginCompletionSubscriber.assertNoErrors();
         }
@@ -201,7 +203,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
             @Test
             public void testLoginCompletion() {
-                loginCompletionSubscriber.assertCompleted();
+                loginCompletionSubscriber.assertComplete();
             }
 
             public class AfterLogout {

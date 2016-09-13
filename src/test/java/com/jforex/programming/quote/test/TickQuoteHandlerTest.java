@@ -10,57 +10,57 @@ import org.mockito.Mock;
 import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.quote.TickQuote;
-import com.jforex.programming.quote.TickQuoteHandler;
+import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
-import rx.Observable;
-import rx.observers.TestSubscriber;
+import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
 
 public class TickQuoteHandlerTest extends QuoteProviderForTest {
 
-    private TickQuoteHandler tickQuoteHandler;
+    private TickQuoteProvider tickQuoteHandler;
 
     @Mock
     private TickQuoteRepository tickQuoteRepositoryMock;
     private final Observable<TickQuote> quoteObservable = Observable.just(tickQuoteEURUSD, tickQuoteAUDUSD);
-    private final TestSubscriber<TickQuote> unfilteredQuoteSubscriber = new TestSubscriber<>();
-    private final TestSubscriber<TickQuote> quoteEURUSDAndAUDUSDSubscriber = new TestSubscriber<>();
-    private final TestSubscriber<TickQuote> quoteGBPAUDSubscriber = new TestSubscriber<>();
+    private final TestObserver<TickQuote> unfilteredQuoteSubscriber = TestObserver.create();
+    private final TestObserver<TickQuote> quoteEURUSDAndAUDUSDSubscriber = TestObserver.create();
+    private final TestObserver<TickQuote> quoteGBPAUDSubscriber = TestObserver.create();
 
     @Before
     public void setUp() {
         setUpMocks();
 
-        tickQuoteHandler = new TickQuoteHandler(quoteObservable, tickQuoteRepositoryMock);
+        tickQuoteHandler = new TickQuoteProvider(quoteObservable, tickQuoteRepositoryMock);
 
         tickQuoteHandler
-                .observable()
-                .subscribe(unfilteredQuoteSubscriber);
+            .observable()
+            .subscribe(unfilteredQuoteSubscriber);
 
         tickQuoteHandler
-                .observableForInstruments(Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD))
-                .subscribe(quoteEURUSDAndAUDUSDSubscriber);
+            .observableForInstruments(Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD))
+            .subscribe(quoteEURUSDAndAUDUSDSubscriber);
 
         tickQuoteHandler
-                .observableForInstruments(Sets.newHashSet(instrumentGBPAUD))
-                .subscribe(quoteGBPAUDSubscriber);
+            .observableForInstruments(Sets.newHashSet(instrumentGBPAUD))
+            .subscribe(quoteGBPAUDSubscriber);
     }
 
     private void setUpMocks() {
         when(tickQuoteRepositoryMock.get(instrumentEURUSD))
-                .thenReturn(tickQuoteEURUSD);
+            .thenReturn(tickQuoteEURUSD);
         when(tickQuoteRepositoryMock.get(instrumentAUDUSD))
-                .thenReturn(tickQuoteAUDUSD);
+            .thenReturn(tickQuoteAUDUSD);
     }
 
-    private void assertCommonEmittedTicks(final TestSubscriber<TickQuote> subscriber) {
+    private void assertCommonEmittedTicks(final TestObserver<TickQuote> subscriber) {
         subscriber.assertNoErrors();
         subscriber.assertValueCount(2);
 
-        assertThat(subscriber.getOnNextEvents().get(0),
+        assertThat(getOnNextEvent(subscriber, 0),
                    equalTo(tickQuoteEURUSD));
-        assertThat(subscriber.getOnNextEvents().get(1),
+        assertThat(getOnNextEvent(subscriber, 1),
                    equalTo(tickQuoteAUDUSD));
     }
 

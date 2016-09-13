@@ -7,8 +7,6 @@ import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.aeonbits.owner.ConfigFactory;
-
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -18,6 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.misc.JFRunnable;
+import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
 
 public final class OrderStaticUtil {
@@ -25,7 +24,7 @@ public final class OrderStaticUtil {
     private OrderStaticUtil() {
     }
 
-    private static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
+    private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
 
     public static final ImmutableBiMap<OrderCommand, OrderCommand> orderCommands =
             new ImmutableBiMap.Builder<OrderCommand, OrderCommand>()

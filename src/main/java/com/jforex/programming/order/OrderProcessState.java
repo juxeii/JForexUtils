@@ -1,4 +1,4 @@
-package com.jforex.programming.position;
+package com.jforex.programming.order;
 
 public enum OrderProcessState {
 

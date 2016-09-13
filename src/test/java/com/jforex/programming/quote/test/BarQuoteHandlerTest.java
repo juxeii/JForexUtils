@@ -13,21 +13,21 @@ import org.mockito.Mock;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteHandler;
+import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import rx.Observable;
-import rx.observers.TestSubscriber;
+import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
 
 public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
-    private BarQuoteHandler barQuoteHandler;
+    private BarQuoteProvider barQuoteHandler;
 
-    @Mock private BarQuoteRepository barQuoteRepositoryMock;
-    private final TestSubscriber<BarQuote> filteredQuoteSubscriber = new TestSubscriber<>();
-    private final TestSubscriber<BarQuote> unFilteredQuoteSubscriber = new TestSubscriber<>();
+    @Mock
+    private BarQuoteRepository barQuoteRepositoryMock;
+    private final TestObserver<BarQuote> filteredQuoteSubscriber = TestObserver.create();
+    private final TestObserver<BarQuote> unFilteredQuoteSubscriber = TestObserver.create();
     private final Observable<BarQuote> quoteObservable =
             Observable.just(askBarQuoteEURUSD,
                             askBarQuoteAUDUSD,
@@ -37,7 +37,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     @Before
     public void setUp() {
-        barQuoteHandler = new BarQuoteHandler(jforexUtilMock,
+        barQuoteHandler = new BarQuoteProvider(jforexUtilMock,
                                               quoteObservable,
                                               barQuoteRepositoryMock);
 
@@ -53,12 +53,12 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
             .subscribe(unFilteredQuoteSubscriber);
     }
 
-    private void assertCommonEmittedBars(final TestSubscriber<BarQuote> subscriber) {
+    private void assertCommonEmittedBars(final TestObserver<BarQuote> subscriber) {
         subscriber.assertNoErrors();
 
-        assertThat(subscriber.getOnNextEvents().get(0),
+        assertThat(getOnNextEvent(subscriber, 0),
                    equalTo(askBarQuoteEURUSD));
-        assertThat(subscriber.getOnNextEvents().get(1),
+        assertThat(getOnNextEvent(subscriber, 1),
                    equalTo(askBarQuoteAUDUSD));
     }
 
@@ -97,12 +97,11 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     @Test
     public void unFilteredBarsAreEmitted() {
         unFilteredQuoteSubscriber.assertValueCount(4);
-
         assertCommonEmittedBars(unFilteredQuoteSubscriber);
 
-        assertThat(unFilteredQuoteSubscriber.getOnNextEvents().get(2),
+        assertThat(getOnNextEvent(unFilteredQuoteSubscriber, 2),
                    equalTo(askBarQuoteEURUSDCustomPeriod));
-        assertThat(unFilteredQuoteSubscriber.getOnNextEvents().get(3),
+        assertThat(getOnNextEvent(unFilteredQuoteSubscriber, 3),
                    equalTo(bidBarQuoteEURUSD));
     }
 
@@ -117,12 +116,5 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
             .subscribe(filteredQuoteSubscriber);
 
         verify(jforexUtilMock).subscribeToBarsFeed(askBarEURUSDCustomPeriodParams);
-    }
-
-    @Test
-    public void testEqualsContractForBarParams() {
-        EqualsVerifier
-            .forClass(BarParams.class)
-            .verify();
     }
 }
