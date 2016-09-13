@@ -1,8 +1,5 @@
 package com.jforex.programming.misc.test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -61,9 +58,7 @@ public class TaskExecutorTest extends CommonUtilForTest {
     private void assertOrderEmissionAndCompletion() {
         orderSubscriber.assertComplete();
         orderSubscriber.assertNoErrors();
-        orderSubscriber.assertValueCount(1);
-
-        assertThat(getOnNextEvent(orderSubscriber, 0), equalTo(buyOrderEURUSD));
+        orderSubscriber.assertValue(buyOrderEURUSD);
     }
 
     @Test

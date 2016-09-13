@@ -45,12 +45,7 @@ public class StreamUtilTest extends CommonUtilForTest {
 
         subscriber.assertComplete();
         subscriber.assertNoErrors();
-        subscriber.assertValueCount(maxRetries + 1);
-
-        assertThat(getOnNextEvent(subscriber, 0), equalTo(1));
-        assertThat(getOnNextEvent(subscriber, 1), equalTo(2));
-        assertThat(getOnNextEvent(subscriber, 2), equalTo(3));
-        assertThat(getOnNextEvent(subscriber, 3), equalTo(4));
+        subscriber.assertValues(1, 2, 3, 4);
     }
 
     @Test

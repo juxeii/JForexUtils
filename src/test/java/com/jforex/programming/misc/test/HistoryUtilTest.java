@@ -39,17 +39,15 @@ public class HistoryUtilTest extends QuoteProviderForTest {
     private void assertTickSubscriber() {
         tickSubscriber.assertNoErrors();
         tickSubscriber.assertComplete();
-        tickSubscriber.assertValueCount(1);
 
-        assertThat(getOnNextEvent(tickSubscriber, 0), equalTo(tickEURUSD));
+        tickSubscriber.assertValue(tickEURUSD);
     }
 
     private void assertBarSubscriber() {
         barSubscriber.assertNoErrors();
         barSubscriber.assertComplete();
-        barSubscriber.assertValueCount(1);
 
-        assertThat(getOnNextEvent(barSubscriber, 0), equalTo(askBarEURUSD));
+        barSubscriber.assertValue(askBarEURUSD);
     }
 
     @Test

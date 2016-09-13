@@ -98,7 +98,6 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     @Test
     public void unFilteredBarsAreEmitted() {
         unFilteredQuoteSubscriber.assertValueCount(4);
-
         assertCommonEmittedBars(unFilteredQuoteSubscriber);
 
         assertThat(getOnNextEvent(unFilteredQuoteSubscriber, 2),

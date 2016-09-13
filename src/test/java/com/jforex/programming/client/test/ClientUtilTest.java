@@ -127,10 +127,7 @@ public class ClientUtilTest extends CommonUtilForTest {
         @Test
         public void connectMessageIsPublished() {
             connectionStateSubscriber.assertNoErrors();
-            connectionStateSubscriber.assertValueCount(1);
-
-            assertThat(getOnNextEvent(connectionStateSubscriber, 0),
-                       equalTo(ConnectionState.CONNECTED));
+            connectionStateSubscriber.assertValue(ConnectionState.CONNECTED);
         }
 
         public class AfterDisConnectMessage {
@@ -143,10 +140,8 @@ public class ClientUtilTest extends CommonUtilForTest {
             @Test
             public void disConnectMessageIsPublished() {
                 connectionStateSubscriber.assertNoErrors();
-                connectionStateSubscriber.assertValueCount(2);
-
-                assertThat(getOnNextEvent(connectionStateSubscriber, 1),
-                           equalTo(ConnectionState.DISCONNECTED));
+                connectionStateSubscriber.assertValues(ConnectionState.CONNECTED,
+                                                       ConnectionState.DISCONNECTED);
             }
 
             @Test
