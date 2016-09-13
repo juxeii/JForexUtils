@@ -7,7 +7,6 @@ import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderStaticUtil;
@@ -15,8 +14,6 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.option.SetAmountOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
-
-import io.reactivex.Completable;
 
 public class SetAmountCommand extends CommonCommand {
 
@@ -38,11 +35,8 @@ public class SetAmountCommand extends CommonCommand {
     }
 
     public static final SetAmountOption create(final IOrder order,
-                                               final double newAmount,
-                                               final Function<SetAmountCommand, Completable> startFunction) {
-        return new Builder(checkNotNull(order),
-                           newAmount,
-                           startFunction);
+                                               final double newAmount) {
+        return new Builder(checkNotNull(order), newAmount);
     }
 
     public static class Builder extends CommonBuilder<SetAmountOption>
@@ -52,8 +46,7 @@ public class SetAmountCommand extends CommonCommand {
         private final double newAmount;
 
         private Builder(final IOrder order,
-                        final double newAmount,
-                        final Function<SetAmountCommand, Completable> startFunction) {
+                        final double newAmount) {
             this.order = order;
             this.newAmount = newAmount;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setRequestedAmount(newAmount), order);
@@ -61,7 +54,6 @@ public class SetAmountCommand extends CommonCommand {
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CHANGED_AMOUNT),
                                                              EnumSet.of(CHANGE_AMOUNT_REJECTED),
                                                              EnumSet.of(NOTIFICATION));
-            this.startFunction = startFunction;
         }
 
         @Override

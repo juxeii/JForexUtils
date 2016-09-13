@@ -9,7 +9,6 @@ import static org.junit.Assert.assertThat;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,8 +18,6 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.event.OrderEventType;
-
-import io.reactivex.Completable;
 
 public class CloseCommandTest extends CommandTester {
 
@@ -32,13 +29,11 @@ public class CloseCommandTest extends CommandTester {
     private Consumer<IOrder> partialCloseActionMock;
     @Mock
     private Consumer<IOrder> closeActionMock;
-    @Mock
-    private Function<CloseCommand, Completable> startFunctionMock;
 
     @Before
     public void setUp() {
         closeCommand = CloseCommand
-            .create(buyOrderEURUSD, startFunctionMock)
+            .create(buyOrderEURUSD)
             .doOnError(errorActionMock)
             .doOnComplete(completedActionMock)
             .doOnCloseReject(closeRejectActionMock)
@@ -53,7 +48,7 @@ public class CloseCommandTest extends CommandTester {
     @Test
     public void emptyCommandHasNoRetryParameters() throws Exception {
         final CloseCommand emptyCommand = CloseCommand
-            .create(buyOrderEURUSD, startFunctionMock)
+            .create(buyOrderEURUSD)
             .build();
 
         assertNoRetryParams(emptyCommand);

@@ -13,7 +13,6 @@ import static org.junit.Assert.assertThat;
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -23,8 +22,6 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.order.event.OrderEventType;
-
-import io.reactivex.Completable;
 
 public class SubmitCommandTest extends CommandTester {
 
@@ -41,8 +38,6 @@ public class SubmitCommandTest extends CommandTester {
     @Mock
     private Consumer<IOrder> filledActionMock;
     @Mock
-    private Function<SubmitCommand, Completable> startFunctionMock;
-    @Mock
     private Callable<IOrder> callable;
 
     @Before
@@ -50,9 +45,7 @@ public class SubmitCommandTest extends CommandTester {
         setUpMocks();
 
         submitCommand = SubmitCommand
-            .create(buyParamsEURUSD,
-                    iengineUtilMock,
-                    startFunctionMock)
+            .create(buyParamsEURUSD, iengineUtilMock)
             .doOnError(errorActionMock)
             .doOnComplete(completedActionMock)
             .doOnSubmitReject(submitRejectActionMock)
@@ -74,9 +67,7 @@ public class SubmitCommandTest extends CommandTester {
     @Test
     public void emptyCommandHasNoRetryParameters() throws Exception {
         final SubmitCommand emptyCommand = SubmitCommand
-            .create(buyParamsEURUSD,
-                    iengineUtilMock,
-                    startFunctionMock)
+            .create(buyParamsEURUSD, iengineUtilMock)
             .build();
 
         assertNoRetryParams(emptyCommand);

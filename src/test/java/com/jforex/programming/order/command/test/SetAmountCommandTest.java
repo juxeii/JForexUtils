@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,8 +18,6 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetAmountCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import io.reactivex.Completable;
-
 public class SetAmountCommandTest extends CommandTester {
 
     private SetAmountCommand setAmountCommand;
@@ -29,16 +26,12 @@ public class SetAmountCommandTest extends CommandTester {
     private Consumer<IOrder> setAmountRejectActionMock;
     @Mock
     private Consumer<IOrder> setAmountActionMock;
-    @Mock
-    private Function<SetAmountCommand, Completable> startFunctionMock;
     private final double newAmount = 0.12;
 
     @Before
     public void setUp() {
         setAmountCommand = SetAmountCommand
-            .create(buyOrderEURUSD,
-                    newAmount,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newAmount)
             .doOnError(errorActionMock)
             .doOnComplete(completedActionMock)
             .doOnSetAmountReject(setAmountRejectActionMock)
@@ -52,9 +45,7 @@ public class SetAmountCommandTest extends CommandTester {
     @Test
     public void emptyCommandHasNoRetryParameters() throws Exception {
         final SetAmountCommand emptyCommand = SetAmountCommand
-            .create(buyOrderEURUSD,
-                    newAmount,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newAmount)
             .build();
 
         assertNoRetryParams(emptyCommand);

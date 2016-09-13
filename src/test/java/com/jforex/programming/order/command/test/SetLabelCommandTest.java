@@ -8,7 +8,6 @@ import static org.junit.Assert.assertThat;
 
 import java.util.EnumSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,8 +18,6 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.SetLabelCommand;
 import com.jforex.programming.order.event.OrderEventType;
 
-import io.reactivex.Completable;
-
 public class SetLabelCommandTest extends CommandTester {
 
     private SetLabelCommand setLabelCommand;
@@ -29,16 +26,12 @@ public class SetLabelCommandTest extends CommandTester {
     private Consumer<IOrder> setLabelRejectActionMock;
     @Mock
     private Consumer<IOrder> setLabelActionMock;
-    @Mock
-    private Function<SetLabelCommand, Completable> startFunctionMock;
     private final String newLabel = "newLabel";
 
     @Before
     public void setUp() {
         setLabelCommand = SetLabelCommand
-            .create(buyOrderEURUSD,
-                    newLabel,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newLabel)
             .doOnError(errorActionMock)
             .doOnComplete(completedActionMock)
             .doOnSetLabelReject(setLabelRejectActionMock)
@@ -52,9 +45,7 @@ public class SetLabelCommandTest extends CommandTester {
     @Test
     public void emptyCommandHasNoRetryParameters() throws Exception {
         final SetLabelCommand emptyCommand = SetLabelCommand
-            .create(buyOrderEURUSD,
-                    newLabel,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newLabel)
             .build();
 
         assertNoRetryParams(emptyCommand);

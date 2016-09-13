@@ -36,9 +36,7 @@ public class SetOpenPriceCommandTest extends CommandTester {
     @Before
     public void setUp() {
         setOpenPriceCommand = SetOpenPriceCommand
-            .create(buyOrderEURUSD,
-                    newOpenPrice,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newOpenPrice)
             .doOnError(errorActionMock)
             .doOnComplete(completedActionMock)
             .doOnSetOpenPriceReject(setOpenPriceRejectActionMock)
@@ -52,9 +50,7 @@ public class SetOpenPriceCommandTest extends CommandTester {
     @Test
     public void emptyCommandHasNoRetryParameters() throws Exception {
         final SetOpenPriceCommand emptyCommand = SetOpenPriceCommand
-            .create(buyOrderEURUSD,
-                    newOpenPrice,
-                    startFunctionMock)
+            .create(buyOrderEURUSD, newOpenPrice)
             .build();
 
         assertNoRetryParams(emptyCommand);

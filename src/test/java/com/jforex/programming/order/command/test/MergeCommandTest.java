@@ -11,7 +11,6 @@ import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,8 +21,6 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEventType;
-
-import io.reactivex.Completable;
 
 public class MergeCommandTest extends CommandTester {
 
@@ -36,8 +33,6 @@ public class MergeCommandTest extends CommandTester {
     @Mock
     private Consumer<IOrder> mergeActionMock;
     @Mock
-    private Function<MergeCommand, Completable> startFunctionMock;
-    @Mock
     private Callable<IOrder> callable;
     private final String mergeOrderLabel = "mergeOrderLabel";
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
@@ -49,8 +44,7 @@ public class MergeCommandTest extends CommandTester {
         mergeCommand = MergeCommand
             .create(mergeOrderLabel,
                     toMergeOrders,
-                    iengineUtilMock,
-                    startFunctionMock)
+                    iengineUtilMock)
             .doOnError(errorActionMock)
             .doOnComplete(completedActionMock)
             .doOnMergeClose(mergeCloseActionMock)
@@ -72,8 +66,7 @@ public class MergeCommandTest extends CommandTester {
         final MergeCommand emptyCommand = MergeCommand
             .create(mergeOrderLabel,
                     toMergeOrders,
-                    iengineUtilMock,
-                    startFunctionMock)
+                    iengineUtilMock)
             .build();
 
         assertNoRetryParams(emptyCommand);

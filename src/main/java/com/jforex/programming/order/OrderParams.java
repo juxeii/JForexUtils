@@ -279,16 +279,16 @@ public final class OrderParams implements Cloneable {
     @Override
     public int hashCode() {
         final HashCodeBuilder builder = new HashCodeBuilder();
-        builder.append(amount);
-        builder.append(comment);
-        builder.append(goodTillTime);
         builder.append(instrument);
         builder.append(label);
         builder.append(orderCommand);
+        builder.append(amount);
+        builder.append(goodTillTime);
         builder.append(price);
         builder.append(slippage);
         builder.append(stopLossPrice);
         builder.append(takeProfitPrice);
+        builder.append(comment);
 
         return builder.toHashCode();
     }

@@ -120,7 +120,7 @@ public class JForexUtil {
         engineUtil = new IEngineUtil(engine);
         orderUtilCompletable = new OrderUtilCompletable(orderUtilHandler, positionFactory);
         commandUtil = new CommandUtil(orderUtilCompletable);
-        orderUtilBuilder = new OrderUtilBuilder(engineUtil, orderUtilCompletable);
+        orderUtilBuilder = new OrderUtilBuilder(engineUtil);
         positionMerge = new PositionMerge(orderUtilCompletable, positionFactory);
         positionClose = new PositionClose(positionMerge,
                                           positionFactory,

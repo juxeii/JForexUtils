@@ -49,8 +49,7 @@ public final class CalculationUtil {
         final Instrument conversionInstrument = InstrumentFactory
             .maybeFromCurrencies(sourceCurrency, targetCurrency)
             .get();
-        final double conversionQuote =
-                tickQuoteProvider.forOfferSide(conversionInstrument, offerSide);
+        final double conversionQuote = tickQuoteProvider.forOfferSide(conversionInstrument, offerSide);
         return targetCurrency.equals(conversionInstrument.getPrimaryJFCurrency())
                 ? 1 / conversionQuote
                 : conversionQuote;

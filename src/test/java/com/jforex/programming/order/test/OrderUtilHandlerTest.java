@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +30,6 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.functions.Action;
 import io.reactivex.observers.TestObserver;
@@ -49,8 +47,6 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private OrderEventGateway orderEventGatewayMock;
     @Mock
     private Consumer<OrderEvent> orderEventConsumerMock;
-    @Mock
-    private Function<CloseCommand, Completable> startFunction;
     @Mock
     private Consumer<IOrder> closeActionMock;
     @Mock
@@ -100,7 +96,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         @Before
         public void setUp() {
             closeCommand = CloseCommand
-                .create(orderToClose, startFunction)
+                .create(orderToClose)
                 .doOnStart(startActionMock)
                 .doOnOrderEvent(orderEventConsumerMock)
                 .doOnClose(closeActionMock)
@@ -121,7 +117,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         @Test
         public void whenRejectedCommandCompletesWithNoRetryForCommandWithNoRetry() {
             closeCommand = CloseCommand
-                .create(orderToClose, startFunction)
+                .create(orderToClose)
                 .doOnOrderEvent(orderEventConsumerMock)
                 .build();
             callable = closeCommand.callable();

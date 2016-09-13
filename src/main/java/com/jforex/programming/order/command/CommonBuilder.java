@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Maps;
@@ -15,7 +14,6 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-import io.reactivex.Completable;
 import io.reactivex.functions.Action;
 
 @SuppressWarnings("unchecked")
@@ -31,7 +29,6 @@ public class CommonBuilder<T extends CommonOption<T>> {
     protected OrderCallReason callReason;
     protected OrderEventTypeData orderEventTypeData;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = Maps.newEnumMap(OrderEventType.class);
-    protected Function<? extends CommonCommand, Completable> startFunction;
 
     public T doOnStart(final Action startAction) {
         this.startAction = checkNotNull(startAction);
