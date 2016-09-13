@@ -1,6 +1,7 @@
 package com.jforex.programming.order.command;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ public class CommandUtil {
         this.orderUtilCompletable = orderUtilCompletable;
     }
 
-    public Completable merge(final List<? extends CommonCommand> commands) {
+    public Completable merge(final Collection<? extends CommonCommand> commands) {
         return Completable.merge(toCompletables(commands));
     }
 
@@ -27,13 +28,12 @@ public class CommandUtil {
         return merge(Arrays.asList(commands));
     }
 
-    public <T extends CommonCommand> Completable mergeFromFactory(final List<IOrder> orders,
+    public <T extends CommonCommand> Completable mergeFromFactory(final Collection<IOrder> orders,
                                                                   final Function<IOrder, T> commandFactory) {
         return merge(fromFactory(orders, commandFactory));
     }
 
     public Completable concat(final List<? extends CommonCommand> commands) {
-        System.out.println("test");
         return Completable.concat(toCompletables(commands));
     }
 
@@ -47,7 +47,7 @@ public class CommandUtil {
         return concat(fromFactory(orders, commandFactory));
     }
 
-    public <T extends CommonCommand> List<T> fromFactory(final List<IOrder> orders,
+    public <T extends CommonCommand> List<T> fromFactory(final Collection<IOrder> orders,
                                                          final Function<IOrder, T> commandFactory) {
         return orders
             .stream()
@@ -55,7 +55,7 @@ public class CommandUtil {
             .collect(Collectors.toList());
     }
 
-    public List<Completable> toCompletables(final List<? extends CommonCommand> commands) {
+    public List<Completable> toCompletables(final Collection<? extends CommonCommand> commands) {
         return commands
             .stream()
             .map(orderUtilCompletable::commandToCompletable)

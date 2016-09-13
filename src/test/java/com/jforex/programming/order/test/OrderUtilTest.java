@@ -3,7 +3,7 @@ package com.jforex.programming.order.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -50,7 +50,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private Completable completableMock;
     @Mock
-    private Function<List<IOrder>, MergeCommand> mergeCommandFactory;
+    private Function<Collection<IOrder>, MergeCommand> mergeCommandFactory;
     @Mock
     private Function<IOrder, CloseCommand> closeCommandFactory;
 

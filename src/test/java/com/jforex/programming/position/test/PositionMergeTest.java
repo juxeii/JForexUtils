@@ -1,6 +1,6 @@
 package com.jforex.programming.position.test;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -32,7 +32,7 @@ public class PositionMergeTest extends InstrumentUtilForTest {
     @Mock
     private PositionFactory positionFactoryMock;
     @Mock
-    private Function<List<IOrder>, MergeCommand> mergeCommandFactory;
+    private Function<Collection<IOrder>, MergeCommand> mergeCommandFactory;
     @Mock
     private MergeCommand mergeCommandMock;
     private TestSubscriber<Void> testSubscriber;

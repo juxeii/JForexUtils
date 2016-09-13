@@ -1,6 +1,6 @@
 package com.jforex.programming.position.test;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -10,7 +10,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.CommandUtil;
@@ -37,7 +36,7 @@ public class PositionCloseTest extends InstrumentUtilForTest {
     @Mock
     private CommandUtil commandUtilMock;
     @Mock
-    private Function<List<IOrder>, MergeCommand> mergeCommandFactory;
+    private Function<Collection<IOrder>, MergeCommand> mergeCommandFactory;
     @Mock
     private Function<IOrder, CloseCommand> closeCommandFactory;
     @Mock
@@ -117,7 +116,6 @@ public class PositionCloseTest extends InstrumentUtilForTest {
         @Test
         public void onSubscribePositionMergeCompletableIsCalled() throws Exception {
             final Set<IOrder> filledOrOpenedOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
-            final List<IOrder> filledOrOpenedOrdersList = Lists.newArrayList(filledOrOpenedOrders);
             expectFilledOrOpenedOrders(filledOrOpenedOrders);
             setUpMergeCompletables(emptyCompletable());
             setUpCommandUtilCompletables(emptyCompletable());
@@ -125,9 +123,21 @@ public class PositionCloseTest extends InstrumentUtilForTest {
             testSubscriber = closePositionCompletable.test();
 
             verify(positionMergeMock).merge(instrumentEURUSD, mergeCommandFactory);
-            verify(commandUtilMock).mergeFromFactory(filledOrOpenedOrdersList, closeCommandFactory);
+            verify(commandUtilMock).mergeFromFactory(filledOrOpenedOrders, closeCommandFactory);
             testSubscriber.assertComplete();
             testSubscriber.assertComplete();
+        }
+
+        @Test
+        public void onSubscribeDoesQueryForFilledOrOpenedOrdersYet() throws Exception {
+            final Set<IOrder> filledOrOpenedOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+            expectFilledOrOpenedOrders(filledOrOpenedOrders);
+            setUpMergeCompletables(neverCompletable());
+
+            testSubscriber = closePositionCompletable.test();
+
+            verifyZeroInteractions(positionFactoryMock);
+            testSubscriber.assertNotComplete();
         }
     }
 
@@ -186,7 +196,6 @@ public class PositionCloseTest extends InstrumentUtilForTest {
 
                 testSubscriber.assertNotComplete();
                 verify(positionMergeMock, times(2)).merge(any(), eq(mergeCommandFactory));
-                verify(commandUtilMock, times(2)).mergeFromFactory(any(), eq(closeCommandFactory));
             }
 
             @Test

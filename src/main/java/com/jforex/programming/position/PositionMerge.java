@@ -1,5 +1,6 @@
 package com.jforex.programming.position;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -24,7 +25,7 @@ public class PositionMerge {
     }
 
     public Completable merge(final Instrument instrument,
-                             final Function<List<IOrder>, MergeCommand> mergeCommandFactory) {
+                             final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory) {
         return Completable.defer(() -> {
             final List<IOrder> toMergeOrders = Lists.newArrayList(positionFactory.forInstrument(instrument).filled());
             final MergeCommand command = mergeCommandFactory.apply(toMergeOrders);
@@ -32,7 +33,7 @@ public class PositionMerge {
         });
     }
 
-    public Completable mergeAll(final Function<List<IOrder>, MergeCommand> mergeCommandFactory) {
+    public Completable mergeAll(final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory) {
         return Completable.defer(() -> {
             final List<Completable> completables = positionFactory
                 .all()
