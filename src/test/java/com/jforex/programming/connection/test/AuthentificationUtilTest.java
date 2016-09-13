@@ -37,7 +37,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
         authentificationUtil = new AuthentificationUtil(clientMock, connectionStateObs);
 
         authentificationUtil
-            .loginStateObservable()
+            .observeLoginState()
             .subscribe(loginStateSubscriber);
     }
 

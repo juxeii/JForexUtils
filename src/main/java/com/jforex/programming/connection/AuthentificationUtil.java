@@ -59,7 +59,7 @@ public class AuthentificationUtil {
             .ignore(FSMTrigger.DISCONNECT);
     }
 
-    public final Observable<LoginState> loginStateObservable() {
+    public final Observable<LoginState> observeLoginState() {
         return loginStateSubject.observable();
     }
 
@@ -72,7 +72,7 @@ public class AuthentificationUtil {
                 ? loginRunnableWithPin(loginCredentials)
                 : loginRunnableNoPin(loginCredentials);
 
-        return StreamUtil.completableForJFRunnable(connectRunnable);
+        return StreamUtil.observeJFRunnable(connectRunnable);
     }
 
     private JFRunnable loginRunnableWithPin(final LoginCredentials loginCredentials) {

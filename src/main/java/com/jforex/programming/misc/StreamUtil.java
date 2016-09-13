@@ -33,7 +33,7 @@ public final class StreamUtil {
                 : Stream.empty();
     }
 
-    public static final Completable completableForJFRunnable(final JFRunnable jfRunnable) {
+    public static final Completable observeJFRunnable(final JFRunnable jfRunnable) {
         checkNotNull(jfRunnable);
 
         return Completable.fromCallable(() -> {

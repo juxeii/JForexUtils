@@ -64,7 +64,7 @@ public class StreamUtilTest extends CommonUtilForTest {
     public void completableFromJFRunnableIsCorrect() throws Exception {
         final JFRunnable jfRunnableMock = mock(JFRunnable.class);
 
-        StreamUtil.completableForJFRunnable(jfRunnableMock).subscribe();
+        StreamUtil.observeJFRunnable(jfRunnableMock).subscribe();
 
         verify(jfRunnableMock).run();
     }
