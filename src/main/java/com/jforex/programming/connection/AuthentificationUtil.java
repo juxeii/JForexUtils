@@ -5,7 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
-import com.jforex.programming.misc.JFHotSubject;
+import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.StreamUtil;
 
@@ -15,7 +15,7 @@ import io.reactivex.Observable;
 public class AuthentificationUtil {
 
     private final IClient client;
-    private final JFHotSubject<LoginState> loginStateSubject = new JFHotSubject<>();
+    private final JFHotObservable<LoginState> loginStateSubject = new JFHotObservable<>();
     private final StateMachineConfig<LoginState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
     private final StateMachine<LoginState, FSMTrigger> fsm = new StateMachine<>(LoginState.LOGGED_OUT, fsmConfig);
 

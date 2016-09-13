@@ -5,15 +5,11 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.observables.ConnectableObservable;
 import io.reactivex.subjects.PublishSubject;
 
-public final class JFHotSubject<T> {
+public final class JFHotObservable<T> {
 
     private final PublishSubject<T> source = PublishSubject.create();
     private final ConnectableObservable<T> connectableObservable = source.publish();
-    private final Disposable disposable;
-
-    public JFHotSubject() {
-        disposable = connectableObservable.connect();
-    }
+    private final Disposable disposable = connectableObservable.connect();
 
     public final Observable<T> observable() {
         return connectableObservable;

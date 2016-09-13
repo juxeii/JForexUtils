@@ -41,7 +41,7 @@ public class TaskExecutorTest extends CommonUtilForTest {
     public void setUp() throws Exception {
         setUpMocks();
 
-        taskExecutor = spy(new TaskExecutor(contextMock));
+        taskExecutor = new TaskExecutor(contextMock);
     }
 
     private void setUpMocks() throws Exception {

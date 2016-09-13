@@ -2,14 +2,14 @@ package com.jforex.programming.client;
 
 import com.dukascopy.api.system.ISystemListener;
 import com.jforex.programming.connection.ConnectionState;
-import com.jforex.programming.misc.JFHotSubject;
+import com.jforex.programming.misc.JFHotObservable;
 
 import io.reactivex.Observable;
 
 public final class JFSystemListener implements ISystemListener {
 
-    private final JFHotSubject<StrategyRunData> strategyRunDataSubject = new JFHotSubject<>();
-    private final JFHotSubject<ConnectionState> connectionStateSubject = new JFHotSubject<>();
+    private final JFHotObservable<StrategyRunData> strategyRunDataSubject = new JFHotObservable<>();
+    private final JFHotObservable<ConnectionState> connectionStateSubject = new JFHotObservable<>();
 
     public final Observable<StrategyRunData> strategyRunDataObservable() {
         return strategyRunDataSubject.observable();
