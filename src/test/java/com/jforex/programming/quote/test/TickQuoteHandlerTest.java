@@ -10,7 +10,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.quote.TickQuote;
-import com.jforex.programming.quote.TickQuoteHandler;
+import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
@@ -19,7 +19,7 @@ import io.reactivex.observers.TestObserver;
 
 public class TickQuoteHandlerTest extends QuoteProviderForTest {
 
-    private TickQuoteHandler tickQuoteHandler;
+    private TickQuoteProvider tickQuoteHandler;
 
     @Mock
     private TickQuoteRepository tickQuoteRepositoryMock;
@@ -32,7 +32,7 @@ public class TickQuoteHandlerTest extends QuoteProviderForTest {
     public void setUp() {
         setUpMocks();
 
-        tickQuoteHandler = new TickQuoteHandler(quoteObservable, tickQuoteRepositoryMock);
+        tickQuoteHandler = new TickQuoteProvider(quoteObservable, tickQuoteRepositoryMock);
 
         tickQuoteHandler
             .observable()

@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteHandler;
+import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
@@ -22,7 +22,7 @@ import io.reactivex.observers.TestObserver;
 
 public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
-    private BarQuoteHandler barQuoteHandler;
+    private BarQuoteProvider barQuoteHandler;
 
     @Mock
     private BarQuoteRepository barQuoteRepositoryMock;
@@ -37,7 +37,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     @Before
     public void setUp() {
-        barQuoteHandler = new BarQuoteHandler(jforexUtilMock,
+        barQuoteHandler = new BarQuoteProvider(jforexUtilMock,
                                               quoteObservable,
                                               barQuoteRepositoryMock);
 

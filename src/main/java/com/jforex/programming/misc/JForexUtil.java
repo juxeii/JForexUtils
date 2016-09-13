@@ -31,11 +31,9 @@ import com.jforex.programming.position.PositionMerge;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
-import com.jforex.programming.quote.BarQuoteHandler;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.quote.TickQuote;
-import com.jforex.programming.quote.TickQuoteHandler;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.settings.PlatformSettings;
@@ -51,9 +49,9 @@ public class JForexUtil {
     private IDataService dataService;
     private IEngineUtil engineUtil;
 
-    private TickQuoteHandler tickQuoteHandler;
+    private TickQuoteProvider tickQuoteHandler;
     private TickQuoteRepository tickQuoteRepository;
-    private BarQuoteHandler barQuoteHandler;
+    private BarQuoteProvider barQuoteHandler;
     private BarQuoteRepository barQuoteRepository;
 
     private PositionFactory positionFactory;
@@ -106,13 +104,13 @@ public class JForexUtil {
         tickQuoteRepository = new TickQuoteRepository(tickQuoteObservable.observable(),
                                                       historyUtil,
                                                       context.getSubscribedInstruments());
-        tickQuoteHandler = new TickQuoteHandler(tickQuoteObservable.observable(),
-                                                tickQuoteRepository);
+        tickQuoteHandler = new TickQuoteProvider(tickQuoteObservable.observable(),
+                                                 tickQuoteRepository);
         barQuoteRepository = new BarQuoteRepository(barQuoteObservable.observable(),
                                                     historyUtil);
-        barQuoteHandler = new BarQuoteHandler(this,
-                                              barQuoteObservable.observable(),
-                                              barQuoteRepository);
+        barQuoteHandler = new BarQuoteProvider(this,
+                                               barQuoteObservable.observable(),
+                                               barQuoteRepository);
     }
 
     private void initOrderRelated() {

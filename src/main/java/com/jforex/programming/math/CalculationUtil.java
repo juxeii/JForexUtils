@@ -14,16 +14,16 @@ import com.jforex.programming.math.ConversionBuilder.FromSource;
 import com.jforex.programming.math.PipDistanceBuilder.To;
 import com.jforex.programming.math.PipValueBuilder.OfInstrument;
 import com.jforex.programming.misc.JForexUtil;
-import com.jforex.programming.quote.TickQuoteHandler;
+import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
 
 public final class CalculationUtil {
 
-    private final TickQuoteHandler tickQuoteProvider;
+    private final TickQuoteProvider tickQuoteProvider;
 
     private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
 
-    public CalculationUtil(final TickQuoteHandler tickQuoteProvider) {
+    public CalculationUtil(final TickQuoteProvider tickQuoteProvider) {
         this.tickQuoteProvider = tickQuoteProvider;
     }
 

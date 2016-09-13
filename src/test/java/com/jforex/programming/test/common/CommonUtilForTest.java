@@ -38,8 +38,8 @@ import com.jforex.programming.order.OrderProcessState;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.quote.BarQuoteHandler;
-import com.jforex.programming.quote.TickQuoteHandler;
+import com.jforex.programming.quote.BarQuoteProvider;
+import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
@@ -69,9 +69,9 @@ public class CommonUtilForTest extends BDDMockito {
     @Mock
     protected HistoryUtil historyUtilMock;
     @Mock
-    protected TickQuoteHandler tickQuoteHandlerMock;
+    protected TickQuoteProvider tickQuoteHandlerMock;
     @Mock
-    protected BarQuoteHandler barQuoteHandlerMock;
+    protected BarQuoteProvider barQuoteHandlerMock;
 
     protected JFException jfException = new JFException("JFException for test");
 
