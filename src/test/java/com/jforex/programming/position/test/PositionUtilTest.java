@@ -3,7 +3,7 @@ package com.jforex.programming.position.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.Set;
+import java.util.List;
 import java.util.function.Function;
 
 import org.junit.Before;
@@ -39,7 +39,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
     @Mock
     private Completable completableMock;
     @Mock
-    private Function<Set<IOrder>, MergeCommand> mergeCommandFactory;
+    private Function<List<IOrder>, MergeCommand> mergeCommandFactory;
     @Mock
     private Function<IOrder, CloseCommand> closeCommandFactory;
 

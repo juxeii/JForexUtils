@@ -1,6 +1,6 @@
 package com.jforex.programming.position;
 
-import java.util.Set;
+import java.util.List;
 import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
@@ -29,23 +29,23 @@ public class PositionUtil {
     }
 
     public Completable merge(final Instrument instrument,
-                             final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
+                             final Function<List<IOrder>, MergeCommand> mergeCommandFactory) {
         return positionMerge.merge(instrument, mergeCommandFactory);
     }
 
-    public Completable mergeAll(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
+    public Completable mergeAll(final Function<List<IOrder>, MergeCommand> mergeCommandFactory) {
         return positionMerge.mergeAll(mergeCommandFactory);
     }
 
     public Completable close(final Instrument instrument,
-                             final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+                             final Function<List<IOrder>, MergeCommand> mergeCommandFactory,
                              final Function<IOrder, CloseCommand> closeCommandFactory) {
         return positionClose.close(instrument,
                                    mergeCommandFactory,
                                    closeCommandFactory);
     }
 
-    public Completable closeAll(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+    public Completable closeAll(final Function<List<IOrder>, MergeCommand> mergeCommandFactory,
                                 final Function<IOrder, CloseCommand> closeCommandFactory) {
         return positionClose.closeAll(mergeCommandFactory, closeCommandFactory);
     }

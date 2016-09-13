@@ -2,6 +2,7 @@ package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -84,24 +85,24 @@ public final class OrderUtil {
     }
 
     public final Completable mergePosition(final Instrument instrument,
-                                           final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
+                                           final Function<List<IOrder>, MergeCommand> mergeCommandFactory) {
         return positionUtil.merge(checkNotNull(instrument),
                                   checkNotNull(mergeCommandFactory));
     }
 
-    public final Completable mergeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory) {
+    public final Completable mergeAllPositions(final Function<List<IOrder>, MergeCommand> mergeCommandFactory) {
         return positionUtil.mergeAll(checkNotNull(mergeCommandFactory));
     }
 
     public final Completable closePosition(final Instrument instrument,
-                                           final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+                                           final Function<List<IOrder>, MergeCommand> mergeCommandFactory,
                                            final Function<IOrder, CloseCommand> closeCommandFactory) {
         return positionUtil.close(checkNotNull(instrument),
                                   checkNotNull(mergeCommandFactory),
                                   checkNotNull(closeCommandFactory));
     }
 
-    public final Completable closeAllPositions(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+    public final Completable closeAllPositions(final Function<List<IOrder>, MergeCommand> mergeCommandFactory,
                                                final Function<IOrder, CloseCommand> closeCommandFactory) {
         return positionUtil.closeAll(checkNotNull(mergeCommandFactory),
                                      checkNotNull(closeCommandFactory));

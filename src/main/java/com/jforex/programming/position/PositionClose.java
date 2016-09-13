@@ -1,7 +1,6 @@
 package com.jforex.programming.position;
 
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,17 +28,18 @@ public class PositionClose {
     }
 
     public Completable close(final Instrument instrument,
-                             final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+                             final Function<List<IOrder>, MergeCommand> mergeCommandFactory,
                              final Function<IOrder, CloseCommand> closeCommandFactory) {
         return Completable.defer(() -> {
             final Completable mergeCompletable = positionMerge.merge(instrument, mergeCommandFactory);
-            final Completable closeCompletable = commandUtil.mergeFromFactory(position(instrument).filledOrOpened(),
-                                                                                  closeCommandFactory);
+            final List<IOrder> toCloseOrders = Lists.newArrayList(position(instrument).filledOrOpened());
+            final Completable closeCompletable = commandUtil.mergeFromFactory(toCloseOrders,
+                                                                              closeCommandFactory);
             return Completable.merge(Lists.newArrayList(mergeCompletable, closeCompletable));
         });
     }
 
-    public Completable closeAll(final Function<Set<IOrder>, MergeCommand> mergeCommandFactory,
+    public Completable closeAll(final Function<List<IOrder>, MergeCommand> mergeCommandFactory,
                                 final Function<IOrder, CloseCommand> closeCommandFactory) {
         return Completable.defer(() -> {
             final List<Completable> completables = positionFactory
