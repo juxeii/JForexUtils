@@ -11,7 +11,6 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -69,7 +68,7 @@ public class OrderUtilCompletable {
 
     public Completable mergeOrders(final MergeCommand command) {
         return Completable.defer(() -> {
-            final Set<IOrder> toMergeOrders = command.toMergeOrders();
+            final Collection<IOrder> toMergeOrders = command.toMergeOrders();
             return toMergeOrders.size() < 2
                     ? Completable.complete()
                     : Observable

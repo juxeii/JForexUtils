@@ -1,6 +1,6 @@
 package com.jforex.programming.order;
 
-import java.util.Set;
+import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
@@ -36,7 +36,7 @@ public class OrderUtilBuilder {
     }
 
     public MergeOption mergeBuilder(final String mergeOrderLabel,
-                                    final Set<IOrder> toMergeOrders) {
+                                    final Collection<IOrder> toMergeOrders) {
         return MergeCommand.create(mergeOrderLabel,
                                    toMergeOrders,
                                    engineUtil);

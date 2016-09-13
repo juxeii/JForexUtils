@@ -3,7 +3,6 @@ package com.jforex.programming.order;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
@@ -44,7 +43,7 @@ public final class OrderUtil {
     }
 
     public final MergeOption mergeBuilder(final String mergeOrderLabel,
-                                          final Set<IOrder> toMergeOrders) {
+                                          final Collection<IOrder> toMergeOrders) {
         return orderUtilBuilder.mergeBuilder(checkNotNull(mergeOrderLabel),
                                              checkNotNull(toMergeOrders));
     }
