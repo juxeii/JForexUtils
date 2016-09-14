@@ -177,21 +177,12 @@ public class OrderUtilForTest {
             .build();
     }
 
-    public void setUpPositionFactory(final PositionFactory positionFactoryMock,
-                                     final Instrument instrument,
-                                     final Set<IOrder> positionOrders) {
-        final Position position = mock(Position.class);
-
-        when(positionFactoryMock.forInstrument(instrument)).thenReturn(position);
-        when(position.filled()).thenReturn(positionOrders);
-        when(position.filledOrOpened()).thenReturn(positionOrders);
-        when(position.instrument()).thenReturn(instrument);
-    }
-
-    public Position createPositionMock(final Instrument instrument,
+    public Position createPositionMock(final PositionFactory positionFactoryMock,
+                                       final Instrument instrument,
                                        final Set<IOrder> positionOrders) {
         final Position position = mock(Position.class);
 
+        when(positionFactoryMock.forInstrument(instrument)).thenReturn(position);
         when(position.filled()).thenReturn(positionOrders);
         when(position.filledOrOpened()).thenReturn(positionOrders);
         when(position.instrument()).thenReturn(instrument);

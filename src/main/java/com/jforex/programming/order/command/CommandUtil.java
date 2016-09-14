@@ -58,7 +58,7 @@ public class CommandUtil {
     public List<Completable> toCompletables(final Collection<? extends CommonCommand> commands) {
         return commands
             .stream()
-            .map(orderUtilCompletable::commandToCompletable)
+            .map(orderUtilCompletable::forCommand)
             .collect(Collectors.toList());
     }
 }

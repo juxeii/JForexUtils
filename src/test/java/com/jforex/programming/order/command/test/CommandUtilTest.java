@@ -89,8 +89,8 @@ public class CommandUtilTest extends CommonUtilForTest {
 
         private void setUpCompletabless(final Completable firstCompletable,
                                         final Completable secondCompletable) {
-            when(orderUtilCompletableMock.commandToCompletable(commandOne)).thenReturn(firstCompletable);
-            when(orderUtilCompletableMock.commandToCompletable(commandTwo)).thenReturn(secondCompletable);
+            when(orderUtilCompletableMock.forCommand(commandOne)).thenReturn(firstCompletable);
+            when(orderUtilCompletableMock.forCommand(commandTwo)).thenReturn(secondCompletable);
         }
 
         public class FirstCompletableBlocks {

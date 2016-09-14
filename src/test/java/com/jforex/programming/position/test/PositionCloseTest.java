@@ -93,7 +93,7 @@ public class PositionCloseTest extends InstrumentUtilForTest {
         }
 
         private void expectFilledOrOpenedOrders(final Set<IOrder> filledOrders) {
-            orderUtilForTest.setUpPositionFactory(positionFactoryMock, instrumentEURUSD, filledOrders);
+            orderUtilForTest.createPositionMock(positionFactoryMock, instrumentEURUSD, filledOrders);
         }
 
         @Test
@@ -176,18 +176,20 @@ public class PositionCloseTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 final Position positionOneMock = orderUtilForTest
-                    .createPositionMock(instrumentEURUSD, Sets.newHashSet(buyOrderEURUSD,
-                                                                          sellOrderEURUSD));
+                    .createPositionMock(positionFactoryMock,
+                                          instrumentEURUSD,
+                                          Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
                 final Position positionTwoMock = orderUtilForTest
-                    .createPositionMock(instrumentAUDUSD, Sets.newHashSet(buyOrderAUDUSD,
-                                                                          sellOrderAUDUSD));
+                    .createPositionMock(positionFactoryMock,
+                                          instrumentAUDUSD,
+                                          Sets.newHashSet(buyOrderAUDUSD, sellOrderAUDUSD));
 
                 expectPositions(Sets.newHashSet(positionOneMock, positionTwoMock));
 
-                orderUtilForTest.setUpPositionFactory(positionFactoryMock,
+                orderUtilForTest.createPositionMock(positionFactoryMock,
                                                       instrumentEURUSD,
                                                       Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
-                orderUtilForTest.setUpPositionFactory(positionFactoryMock,
+                orderUtilForTest.createPositionMock(positionFactoryMock,
                                                       instrumentAUDUSD,
                                                       Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
             }

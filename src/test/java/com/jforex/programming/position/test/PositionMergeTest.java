@@ -32,6 +32,8 @@ public class PositionMergeTest extends InstrumentUtilForTest {
     @Mock
     private PositionFactory positionFactoryMock;
     @Mock
+    private Position positionMock;
+    @Mock
     private Function<Collection<IOrder>, MergeCommand> mergeCommandFactory;
     @Mock
     private MergeCommand mergeCommandMock;
@@ -50,7 +52,7 @@ public class PositionMergeTest extends InstrumentUtilForTest {
 
     private void setUpMergePositionCompletables(final Completable firstCompletable,
                                                 final Completable... completables) {
-        when(orderUtilCompletableMock.mergeOrders(mergeCommandMock))
+        when(orderUtilCompletableMock.forCommandWithOrderMarking(eq(mergeCommandMock), any()))
             .thenReturn(firstCompletable, completables);
     }
 
@@ -73,7 +75,7 @@ public class PositionMergeTest extends InstrumentUtilForTest {
         }
 
         private void expectFilledOrders(final Set<IOrder> filledOrders) {
-            orderUtilForTest.setUpPositionFactory(positionFactoryMock, instrumentEURUSD, filledOrders);
+            positionMock = orderUtilForTest.createPositionMock(positionFactoryMock, instrumentEURUSD, filledOrders);
         }
 
         @Test
@@ -81,16 +83,40 @@ public class PositionMergeTest extends InstrumentUtilForTest {
             verifyDeferredCompletable();
         }
 
-        @Test
-        public void onSubscribeOrderUtilCompletableIsCalled() throws Exception {
-            final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
-            expectFilledOrders(toMergeOrders);
-            setUpMergePositionCompletables(emptyCompletable());
+        public class OnSubscribe {
 
-            testSubscriber = mergePositionCompletable.test();
+            public void prepareToMergeOrdersAndSubscribe(final Set<IOrder> toMergeOrders) {
+                expectFilledOrders(toMergeOrders);
+                setUpMergePositionCompletables(emptyCompletable());
 
-            verify(orderUtilCompletableMock).mergeOrders(mergeCommandMock);
-            testSubscriber.assertComplete();
+                testSubscriber = mergePositionCompletable.test();
+            }
+
+            @Test
+            public void onSubscribeCompletesImmediatelyWhenNoOrdersForMerge() {
+                prepareToMergeOrdersAndSubscribe(Sets.newHashSet());
+
+                testSubscriber.assertComplete();
+                verifyZeroInteractions(orderUtilCompletableMock);
+            }
+
+            @Test
+            public void onSubscribeCompletesImmediatelyWhenOnlyOneOrderForMerge() {
+                prepareToMergeOrdersAndSubscribe(Sets.newHashSet(buyOrderEURUSD));
+
+                verifyZeroInteractions(orderUtilCompletableMock);
+                testSubscriber.assertComplete();
+            }
+
+            @Test
+            public void onSubscribeCallsOnOrderUtilWhenEnoughOrdersForMerge() {
+                final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+                prepareToMergeOrdersAndSubscribe(toMergeOrders);
+
+                verify(orderUtilCompletableMock)
+                    .forCommandWithOrderMarking(eq(mergeCommandMock), any());
+                testSubscriber.assertComplete();
+            }
         }
     }
 
@@ -123,16 +149,20 @@ public class PositionMergeTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 final Position positionOneMock = orderUtilForTest
-                    .createPositionMock(instrumentEURUSD, Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
+                    .createPositionMock(positionFactoryMock,
+                                        instrumentEURUSD,
+                                        Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
                 final Position positionTwoMock = orderUtilForTest
-                    .createPositionMock(instrumentAUDUSD, Sets.newHashSet(buyOrderAUDUSD, sellOrderAUDUSD));
+                    .createPositionMock(positionFactoryMock,
+                                        instrumentAUDUSD,
+                                        Sets.newHashSet(buyOrderAUDUSD, sellOrderAUDUSD));
 
                 expectPositions(Sets.newHashSet(positionOneMock, positionTwoMock));
 
-                orderUtilForTest.setUpPositionFactory(positionFactoryMock, instrumentEURUSD,
-                                                      Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
-                orderUtilForTest.setUpPositionFactory(positionFactoryMock, instrumentAUDUSD,
-                                                      Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
+                orderUtilForTest.createPositionMock(positionFactoryMock, instrumentEURUSD,
+                                                    Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
+                orderUtilForTest.createPositionMock(positionFactoryMock, instrumentAUDUSD,
+                                                    Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
             }
 
             @Test
@@ -141,7 +171,8 @@ public class PositionMergeTest extends InstrumentUtilForTest {
 
                 testSubscriber = mergeAllPositionsCompletable.test();
 
-                verify(orderUtilCompletableMock, times(2)).mergeOrders(mergeCommandMock);
+                verify(orderUtilCompletableMock, times(2))
+                    .forCommandWithOrderMarking(any(), any());
                 testSubscriber.assertNotComplete();
             }
 
