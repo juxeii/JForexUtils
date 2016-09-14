@@ -104,7 +104,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 .doOnError(errorActionMock)
                 .retry(2, retryDelay)
                 .build();
-            callable = closeCommand.callable();
+            callable = closeCommand.data().callable();
 
             closeCall = () -> orderUtilHandler
                 .callObservable(closeCommand)
@@ -120,7 +120,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 .create(orderToClose)
                 .doOnOrderEvent(orderEventConsumerMock)
                 .build();
-            callable = closeCommand.callable();
+            callable = closeCommand.data().callable();
 
             when(taskExecutorMock.onStrategyThread(callable))
                 .thenReturn(Observable.fromCallable(callable));

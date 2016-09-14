@@ -64,7 +64,7 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Test
         public void callableIsSet() {
-            assertThat(submitCommand.callable(), equalTo(callableMock));
+            assertThat(submitCommand.data().callable(), equalTo(callableMock));
         }
 
         @Test
@@ -101,7 +101,7 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Test
         public void callableIsSet() {
-            assertThat(mergeCommand.callable(), equalTo(callableMock));
+            assertThat(mergeCommand.data().callable(), equalTo(callableMock));
         }
 
         @Test

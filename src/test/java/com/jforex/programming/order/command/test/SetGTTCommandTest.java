@@ -39,7 +39,7 @@ public class SetGTTCommandTest extends CommandTester {
             .retry(noOfRetries, retryDelay)
             .build();
 
-        eventHandlerForType = setGTTCommand.eventHandlerForType();
+        eventHandlerForType = setGTTCommand.data().eventHandlerForType();
     }
 
     @Test
@@ -56,10 +56,10 @@ public class SetGTTCommandTest extends CommandTester {
     public void commandValuesAreCorrect() throws Exception {
         assertThat(setGTTCommand.order(), equalTo(buyOrderEURUSD));
         assertThat(setGTTCommand.newGTT(), equalTo(newGTT));
-        assertThat(setGTTCommand.callReason(), equalTo(OrderCallReason.CHANGE_GTT));
+        assertThat(setGTTCommand.data().callReason(), equalTo(OrderCallReason.CHANGE_GTT));
         assertRetryParams(setGTTCommand);
 
-        setGTTCommand.callable().call();
+        setGTTCommand.data().callable().call();
         verify(buyOrderEURUSD).setGoodTillTime(newGTT);
     }
 
@@ -82,8 +82,8 @@ public class SetGTTCommandTest extends CommandTester {
         eventHandlerForType.get(OrderEventType.CHANGED_GTT).accept(buyOrderEURUSD);
         eventHandlerForType.get(OrderEventType.CHANGE_GTT_REJECTED).accept(buyOrderEURUSD);
 
-        assertThat(setGTTCommand.completedAction(), equalTo(completedActionMock));
-        assertThat(setGTTCommand.errorAction(), equalTo(errorActionMock));
+        assertThat(setGTTCommand.data().completedAction(), equalTo(completedActionMock));
+        assertThat(setGTTCommand.data().errorAction(), equalTo(errorActionMock));
 
         verify(setGTTRejectActionMock).accept(buyOrderEURUSD);
         verify(setGTTActionMock).accept(buyOrderEURUSD);

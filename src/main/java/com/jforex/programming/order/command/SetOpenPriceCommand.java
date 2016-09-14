@@ -15,15 +15,16 @@ import com.jforex.programming.order.command.option.SetOpenPriceOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class SetOpenPriceCommand extends CommonCommand {
+public class SetOpenPriceCommand implements Command {
 
     private final IOrder order;
     private final double newOpenPrice;
+    private final CommandData commandData;
 
     private SetOpenPriceCommand(final Builder builder) {
-        super(builder);
         order = builder.order;
         newOpenPrice = builder.newOpenPrice;
+        commandData = builder.commandData;
     }
 
     public IOrder order() {
@@ -32,6 +33,11 @@ public class SetOpenPriceCommand extends CommonCommand {
 
     public double newOpenPrice() {
         return newOpenPrice;
+    }
+
+    @Override
+    public CommandData data() {
+        return commandData;
     }
 
     public static final SetOpenPriceOption create(final IOrder order,
@@ -68,6 +74,7 @@ public class SetOpenPriceCommand extends CommonCommand {
 
         @Override
         public SetOpenPriceCommand build() {
+            this.commandData = new CommandData(this);
             return new SetOpenPriceCommand(this);
         }
     }

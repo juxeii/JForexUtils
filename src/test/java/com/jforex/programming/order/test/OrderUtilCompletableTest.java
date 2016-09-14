@@ -12,7 +12,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.command.CommonCommand;
+import com.jforex.programming.order.command.Command;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
@@ -34,7 +34,7 @@ public class OrderUtilCompletableTest extends InstrumentUtilForTest {
     @Mock
     private Position positionMock;
     @Mock
-    private CommonCommand commandMock;
+    private Command commandMock;
     private TestSubscriber<Void> testSubscriber;
     private final Set<IOrder> ordersToMark = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 

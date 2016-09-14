@@ -19,35 +19,35 @@ public class CommandUtil {
         this.orderUtilCompletable = orderUtilCompletable;
     }
 
-    public Completable merge(final Collection<? extends CommonCommand> commands) {
+    public Completable merge(final Collection<? extends Command> commands) {
         return Completable.merge(toCompletables(commands));
     }
 
     @SafeVarargs
-    public final <T extends CommonCommand> Completable merge(final T... commands) {
+    public final <T extends Command> Completable merge(final T... commands) {
         return merge(Arrays.asList(commands));
     }
 
-    public <T extends CommonCommand> Completable mergeFromFactory(final Collection<IOrder> orders,
+    public <T extends Command> Completable mergeFromFactory(final Collection<IOrder> orders,
                                                                   final Function<IOrder, T> commandFactory) {
         return merge(fromFactory(orders, commandFactory));
     }
 
-    public Completable concat(final List<? extends CommonCommand> commands) {
+    public Completable concat(final List<? extends Command> commands) {
         return Completable.concat(toCompletables(commands));
     }
 
     @SafeVarargs
-    public final <T extends CommonCommand> Completable concat(final T... commands) {
+    public final <T extends Command> Completable concat(final T... commands) {
         return concat(Arrays.asList(commands));
     }
 
-    public <T extends CommonCommand> Completable concatFromFactory(final List<IOrder> orders,
+    public <T extends Command> Completable concatFromFactory(final List<IOrder> orders,
                                                                    final Function<IOrder, T> commandFactory) {
         return concat(fromFactory(orders, commandFactory));
     }
 
-    public <T extends CommonCommand> List<T> fromFactory(final Collection<IOrder> orders,
+    public <T extends Command> List<T> fromFactory(final Collection<IOrder> orders,
                                                          final Function<IOrder, T> commandFactory) {
         return orders
             .stream()
@@ -55,7 +55,7 @@ public class CommandUtil {
             .collect(Collectors.toList());
     }
 
-    public List<Completable> toCompletables(final Collection<? extends CommonCommand> commands) {
+    public List<Completable> toCompletables(final Collection<? extends Command> commands) {
         return commands
             .stream()
             .map(orderUtilCompletable::forCommand)

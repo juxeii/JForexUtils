@@ -14,7 +14,8 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
-import com.jforex.programming.order.command.CommonCommand;
+import com.jforex.programming.order.command.CommandData;
+import com.jforex.programming.order.command.Command;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
@@ -34,18 +35,21 @@ public class CommandTester extends CommonUtilForTest {
     protected static final long retryDelay = 1500L;
 
     protected void assertEventTypesForCommand(final EnumSet<OrderEventType> eventTypes,
-                                              final CommonCommand command) {
-        assertEventTypes(eventTypes, command::isEventTypeForCommand);
+                                              final Command command) {
+        final CommandData data = command.data();
+        assertEventTypes(eventTypes, data::isEventTypeForCommand);
     }
 
     protected void assertFinishEventTypesForCommand(final EnumSet<OrderEventType> eventTypes,
-                                                    final CommonCommand command) {
-        assertEventTypes(eventTypes, command::isFinishEventType);
+                                                    final Command command) {
+        final CommandData data = command.data();
+        assertEventTypes(eventTypes, data::isFinishEventType);
     }
 
     protected void assertRejectEventTypesForCommand(final EnumSet<OrderEventType> eventTypes,
-                                                    final CommonCommand command) {
-        assertEventTypes(eventTypes, command::isRejectEventType);
+                                                    final Command command) {
+        final CommandData data = command.data();
+        assertEventTypes(eventTypes, data::isRejectEventType);
     }
 
     protected void assertEventTypes(final EnumSet<OrderEventType> eventTypes,
@@ -55,22 +59,25 @@ public class CommandTester extends CommonUtilForTest {
         complement.forEach(eventType -> assertFalse(function.apply(eventType)));
     }
 
-    protected void assertNoRetryParams(final CommonCommand command) {
-        assertThat(command.noOfRetries(), equalTo(0));
-        assertThat(command.retryDelayInMillis(), equalTo(0L));
+    protected void assertNoRetryParams(final Command command) {
+        final CommandData data = command.data();
+        assertThat(data.noOfRetries(), equalTo(0));
+        assertThat(data.retryDelayInMillis(), equalTo(0L));
     }
 
-    protected void assertRetryParams(final CommonCommand command) {
-        assertThat(command.noOfRetries(), equalTo(noOfRetries));
-        assertThat(command.retryDelayInMillis(), equalTo(retryDelay));
+    protected void assertRetryParams(final Command command) {
+        final CommandData data = command.data();
+        assertThat(data.noOfRetries(), equalTo(noOfRetries));
+        assertThat(data.retryDelayInMillis(), equalTo(retryDelay));
     }
 
-    protected void assertActionsNotNull(final CommonCommand command) throws Exception {
-        command.startAction().run();
-        command.eventAction().accept(new OrderEvent(buyOrderEURUSD,
-                                                    OrderEventType.SUBMIT_OK,
-                                                    true));
-        command.completedAction().run();
-        command.errorAction().accept(jfException);
+    protected void assertActionsNotNull(final Command command) throws Exception {
+        final CommandData data = command.data();
+        data.startAction().run();
+        data.eventAction().accept(new OrderEvent(buyOrderEURUSD,
+                                                 OrderEventType.SUBMIT_OK,
+                                                 true));
+        data.completedAction().run();
+        data.errorAction().accept(jfException);
     }
 }

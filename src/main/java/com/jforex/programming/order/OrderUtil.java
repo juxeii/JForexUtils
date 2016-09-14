@@ -8,7 +8,7 @@ import java.util.function.Function;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.CloseCommand;
-import com.jforex.programming.order.command.CommonCommand;
+import com.jforex.programming.order.command.Command;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.option.CloseOption;
 import com.jforex.programming.order.command.option.MergeOption;
@@ -107,7 +107,7 @@ public final class OrderUtil {
                                      checkNotNull(closeCommandFactory));
     }
 
-    public final Completable commandToCompletable(final CommonCommand command) {
+    public final Completable commandToCompletable(final Command command) {
         return orderUtilCompletable.forCommand(checkNotNull(command));
     }
 

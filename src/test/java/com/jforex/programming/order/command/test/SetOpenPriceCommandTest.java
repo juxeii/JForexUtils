@@ -44,7 +44,7 @@ public class SetOpenPriceCommandTest extends CommandTester {
             .retry(noOfRetries, retryDelay)
             .build();
 
-        eventHandlerForType = setOpenPriceCommand.eventHandlerForType();
+        eventHandlerForType = setOpenPriceCommand.data().eventHandlerForType();
     }
 
     @Test
@@ -61,10 +61,10 @@ public class SetOpenPriceCommandTest extends CommandTester {
     public void commandValuesAreCorrect() throws Exception {
         assertThat(setOpenPriceCommand.order(), equalTo(buyOrderEURUSD));
         assertThat(setOpenPriceCommand.newOpenPrice(), equalTo(newOpenPrice));
-        assertThat(setOpenPriceCommand.callReason(), equalTo(OrderCallReason.CHANGE_PRICE));
+        assertThat(setOpenPriceCommand.data().callReason(), equalTo(OrderCallReason.CHANGE_PRICE));
         assertRetryParams(setOpenPriceCommand);
 
-        setOpenPriceCommand.callable().call();
+        setOpenPriceCommand.data().callable().call();
         verify(buyOrderEURUSD).setOpenPrice(newOpenPrice);
     }
 
@@ -87,8 +87,8 @@ public class SetOpenPriceCommandTest extends CommandTester {
         eventHandlerForType.get(OrderEventType.CHANGED_PRICE).accept(buyOrderEURUSD);
         eventHandlerForType.get(OrderEventType.CHANGE_PRICE_REJECTED).accept(buyOrderEURUSD);
 
-        assertThat(setOpenPriceCommand.completedAction(), equalTo(completedActionMock));
-        assertThat(setOpenPriceCommand.errorAction(), equalTo(errorActionMock));
+        assertThat(setOpenPriceCommand.data().completedAction(), equalTo(completedActionMock));
+        assertThat(setOpenPriceCommand.data().errorAction(), equalTo(errorActionMock));
 
         verify(setOpenPriceRejectActionMock).accept(buyOrderEURUSD);
         verify(setOpenPriceActionMock).accept(buyOrderEURUSD);

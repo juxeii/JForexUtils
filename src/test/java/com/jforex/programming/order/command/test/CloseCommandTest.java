@@ -42,7 +42,7 @@ public class CloseCommandTest extends CommandTester {
             .retry(noOfRetries, retryDelay)
             .build();
 
-        eventHandlerForType = closeCommand.eventHandlerForType();
+        eventHandlerForType = closeCommand.data().eventHandlerForType();
     }
 
     @Test
@@ -58,10 +58,10 @@ public class CloseCommandTest extends CommandTester {
     @Test
     public void commandValuesAreCorrect() throws Exception {
         assertThat(closeCommand.order(), equalTo(buyOrderEURUSD));
-        assertThat(closeCommand.callReason(), equalTo(OrderCallReason.CLOSE));
+        assertThat(closeCommand.data().callReason(), equalTo(OrderCallReason.CLOSE));
         assertRetryParams(closeCommand);
 
-        closeCommand.callable().call();
+        closeCommand.data().callable().call();
         verify(buyOrderEURUSD).close();
     }
 
@@ -86,8 +86,8 @@ public class CloseCommandTest extends CommandTester {
         eventHandlerForType.get(OrderEventType.PARTIAL_CLOSE_OK).accept(buyOrderEURUSD);
         eventHandlerForType.get(OrderEventType.CLOSE_REJECTED).accept(buyOrderEURUSD);
 
-        assertThat(closeCommand.completedAction(), equalTo(completedActionMock));
-        assertThat(closeCommand.errorAction(), equalTo(errorActionMock));
+        assertThat(closeCommand.data().completedAction(), equalTo(completedActionMock));
+        assertThat(closeCommand.data().errorAction(), equalTo(errorActionMock));
 
         verify(closeRejectActionMock).accept(buyOrderEURUSD);
         verify(closeActionMock).accept(buyOrderEURUSD);

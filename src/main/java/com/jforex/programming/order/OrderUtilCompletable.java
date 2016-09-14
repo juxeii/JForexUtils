@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.command.CommonCommand;
+import com.jforex.programming.order.command.Command;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 
@@ -21,13 +21,13 @@ public class OrderUtilCompletable {
         this.positionFactory = positionFactory;
     }
 
-    public Completable forCommand(final CommonCommand command) {
+    public Completable forCommand(final Command command) {
         return Completable.defer(() -> orderUtilHandler
             .callObservable(command)
             .toCompletable());
     }
 
-    public Completable forCommandWithOrderMarking(final CommonCommand command,
+    public Completable forCommandWithOrderMarking(final Command command,
                                                   final Collection<IOrder> ordersToMark) {
         return Completable.defer(() -> {
             final Instrument instrument = OrderStaticUtil.instrumentFromOrders(ordersToMark);

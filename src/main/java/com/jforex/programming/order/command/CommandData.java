@@ -12,7 +12,7 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 import io.reactivex.functions.Action;
 
-public abstract class CommonCommand {
+public class CommandData {
 
     private final Action subscribeAction;
     private final Action completedAction;
@@ -25,7 +25,7 @@ public abstract class CommonCommand {
     private final long retryDelayInMillis;
     private final Map<OrderEventType, Consumer<IOrder>> eventHandlerForType;
 
-    protected CommonCommand(final CommonBuilder<?> builder) {
+    public CommandData(final CommonBuilder<?> builder) {
         callable = builder.callable;
         callReason = builder.callReason;
         orderEventTypeData = builder.orderEventTypeData;

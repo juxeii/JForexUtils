@@ -16,7 +16,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Lists;
 import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.command.CommandUtil;
-import com.jforex.programming.order.command.CommonCommand;
+import com.jforex.programming.order.command.Command;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -31,20 +31,20 @@ public class CommandUtilTest extends CommonUtilForTest {
     @Mock
     private OrderUtilCompletable orderUtilCompletableMock;
     @Mock
-    private CommonCommand commandOne;
+    private Command commandOne;
     @Mock
-    private CommonCommand commandTwo;
+    private Command commandTwo;
     @Mock
     private Callable<Double> callableOne;
     @Mock
     private Callable<Double> callableTwo;
     @Mock
-    private Function<IOrder, CommonCommand> commandFactoryMock;
+    private Function<IOrder, Command> commandFactoryMock;
     private TestSubscriber<Void> testSubscriber;
     private final Completable completableOne = Completable.fromCallable(callableOne);
     private final Completable completableTwo = Completable.fromCallable(callableTwo);
     private final List<IOrder> orders = Lists.newArrayList(buyOrderEURUSD, sellOrderEURUSD);
-    private final List<CommonCommand> commands = Lists.newArrayList(commandOne, commandTwo);
+    private final List<Command> commands = Lists.newArrayList(commandOne, commandTwo);
 
     @Before
     public void setUp() {
@@ -78,7 +78,7 @@ public class CommandUtilTest extends CommonUtilForTest {
 
     @Test
     public void fromFactoryCommandsAreCorrect() {
-        final List<CommonCommand> commands = commandUtil.fromFactory(orders, commandFactoryMock);
+        final List<Command> commands = commandUtil.fromFactory(orders, commandFactoryMock);
 
         assertThat(commands.size(), equalTo(2));
         assertThat(commands.get(0), equalTo(commandOne));

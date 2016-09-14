@@ -39,7 +39,7 @@ public class SetAmountCommandTest extends CommandTester {
             .retry(noOfRetries, retryDelay)
             .build();
 
-        eventHandlerForType = setAmountCommand.eventHandlerForType();
+        eventHandlerForType = setAmountCommand.data().eventHandlerForType();
     }
 
     @Test
@@ -56,10 +56,10 @@ public class SetAmountCommandTest extends CommandTester {
     public void commandValuesAreCorrect() throws Exception {
         assertThat(setAmountCommand.order(), equalTo(buyOrderEURUSD));
         assertThat(setAmountCommand.newAmount(), equalTo(newAmount));
-        assertThat(setAmountCommand.callReason(), equalTo(OrderCallReason.CHANGE_AMOUNT));
+        assertThat(setAmountCommand.data().callReason(), equalTo(OrderCallReason.CHANGE_AMOUNT));
         assertRetryParams(setAmountCommand);
 
-        setAmountCommand.callable().call();
+        setAmountCommand.data().callable().call();
         verify(buyOrderEURUSD).setRequestedAmount(newAmount);
     }
 
@@ -82,8 +82,8 @@ public class SetAmountCommandTest extends CommandTester {
         eventHandlerForType.get(OrderEventType.CHANGED_AMOUNT).accept(buyOrderEURUSD);
         eventHandlerForType.get(OrderEventType.CHANGE_AMOUNT_REJECTED).accept(buyOrderEURUSD);
 
-        assertThat(setAmountCommand.completedAction(), equalTo(completedActionMock));
-        assertThat(setAmountCommand.errorAction(), equalTo(errorActionMock));
+        assertThat(setAmountCommand.data().completedAction(), equalTo(completedActionMock));
+        assertThat(setAmountCommand.data().errorAction(), equalTo(errorActionMock));
 
         verify(setAmountRejectActionMock).accept(buyOrderEURUSD);
         verify(setAmountActionMock).accept(buyOrderEURUSD);

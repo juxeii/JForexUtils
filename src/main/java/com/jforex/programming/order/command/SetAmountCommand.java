@@ -15,15 +15,16 @@ import com.jforex.programming.order.command.option.SetAmountOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class SetAmountCommand extends CommonCommand {
+public class SetAmountCommand implements Command {
 
     private final IOrder order;
     private final double newAmount;
+    private final CommandData commandData;
 
     private SetAmountCommand(final Builder builder) {
-        super(builder);
         order = builder.order;
         newAmount = builder.newAmount;
+        commandData = builder.commandData;
     }
 
     public IOrder order() {
@@ -32,6 +33,11 @@ public class SetAmountCommand extends CommonCommand {
 
     public double newAmount() {
         return newAmount;
+    }
+
+    @Override
+    public CommandData data() {
+        return commandData;
     }
 
     public static final SetAmountOption create(final IOrder order,
@@ -67,6 +73,7 @@ public class SetAmountCommand extends CommonCommand {
         }
 
         public SetAmountCommand build() {
+            this.commandData = new CommandData(this);
             return new SetAmountCommand(this);
         }
     }

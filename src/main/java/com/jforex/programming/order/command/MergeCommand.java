@@ -17,15 +17,16 @@ import com.jforex.programming.order.command.option.MergeOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class MergeCommand extends CommonCommand {
+public class MergeCommand implements Command {
 
     private final String mergeOrderLabel;
     private final Collection<IOrder> toMergeOrders;
+    private final CommandData commandData;
 
     private MergeCommand(final Builder builder) {
-        super(builder);
         mergeOrderLabel = builder.mergeOrderLabel;
         toMergeOrders = builder.toMergeOrders;
+        commandData = builder.commandData;
     }
 
     public String mergeOrderLabel() {
@@ -34,6 +35,11 @@ public class MergeCommand extends CommonCommand {
 
     public Collection<IOrder> toMergeOrders() {
         return toMergeOrders;
+    }
+
+    @Override
+    public CommandData data() {
+        return commandData;
     }
 
     public static final MergeOption create(final String mergeOrderLabel,
@@ -45,7 +51,7 @@ public class MergeCommand extends CommonCommand {
     }
 
     private static class Builder extends CommonBuilder<MergeOption>
-            implements MergeOption {
+                                 implements MergeOption {
 
         private final String mergeOrderLabel;
         private final Collection<IOrder> toMergeOrders;
@@ -79,6 +85,7 @@ public class MergeCommand extends CommonCommand {
 
         @Override
         public MergeCommand build() {
+            this.commandData = new CommandData(this);
             return new MergeCommand(this);
         }
     }

@@ -18,7 +18,7 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilBuilder;
 import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.command.CloseCommand;
-import com.jforex.programming.order.command.CommonCommand;
+import com.jforex.programming.order.command.Command;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.option.CloseOption;
 import com.jforex.programming.order.command.option.MergeOption;
@@ -231,7 +231,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void commandCompletableCallIsInvokingOnCompletableUtil() {
-        final CommonCommand commandMock = mock(CommonCommand.class);
+        final Command commandMock = mock(Command.class);
         when(orderUtilCompletableMock.forCommand(commandMock))
             .thenReturn(completableMock);
 
