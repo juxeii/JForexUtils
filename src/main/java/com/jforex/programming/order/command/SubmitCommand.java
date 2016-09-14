@@ -22,15 +22,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SubmitCommand extends Command {
 
-    private final OrderParams orderParams;
-
     private SubmitCommand(final Builder builder) {
         super(builder);
-        orderParams = builder.orderParams;
-    }
-
-    public OrderParams orderParams() {
-        return orderParams;
     }
 
     public static final SubmitOption create(final OrderParams orderParams,
@@ -39,13 +32,10 @@ public class SubmitCommand extends Command {
     }
 
     private static class Builder extends CommonBuilder<SubmitOption>
-                                 implements SubmitOption {
-
-        private final OrderParams orderParams;
+            implements SubmitOption {
 
         private Builder(final OrderParams orderParams,
                         final IEngineUtil engineUtil) {
-            this.orderParams = orderParams;
             this.callable = engineUtil.submitCallable(orderParams);
             this.callReason = OrderCallReason.SUBMIT;
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(FULLY_FILLED, SUBMIT_CONDITIONAL_OK),

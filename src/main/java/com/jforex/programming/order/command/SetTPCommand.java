@@ -17,21 +17,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetTPCommand extends Command {
 
-    private final IOrder order;
-    private final double newTP;
-
     private SetTPCommand(final Builder builder) {
         super(builder);
-        order = builder.order;
-        newTP = builder.newTP;
-    }
-
-    public IOrder order() {
-        return order;
-    }
-
-    public double newTP() {
-        return newTP;
     }
 
     public static final SetTPOption create(final IOrder order,
@@ -40,15 +27,10 @@ public class SetTPCommand extends Command {
     }
 
     private static class Builder extends CommonBuilder<SetTPOption>
-                                 implements SetTPOption {
-
-        private final IOrder order;
-        private final double newTP;
+            implements SetTPOption {
 
         private Builder(final IOrder order,
                         final double newTP) {
-            this.order = order;
-            this.newTP = newTP;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setTakeProfitPrice(newTP), order);
             this.callReason = OrderCallReason.CHANGE_TP;
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CHANGED_TP),

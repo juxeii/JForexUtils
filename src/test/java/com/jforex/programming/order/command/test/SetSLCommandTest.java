@@ -54,8 +54,6 @@ public class SetSLCommandTest extends CommandTester {
 
     @Test
     public void commandValuesAreCorrect() throws Exception {
-        assertThat(setSLCommand.order(), equalTo(buyOrderEURUSD));
-        assertThat(setSLCommand.newSL(), equalTo(newSL));
         assertThat(setSLCommand.callReason(), equalTo(OrderCallReason.CHANGE_SL));
         assertRetryParams(setSLCommand);
 

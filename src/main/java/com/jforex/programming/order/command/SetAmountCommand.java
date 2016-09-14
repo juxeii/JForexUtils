@@ -17,21 +17,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetAmountCommand extends Command {
 
-    private final IOrder order;
-    private final double newAmount;
-
     private SetAmountCommand(final Builder builder) {
         super(builder);
-        order = builder.order;
-        newAmount = builder.newAmount;
-    }
-
-    public IOrder order() {
-        return order;
-    }
-
-    public double newAmount() {
-        return newAmount;
     }
 
     public static final SetAmountOption create(final IOrder order,
@@ -40,15 +27,10 @@ public class SetAmountCommand extends Command {
     }
 
     public static class Builder extends CommonBuilder<SetAmountOption>
-                                implements SetAmountOption {
-
-        private final IOrder order;
-        private final double newAmount;
+            implements SetAmountOption {
 
         private Builder(final IOrder order,
                         final double newAmount) {
-            this.order = order;
-            this.newAmount = newAmount;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setRequestedAmount(newAmount), order);
             this.callReason = OrderCallReason.CHANGE_AMOUNT;
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CHANGED_AMOUNT),

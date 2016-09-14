@@ -57,7 +57,6 @@ public class CloseCommandTest extends CommandTester {
 
     @Test
     public void commandValuesAreCorrect() throws Exception {
-        assertThat(closeCommand.order(), equalTo(buyOrderEURUSD));
         assertThat(closeCommand.callReason(), equalTo(OrderCallReason.CLOSE));
         assertRetryParams(closeCommand);
 

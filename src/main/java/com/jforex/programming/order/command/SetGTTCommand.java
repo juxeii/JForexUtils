@@ -17,21 +17,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetGTTCommand extends Command {
 
-    private final IOrder order;
-    private final long newGTT;
-
     private SetGTTCommand(final Builder builder) {
         super(builder);
-        order = builder.order;
-        newGTT = builder.newGTT;
-    }
-
-    public IOrder order() {
-        return order;
-    }
-
-    public long newGTT() {
-        return newGTT;
     }
 
     public static final SetGTTOption create(final IOrder order,
@@ -40,15 +27,10 @@ public class SetGTTCommand extends Command {
     }
 
     private static class Builder extends CommonBuilder<SetGTTOption>
-                                 implements SetGTTOption {
-
-        private final IOrder order;
-        private final long newGTT;
+            implements SetGTTOption {
 
         private Builder(final IOrder order,
                         final long newGTT) {
-            this.order = order;
-            this.newGTT = newGTT;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setGoodTillTime(newGTT), order);
             this.callReason = OrderCallReason.CHANGE_GTT;
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CHANGED_GTT),

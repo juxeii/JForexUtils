@@ -19,21 +19,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class MergeCommand extends Command {
 
-    private final String mergeOrderLabel;
-    private final Collection<IOrder> toMergeOrders;
-
     private MergeCommand(final Builder builder) {
         super(builder);
-        mergeOrderLabel = builder.mergeOrderLabel;
-        toMergeOrders = builder.toMergeOrders;
-    }
-
-    public String mergeOrderLabel() {
-        return mergeOrderLabel;
-    }
-
-    public Collection<IOrder> toMergeOrders() {
-        return toMergeOrders;
     }
 
     public static final MergeOption create(final String mergeOrderLabel,
@@ -47,14 +34,9 @@ public class MergeCommand extends Command {
     private static class Builder extends CommonBuilder<MergeOption>
             implements MergeOption {
 
-        private final String mergeOrderLabel;
-        private final Collection<IOrder> toMergeOrders;
-
         private Builder(final String mergeOrderLabel,
                         final Collection<IOrder> toMergeOrders,
                         final IEngineUtil engineUtil) {
-            this.mergeOrderLabel = mergeOrderLabel;
-            this.toMergeOrders = toMergeOrders;
             this.callable = engineUtil.mergeCallable(mergeOrderLabel, toMergeOrders);
             this.callReason = OrderCallReason.MERGE;
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(MERGE_OK, MERGE_CLOSE_OK),

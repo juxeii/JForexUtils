@@ -17,21 +17,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetSLCommand extends Command {
 
-    private final IOrder order;
-    private final double newSL;
-
     private SetSLCommand(final Builder builder) {
         super(builder);
-        order = builder.order;
-        newSL = builder.newSL;
-    }
-
-    public IOrder order() {
-        return order;
-    }
-
-    public double newSL() {
-        return newSL;
     }
 
     public static final SetSLOption create(final IOrder order,
@@ -40,15 +27,10 @@ public class SetSLCommand extends Command {
     }
 
     private static class Builder extends CommonBuilder<SetSLOption>
-                                 implements SetSLOption {
-
-        private final IOrder order;
-        private final double newSL;
+            implements SetSLOption {
 
         private Builder(final IOrder order,
                         final double newSL) {
-            this.order = order;
-            this.newSL = newSL;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setStopLossPrice(newSL), order);
             this.callReason = OrderCallReason.CHANGE_SL;
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CHANGED_SL),

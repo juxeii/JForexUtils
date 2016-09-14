@@ -76,7 +76,6 @@ public class SubmitCommandTest extends CommandTester {
 
     @Test
     public void commandValuesAreCorrect() {
-        assertThat(submitCommand.orderParams(), equalTo(buyParamsEURUSD));
         assertThat(submitCommand.callReason(), equalTo(OrderCallReason.SUBMIT));
         assertThat(submitCommand.callable(), equalTo(callable));
         assertRetryParams(submitCommand);

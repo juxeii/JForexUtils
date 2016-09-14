@@ -15,14 +15,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.OrderUtilBuilder;
-import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.SetAmountCommand;
-import com.jforex.programming.order.command.SetGTTCommand;
-import com.jforex.programming.order.command.SetLabelCommand;
-import com.jforex.programming.order.command.SetOpenPriceCommand;
-import com.jforex.programming.order.command.SetSLCommand;
-import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -58,11 +51,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void orderParamsIsSet() {
-            assertThat(submitCommand.orderParams(), equalTo(buyParamsEURUSD));
-        }
-
-        @Test
         public void callableIsSet() {
             assertThat(submitCommand.callable(), equalTo(callableMock));
         }
@@ -90,16 +78,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void mergeOrderLabelIsSet() {
-            assertThat(mergeCommand.mergeOrderLabel(), equalTo(mergeOrderLabel));
-        }
-
-        @Test
-        public void toMergeOrdersIsSet() {
-            assertThat(mergeCommand.toMergeOrders(), equalTo(toMergeOrders));
-        }
-
-        @Test
         public void callableIsSet() {
             assertThat(mergeCommand.callable(), equalTo(callableMock));
         }
@@ -110,163 +88,57 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         }
     }
 
-    public class CloseBuilderTests {
+    @Test
+    public void noInteractionsHappensAtCloseCreation() {
+        orerUtilBuilder
+            .closeBuilder(buyOrderEURUSD)
+            .build();
 
-        private CloseCommand closeCommand;
-
-        @Before
-        public void setUp() {
-            closeCommand = orerUtilBuilder
-                .closeBuilder(buyOrderEURUSD)
-                .build();
-        }
-
-        @Test
-        public void orderIsSet() {
-            assertThat(closeCommand.order(), equalTo(buyOrderEURUSD));
-        }
-
-        @Test
-        public void noInteractionsHappensAtCreation() {
-            verifyZeroInteractions(callableMock);
-        }
+        verifyZeroInteractions(callableMock);
     }
 
-    public class LabelBuilderTests {
+    @Test
+    public void noInteractionsHappensAtSetLabelCreation() {
+        orerUtilBuilder
+            .setLabelBuilder(buyOrderEURUSD, "newLabel")
+            .build();
 
-        private SetLabelCommand setLabelCommand;
-        private final String newLabel = "newLabel";
-
-        @Before
-        public void setUp() {
-            setLabelCommand = orerUtilBuilder
-                .setLabelBuilder(buyOrderEURUSD, newLabel)
-                .build();
-        }
-
-        @Test
-        public void orderIsSet() {
-            assertThat(setLabelCommand.order(), equalTo(buyOrderEURUSD));
-        }
-
-        @Test
-        public void noInteractionsHappensAtCreation() {
-            verifyZeroInteractions(callableMock);
-        }
+        verifyZeroInteractions(callableMock);
     }
 
-    public class GTTBuilderTests {
+    @Test
+    public void noInteractionsHappensAtSetAmountCreation() {
+        orerUtilBuilder
+            .setAmountBuilder(buyOrderEURUSD, 0.12)
+            .build();
 
-        private SetGTTCommand setGTTCommand;
-        private final long newGTT = 1L;
-
-        @Before
-        public void setUp() {
-            setGTTCommand = orerUtilBuilder
-                .setGTTBuilder(buyOrderEURUSD, newGTT)
-                .build();
-        }
-
-        @Test
-        public void orderIsSet() {
-            assertThat(setGTTCommand.order(), equalTo(buyOrderEURUSD));
-        }
-
-        @Test
-        public void noInteractionsHappensAtCreation() {
-            verifyZeroInteractions(callableMock);
-        }
+        verifyZeroInteractions(callableMock);
     }
 
-    public class AmountBuilderTests {
+    @Test
+    public void noInteractionsHappensAtSetOpenPriceCreation() {
+        orerUtilBuilder
+            .setOpenPriceBuilder(buyOrderEURUSD, 1.1234)
+            .build();
 
-        private SetAmountCommand setAmountCommand;
-        private final double newAmount = 1L;
-
-        @Before
-        public void setUp() {
-            setAmountCommand = orerUtilBuilder
-                .setAmountBuilder(buyOrderEURUSD, newAmount)
-                .build();
-        }
-
-        @Test
-        public void orderIsSet() {
-            assertThat(setAmountCommand.order(), equalTo(buyOrderEURUSD));
-        }
-
-        @Test
-        public void noInteractionsHappensAtCreation() {
-            verifyZeroInteractions(callableMock);
-        }
+        verifyZeroInteractions(callableMock);
     }
 
-    public class OpenPriceBuilderTests {
+    @Test
+    public void noInteractionsHappensAtSetSLCreation() {
+        orerUtilBuilder
+            .setSLBuilder(buyOrderEURUSD, 1.1234)
+            .build();
 
-        private SetOpenPriceCommand setOpenPriceCommand;
-        private final double newOpenPrice = 1L;
-
-        @Before
-        public void setUp() {
-            setOpenPriceCommand = orerUtilBuilder
-                .setOpenPriceBuilder(buyOrderEURUSD, newOpenPrice)
-                .build();
-        }
-
-        @Test
-        public void orderIsSet() {
-            assertThat(setOpenPriceCommand.order(), equalTo(buyOrderEURUSD));
-        }
-
-        @Test
-        public void noInteractionsHappensAtCreation() {
-            verifyZeroInteractions(callableMock);
-        }
+        verifyZeroInteractions(callableMock);
     }
 
-    public class SLBuilderTests {
+    @Test
+    public void noInteractionsHappensAtSetTPCreation() {
+        orerUtilBuilder
+            .setTPBuilder(buyOrderEURUSD, 1L)
+            .build();
 
-        private SetSLCommand setSLCommand;
-        private final double newSL = 1L;
-
-        @Before
-        public void setUp() {
-            setSLCommand = orerUtilBuilder
-                .setSLBuilder(buyOrderEURUSD, newSL)
-                .build();
-        }
-
-        @Test
-        public void orderIsSet() {
-            assertThat(setSLCommand.order(), equalTo(buyOrderEURUSD));
-        }
-
-        @Test
-        public void noInteractionsHappensAtCreation() {
-            verifyZeroInteractions(callableMock);
-        }
-    }
-
-    public class TPBuilderTests {
-
-        private SetTPCommand setTPCommand;
-        private final double newTP = 1L;
-
-        @Before
-        public void setUp() {
-            setTPCommand = orerUtilBuilder
-                .setTPBuilder(buyOrderEURUSD, newTP)
-                .build();
-        }
-
-        @Test
-        public void orderIsSet() {
-            assertThat(setTPCommand.order(), equalTo(buyOrderEURUSD));
-        }
-
-        @Test
-        public void noInteractionsHappensAtCreation() {
-            verifyZeroInteractions(callableMock);
-        }
+        verifyZeroInteractions(callableMock);
     }
 }

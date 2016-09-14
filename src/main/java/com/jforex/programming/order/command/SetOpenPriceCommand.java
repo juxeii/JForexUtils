@@ -17,21 +17,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetOpenPriceCommand extends Command {
 
-    private final IOrder order;
-    private final double newOpenPrice;
-
     private SetOpenPriceCommand(final Builder builder) {
         super(builder);
-        order = builder.order;
-        newOpenPrice = builder.newOpenPrice;
-    }
-
-    public IOrder order() {
-        return order;
-    }
-
-    public double newOpenPrice() {
-        return newOpenPrice;
     }
 
     public static final SetOpenPriceOption create(final IOrder order,
@@ -40,15 +27,10 @@ public class SetOpenPriceCommand extends Command {
     }
 
     private static class Builder extends CommonBuilder<SetOpenPriceOption>
-                                 implements SetOpenPriceOption {
-
-        private final IOrder order;
-        private final double newOpenPrice;
+            implements SetOpenPriceOption {
 
         private Builder(final IOrder order,
                         final double newOpenPrice) {
-            this.order = order;
-            this.newOpenPrice = newOpenPrice;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setOpenPrice(newOpenPrice), order);
             this.callReason = OrderCallReason.CHANGE_PRICE;
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CHANGED_PRICE),

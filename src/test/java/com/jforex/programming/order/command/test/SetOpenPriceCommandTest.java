@@ -59,8 +59,6 @@ public class SetOpenPriceCommandTest extends CommandTester {
 
     @Test
     public void commandValuesAreCorrect() throws Exception {
-        assertThat(setOpenPriceCommand.order(), equalTo(buyOrderEURUSD));
-        assertThat(setOpenPriceCommand.newOpenPrice(), equalTo(newOpenPrice));
         assertThat(setOpenPriceCommand.callReason(), equalTo(OrderCallReason.CHANGE_PRICE));
         assertRetryParams(setOpenPriceCommand);
 

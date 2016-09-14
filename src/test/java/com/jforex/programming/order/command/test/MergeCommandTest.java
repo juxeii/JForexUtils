@@ -75,8 +75,6 @@ public class MergeCommandTest extends CommandTester {
 
     @Test
     public void commandValuesAreCorrect() {
-        assertThat(mergeCommand.mergeOrderLabel(), equalTo(mergeOrderLabel));
-        assertThat(mergeCommand.toMergeOrders(), equalTo(toMergeOrders));
         assertThat(mergeCommand.callReason(), equalTo(OrderCallReason.MERGE));
         assertThat(mergeCommand.callable(), equalTo(callable));
         assertRetryParams(mergeCommand);

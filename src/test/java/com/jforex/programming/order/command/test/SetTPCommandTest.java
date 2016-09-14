@@ -54,8 +54,6 @@ public class SetTPCommandTest extends CommandTester {
 
     @Test
     public void commandValuesAreCorrect() throws Exception {
-        assertThat(setTPCommand.order(), equalTo(buyOrderEURUSD));
-        assertThat(setTPCommand.newTP(), equalTo(newTP));
         assertThat(setTPCommand.callReason(), equalTo(OrderCallReason.CHANGE_TP));
         assertRetryParams(setTPCommand);
 

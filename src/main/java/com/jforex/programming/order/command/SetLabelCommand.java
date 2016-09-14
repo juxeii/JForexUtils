@@ -17,21 +17,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class SetLabelCommand extends Command {
 
-    private final IOrder order;
-    private final String newLabel;
-
     private SetLabelCommand(final Builder builder) {
         super(builder);
-        order = builder.order;
-        newLabel = builder.newLabel;
-    }
-
-    public IOrder order() {
-        return order;
-    }
-
-    public String newLabel() {
-        return newLabel;
     }
 
     public static final SetLabelOption create(final IOrder order,
@@ -41,15 +28,10 @@ public class SetLabelCommand extends Command {
     }
 
     private static class Builder extends CommonBuilder<SetLabelOption>
-                                 implements SetLabelOption {
-
-        private final IOrder order;
-        private final String newLabel;
+            implements SetLabelOption {
 
         private Builder(final IOrder order,
                         final String newLabel) {
-            this.order = order;
-            this.newLabel = newLabel;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.setLabel(newLabel), order);
             this.callReason = OrderCallReason.CHANGE_LABEL;
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CHANGED_LABEL),

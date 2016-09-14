@@ -18,15 +18,8 @@ import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class CloseCommand extends Command {
 
-    private final IOrder order;
-
     private CloseCommand(final Builder builder) {
         super(builder);
-        order = builder.order;
-    }
-
-    public IOrder order() {
-        return order;
     }
 
     public static final CloseOption create(final IOrder orderToClose) {
@@ -34,12 +27,9 @@ public class CloseCommand extends Command {
     }
 
     public static class Builder extends CommonBuilder<CloseOption>
-                                implements CloseOption {
-
-        private final IOrder order;
+            implements CloseOption {
 
         private Builder(final IOrder order) {
-            this.order = order;
             this.callable = OrderStaticUtil.runnableToCallable(() -> order.close(), order);
             this.callReason = OrderCallReason.CLOSE;
             this.orderEventTypeData = new OrderEventTypeData(EnumSet.of(CLOSE_OK),

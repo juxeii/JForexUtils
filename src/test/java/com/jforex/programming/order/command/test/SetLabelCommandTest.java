@@ -54,8 +54,6 @@ public class SetLabelCommandTest extends CommandTester {
 
     @Test
     public void commandValuesAreCorrect() throws Exception {
-        assertThat(setLabelCommand.order(), equalTo(buyOrderEURUSD));
-        assertThat(setLabelCommand.newLabel(), equalTo(newLabel));
         assertThat(setLabelCommand.callReason(), equalTo(OrderCallReason.CHANGE_LABEL));
         assertRetryParams(setLabelCommand);
 

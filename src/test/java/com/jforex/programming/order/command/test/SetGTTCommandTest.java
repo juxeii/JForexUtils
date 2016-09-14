@@ -54,8 +54,6 @@ public class SetGTTCommandTest extends CommandTester {
 
     @Test
     public void commandValuesAreCorrect() throws Exception {
-        assertThat(setGTTCommand.order(), equalTo(buyOrderEURUSD));
-        assertThat(setGTTCommand.newGTT(), equalTo(newGTT));
         assertThat(setGTTCommand.callReason(), equalTo(OrderCallReason.CHANGE_GTT));
         assertRetryParams(setGTTCommand);
 

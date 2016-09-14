@@ -54,8 +54,6 @@ public class SetAmountCommandTest extends CommandTester {
 
     @Test
     public void commandValuesAreCorrect() throws Exception {
-        assertThat(setAmountCommand.order(), equalTo(buyOrderEURUSD));
-        assertThat(setAmountCommand.newAmount(), equalTo(newAmount));
         assertThat(setAmountCommand.callReason(), equalTo(OrderCallReason.CHANGE_AMOUNT));
         assertRetryParams(setAmountCommand);
 
