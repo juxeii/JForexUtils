@@ -1,27 +1,35 @@
 package com.jforex.programming.order;
 
+import static com.jforex.programming.order.OrderStaticUtil.runnableToCallable;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_AMOUNT;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_GTT;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_LABEL;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_PRICE;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_SL;
+import static com.jforex.programming.order.event.OrderEventType.CHANGED_TP;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_AMOUNT_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_GTT_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_LABEL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_PRICE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_SL_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.CHANGE_TP_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+
 import java.util.Collection;
+import java.util.EnumSet;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
+import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.command.ChangeCommand;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.SetAmountCommand;
-import com.jforex.programming.order.command.SetGTTCommand;
-import com.jforex.programming.order.command.SetLabelCommand;
-import com.jforex.programming.order.command.SetOpenPriceCommand;
-import com.jforex.programming.order.command.SetSLCommand;
-import com.jforex.programming.order.command.SetTPCommand;
 import com.jforex.programming.order.command.SubmitCommand;
+import com.jforex.programming.order.command.option.ChangeOption;
 import com.jforex.programming.order.command.option.CloseOption;
 import com.jforex.programming.order.command.option.MergeOption;
-import com.jforex.programming.order.command.option.SetAmountOption;
-import com.jforex.programming.order.command.option.SetGTTOption;
-import com.jforex.programming.order.command.option.SetLabelOption;
-import com.jforex.programming.order.command.option.SetOpenPriceOption;
-import com.jforex.programming.order.command.option.SetSLOption;
-import com.jforex.programming.order.command.option.SetTPOption;
 import com.jforex.programming.order.command.option.SubmitOption;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class OrderUtilBuilder {
 
@@ -46,33 +54,57 @@ public class OrderUtilBuilder {
         return CloseCommand.create(orderToClose);
     }
 
-    public SetLabelOption setLabelBuilder(final IOrder order,
-                                          final String newLabel) {
-        return SetLabelCommand.create(order, newLabel);
+    public ChangeOption setLabelBuilder(final IOrder order,
+                                        final String newLabel) {
+        return ChangeCommand.create(runnableToCallable(() -> order.setLabel(newLabel), order),
+                                    OrderCallReason.CHANGE_LABEL,
+                                    new OrderEventTypeData(EnumSet.of(CHANGED_LABEL),
+                                                           EnumSet.of(CHANGE_LABEL_REJECTED),
+                                                           EnumSet.of(NOTIFICATION)));
     }
 
-    public SetGTTOption setGTTBuilder(final IOrder order,
+    public ChangeOption setGTTBuilder(final IOrder order,
                                       final long newGTT) {
-        return SetGTTCommand.create(order, newGTT);
+        return ChangeCommand.create(runnableToCallable(() -> order.setGoodTillTime(newGTT), order),
+                                    OrderCallReason.CHANGE_GTT,
+                                    new OrderEventTypeData(EnumSet.of(CHANGED_GTT),
+                                                           EnumSet.of(CHANGE_GTT_REJECTED),
+                                                           EnumSet.of(NOTIFICATION)));
     }
 
-    public SetAmountOption setAmountBuilder(final IOrder order,
-                                            final double newAmount) {
-        return SetAmountCommand.create(order, newAmount);
+    public ChangeOption setAmountBuilder(final IOrder order,
+                                         final double newAmount) {
+        return ChangeCommand.create(runnableToCallable(() -> order.setRequestedAmount(newAmount), order),
+                                    OrderCallReason.CHANGE_AMOUNT,
+                                    new OrderEventTypeData(EnumSet.of(CHANGED_AMOUNT),
+                                                           EnumSet.of(CHANGE_AMOUNT_REJECTED),
+                                                           EnumSet.of(NOTIFICATION)));
     }
 
-    public SetOpenPriceOption setOpenPriceBuilder(final IOrder order,
-                                                  final double newPrice) {
-        return SetOpenPriceCommand.create(order, newPrice);
+    public ChangeOption setOpenPriceBuilder(final IOrder order,
+                                            final double newOpenPrice) {
+        return ChangeCommand.create(runnableToCallable(() -> order.setOpenPrice(newOpenPrice), order),
+                                    OrderCallReason.CHANGE_PRICE,
+                                    new OrderEventTypeData(EnumSet.of(CHANGED_PRICE),
+                                                           EnumSet.of(CHANGE_PRICE_REJECTED),
+                                                           EnumSet.of(NOTIFICATION)));
     }
 
-    public SetSLOption setSLBuilder(final IOrder order,
-                                    final double newSL) {
-        return SetSLCommand.create(order, newSL);
+    public ChangeOption setSLBuilder(final IOrder order,
+                                     final double newSL) {
+        return ChangeCommand.create(runnableToCallable(() -> order.setStopLossPrice(newSL), order),
+                                    OrderCallReason.CHANGE_SL,
+                                    new OrderEventTypeData(EnumSet.of(CHANGED_SL),
+                                                           EnumSet.of(CHANGE_SL_REJECTED),
+                                                           EnumSet.of(NOTIFICATION)));
     }
 
-    public SetTPOption setTPBuilder(final IOrder order,
-                                    final double newTP) {
-        return SetTPCommand.create(order, newTP);
+    public ChangeOption setTPBuilder(final IOrder order,
+                                     final double newTP) {
+        return ChangeCommand.create(runnableToCallable(() -> order.setTakeProfitPrice(newTP), order),
+                                    OrderCallReason.CHANGE_TP,
+                                    new OrderEventTypeData(EnumSet.of(CHANGED_TP),
+                                                           EnumSet.of(CHANGE_TP_REJECTED),
+                                                           EnumSet.of(NOTIFICATION)));
     }
 }

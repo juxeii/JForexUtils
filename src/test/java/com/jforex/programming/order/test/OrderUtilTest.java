@@ -20,14 +20,9 @@ import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.Command;
 import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.option.ChangeOption;
 import com.jforex.programming.order.command.option.CloseOption;
 import com.jforex.programming.order.command.option.MergeOption;
-import com.jforex.programming.order.command.option.SetAmountOption;
-import com.jforex.programming.order.command.option.SetGTTOption;
-import com.jforex.programming.order.command.option.SetLabelOption;
-import com.jforex.programming.order.command.option.SetOpenPriceOption;
-import com.jforex.programming.order.command.option.SetSLOption;
-import com.jforex.programming.order.command.option.SetTPOption;
 import com.jforex.programming.order.command.option.SubmitOption;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
@@ -102,11 +97,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setLabelBuilderCallIsInvokingOnBuilderUtil() {
         final String newLabel = "newLabel";
-        final SetLabelOption setLabelBuilderOptionMock = mock(SetLabelOption.class);
+        final ChangeOption setLabelBuilderOptionMock = mock(ChangeOption.class);
         when(orderUtilBuilderMock.setLabelBuilder(buyOrderEURUSD, newLabel))
             .thenReturn(setLabelBuilderOptionMock);
 
-        final SetLabelOption setLabelOption = orderUtil.setLabelBuilder(buyOrderEURUSD, newLabel);
+        final ChangeOption setLabelOption = orderUtil.setLabelBuilder(buyOrderEURUSD, newLabel);
 
         verify(orderUtilBuilderMock).setLabelBuilder(buyOrderEURUSD, newLabel);
         assertThat(setLabelOption, equalTo(setLabelBuilderOptionMock));
@@ -115,11 +110,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setGTTBuilderCallIsInvokingOnBuilderUtil() {
         final long newGTT = 1L;
-        final SetGTTOption setGTTBuilderOptionMock = mock(SetGTTOption.class);
+        final ChangeOption setGTTBuilderOptionMock = mock(ChangeOption.class);
         when(orderUtilBuilderMock.setGTTBuilder(buyOrderEURUSD, newGTT))
             .thenReturn(setGTTBuilderOptionMock);
 
-        final SetGTTOption setGTTOption = orderUtil.setGTTBuilder(buyOrderEURUSD, newGTT);
+        final ChangeOption setGTTOption = orderUtil.setGTTBuilder(buyOrderEURUSD, newGTT);
 
         verify(orderUtilBuilderMock).setGTTBuilder(buyOrderEURUSD, newGTT);
         assertThat(setGTTOption, equalTo(setGTTBuilderOptionMock));
@@ -128,11 +123,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setAmountBuilderCallIsInvokingOnBuilderUtil() {
         final double newAmount = 0.12;
-        final SetAmountOption setAmountBuilderOptionMock = mock(SetAmountOption.class);
+        final ChangeOption setAmountBuilderOptionMock = mock(ChangeOption.class);
         when(orderUtilBuilderMock.setAmountBuilder(buyOrderEURUSD, newAmount))
             .thenReturn(setAmountBuilderOptionMock);
 
-        final SetAmountOption setAmountOption = orderUtil.setAmountBuilder(buyOrderEURUSD, newAmount);
+        final ChangeOption setAmountOption = orderUtil.setAmountBuilder(buyOrderEURUSD, newAmount);
 
         verify(orderUtilBuilderMock).setAmountBuilder(buyOrderEURUSD, newAmount);
         assertThat(setAmountOption, equalTo(setAmountBuilderOptionMock));
@@ -141,11 +136,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setOpenPriceBuilderCallIsInvokingOnBuilderUtil() {
         final double newOpenPrice = 1.234;
-        final SetOpenPriceOption setOpenPriceBuilderOptionMock = mock(SetOpenPriceOption.class);
+        final ChangeOption setOpenPriceBuilderOptionMock = mock(ChangeOption.class);
         when(orderUtilBuilderMock.setOpenPriceBuilder(buyOrderEURUSD, newOpenPrice))
             .thenReturn(setOpenPriceBuilderOptionMock);
 
-        final SetOpenPriceOption setOpenPriceOption = orderUtil.setOpenPriceBuilder(buyOrderEURUSD, newOpenPrice);
+        final ChangeOption setOpenPriceOption = orderUtil.setOpenPriceBuilder(buyOrderEURUSD, newOpenPrice);
 
         verify(orderUtilBuilderMock).setOpenPriceBuilder(buyOrderEURUSD, newOpenPrice);
         assertThat(setOpenPriceOption, equalTo(setOpenPriceBuilderOptionMock));
@@ -154,11 +149,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setSLBuilderCallIsInvokingOnBuilderUtil() {
         final double newSL = 1.234;
-        final SetSLOption setSLBuilderOptionMock = mock(SetSLOption.class);
+        final ChangeOption setSLBuilderOptionMock = mock(ChangeOption.class);
         when(orderUtilBuilderMock.setSLBuilder(buyOrderEURUSD, newSL))
             .thenReturn(setSLBuilderOptionMock);
 
-        final SetSLOption setSLOption = orderUtil.setSLBuilder(buyOrderEURUSD, newSL);
+        final ChangeOption setSLOption = orderUtil.setSLBuilder(buyOrderEURUSD, newSL);
 
         verify(orderUtilBuilderMock).setSLBuilder(buyOrderEURUSD, newSL);
         assertThat(setSLOption, equalTo(setSLBuilderOptionMock));
@@ -167,11 +162,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void setTPBuilderCallIsInvokingOnBuilderUtil() {
         final double newTP = 1.234;
-        final SetTPOption setTPBuilderOptionMock = mock(SetTPOption.class);
+        final ChangeOption setTPBuilderOptionMock = mock(ChangeOption.class);
         when(orderUtilBuilderMock.setTPBuilder(buyOrderEURUSD, newTP))
             .thenReturn(setTPBuilderOptionMock);
 
-        final SetTPOption setTPOption = orderUtil.setTPBuilder(buyOrderEURUSD, newTP);
+        final ChangeOption setTPOption = orderUtil.setTPBuilder(buyOrderEURUSD, newTP);
 
         verify(orderUtilBuilderMock).setTPBuilder(buyOrderEURUSD, newTP);
         assertThat(setTPOption, equalTo(setTPBuilderOptionMock));
