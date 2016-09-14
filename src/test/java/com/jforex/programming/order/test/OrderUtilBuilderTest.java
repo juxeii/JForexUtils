@@ -17,9 +17,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.order.OrderUtilBuilder;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.command.ChangeCommand;
-import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.SubmitCommand;
+import com.jforex.programming.order.command.Command;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -38,31 +36,31 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
     private Consumer<IOrder> changeConsumer;
     @Mock
     private Consumer<IOrder> rejectConsumer;
-    private ChangeCommand changeCommand;
+    private Command command;
 
     @Before
     public void setUp() {
         orderUtilBuilder = new OrderUtilBuilder(engineUtilMock);
     }
 
-    private void verifyChangeConsumer(final ChangeCommand changeCommand,
+    private void verifyChangeConsumer(final Command command,
                                       final OrderEventType orderEventType) {
         verifyConsumer(changeConsumer,
-                       changeCommand,
+                       command,
                        orderEventType);
     }
 
-    private void verifyRejectConsumer(final ChangeCommand changeCommand,
+    private void verifyRejectConsumer(final Command command,
                                       final OrderEventType orderEventType) {
         verifyConsumer(rejectConsumer,
-                       changeCommand,
+                       command,
                        orderEventType);
     }
 
     private void verifyConsumer(final Consumer<IOrder> consumer,
-                                final ChangeCommand changeCommand,
+                                final Command command,
                                 final OrderEventType orderEventType) {
-        changeCommand
+        command
             .eventHandlerForType()
             .get(orderEventType)
             .accept(buyOrderEURUSD);
@@ -72,7 +70,7 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
     public class SubmitBuilderTests {
 
-        private SubmitCommand submitCommand;
+        private Command submitCommand;
 
         @Before
         public void setUp() {
@@ -97,7 +95,6 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
     public class MergeBuilderTests {
 
-        private MergeCommand mergeCommand;
         private final String mergeOrderLabel = "mergeOrderLabel";
         private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
@@ -106,14 +103,14 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
             when(engineUtilMock.mergeCallable(mergeOrderLabel, toMergeOrders))
                 .thenReturn(callableMock);
 
-            mergeCommand = orderUtilBuilder
+            command = orderUtilBuilder
                 .mergeBuilder(mergeOrderLabel, toMergeOrders)
                 .build();
         }
 
         @Test
         public void callableIsSet() {
-            assertThat(mergeCommand.callable(), equalTo(callableMock));
+            assertThat(command.callable(), equalTo(callableMock));
         }
 
         @Test
@@ -122,13 +119,43 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         }
     }
 
-    @Test
-    public void noInteractionsHappensAtCloseCreation() {
-        orderUtilBuilder
-            .closeBuilder(buyOrderEURUSD)
-            .build();
+    public class CloseBuilderTests {
 
-        verifyZeroInteractions(callableMock);
+        @Before
+        public void setUp() {
+            command = orderUtilBuilder
+                .closeBuilder(buyOrderEURUSD)
+                .doOnClose(changeConsumer)
+                .doOnCloseReject(rejectConsumer)
+                .build();
+        }
+
+        @Test
+        public void callableIsCorrect() throws Exception {
+            command.callable().call();
+
+            verify(buyOrderEURUSD).close();
+        }
+
+        @Test
+        public void callReasonIsCorrect() {
+            assertThat(command.callReason(), equalTo(OrderCallReason.CLOSE));
+        }
+
+        @Test
+        public void changeConsumerIsCorrect() {
+            verifyChangeConsumer(command, OrderEventType.CLOSE_OK);
+        }
+
+        @Test
+        public void rejectConsumerIsCorrect() {
+            verifyRejectConsumer(command, OrderEventType.CLOSE_REJECTED);
+        }
+
+        @Test
+        public void noInteractionsHappensAtCreation() {
+            verifyZeroInteractions(callableMock);
+        }
     }
 
     public class SetLabelBuilder {
@@ -137,7 +164,7 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            changeCommand = orderUtilBuilder
+            command = orderUtilBuilder
                 .setLabelBuilder(buyOrderEURUSD, newGTT)
                 .doOnChange(changeConsumer)
                 .doOnReject(rejectConsumer)
@@ -146,24 +173,24 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Test
         public void callableIsCorrect() throws Exception {
-            changeCommand.callable().call();
+            command.callable().call();
 
             verify(buyOrderEURUSD).setLabel(newGTT);
         }
 
         @Test
         public void callReasonIsCorrect() {
-            assertThat(changeCommand.callReason(), equalTo(OrderCallReason.CHANGE_LABEL));
+            assertThat(command.callReason(), equalTo(OrderCallReason.CHANGE_LABEL));
         }
 
         @Test
         public void changeConsumerIsCorrect() {
-            verifyChangeConsumer(changeCommand, OrderEventType.CHANGED_LABEL);
+            verifyChangeConsumer(command, OrderEventType.CHANGED_LABEL);
         }
 
         @Test
         public void rejectConsumerIsCorrect() {
-            verifyRejectConsumer(changeCommand, OrderEventType.CHANGE_LABEL_REJECTED);
+            verifyRejectConsumer(command, OrderEventType.CHANGE_LABEL_REJECTED);
         }
 
         @Test
@@ -178,7 +205,7 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            changeCommand = orderUtilBuilder
+            command = orderUtilBuilder
                 .setGTTBuilder(buyOrderEURUSD, newGTT)
                 .doOnChange(changeConsumer)
                 .doOnReject(rejectConsumer)
@@ -187,24 +214,24 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Test
         public void callableIsCorrect() throws Exception {
-            changeCommand.callable().call();
+            command.callable().call();
 
             verify(buyOrderEURUSD).setGoodTillTime(newGTT);
         }
 
         @Test
         public void callReasonIsCorrect() {
-            assertThat(changeCommand.callReason(), equalTo(OrderCallReason.CHANGE_GTT));
+            assertThat(command.callReason(), equalTo(OrderCallReason.CHANGE_GTT));
         }
 
         @Test
         public void changeConsumerIsCorrect() {
-            verifyChangeConsumer(changeCommand, OrderEventType.CHANGED_GTT);
+            verifyChangeConsumer(command, OrderEventType.CHANGED_GTT);
         }
 
         @Test
         public void rejectConsumerIsCorrect() {
-            verifyRejectConsumer(changeCommand, OrderEventType.CHANGE_GTT_REJECTED);
+            verifyRejectConsumer(command, OrderEventType.CHANGE_GTT_REJECTED);
         }
 
         @Test
@@ -219,7 +246,7 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            changeCommand = orderUtilBuilder
+            command = orderUtilBuilder
                 .setAmountBuilder(buyOrderEURUSD, newAmount)
                 .doOnChange(changeConsumer)
                 .doOnReject(rejectConsumer)
@@ -228,24 +255,24 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Test
         public void callableIsCorrect() throws Exception {
-            changeCommand.callable().call();
+            command.callable().call();
 
             verify(buyOrderEURUSD).setRequestedAmount(newAmount);
         }
 
         @Test
         public void callReasonIsCorrect() {
-            assertThat(changeCommand.callReason(), equalTo(OrderCallReason.CHANGE_AMOUNT));
+            assertThat(command.callReason(), equalTo(OrderCallReason.CHANGE_AMOUNT));
         }
 
         @Test
         public void changeConsumerIsCorrect() {
-            verifyChangeConsumer(changeCommand, OrderEventType.CHANGED_AMOUNT);
+            verifyChangeConsumer(command, OrderEventType.CHANGED_AMOUNT);
         }
 
         @Test
         public void rejectConsumerIsCorrect() {
-            verifyRejectConsumer(changeCommand, OrderEventType.CHANGE_AMOUNT_REJECTED);
+            verifyRejectConsumer(command, OrderEventType.CHANGE_AMOUNT_REJECTED);
         }
 
         @Test
@@ -260,7 +287,7 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            changeCommand = orderUtilBuilder
+            command = orderUtilBuilder
                 .setOpenPriceBuilder(buyOrderEURUSD, newOpenPrice)
                 .doOnChange(changeConsumer)
                 .doOnReject(rejectConsumer)
@@ -269,24 +296,24 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Test
         public void callableIsCorrect() throws Exception {
-            changeCommand.callable().call();
+            command.callable().call();
 
             verify(buyOrderEURUSD).setOpenPrice(newOpenPrice);
         }
 
         @Test
         public void callReasonIsCorrect() {
-            assertThat(changeCommand.callReason(), equalTo(OrderCallReason.CHANGE_PRICE));
+            assertThat(command.callReason(), equalTo(OrderCallReason.CHANGE_PRICE));
         }
 
         @Test
         public void changeConsumerIsCorrect() {
-            verifyChangeConsumer(changeCommand, OrderEventType.CHANGED_PRICE);
+            verifyChangeConsumer(command, OrderEventType.CHANGED_PRICE);
         }
 
         @Test
         public void rejectConsumerIsCorrect() {
-            verifyRejectConsumer(changeCommand, OrderEventType.CHANGE_PRICE_REJECTED);
+            verifyRejectConsumer(command, OrderEventType.CHANGE_PRICE_REJECTED);
         }
 
         @Test
@@ -301,7 +328,7 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            changeCommand = orderUtilBuilder
+            command = orderUtilBuilder
                 .setSLBuilder(buyOrderEURUSD, newSL)
                 .doOnChange(changeConsumer)
                 .doOnReject(rejectConsumer)
@@ -310,24 +337,24 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Test
         public void callableIsCorrect() throws Exception {
-            changeCommand.callable().call();
+            command.callable().call();
 
             verify(buyOrderEURUSD).setStopLossPrice(newSL);
         }
 
         @Test
         public void callReasonIsCorrect() {
-            assertThat(changeCommand.callReason(), equalTo(OrderCallReason.CHANGE_SL));
+            assertThat(command.callReason(), equalTo(OrderCallReason.CHANGE_SL));
         }
 
         @Test
         public void changeConsumerIsCorrect() {
-            verifyChangeConsumer(changeCommand, OrderEventType.CHANGED_SL);
+            verifyChangeConsumer(command, OrderEventType.CHANGED_SL);
         }
 
         @Test
         public void rejectConsumerIsCorrect() {
-            verifyRejectConsumer(changeCommand, OrderEventType.CHANGE_SL_REJECTED);
+            verifyRejectConsumer(command, OrderEventType.CHANGE_SL_REJECTED);
         }
 
         @Test
@@ -342,7 +369,7 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            changeCommand = orderUtilBuilder
+            command = orderUtilBuilder
                 .setTPBuilder(buyOrderEURUSD, newTP)
                 .doOnChange(changeConsumer)
                 .doOnReject(rejectConsumer)
@@ -351,24 +378,24 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
         @Test
         public void callableIsCorrect() throws Exception {
-            changeCommand.callable().call();
+            command.callable().call();
 
             verify(buyOrderEURUSD).setTakeProfitPrice(newTP);
         }
 
         @Test
         public void callReasonIsCorrect() {
-            assertThat(changeCommand.callReason(), equalTo(OrderCallReason.CHANGE_TP));
+            assertThat(command.callReason(), equalTo(OrderCallReason.CHANGE_TP));
         }
 
         @Test
         public void changeConsumerIsCorrect() {
-            verifyChangeConsumer(changeCommand, OrderEventType.CHANGED_TP);
+            verifyChangeConsumer(command, OrderEventType.CHANGED_TP);
         }
 
         @Test
         public void rejectConsumerIsCorrect() {
-            verifyRejectConsumer(changeCommand, OrderEventType.CHANGE_TP_REJECTED);
+            verifyRejectConsumer(command, OrderEventType.CHANGE_TP_REJECTED);
         }
 
         @Test

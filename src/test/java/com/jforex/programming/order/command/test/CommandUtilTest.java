@@ -15,8 +15,9 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Lists;
 import com.jforex.programming.order.OrderUtilCompletable;
-import com.jforex.programming.order.command.CommandUtil;
 import com.jforex.programming.order.command.Command;
+import com.jforex.programming.order.command.CommandUtil;
+import com.jforex.programming.order.command.option.MergeOption;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -39,7 +40,11 @@ public class CommandUtilTest extends CommonUtilForTest {
     @Mock
     private Callable<Double> callableTwo;
     @Mock
-    private Function<IOrder, Command> commandFactoryMock;
+    private MergeOption mergeOptionEURUSD;
+    @Mock
+    private MergeOption mergeOptionAUDUSD;
+    @Mock
+    private Function<IOrder, MergeOption> optionFactoryMock;
     private TestSubscriber<Void> testSubscriber;
     private final Completable completableOne = Completable.fromCallable(callableOne);
     private final Completable completableTwo = Completable.fromCallable(callableTwo);
@@ -54,8 +59,10 @@ public class CommandUtilTest extends CommonUtilForTest {
     }
 
     private void setUpMocks() {
-        when(commandFactoryMock.apply(buyOrderEURUSD)).thenReturn(commandOne);
-        when(commandFactoryMock.apply(sellOrderEURUSD)).thenReturn(commandTwo);
+        when(optionFactoryMock.apply(buyOrderEURUSD)).thenReturn(mergeOptionEURUSD);
+        when(optionFactoryMock.apply(sellOrderEURUSD)).thenReturn(mergeOptionAUDUSD);
+        when(mergeOptionEURUSD.build()).thenReturn(commandOne);
+        when(mergeOptionAUDUSD.build()).thenReturn(commandTwo);
     }
 
     @Test
@@ -77,8 +84,8 @@ public class CommandUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void fromFactoryCommandsAreCorrect() {
-        final List<Command> commands = commandUtil.fromFactory(orders, commandFactoryMock);
+    public void fromOptionCommandsAreCorrect() {
+        final List<Command> commands = commandUtil.fromOption(orders, optionFactoryMock);
 
         assertThat(commands.size(), equalTo(2));
         assertThat(commands.get(0), equalTo(commandOne));
@@ -137,9 +144,9 @@ public class CommandUtilTest extends CommonUtilForTest {
             }
 
             @Test
-            public void mergeFromFactoryDoesNotConcat() throws Exception {
+            public void mergeFromOptionDoesNotConcat() throws Exception {
                 commandUtil
-                    .mergeFromFactory(orders, commandFactoryMock)
+                    .mergeFromOption(orders, optionFactoryMock)
                     .subscribe();
 
                 verify(callableTwo).call();
@@ -148,7 +155,7 @@ public class CommandUtilTest extends CommonUtilForTest {
             @Test
             public void concatFromFactoryDoesNotMerge() {
                 commandUtil
-                    .concatFromFactory(orders, commandFactoryMock)
+                    .concatFromOption(orders, optionFactoryMock)
                     .subscribe();
 
                 verifyZeroInteractions(callableTwo);

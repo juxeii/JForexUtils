@@ -18,7 +18,17 @@ public final class OrderEventTypeMapper {
     private OrderEventTypeMapper() {
     }
 
-    private static final Map<OrderCallReason, OrderEventType> changeRejectEventByReason =
+    public static final Map<OrderCallReason, OrderEventType> changeDoneByReason =
+            Maps.immutableEnumMap(ImmutableMap.<OrderCallReason, OrderEventType> builder()
+                .put(OrderCallReason.CHANGE_AMOUNT, OrderEventType.CHANGED_AMOUNT)
+                .put(OrderCallReason.CHANGE_LABEL, OrderEventType.CHANGED_LABEL)
+                .put(OrderCallReason.CHANGE_GTT, OrderEventType.CHANGED_GTT)
+                .put(OrderCallReason.CHANGE_PRICE, OrderEventType.CHANGED_PRICE)
+                .put(OrderCallReason.CHANGE_SL, OrderEventType.CHANGED_SL)
+                .put(OrderCallReason.CHANGE_TP, OrderEventType.CHANGED_TP)
+                .build());
+
+    public static final Map<OrderCallReason, OrderEventType> changeRejectEventByReason =
             Maps.immutableEnumMap(ImmutableMap.<OrderCallReason, OrderEventType> builder()
                 .put(OrderCallReason.CHANGE_AMOUNT, OrderEventType.CHANGE_AMOUNT_REJECTED)
                 .put(OrderCallReason.CHANGE_LABEL, OrderEventType.CHANGE_LABEL_REJECTED)

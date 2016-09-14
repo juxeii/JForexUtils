@@ -12,7 +12,8 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtilCompletable;
-import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.Command;
+import com.jforex.programming.order.command.option.MergeOption;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionMerge;
@@ -34,9 +35,11 @@ public class PositionMergeTest extends InstrumentUtilForTest {
     @Mock
     private Position positionMock;
     @Mock
-    private Function<Collection<IOrder>, MergeCommand> mergeCommandFactory;
+    private MergeOption mergeOption;
     @Mock
-    private MergeCommand mergeCommandMock;
+    private Function<Collection<IOrder>, MergeOption> mergeOptionFactory;
+    @Mock
+    private Command commandMock;
     private TestSubscriber<Void> testSubscriber;
 
     @Before
@@ -47,12 +50,13 @@ public class PositionMergeTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(mergeCommandFactory.apply(any())).thenReturn(mergeCommandMock);
+        when(mergeOptionFactory.apply(any())).thenReturn(mergeOption);
+        when(mergeOption.build()).thenReturn(commandMock);
     }
 
     private void setUpMergePositionCompletables(final Completable firstCompletable,
                                                 final Completable... completables) {
-        when(orderUtilCompletableMock.forCommandWithOrderMarking(eq(mergeCommandMock), any()))
+        when(orderUtilCompletableMock.forCommandWithOrderMarking(eq(commandMock), any()))
             .thenReturn(firstCompletable, completables);
     }
 
@@ -71,7 +75,7 @@ public class PositionMergeTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            mergePositionCompletable = positionMerge.merge(instrumentEURUSD, mergeCommandFactory);
+            mergePositionCompletable = positionMerge.merge(instrumentEURUSD, mergeOptionFactory);
         }
 
         private void expectFilledOrders(final Set<IOrder> filledOrders) {
@@ -114,7 +118,7 @@ public class PositionMergeTest extends InstrumentUtilForTest {
                 prepareToMergeOrdersAndSubscribe(toMergeOrders);
 
                 verify(orderUtilCompletableMock)
-                    .forCommandWithOrderMarking(eq(mergeCommandMock), any());
+                    .forCommandWithOrderMarking(eq(commandMock), any());
                 testSubscriber.assertComplete();
             }
         }
@@ -126,7 +130,7 @@ public class PositionMergeTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            mergeAllPositionsCompletable = positionMerge.mergeAll(mergeCommandFactory);
+            mergeAllPositionsCompletable = positionMerge.mergeAll(mergeOptionFactory);
         }
 
         @Test

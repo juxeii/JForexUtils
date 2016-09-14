@@ -1,8 +1,13 @@
 package com.jforex.programming.order.test;
 
+import static com.jforex.programming.order.event.OrderEventType.CLOSE_OK;
+import static com.jforex.programming.order.event.OrderEventType.CLOSE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+import static com.jforex.programming.order.event.OrderEventType.PARTIAL_CLOSE_OK;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.EnumSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -18,14 +23,16 @@ import org.mockito.Mockito;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.jforex.programming.misc.TaskExecutor;
+import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.Command;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
@@ -59,7 +66,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private ArgumentCaptor<Callable<IOrder>> orderCallCaptor;
     @Captor
     private ArgumentCaptor<OrderCallRequest> callRequestCaptor;
-    private CloseCommand closeCommand;
+    private Command closeCommand;
     private Callable<IOrder> callable;
     private final IOrder orderToClose = buyOrderEURUSD;
     private final TestObserver<OrderEvent> subscriber = TestObserver.create();
@@ -75,6 +82,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
     public void setUpMocks() {
         orderUtilForTest.setState(orderToClose, IOrder.State.FILLED);
+        callable = OrderStaticUtil.runnableToCallable(() -> orderToClose.close(), orderToClose);
 
         when(orderEventGatewayMock.observable()).thenReturn(orderEventSubject);
     }
@@ -95,8 +103,11 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            closeCommand = CloseCommand
-                .create(orderToClose)
+
+            closeCommand = Command
+                .forClose(callable, new OrderEventTypeData(EnumSet.of(CLOSE_OK),
+                                                           EnumSet.of(CLOSE_REJECTED),
+                                                           EnumSet.of(NOTIFICATION, PARTIAL_CLOSE_OK)))
                 .doOnStart(startActionMock)
                 .doOnOrderEvent(orderEventConsumerMock)
                 .doOnClose(closeActionMock)
@@ -116,8 +127,10 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
         @Test
         public void whenRejectedCommandCompletesWithNoRetryForCommandWithNoRetry() {
-            closeCommand = CloseCommand
-                .create(orderToClose)
+            closeCommand = Command
+                .forClose(callable, new OrderEventTypeData(EnumSet.of(CLOSE_OK),
+                                                           EnumSet.of(CLOSE_REJECTED),
+                                                           EnumSet.of(NOTIFICATION, PARTIAL_CLOSE_OK)))
                 .doOnOrderEvent(orderEventConsumerMock)
                 .build();
             callable = closeCommand.callable();

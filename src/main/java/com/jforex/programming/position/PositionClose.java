@@ -7,9 +7,9 @@ import java.util.stream.Collectors;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.CommandUtil;
-import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.option.CloseOption;
+import com.jforex.programming.order.command.option.MergeOption;
 
 import io.reactivex.Completable;
 
@@ -28,25 +28,25 @@ public class PositionClose {
     }
 
     public Completable close(final Instrument instrument,
-                             final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory,
-                             final Function<IOrder, CloseCommand> closeCommandFactory) {
+                             final Function<Collection<IOrder>, MergeOption> mergeOption,
+                             final Function<IOrder, CloseOption> closeOption) {
         return Completable.defer(() -> {
-            final Completable mergeCompletable = positionMerge.merge(instrument, mergeCommandFactory);
+            final Completable mergeCompletable = positionMerge.merge(instrument, mergeOption);
             final Completable closeCompletable = Completable.defer(() -> commandUtil
-                .mergeFromFactory(position(instrument).filledOrOpened(), closeCommandFactory));
+                .mergeFromOption(position(instrument).filledOrOpened(), closeOption));
             return mergeCompletable.andThen(closeCompletable);
         });
     }
 
-    public Completable closeAll(final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory,
-                                final Function<IOrder, CloseCommand> closeCommandFactory) {
+    public Completable closeAll(final Function<Collection<IOrder>, MergeOption> mergeOption,
+                                final Function<IOrder, CloseOption> closeOption) {
         return Completable.defer(() -> {
             final List<Completable> completables = positionFactory
                 .all()
                 .stream()
                 .map(position -> close(position.instrument(),
-                                       mergeCommandFactory,
-                                       closeCommandFactory))
+                                       mergeOption,
+                                       closeOption))
                 .collect(Collectors.toList());
             return Completable.merge(completables);
         });

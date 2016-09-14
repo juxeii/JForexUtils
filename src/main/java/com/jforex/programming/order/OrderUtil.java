@@ -7,9 +7,7 @@ import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.Command;
-import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.option.ChangeOption;
 import com.jforex.programming.order.command.option.CloseOption;
 import com.jforex.programming.order.command.option.MergeOption;
@@ -79,27 +77,27 @@ public final class OrderUtil {
     }
 
     public final Completable mergePosition(final Instrument instrument,
-                                           final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory) {
+                                           final Function<Collection<IOrder>, MergeOption> mergeOption) {
         return positionUtil.merge(checkNotNull(instrument),
-                                  checkNotNull(mergeCommandFactory));
+                                  checkNotNull(mergeOption));
     }
 
-    public final Completable mergeAllPositions(final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory) {
-        return positionUtil.mergeAll(checkNotNull(mergeCommandFactory));
+    public final Completable mergeAllPositions(final Function<Collection<IOrder>, MergeOption> mergeOption) {
+        return positionUtil.mergeAll(checkNotNull(mergeOption));
     }
 
     public final Completable closePosition(final Instrument instrument,
-                                           final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory,
-                                           final Function<IOrder, CloseCommand> closeCommandFactory) {
+                                           final Function<Collection<IOrder>, MergeOption> mergeOption,
+                                           final Function<IOrder, CloseOption> closeOption) {
         return positionUtil.close(checkNotNull(instrument),
-                                  checkNotNull(mergeCommandFactory),
-                                  checkNotNull(closeCommandFactory));
+                                  checkNotNull(mergeOption),
+                                  checkNotNull(closeOption));
     }
 
-    public final Completable closeAllPositions(final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory,
-                                               final Function<IOrder, CloseCommand> closeCommandFactory) {
-        return positionUtil.closeAll(checkNotNull(mergeCommandFactory),
-                                     checkNotNull(closeCommandFactory));
+    public final Completable closeAllPositions(final Function<Collection<IOrder>, MergeOption> mergeOption,
+                                               final Function<IOrder, CloseOption> closeOption) {
+        return positionUtil.closeAll(checkNotNull(mergeOption),
+                                     checkNotNull(closeOption));
     }
 
     public final Completable commandToCompletable(final Command command) {

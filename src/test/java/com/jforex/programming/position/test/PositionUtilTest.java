@@ -12,8 +12,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.command.CloseCommand;
-import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.option.CloseOption;
+import com.jforex.programming.order.command.option.MergeOption;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionClose;
 import com.jforex.programming.position.PositionFactory;
@@ -39,9 +39,9 @@ public class PositionUtilTest extends InstrumentUtilForTest {
     @Mock
     private Completable completableMock;
     @Mock
-    private Function<Collection<IOrder>, MergeCommand> mergeCommandFactory;
+    private Function<Collection<IOrder>, MergeOption> mergeOption;
     @Mock
-    private Function<IOrder, CloseCommand> closeCommandFactory;
+    private Function<IOrder, CloseOption> closeOption;
 
     @Before
     public void setUp() {
@@ -63,51 +63,51 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergeCallIsInvokingOnPositionMerge() {
-        when(positionMergeMock.merge(instrumentEURUSD, mergeCommandFactory))
+        when(positionMergeMock.merge(instrumentEURUSD, mergeOption))
             .thenReturn(completableMock);
 
-        final Completable completable = positionUtil.merge(instrumentEURUSD, mergeCommandFactory);
+        final Completable completable = positionUtil.merge(instrumentEURUSD, mergeOption);
 
-        verify(positionMergeMock).merge(instrumentEURUSD, mergeCommandFactory);
+        verify(positionMergeMock).merge(instrumentEURUSD, mergeOption);
         assertThat(completable, equalTo(completableMock));
     }
 
     @Test
     public void mergeAllCallIsInvokingOnPositionMerge() {
-        when(positionMergeMock.mergeAll(mergeCommandFactory))
+        when(positionMergeMock.mergeAll(mergeOption))
             .thenReturn(completableMock);
 
-        final Completable completable = positionUtil.mergeAll(mergeCommandFactory);
+        final Completable completable = positionUtil.mergeAll(mergeOption);
 
-        verify(positionMergeMock).mergeAll(mergeCommandFactory);
+        verify(positionMergeMock).mergeAll(mergeOption);
         assertThat(completable, equalTo(completableMock));
     }
 
     @Test
     public void closeCallIsInvokingOnPositionMerge() {
         when(positionCloseMock.close(instrumentEURUSD,
-                                     mergeCommandFactory,
-                                     closeCommandFactory))
+                                     mergeOption,
+                                     closeOption))
                                          .thenReturn(completableMock);
 
         final Completable completable = positionUtil.close(instrumentEURUSD,
-                                                           mergeCommandFactory,
-                                                           closeCommandFactory);
+                                                           mergeOption,
+                                                           closeOption);
 
         verify(positionCloseMock).close(instrumentEURUSD,
-                                        mergeCommandFactory,
-                                        closeCommandFactory);
+                                        mergeOption,
+                                        closeOption);
         assertThat(completable, equalTo(completableMock));
     }
 
     @Test
     public void closeAllCallIsInvokingOnPositionMerge() {
-        when(positionCloseMock.closeAll(mergeCommandFactory, closeCommandFactory))
+        when(positionCloseMock.closeAll(mergeOption, closeOption))
             .thenReturn(completableMock);
 
-        final Completable completable = positionUtil.closeAll(mergeCommandFactory, closeCommandFactory);
+        final Completable completable = positionUtil.closeAll(mergeOption, closeOption);
 
-        verify(positionCloseMock).closeAll(mergeCommandFactory, closeCommandFactory);
+        verify(positionCloseMock).closeAll(mergeOption, closeOption);
         assertThat(completable, equalTo(completableMock));
     }
 }

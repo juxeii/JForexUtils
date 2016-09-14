@@ -11,9 +11,10 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.Command;
 import com.jforex.programming.order.command.CommandUtil;
-import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.option.CloseOption;
+import com.jforex.programming.order.command.option.MergeOption;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionClose;
 import com.jforex.programming.position.PositionFactory;
@@ -36,13 +37,17 @@ public class PositionCloseTest extends InstrumentUtilForTest {
     @Mock
     private CommandUtil commandUtilMock;
     @Mock
-    private Function<Collection<IOrder>, MergeCommand> mergeCommandFactory;
+    private MergeOption mergeOption;
     @Mock
-    private Function<IOrder, CloseCommand> closeCommandFactory;
+    private CloseOption closeOption;
     @Mock
-    private MergeCommand mergeCommandMock;
+    private Function<Collection<IOrder>, MergeOption> mergeOptionFactory;
     @Mock
-    private CloseCommand closeCommandMock;
+    private Function<IOrder, CloseOption> closeOptionFactory;
+    @Mock
+    private Command mergeCommandMock;
+    @Mock
+    private Command closeCommandMock;
     private TestSubscriber<Void> testSubscriber;
 
     @Before
@@ -55,19 +60,22 @@ public class PositionCloseTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(closeCommandFactory.apply(any())).thenReturn(closeCommandMock);
-        when(mergeCommandFactory.apply(any())).thenReturn(mergeCommandMock);
+        when(mergeOptionFactory.apply(any())).thenReturn(mergeOption);
+        when(closeOptionFactory.apply(any())).thenReturn(closeOption);
+
+        when(mergeOption.build()).thenReturn(mergeCommandMock);
+        when(closeOption.build()).thenReturn(closeCommandMock);
     }
 
     private void setUpMergeCompletables(final Completable firstCompletable,
                                         final Completable... completables) {
-        when(positionMergeMock.merge(any(), eq(mergeCommandFactory)))
+        when(positionMergeMock.merge(any(), eq(mergeOptionFactory)))
             .thenReturn(firstCompletable, completables);
     }
 
     private void setUpCommandUtilCompletables(final Completable firstCompletable,
                                               final Completable... completables) {
-        when(commandUtilMock.mergeFromFactory(any(), eq(closeCommandFactory)))
+        when(commandUtilMock.mergeFromOption(any(), eq(closeOptionFactory)))
             .thenReturn(firstCompletable, completables);
     }
 
@@ -88,8 +96,8 @@ public class PositionCloseTest extends InstrumentUtilForTest {
         @Before
         public void setUp() {
             closePositionCompletable = positionClose.close(instrumentEURUSD,
-                                                           mergeCommandFactory,
-                                                           closeCommandFactory);
+                                                           mergeOptionFactory,
+                                                           closeOptionFactory);
         }
 
         private void expectFilledOrOpenedOrders(final Set<IOrder> filledOrders) {
@@ -130,8 +138,8 @@ public class PositionCloseTest extends InstrumentUtilForTest {
                 testSubscriber = closePositionCompletable.test();
 
                 testSubscriber.assertComplete();
-                verify(positionMergeMock).merge(instrumentEURUSD, mergeCommandFactory);
-                verify(commandUtilMock).mergeFromFactory(filledOrOpenedOrders, closeCommandFactory);
+                verify(positionMergeMock).merge(instrumentEURUSD, mergeOptionFactory);
+                verify(commandUtilMock).mergeFromOption(filledOrOpenedOrders, closeOptionFactory);
             }
 
             @Test
@@ -152,7 +160,7 @@ public class PositionCloseTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            closeAllPositionsCompletable = positionClose.closeAll(mergeCommandFactory, closeCommandFactory);
+            closeAllPositionsCompletable = positionClose.closeAll(mergeOptionFactory, closeOptionFactory);
         }
 
         @Test
@@ -177,21 +185,21 @@ public class PositionCloseTest extends InstrumentUtilForTest {
             public void setUp() {
                 final Position positionOneMock = orderUtilForTest
                     .createPositionMock(positionFactoryMock,
-                                          instrumentEURUSD,
-                                          Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
+                                        instrumentEURUSD,
+                                        Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
                 final Position positionTwoMock = orderUtilForTest
                     .createPositionMock(positionFactoryMock,
-                                          instrumentAUDUSD,
-                                          Sets.newHashSet(buyOrderAUDUSD, sellOrderAUDUSD));
+                                        instrumentAUDUSD,
+                                        Sets.newHashSet(buyOrderAUDUSD, sellOrderAUDUSD));
 
                 expectPositions(Sets.newHashSet(positionOneMock, positionTwoMock));
 
                 orderUtilForTest.createPositionMock(positionFactoryMock,
-                                                      instrumentEURUSD,
-                                                      Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
+                                                    instrumentEURUSD,
+                                                    Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
                 orderUtilForTest.createPositionMock(positionFactoryMock,
-                                                      instrumentAUDUSD,
-                                                      Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
+                                                    instrumentAUDUSD,
+                                                    Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
             }
 
             @Test
@@ -202,7 +210,7 @@ public class PositionCloseTest extends InstrumentUtilForTest {
                 testSubscriber = closeAllPositionsCompletable.test();
 
                 testSubscriber.assertNotComplete();
-                verify(positionMergeMock, times(2)).merge(any(), eq(mergeCommandFactory));
+                verify(positionMergeMock, times(2)).merge(any(), eq(mergeOptionFactory));
             }
 
             @Test

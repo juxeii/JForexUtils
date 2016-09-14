@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.command.Command;
 
-public interface ChangeOption extends CommonOption<ChangeOption> {
+public interface MergePositonOption extends CommonOption<ChangeOption> {
 
     public ChangeOption doOnReject(Consumer<IOrder> rejectConsumer);
 

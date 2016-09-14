@@ -17,9 +17,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilBuilder;
 import com.jforex.programming.order.OrderUtilCompletable;
-import com.jforex.programming.order.command.CloseCommand;
 import com.jforex.programming.order.command.Command;
-import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.option.ChangeOption;
 import com.jforex.programming.order.command.option.CloseOption;
 import com.jforex.programming.order.command.option.MergeOption;
@@ -45,9 +43,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private Completable completableMock;
     @Mock
-    private Function<Collection<IOrder>, MergeCommand> mergeCommandFactory;
+    private Function<Collection<IOrder>, MergeOption> mergeOption;
     @Mock
-    private Function<IOrder, CloseCommand> closeCommandFactory;
+    private Function<IOrder, CloseOption> closeOption;
 
     @Before
     public void setUp() {
@@ -174,53 +172,53 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergePositionCallIsInvokingOnPositionUtil() {
-        when(positionUtilMock.merge(instrumentEURUSD, mergeCommandFactory))
+        when(positionUtilMock.merge(instrumentEURUSD, mergeOption))
             .thenReturn(completableMock);
 
-        final Completable completable = orderUtil.mergePosition(instrumentEURUSD, mergeCommandFactory);
+        final Completable completable = orderUtil.mergePosition(instrumentEURUSD, mergeOption);
 
-        verify(positionUtilMock).merge(instrumentEURUSD, mergeCommandFactory);
+        verify(positionUtilMock).merge(instrumentEURUSD, mergeOption);
         assertThat(completable, equalTo(completableMock));
     }
 
     @Test
     public void mergeAllPositionsCallIsInvokingOnPositionUtil() {
-        when(positionUtilMock.mergeAll(mergeCommandFactory))
+        when(positionUtilMock.mergeAll(mergeOption))
             .thenReturn(completableMock);
 
-        final Completable completable = orderUtil.mergeAllPositions(mergeCommandFactory);
+        final Completable completable = orderUtil.mergeAllPositions(mergeOption);
 
-        verify(positionUtilMock).mergeAll(mergeCommandFactory);
+        verify(positionUtilMock).mergeAll(mergeOption);
         assertThat(completable, equalTo(completableMock));
     }
 
     @Test
     public void closePositionCallIsInvokingOnPositionUtil() {
         when(positionUtilMock.close(instrumentEURUSD,
-                                    mergeCommandFactory,
-                                    closeCommandFactory))
+                                    mergeOption,
+                                    closeOption))
                                         .thenReturn(completableMock);
 
         final Completable completable = orderUtil.closePosition(instrumentEURUSD,
-                                                                mergeCommandFactory,
-                                                                closeCommandFactory);
+                                                                mergeOption,
+                                                                closeOption);
 
         verify(positionUtilMock).close(instrumentEURUSD,
-                                       mergeCommandFactory,
-                                       closeCommandFactory);
+                                       mergeOption,
+                                       closeOption);
         assertThat(completable, equalTo(completableMock));
     }
 
     @Test
     public void closeAllPositionsCallIsInvokingOnPositionUtil() {
-        when(positionUtilMock.closeAll(mergeCommandFactory, closeCommandFactory))
+        when(positionUtilMock.closeAll(mergeOption, closeOption))
             .thenReturn(completableMock);
 
-        final Completable completable = orderUtil.closeAllPositions(mergeCommandFactory,
-                                                                    closeCommandFactory);
+        final Completable completable = orderUtil.closeAllPositions(mergeOption,
+                                                                    closeOption);
 
-        verify(positionUtilMock).closeAll(mergeCommandFactory,
-                                          closeCommandFactory);
+        verify(positionUtilMock).closeAll(mergeOption,
+                                          closeOption);
         assertThat(completable, equalTo(completableMock));
     }
 

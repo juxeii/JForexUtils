@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderUtilCompletable;
+import com.jforex.programming.order.command.option.CommonOption;
 
 import io.reactivex.Completable;
 
@@ -28,9 +29,9 @@ public class CommandUtil {
         return merge(Arrays.asList(commands));
     }
 
-    public <T extends Command> Completable mergeFromFactory(final Collection<IOrder> orders,
-                                                                  final Function<IOrder, T> commandFactory) {
-        return merge(fromFactory(orders, commandFactory));
+    public <T extends CommonOption<T>> Completable mergeFromOption(final Collection<IOrder> orders,
+                                                                   final Function<IOrder, T> option) {
+        return merge(fromOption(orders, option));
     }
 
     public Completable concat(final List<? extends Command> commands) {
@@ -42,16 +43,16 @@ public class CommandUtil {
         return concat(Arrays.asList(commands));
     }
 
-    public <T extends Command> Completable concatFromFactory(final List<IOrder> orders,
-                                                                   final Function<IOrder, T> commandFactory) {
-        return concat(fromFactory(orders, commandFactory));
+    public <T extends CommonOption<T>> Completable concatFromOption(final List<IOrder> orders,
+                                                                    final Function<IOrder, T> option) {
+        return concat(fromOption(orders, option));
     }
 
-    public <T extends Command> List<T> fromFactory(final Collection<IOrder> orders,
-                                                         final Function<IOrder, T> commandFactory) {
+    public <T extends CommonOption<T>> List<Command> fromOption(final Collection<IOrder> orders,
+                                                                final Function<IOrder, T> option) {
         return orders
             .stream()
-            .map(commandFactory::apply)
+            .map(order -> option.apply(order).build())
             .collect(Collectors.toList());
     }
 

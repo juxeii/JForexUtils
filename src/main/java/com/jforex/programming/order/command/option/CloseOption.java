@@ -3,7 +3,7 @@ package com.jforex.programming.order.command.option;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.Command;
 
 public interface CloseOption extends CommonOption<CloseOption> {
 
@@ -13,5 +13,5 @@ public interface CloseOption extends CommonOption<CloseOption> {
 
     public CloseOption doOnPartialClose(Consumer<IOrder> partialCloseConsumer);
 
-    public CloseCommand build();
+    public Command build();
 }

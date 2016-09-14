@@ -5,8 +5,8 @@ import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.command.CloseCommand;
-import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.option.CloseOption;
+import com.jforex.programming.order.command.option.MergeOption;
 
 import io.reactivex.Completable;
 
@@ -29,24 +29,24 @@ public class PositionUtil {
     }
 
     public Completable merge(final Instrument instrument,
-                             final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory) {
-        return positionMerge.merge(instrument, mergeCommandFactory);
+                             final Function<Collection<IOrder>, MergeOption> mergeOption) {
+        return positionMerge.merge(instrument, mergeOption);
     }
 
-    public Completable mergeAll(final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory) {
-        return positionMerge.mergeAll(mergeCommandFactory);
+    public Completable mergeAll(final Function<Collection<IOrder>, MergeOption> mergeOption) {
+        return positionMerge.mergeAll(mergeOption);
     }
 
     public Completable close(final Instrument instrument,
-                             final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory,
-                             final Function<IOrder, CloseCommand> closeCommandFactory) {
+                             final Function<Collection<IOrder>, MergeOption> mergeOption,
+                             final Function<IOrder, CloseOption> closeOption) {
         return positionClose.close(instrument,
-                                   mergeCommandFactory,
-                                   closeCommandFactory);
+                                   mergeOption,
+                                   closeOption);
     }
 
-    public Completable closeAll(final Function<Collection<IOrder>, MergeCommand> mergeCommandFactory,
-                                final Function<IOrder, CloseCommand> closeCommandFactory) {
-        return positionClose.closeAll(mergeCommandFactory, closeCommandFactory);
+    public Completable closeAll(final Function<Collection<IOrder>, MergeOption> mergeOption,
+                                final Function<IOrder, CloseOption> closeOption) {
+        return positionClose.closeAll(mergeOption, closeOption);
     }
 }
