@@ -53,7 +53,7 @@ public class MergeCommandTest extends CommandTester {
             .retry(noOfRetries, retryDelay)
             .build();
 
-        eventHandlerForType = mergeCommand.data().eventHandlerForType();
+        eventHandlerForType = mergeCommand.eventHandlerForType();
     }
 
     private void setUpMocks() {
@@ -77,8 +77,8 @@ public class MergeCommandTest extends CommandTester {
     public void commandValuesAreCorrect() {
         assertThat(mergeCommand.mergeOrderLabel(), equalTo(mergeOrderLabel));
         assertThat(mergeCommand.toMergeOrders(), equalTo(toMergeOrders));
-        assertThat(mergeCommand.data().callReason(), equalTo(OrderCallReason.MERGE));
-        assertThat(mergeCommand.data().callable(), equalTo(callable));
+        assertThat(mergeCommand.callReason(), equalTo(OrderCallReason.MERGE));
+        assertThat(mergeCommand.callable(), equalTo(callable));
         assertRetryParams(mergeCommand);
     }
 
@@ -104,8 +104,8 @@ public class MergeCommandTest extends CommandTester {
         eventHandlerForType.get(OrderEventType.MERGE_CLOSE_OK).accept(buyOrderEURUSD);
         eventHandlerForType.get(OrderEventType.MERGE_REJECTED).accept(buyOrderEURUSD);
 
-        assertThat(mergeCommand.data().completedAction(), equalTo(completedActionMock));
-        assertThat(mergeCommand.data().errorAction(), equalTo(errorActionMock));
+        assertThat(mergeCommand.completedAction(), equalTo(completedActionMock));
+        assertThat(mergeCommand.errorAction(), equalTo(errorActionMock));
 
         verify(mergeRejectActionMock).accept(buyOrderEURUSD);
         verify(mergeActionMock).accept(buyOrderEURUSD);

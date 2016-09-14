@@ -14,7 +14,6 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
-import com.jforex.programming.order.command.CommandData;
 import com.jforex.programming.order.command.Command;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
@@ -36,20 +35,17 @@ public class CommandTester extends CommonUtilForTest {
 
     protected void assertEventTypesForCommand(final EnumSet<OrderEventType> eventTypes,
                                               final Command command) {
-        final CommandData data = command.data();
-        assertEventTypes(eventTypes, data::isEventTypeForCommand);
+        assertEventTypes(eventTypes, command::isEventTypeForCommand);
     }
 
     protected void assertFinishEventTypesForCommand(final EnumSet<OrderEventType> eventTypes,
                                                     final Command command) {
-        final CommandData data = command.data();
-        assertEventTypes(eventTypes, data::isFinishEventType);
+        assertEventTypes(eventTypes, command::isFinishEventType);
     }
 
     protected void assertRejectEventTypesForCommand(final EnumSet<OrderEventType> eventTypes,
                                                     final Command command) {
-        final CommandData data = command.data();
-        assertEventTypes(eventTypes, data::isRejectEventType);
+        assertEventTypes(eventTypes, command::isRejectEventType);
     }
 
     protected void assertEventTypes(final EnumSet<OrderEventType> eventTypes,
@@ -60,24 +56,21 @@ public class CommandTester extends CommonUtilForTest {
     }
 
     protected void assertNoRetryParams(final Command command) {
-        final CommandData data = command.data();
-        assertThat(data.noOfRetries(), equalTo(0));
-        assertThat(data.retryDelayInMillis(), equalTo(0L));
+        assertThat(command.noOfRetries(), equalTo(0));
+        assertThat(command.retryDelayInMillis(), equalTo(0L));
     }
 
     protected void assertRetryParams(final Command command) {
-        final CommandData data = command.data();
-        assertThat(data.noOfRetries(), equalTo(noOfRetries));
-        assertThat(data.retryDelayInMillis(), equalTo(retryDelay));
+        assertThat(command.noOfRetries(), equalTo(noOfRetries));
+        assertThat(command.retryDelayInMillis(), equalTo(retryDelay));
     }
 
     protected void assertActionsNotNull(final Command command) throws Exception {
-        final CommandData data = command.data();
-        data.startAction().run();
-        data.eventAction().accept(new OrderEvent(buyOrderEURUSD,
-                                                 OrderEventType.SUBMIT_OK,
-                                                 true));
-        data.completedAction().run();
-        data.errorAction().accept(jfException);
+        command.startAction().run();
+        command.eventAction().accept(new OrderEvent(buyOrderEURUSD,
+                                                    OrderEventType.SUBMIT_OK,
+                                                    true));
+        command.completedAction().run();
+        command.errorAction().accept(jfException);
     }
 }

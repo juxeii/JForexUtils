@@ -15,16 +15,15 @@ import com.jforex.programming.order.command.option.SetLabelOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class SetLabelCommand implements Command {
+public class SetLabelCommand extends Command {
 
     private final IOrder order;
     private final String newLabel;
-    private final CommandData commandData;
 
     private SetLabelCommand(final Builder builder) {
+        super(builder);
         order = builder.order;
         newLabel = builder.newLabel;
-        commandData = builder.commandData;
     }
 
     public IOrder order() {
@@ -33,11 +32,6 @@ public class SetLabelCommand implements Command {
 
     public String newLabel() {
         return newLabel;
-    }
-
-    @Override
-    public CommandData data() {
-        return commandData;
     }
 
     public static final SetLabelOption create(final IOrder order,
@@ -75,7 +69,6 @@ public class SetLabelCommand implements Command {
 
         @Override
         public SetLabelCommand build() {
-            this.commandData = new CommandData(this);
             return new SetLabelCommand(this);
         }
     }

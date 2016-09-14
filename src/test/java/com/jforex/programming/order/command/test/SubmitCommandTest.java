@@ -56,7 +56,7 @@ public class SubmitCommandTest extends CommandTester {
             .retry(noOfRetries, retryDelay)
             .build();
 
-        eventHandlerForType = submitCommand.data().eventHandlerForType();
+        eventHandlerForType = submitCommand.eventHandlerForType();
     }
 
     private void setUpMocks() {
@@ -77,8 +77,8 @@ public class SubmitCommandTest extends CommandTester {
     @Test
     public void commandValuesAreCorrect() {
         assertThat(submitCommand.orderParams(), equalTo(buyParamsEURUSD));
-        assertThat(submitCommand.data().callReason(), equalTo(OrderCallReason.SUBMIT));
-        assertThat(submitCommand.data().callable(), equalTo(callable));
+        assertThat(submitCommand.callReason(), equalTo(OrderCallReason.SUBMIT));
+        assertThat(submitCommand.callable(), equalTo(callable));
         assertRetryParams(submitCommand);
     }
 
@@ -112,8 +112,8 @@ public class SubmitCommandTest extends CommandTester {
         eventHandlerForType.get(OrderEventType.PARTIAL_FILL_OK).accept(buyOrderEURUSD);
         eventHandlerForType.get(OrderEventType.FULLY_FILLED).accept(buyOrderEURUSD);
 
-        assertThat(submitCommand.data().completedAction(), equalTo(completedActionMock));
-        assertThat(submitCommand.data().errorAction(), equalTo(errorActionMock));
+        assertThat(submitCommand.completedAction(), equalTo(completedActionMock));
+        assertThat(submitCommand.errorAction(), equalTo(errorActionMock));
 
         verify(submitRejectActionMock).accept(buyOrderEURUSD);
         verify(fillRejectActionMock).accept(buyOrderEURUSD);

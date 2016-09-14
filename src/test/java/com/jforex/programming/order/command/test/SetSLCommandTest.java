@@ -39,7 +39,7 @@ public class SetSLCommandTest extends CommandTester {
             .retry(noOfRetries, retryDelay)
             .build();
 
-        eventHandlerForType = setSLCommand.data().eventHandlerForType();
+        eventHandlerForType = setSLCommand.eventHandlerForType();
     }
 
     @Test
@@ -56,10 +56,10 @@ public class SetSLCommandTest extends CommandTester {
     public void commandValuesAreCorrect() throws Exception {
         assertThat(setSLCommand.order(), equalTo(buyOrderEURUSD));
         assertThat(setSLCommand.newSL(), equalTo(newSL));
-        assertThat(setSLCommand.data().callReason(), equalTo(OrderCallReason.CHANGE_SL));
+        assertThat(setSLCommand.callReason(), equalTo(OrderCallReason.CHANGE_SL));
         assertRetryParams(setSLCommand);
 
-        setSLCommand.data().callable().call();
+        setSLCommand.callable().call();
         verify(buyOrderEURUSD).setStopLossPrice(newSL);
     }
 
@@ -82,8 +82,8 @@ public class SetSLCommandTest extends CommandTester {
         eventHandlerForType.get(OrderEventType.CHANGED_SL).accept(buyOrderEURUSD);
         eventHandlerForType.get(OrderEventType.CHANGE_SL_REJECTED).accept(buyOrderEURUSD);
 
-        assertThat(setSLCommand.data().completedAction(), equalTo(completedActionMock));
-        assertThat(setSLCommand.data().errorAction(), equalTo(errorActionMock));
+        assertThat(setSLCommand.completedAction(), equalTo(completedActionMock));
+        assertThat(setSLCommand.errorAction(), equalTo(errorActionMock));
 
         verify(setSLRejectActionMock).accept(buyOrderEURUSD);
         verify(setSLActionMock).accept(buyOrderEURUSD);

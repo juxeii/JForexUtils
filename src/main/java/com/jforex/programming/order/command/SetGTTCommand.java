@@ -15,16 +15,15 @@ import com.jforex.programming.order.command.option.SetGTTOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class SetGTTCommand implements Command {
+public class SetGTTCommand extends Command {
 
     private final IOrder order;
     private final long newGTT;
-    private final CommandData commandData;
 
     private SetGTTCommand(final Builder builder) {
+        super(builder);
         order = builder.order;
         newGTT = builder.newGTT;
-        commandData = builder.commandData;
     }
 
     public IOrder order() {
@@ -33,11 +32,6 @@ public class SetGTTCommand implements Command {
 
     public long newGTT() {
         return newGTT;
-    }
-
-    @Override
-    public CommandData data() {
-        return commandData;
     }
 
     public static final SetGTTOption create(final IOrder order,
@@ -76,7 +70,6 @@ public class SetGTTCommand implements Command {
 
         @Override
         public SetGTTCommand build() {
-            this.commandData = new CommandData(this);
             return new SetGTTCommand(this);
         }
     }

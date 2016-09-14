@@ -39,7 +39,7 @@ public class SetTPCommandTest extends CommandTester {
             .retry(noOfRetries, retryDelay)
             .build();
 
-        eventHandlerForType = setTPCommand.data().eventHandlerForType();
+        eventHandlerForType = setTPCommand.eventHandlerForType();
     }
 
     @Test
@@ -56,10 +56,10 @@ public class SetTPCommandTest extends CommandTester {
     public void commandValuesAreCorrect() throws Exception {
         assertThat(setTPCommand.order(), equalTo(buyOrderEURUSD));
         assertThat(setTPCommand.newTP(), equalTo(newTP));
-        assertThat(setTPCommand.data().callReason(), equalTo(OrderCallReason.CHANGE_TP));
+        assertThat(setTPCommand.callReason(), equalTo(OrderCallReason.CHANGE_TP));
         assertRetryParams(setTPCommand);
 
-        setTPCommand.data().callable().call();
+        setTPCommand.callable().call();
         verify(buyOrderEURUSD).setTakeProfitPrice(newTP);
     }
 
@@ -82,8 +82,8 @@ public class SetTPCommandTest extends CommandTester {
         eventHandlerForType.get(OrderEventType.CHANGED_TP).accept(buyOrderEURUSD);
         eventHandlerForType.get(OrderEventType.CHANGE_TP_REJECTED).accept(buyOrderEURUSD);
 
-        assertThat(setTPCommand.data().completedAction(), equalTo(completedActionMock));
-        assertThat(setTPCommand.data().errorAction(), equalTo(errorActionMock));
+        assertThat(setTPCommand.completedAction(), equalTo(completedActionMock));
+        assertThat(setTPCommand.errorAction(), equalTo(errorActionMock));
 
         verify(setTPRejectActionMock).accept(buyOrderEURUSD);
         verify(setTPActionMock).accept(buyOrderEURUSD);

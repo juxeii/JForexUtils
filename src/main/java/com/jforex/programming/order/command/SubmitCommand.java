@@ -20,23 +20,17 @@ import com.jforex.programming.order.command.option.SubmitOption;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-public class SubmitCommand implements Command {
+public class SubmitCommand extends Command {
 
     private final OrderParams orderParams;
-    private final CommandData commandData;
 
     private SubmitCommand(final Builder builder) {
+        super(builder);
         orderParams = builder.orderParams;
-        commandData = builder.commandData;
     }
 
     public OrderParams orderParams() {
         return orderParams;
-    }
-
-    @Override
-    public CommandData data() {
-        return commandData;
     }
 
     public static final SubmitOption create(final OrderParams orderParams,
@@ -88,7 +82,6 @@ public class SubmitCommand implements Command {
 
         @Override
         public SubmitCommand build() {
-            this.commandData = new CommandData(this);
             return new SubmitCommand(this);
         }
     }

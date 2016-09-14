@@ -29,7 +29,6 @@ public class CommonBuilder<T extends CommonOption<T>> {
     protected OrderCallReason callReason;
     protected OrderEventTypeData orderEventTypeData;
     protected Map<OrderEventType, Consumer<IOrder>> eventHandlerForType = Maps.newEnumMap(OrderEventType.class);
-    protected CommandData commandData;
 
     public T doOnStart(final Action startAction) {
         this.startAction = checkNotNull(startAction);

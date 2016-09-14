@@ -39,7 +39,7 @@ public class SetLabelCommandTest extends CommandTester {
             .retry(noOfRetries, retryDelay)
             .build();
 
-        eventHandlerForType = setLabelCommand.data().eventHandlerForType();
+        eventHandlerForType = setLabelCommand.eventHandlerForType();
     }
 
     @Test
@@ -56,10 +56,10 @@ public class SetLabelCommandTest extends CommandTester {
     public void commandValuesAreCorrect() throws Exception {
         assertThat(setLabelCommand.order(), equalTo(buyOrderEURUSD));
         assertThat(setLabelCommand.newLabel(), equalTo(newLabel));
-        assertThat(setLabelCommand.data().callReason(), equalTo(OrderCallReason.CHANGE_LABEL));
+        assertThat(setLabelCommand.callReason(), equalTo(OrderCallReason.CHANGE_LABEL));
         assertRetryParams(setLabelCommand);
 
-        setLabelCommand.data().callable().call();
+        setLabelCommand.callable().call();
         verify(buyOrderEURUSD).setLabel(newLabel);
     }
 
@@ -82,8 +82,8 @@ public class SetLabelCommandTest extends CommandTester {
         eventHandlerForType.get(OrderEventType.CHANGED_LABEL).accept(buyOrderEURUSD);
         eventHandlerForType.get(OrderEventType.CHANGE_LABEL_REJECTED).accept(buyOrderEURUSD);
 
-        assertThat(setLabelCommand.data().completedAction(), equalTo(completedActionMock));
-        assertThat(setLabelCommand.data().errorAction(), equalTo(errorActionMock));
+        assertThat(setLabelCommand.completedAction(), equalTo(completedActionMock));
+        assertThat(setLabelCommand.errorAction(), equalTo(errorActionMock));
 
         verify(setLabelRejectActionMock).accept(buyOrderEURUSD);
         verify(setLabelActionMock).accept(buyOrderEURUSD);
