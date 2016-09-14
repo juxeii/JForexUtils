@@ -14,8 +14,8 @@ import io.reactivex.functions.Action;
 
 public abstract class Command {
 
-    private final Action subscribeAction;
-    private final Action completedAction;
+    private final Action startAction;
+    private final Action completeAction;
     private final Consumer<Throwable> errorAction;
     private final Consumer<OrderEvent> eventAction;
     private final Callable<IOrder> callable;
@@ -29,8 +29,8 @@ public abstract class Command {
         callable = builder.callable;
         callReason = builder.callReason;
         orderEventTypeData = builder.orderEventTypeData;
-        subscribeAction = builder.startAction;
-        completedAction = builder.completedAction;
+        startAction = builder.startAction;
+        completeAction = builder.completedAction;
         eventAction = builder.eventAction;
         errorAction = builder.errorAction;
         noOfRetries = builder.noOfRetries;
@@ -39,11 +39,11 @@ public abstract class Command {
     }
 
     public Action startAction() {
-        return subscribeAction;
+        return startAction;
     }
 
     public Action completedAction() {
-        return completedAction;
+        return completeAction;
     }
 
     public Consumer<OrderEvent> eventAction() {
