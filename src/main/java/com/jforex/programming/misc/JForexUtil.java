@@ -18,11 +18,10 @@ import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.order.OrderTaskDataFactory;
+import com.jforex.programming.order.OrderTaskExecutor;
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.OrderUtilBuilder;
-import com.jforex.programming.order.OrderUtilCompletable;
 import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.command.CommandUtil;
 import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionClose;
@@ -56,15 +55,14 @@ public class JForexUtil {
 
     private PositionFactory positionFactory;
     private OrderEventGateway orderEventGateway;
-    private TaskExecutor orderCallExecutor;
+    private TaskExecutor taskExecutor;
+    private OrderTaskExecutor orderTaskExecutor;
     private OrderUtilHandler orderUtilHandler;
+    private final OrderTaskDataFactory orderTaskDataFactory = new OrderTaskDataFactory();
     private OrderUtil orderUtil;
-    private OrderUtilBuilder orderUtilBuilder;
     private PositionUtil positionUtil;
     private PositionMerge positionMerge;
     private PositionClose positionClose;
-    private OrderUtilCompletable orderUtilCompletable;
-    private CommandUtil commandUtil;
     private final OrderEventFactory messageToOrderEvent = new OrderEventFactory();
 
     private final CalculationUtil calculationUtil;
@@ -114,13 +112,11 @@ public class JForexUtil {
     }
 
     private void initOrderRelated() {
-        orderCallExecutor = new TaskExecutor(context);
+        taskExecutor = new TaskExecutor(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
-        orderUtilHandler = new OrderUtilHandler(orderCallExecutor, orderEventGateway);
+        orderUtilHandler = new OrderUtilHandler(orderEventGateway, orderTaskDataFactory);
         engineUtil = new IEngineUtil(engine);
-        orderUtilCompletable = new OrderUtilCompletable(orderUtilHandler, positionFactory);
-        commandUtil = new CommandUtil(orderUtilCompletable);
-        orderUtilBuilder = new OrderUtilBuilder(engineUtil);
+        orderTaskExecutor = new OrderTaskExecutor(taskExecutor, engineUtil);
         positionMerge = new PositionMerge(orderUtilCompletable, positionFactory);
         positionClose = new PositionClose(positionMerge,
                                           positionFactory,
@@ -128,9 +124,9 @@ public class JForexUtil {
         positionUtil = new PositionUtil(positionMerge,
                                         positionClose,
                                         positionFactory);
-        orderUtil = new OrderUtil(orderUtilBuilder,
-                                  positionUtil,
-                                  orderUtilCompletable);
+        orderUtil = new OrderUtil(orderTaskExecutor,
+                                  orderUtilHandler,
+                                  positionFactory);
     }
 
     public IContext context() {
@@ -173,10 +169,6 @@ public class JForexUtil {
 
     public OrderUtil orderUtil() {
         return orderUtil;
-    }
-
-    public CommandUtil commandUtil() {
-        return commandUtil;
     }
 
     public void onStop() {
