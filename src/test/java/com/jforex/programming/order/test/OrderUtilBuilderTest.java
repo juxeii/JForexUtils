@@ -70,21 +70,54 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
     public class SubmitBuilderTests {
 
-        private Command submitCommand;
-
         @Before
         public void setUp() {
             when(engineUtilMock.submitCallable(buyParamsEURUSD))
                 .thenReturn(callableMock);
 
-            submitCommand = orderUtilBuilder
+            command = orderUtilBuilder
                 .submitBuilder(buyParamsEURUSD)
+                .doOnSubmit(changeConsumer)
+                .doOnPartialFill(changeConsumer)
+                .doOnFill(changeConsumer)
+                .doOnFillReject(rejectConsumer)
+                .doOnSubmitReject(rejectConsumer)
                 .build();
         }
 
         @Test
         public void callableIsSet() {
-            assertThat(submitCommand.callable(), equalTo(callableMock));
+            assertThat(command.callable(), equalTo(callableMock));
+        }
+
+        @Test
+        public void changeConsumerForSubmitIsCorrect() {
+            verifyChangeConsumer(command, OrderEventType.SUBMIT_OK);
+        }
+
+        @Test
+        public void changeConsumerForConditionalSubmitIsCorrect() {
+            verifyChangeConsumer(command, OrderEventType.SUBMIT_CONDITIONAL_OK);
+        }
+
+        @Test
+        public void changeConsumerForPartialFillIsCorrect() {
+            verifyChangeConsumer(command, OrderEventType.PARTIAL_FILL_OK);
+        }
+
+        @Test
+        public void changeConsumerForFillIsCorrect() {
+            verifyChangeConsumer(command, OrderEventType.FULLY_FILLED);
+        }
+
+        @Test
+        public void rejectConsumerForSubmitIsCorrect() {
+            verifyRejectConsumer(command, OrderEventType.SUBMIT_REJECTED);
+        }
+
+        @Test
+        public void rejectConsumerForFillIsCorrect() {
+            verifyRejectConsumer(command, OrderEventType.FILL_REJECTED);
         }
 
         @Test
@@ -105,12 +138,30 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
 
             command = orderUtilBuilder
                 .mergeBuilder(mergeOrderLabel, toMergeOrders)
+                .doOnMerge(changeConsumer)
+                .doOnMergeReject(rejectConsumer)
+                .doOnMergeClose(changeConsumer)
                 .build();
         }
 
         @Test
         public void callableIsSet() {
             assertThat(command.callable(), equalTo(callableMock));
+        }
+
+        @Test
+        public void changeConsumerIsCorrect() {
+            verifyChangeConsumer(command, OrderEventType.MERGE_OK);
+        }
+
+        @Test
+        public void rejectConsumerIsCorrect() {
+            verifyRejectConsumer(command, OrderEventType.MERGE_REJECTED);
+        }
+
+        @Test
+        public void changeConsumerForMergeCloseOKIsCorrect() {
+            verifyChangeConsumer(command, OrderEventType.MERGE_CLOSE_OK);
         }
 
         @Test
@@ -126,6 +177,7 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
             command = orderUtilBuilder
                 .closeBuilder(buyOrderEURUSD)
                 .doOnClose(changeConsumer)
+                .doOnPartialClose(changeConsumer)
                 .doOnCloseReject(rejectConsumer)
                 .build();
         }
@@ -145,6 +197,11 @@ public class OrderUtilBuilderTest extends InstrumentUtilForTest {
         @Test
         public void changeConsumerIsCorrect() {
             verifyChangeConsumer(command, OrderEventType.CLOSE_OK);
+        }
+
+        @Test
+        public void changeConsumerForPartialCloseIsCorrect() {
+            verifyChangeConsumer(command, OrderEventType.PARTIAL_CLOSE_OK);
         }
 
         @Test

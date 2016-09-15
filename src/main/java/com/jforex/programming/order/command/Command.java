@@ -18,13 +18,8 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
-import io.reactivex.functions.Action;
-
 public class Command {
 
-    private final Action startAction;
-    private final Action completeAction;
-    private final Consumer<Throwable> errorAction;
     private final Consumer<OrderEvent> eventAction;
     private final Callable<IOrder> callable;
     private final OrderCallReason callReason;
@@ -37,29 +32,14 @@ public class Command {
         callable = builder.callable;
         callReason = builder.callReason;
         orderEventTypeData = builder.orderEventTypeData;
-        startAction = builder.startAction;
-        completeAction = builder.completedAction;
         eventAction = builder.eventAction;
-        errorAction = builder.errorAction;
         noOfRetries = builder.noOfRetries;
         retryDelayInMillis = builder.retryDelayInMillis;
         eventHandlerForType = builder.eventHandlerForType;
     }
 
-    public Action startAction() {
-        return startAction;
-    }
-
-    public Action completedAction() {
-        return completeAction;
-    }
-
     public Consumer<OrderEvent> eventAction() {
         return eventAction;
-    }
-
-    public Consumer<Throwable> errorAction() {
-        return errorAction;
     }
 
     public Callable<IOrder> callable() {
@@ -110,7 +90,7 @@ public class Command {
     }
 
     private static class SubmitBuilder extends CommonBuilder<SubmitOption>
-            implements SubmitOption {
+                                       implements SubmitOption {
 
         private SubmitBuilder(final Callable<IOrder> callable,
                               final OrderEventTypeData orderEventTypeData) {
@@ -158,7 +138,7 @@ public class Command {
     }
 
     private static class MergeBuilder extends CommonBuilder<MergeOption>
-            implements MergeOption {
+                                      implements MergeOption {
 
         private MergeBuilder(final Callable<IOrder> callable,
                              final OrderEventTypeData orderEventTypeData) {
@@ -194,7 +174,7 @@ public class Command {
     }
 
     private static class CloseBuilder extends CommonBuilder<CloseOption>
-            implements CloseOption {
+                                      implements CloseOption {
 
         private CloseBuilder(final Callable<IOrder> callable,
                              final OrderEventTypeData orderEventTypeData) {
@@ -233,7 +213,7 @@ public class Command {
     }
 
     private static class ChangeBuilder extends CommonBuilder<ChangeOption>
-            implements ChangeOption {
+                                       implements ChangeOption {
 
         private ChangeBuilder(final Callable<IOrder> callable,
                               final OrderCallReason callReason,

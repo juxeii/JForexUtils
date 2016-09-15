@@ -57,11 +57,9 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     @Mock
     private Consumer<IOrder> closeActionMock;
     @Mock
-    private Action startActionMock;
+    private Action subscribeActionMock;
     @Mock
     private Action completedActionMock;
-    @Mock
-    private Consumer<Throwable> errorActionMock;
     @Captor
     private ArgumentCaptor<Callable<IOrder>> orderCallCaptor;
     @Captor
@@ -100,25 +98,25 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
         private Runnable closeCall;
         private static final long retryDelay = 1500L;
+        OrderEventTypeData typeData = new OrderEventTypeData(EnumSet.of(CLOSE_OK),
+                                                             EnumSet.of(CLOSE_REJECTED),
+                                                             EnumSet.of(NOTIFICATION, PARTIAL_CLOSE_OK));
 
         @Before
         public void setUp() {
 
             closeCommand = Command
-                .forClose(callable, new OrderEventTypeData(EnumSet.of(CLOSE_OK),
-                                                           EnumSet.of(CLOSE_REJECTED),
-                                                           EnumSet.of(NOTIFICATION, PARTIAL_CLOSE_OK)))
-                .doOnStart(startActionMock)
+                .forClose(callable, typeData)
                 .doOnOrderEvent(orderEventConsumerMock)
                 .doOnClose(closeActionMock)
-                .doOnComplete(completedActionMock)
-                .doOnError(errorActionMock)
                 .retry(2, retryDelay)
                 .build();
             callable = closeCommand.callable();
 
             closeCall = () -> orderUtilHandler
                 .callObservable(closeCommand)
+                .doOnSubscribe(d -> subscribeActionMock.run())
+                .doOnComplete(completedActionMock)
                 .subscribe(subscriber);
 
             when(taskExecutorMock.onStrategyThread(callable))
@@ -128,24 +126,21 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
         @Test
         public void whenRejectedCommandCompletesWithNoRetryForCommandWithNoRetry() {
             closeCommand = Command
-                .forClose(callable, new OrderEventTypeData(EnumSet.of(CLOSE_OK),
-                                                           EnumSet.of(CLOSE_REJECTED),
-                                                           EnumSet.of(NOTIFICATION, PARTIAL_CLOSE_OK)))
-                .doOnOrderEvent(orderEventConsumerMock)
+                .forClose(callable, typeData)
                 .build();
             callable = closeCommand.callable();
 
             when(taskExecutorMock.onStrategyThread(callable))
                 .thenReturn(Observable.fromCallable(callable));
+
             orderUtilHandler
                 .callObservable(closeCommand)
                 .subscribe(subscriber);
 
-            final OrderEvent orderEvent = sendOrderEvent(orderToClose, OrderEventType.CLOSE_REJECTED);
+            sendOrderEvent(orderToClose, OrderEventType.CLOSE_REJECTED);
 
             subscriber.assertNoErrors();
             subscriber.assertComplete();
-            verify(orderEventConsumerMock).accept(orderEvent);
         }
 
         public class CallableExecutesWithJFException {
@@ -223,7 +218,6 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
                     subscriber.assertValueCount(0);
                     subscriber.assertError(OrderCallRejectException.class);
-                    verify(errorActionMock).accept(any());
                     verifyZeroInteractions(completedActionMock);
                 }
 
@@ -236,7 +230,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                     subscriber.assertComplete();
                     verify(orderEventConsumerMock).accept(orderEvent);
                     verify(completedActionMock).run();
-                    verify(startActionMock, times(3)).run();
+                    verify(subscribeActionMock).run();
                 }
             }
         }
@@ -250,7 +244,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void startActionMockIsInvoked() throws Exception {
-                verify(startActionMock).run();
+                verify(subscribeActionMock).run();
             }
 
             @Test

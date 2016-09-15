@@ -8,8 +8,8 @@ import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.call.OrderCallRequest;
-import com.jforex.programming.order.command.CommandRetry;
 import com.jforex.programming.order.command.Command;
+import com.jforex.programming.order.command.CommandRetry;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
@@ -30,15 +30,12 @@ public class OrderUtilHandler {
     public Observable<OrderEvent> callObservable(final Command command) {
         final Observable<OrderEvent> observable = taskExecutor
             .onStrategyThread(command.callable())
-            .doOnSubscribe(d -> command.startAction().run())
             .doOnNext(order -> registerOrder(order, command.callReason()))
             .flatMap(order -> gatewayObservable(order, command))
             .doOnNext(orderEvent -> callEventHandler(orderEvent, command.eventHandlerForType()))
             .doOnNext(command.eventAction()::accept);
 
-        return decorateObservableWithRetry(command, observable)
-            .doOnError(command.errorAction()::accept)
-            .doOnComplete(command.completedAction()::run);
+        return decorateObservableWithRetry(command, observable);
     }
 
     private final void registerOrder(final IOrder order,
