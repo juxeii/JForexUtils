@@ -30,7 +30,8 @@ public class OrderUtilHandler {
     public Observable<OrderEvent> callObservable(final Command command) {
         final Observable<OrderEvent> observable = taskExecutor
             .onStrategyThread(command.callable())
-            .doOnNext(order -> registerOrder(order, command.callReason()))
+            .doOnSuccess(order -> registerOrder(order, command.callReason()))
+            .toObservable()
             .flatMap(order -> gatewayObservable(order, command))
             .doOnNext(orderEvent -> callEventHandler(orderEvent, command.eventHandlerForType()))
             .doOnNext(command.eventAction()::accept);

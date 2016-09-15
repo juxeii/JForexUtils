@@ -37,7 +37,7 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.functions.Action;
 import io.reactivex.observers.TestObserver;
 import io.reactivex.subjects.PublishSubject;
@@ -120,7 +120,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 .subscribe(subscriber);
 
             when(taskExecutorMock.onStrategyThread(callable))
-                .thenReturn(Observable.fromCallable(callable));
+                .thenReturn(Single.fromCallable(callable));
         }
 
         @Test
@@ -131,7 +131,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
             callable = closeCommand.callable();
 
             when(taskExecutorMock.onStrategyThread(callable))
-                .thenReturn(Observable.fromCallable(callable));
+                .thenReturn(Single.fromCallable(callable));
 
             orderUtilHandler
                 .callObservable(closeCommand)
