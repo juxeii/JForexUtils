@@ -1,13 +1,16 @@
 package com.jforex.programming.order;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.jforex.programming.order.OrderStaticUtil.runnableToCallable;
 
+import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
+import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.TaskExecutor;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 
 public class OrderTaskExecutor {
@@ -22,7 +25,32 @@ public class OrderTaskExecutor {
     }
 
     public Single<IOrder> submitOrder(final OrderParams orderParams) {
-        final Callable<IOrder> submitCallable = engineUtil.submitCallable(checkNotNull(orderParams));
-        return taskExecutor.onStrategyThread(submitCallable);
+        final Callable<IOrder> submitCallable = engineUtil.submitCallable(orderParams);
+        return single(submitCallable);
+    }
+
+    public Single<IOrder> mergeOrders(final String mergeOrderLabel,
+                                      final Collection<IOrder> toMergeOrders) {
+        final Callable<IOrder> mergeCallable = engineUtil.mergeCallable(mergeOrderLabel, toMergeOrders);
+        return single(mergeCallable);
+    }
+
+    public Completable close(final IOrder order) {
+        return completable(() -> order.close());
+    }
+
+    public Completable setLabel(final IOrder order,
+                                final String label) {
+        return completable(() -> order.setLabel(label));
+    }
+
+    private Single<IOrder> single(final Callable<IOrder> callable) {
+        return taskExecutor.onStrategyThread(callable);
+    }
+
+    private Completable completable(final JFRunnable jfRunnable) {
+        return taskExecutor
+            .onStrategyThread(runnableToCallable(jfRunnable))
+            .toCompletable();
     }
 }

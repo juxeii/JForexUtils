@@ -1,16 +1,21 @@
 package com.jforex.programming.order.test;
 
+import static com.jforex.programming.order.OrderStaticUtil.runnableToCallable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.google.common.collect.Sets;
 import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.order.OrderTaskExecutor;
@@ -18,7 +23,6 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Single;
-import io.reactivex.subscribers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderTaskExecutorTest extends CommonUtilForTest {
@@ -29,8 +33,13 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
     private TaskExecutor taskExecutorMock;
     @Mock
     private IEngineUtil engineUtilMock;
-    private final TestSubscriber<IOrder> orderSubscriber = TestSubscriber.create();
-    private final Callable<IOrder> callable = () -> buyOrderEURUSD;
+    @Mock
+    private Callable<IOrder> orderCallableMock;
+    @Captor
+    private ArgumentCaptor<Callable<Void>> callableCaptor;
+    private final IOrder orderForTest = buyOrderEURUSD;
+    private final Single<IOrder> testOrderSingle = Single.just(orderForTest);
+    private Single<IOrder> returnedOrderSingle;
 
     @Before
     public void setUp() throws Exception {
@@ -40,35 +49,113 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
     }
 
     private void setUpMocks() throws Exception {
-        when(engineUtilMock.submitCallable(buyParamsEURUSD)).thenReturn(callable);
     }
 
-    private void setUpTaskExecutorSingle(final Single<IOrder> orderSingle) {
-        when(taskExecutorMock.onStrategyThread(callable)).thenReturn(orderSingle);
+    private void setUpTaskExecutorSingle(final Callable<IOrder> callable,
+                                         final Single<IOrder> single) {
+        when(taskExecutorMock.onStrategyThread(callable))
+            .thenReturn(single);
+    }
+
+    private void setUpTaskExecutorCompletableSingle(final Callable<Void> callable) {
+        when(taskExecutorMock.onStrategyThread(callableCaptor.capture()))
+            .thenReturn(Single.fromCallable(callable));
     }
 
     public class SubmitOrderSetup {
 
-        private final Single<IOrder> expectedSingle = Single.just(buyOrderEURUSD);
-        private Single<IOrder> returnedSingle;
+        @Before
+        public void setUp() {
+            when(engineUtilMock.submitCallable(buyParamsEURUSD)).thenReturn(orderCallableMock);
+
+            setUpTaskExecutorSingle(orderCallableMock, testOrderSingle);
+
+            returnedOrderSingle = orderTaskExecutor.submitOrder(buyParamsEURUSD);
+        }
+
+        @Test
+        public void callableIsNotInvoked() {
+            verifyZeroInteractions(orderCallableMock);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithCallable() {
+            verify(taskExecutorMock).onStrategyThread(orderCallableMock);
+        }
+
+        @Test
+        public void callReturnsSingleInstanceFromTaskExecutor() {
+            assertThat(returnedOrderSingle, equalTo(testOrderSingle));
+        }
+
+        @Test
+        public void callReturnsCorrectOrderInstance() {
+            final IOrder returnedOrder = returnedOrderSingle.blockingGet();
+
+            assertThat(returnedOrder, equalTo(orderForTest));
+        }
+    }
+
+    public class MergeOrdersSetup {
+
+        private final String mergeOrderLabel = "mergeOrderLabel";
+        private final Collection<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+
+        @Before
+        public void setUp() throws Exception {
+            when(engineUtilMock.mergeCallable(mergeOrderLabel, toMergeOrders))
+                .thenReturn(orderCallableMock);
+
+            setUpTaskExecutorSingle(orderCallableMock, testOrderSingle);
+
+            returnedOrderSingle = orderTaskExecutor.mergeOrders(mergeOrderLabel, toMergeOrders);
+        }
+
+        @Test
+        public void callableIsNotInvoked() {
+            verifyZeroInteractions(orderCallableMock);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithCallable() {
+            verify(taskExecutorMock).onStrategyThread(orderCallableMock);
+        }
+
+        @Test
+        public void callReturnsSingleInstanceFromTaskExecutor() {
+            assertThat(returnedOrderSingle, equalTo(testOrderSingle));
+        }
+
+        @Test
+        public void callReturnsCorrectOrderInstance() {
+            final IOrder returnedOrder = returnedOrderSingle.blockingGet();
+
+            assertThat(returnedOrder, equalTo(orderForTest));
+        }
+    }
+
+    public class CloseSetup {
+
+        private final Callable<Void> closeCallable = runnableToCallable(() -> orderForTest.close());
 
         @Before
         public void setUp() {
-            setUpTaskExecutorSingle(expectedSingle);
+            setUpTaskExecutorCompletableSingle(closeCallable);
 
-            returnedSingle = orderTaskExecutor.submitOrder(buyParamsEURUSD);
+            orderTaskExecutor.close(orderForTest);
         }
 
         @Test
-        public void submitOrderReturnsSingleFromTaskExecutor() {
-            assertThat(returnedSingle, equalTo(expectedSingle));
+        public void closeIsNotCalled() {
+            verifyZeroInteractions(orderForTest);
         }
 
         @Test
-        public void submitOrderReturnsCorrectOrderInstance() {
-            final IOrder returnedOrder = returnedSingle.blockingGet();
+        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
+            callableCaptor.getValue().call();
 
-            assertThat(returnedOrder, equalTo(buyOrderEURUSD));
+            verify(orderForTest).close();
+            verify(taskExecutorMock).onStrategyThread(any());
         }
     }
 }

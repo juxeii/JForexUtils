@@ -193,11 +193,10 @@ public final class OrderStaticUtil {
         return slPriceWithPips(checkNotNull(order), price, -pips);
     }
 
-    public static final Callable<IOrder> runnableToCallable(final JFRunnable runnable,
-                                                            final IOrder order) {
+    public static final Callable<Void> runnableToCallable(final JFRunnable runnable) {
         return () -> {
             runnable.run();
-            return order;
+            return null;
         };
     }
 
