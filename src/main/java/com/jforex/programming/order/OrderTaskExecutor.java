@@ -44,6 +44,31 @@ public class OrderTaskExecutor {
         return completable(() -> order.setLabel(label));
     }
 
+    public Completable setGoodTillTime(final IOrder order,
+                                       final long newGTT) {
+        return completable(() -> order.setGoodTillTime(newGTT));
+    }
+
+    public Completable setRequestedAmount(final IOrder order,
+                                          final double newRequestedAmount) {
+        return completable(() -> order.setRequestedAmount(newRequestedAmount));
+    }
+
+    public Completable setOpenPrice(final IOrder order,
+                                    final double newOpenPrice) {
+        return completable(() -> order.setOpenPrice(newOpenPrice));
+    }
+
+    public Completable setStopLossPrice(final IOrder order,
+                                        final double newSL) {
+        return completable(() -> order.setStopLossPrice(newSL));
+    }
+
+    public Completable setTakeProfitPrice(final IOrder order,
+                                          final double newTP) {
+        return completable(() -> order.setTakeProfitPrice(newTP));
+    }
+
     private Single<IOrder> single(final Callable<IOrder> callable) {
         return taskExecutor.onStrategyThread(callable);
     }

@@ -1,6 +1,7 @@
 package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.jforex.programming.order.event.OrderEventTypeSets.rejectEvents;
 
 import java.util.concurrent.TimeUnit;
 
@@ -10,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
+import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
 
@@ -24,6 +26,22 @@ public class CommandRetry {
                         final long delayInMillis) {
         this.noOfRetries = noOfRetries;
         this.delayInMillis = delayInMillis;
+    }
+
+    public static Observable<OrderEvent> retry(final OrderEvent orderEvent,
+                                               final int noOfRetries,
+                                               final long retryDelayInMillis) {
+        final CommandRetry orderProcessRetry = new CommandRetry(noOfRetries, retryDelayInMillis);
+        return Observable
+            .just(orderEvent)
+            .flatMap(CommandRetry::rejectAsErrorObservable)
+            .retryWhen(orderProcessRetry::retryOnRejectObservable);
+    }
+
+    public static Observable<OrderEvent> rejectAsErrorObservable(final OrderEvent orderEvent) {
+        return rejectEvents.contains(orderEvent.type())
+                ? Observable.error(new OrderCallRejectException("Reject event", orderEvent))
+                : Observable.just(orderEvent);
     }
 
     public final Observable<Long> retryOnRejectObservable(final Observable<? extends Throwable> errors) {

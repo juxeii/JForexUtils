@@ -158,4 +158,165 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
             verify(taskExecutorMock).onStrategyThread(any());
         }
     }
+
+    public class SetLabelSetup {
+
+        private final String newLabel = "newLabel";
+        private final Callable<Void> setLabelCallable = runnableToCallable(() -> orderForTest.setLabel(newLabel));
+
+        @Before
+        public void setUp() {
+            setUpTaskExecutorCompletableSingle(setLabelCallable);
+
+            orderTaskExecutor.setLabel(orderForTest, newLabel);
+        }
+
+        @Test
+        public void setLabelIsNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
+            callableCaptor.getValue().call();
+
+            verify(orderForTest).setLabel(newLabel);
+            verify(taskExecutorMock).onStrategyThread(any());
+        }
+    }
+
+    public class SetGTTSetup {
+
+        private final long newGTT = 1L;
+        private final Callable<Void> setGoodTillTimeCallable =
+                runnableToCallable(() -> orderForTest.setGoodTillTime(newGTT));
+
+        @Before
+        public void setUp() {
+            setUpTaskExecutorCompletableSingle(setGoodTillTimeCallable);
+
+            orderTaskExecutor.setGoodTillTime(orderForTest, newGTT);
+        }
+
+        @Test
+        public void setGoodTillTimeIsNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
+            callableCaptor.getValue().call();
+
+            verify(orderForTest).setGoodTillTime(newGTT);
+            verify(taskExecutorMock).onStrategyThread(any());
+        }
+    }
+
+    public class SetRequestedAmountSetup {
+
+        private final double newRequestedAmount = 0.12;
+        private final Callable<Void> setRequestedAmountCallable =
+                runnableToCallable(() -> orderForTest.setRequestedAmount(newRequestedAmount));
+
+        @Before
+        public void setUp() {
+            setUpTaskExecutorCompletableSingle(setRequestedAmountCallable);
+
+            orderTaskExecutor.setRequestedAmount(orderForTest, newRequestedAmount);
+        }
+
+        @Test
+        public void setRequestedAmountNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
+            callableCaptor.getValue().call();
+
+            verify(orderForTest).setRequestedAmount(newRequestedAmount);
+            verify(taskExecutorMock).onStrategyThread(any());
+        }
+    }
+
+    public class SetOpenPriceSetup {
+
+        private final double newOpenPrice = 1.1234;
+        private final Callable<Void> setOpenPriceCallable =
+                runnableToCallable(() -> orderForTest.setOpenPrice(newOpenPrice));
+
+        @Before
+        public void setUp() {
+            setUpTaskExecutorCompletableSingle(setOpenPriceCallable);
+
+            orderTaskExecutor.setOpenPrice(orderForTest, newOpenPrice);
+        }
+
+        @Test
+        public void setOpenPriceNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
+            callableCaptor.getValue().call();
+
+            verify(orderForTest).setOpenPrice(newOpenPrice);
+            verify(taskExecutorMock).onStrategyThread(any());
+        }
+    }
+
+    public class SetStopLossSetup {
+
+        private final double newSL = 1.1234;
+        private final Callable<Void> setStopLossCallable =
+                runnableToCallable(() -> orderForTest.setStopLossPrice(newSL));
+
+        @Before
+        public void setUp() {
+            setUpTaskExecutorCompletableSingle(setStopLossCallable);
+
+            orderTaskExecutor.setStopLossPrice(orderForTest, newSL);
+        }
+
+        @Test
+        public void setStopLossNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
+            callableCaptor.getValue().call();
+
+            verify(orderForTest).setStopLossPrice(newSL);
+            verify(taskExecutorMock).onStrategyThread(any());
+        }
+    }
+
+    public class SetTakeProfitSetup {
+
+        private final double newTP = 1.1234;
+        private final Callable<Void> setTakeProfitCallable =
+                runnableToCallable(() -> orderForTest.setTakeProfitPrice(newTP));
+
+        @Before
+        public void setUp() {
+            setUpTaskExecutorCompletableSingle(setTakeProfitCallable);
+
+            orderTaskExecutor.setTakeProfitPrice(orderForTest, newTP);
+        }
+
+        @Test
+        public void setTakeProfitNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
+            callableCaptor.getValue().call();
+
+            verify(orderForTest).setTakeProfitPrice(newTP);
+            verify(taskExecutorMock).onStrategyThread(any());
+        }
+    }
 }

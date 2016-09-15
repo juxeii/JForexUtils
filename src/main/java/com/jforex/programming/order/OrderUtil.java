@@ -3,108 +3,94 @@ package com.jforex.programming.order;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.command.Command;
-import com.jforex.programming.order.command.option.ChangeOption;
-import com.jforex.programming.order.command.option.CloseOption;
-import com.jforex.programming.order.command.option.MergeOption;
-import com.jforex.programming.order.command.option.SubmitOption;
+import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionOrders;
-import com.jforex.programming.position.PositionUtil;
 
-import io.reactivex.Completable;
+import io.reactivex.Observable;
 
 public final class OrderUtil {
 
-    private final OrderUtilBuilder orderUtilBuilder;
-    private final PositionUtil positionUtil;
-    private final OrderUtilCompletable orderUtilCompletable;
+    private final OrderTaskExecutor orderTaskExecutor;
+    private final OrderUtilHandler orderUtilHandler;
+    private final PositionFactory positionFactory;
 
-    public OrderUtil(final OrderUtilBuilder orderUtilBuilder,
-                     final PositionUtil positionUtil,
-                     final OrderUtilCompletable orderUtilCompletable) {
-        this.orderUtilBuilder = orderUtilBuilder;
-        this.positionUtil = positionUtil;
-        this.orderUtilCompletable = orderUtilCompletable;
+    public OrderUtil(final OrderTaskExecutor orderTaskExecutor,
+                     final OrderUtilHandler orderUtilHandler,
+                     final PositionFactory positionFactory) {
+        this.orderTaskExecutor = orderTaskExecutor;
+        this.orderUtilHandler = orderUtilHandler;
+        this.positionFactory = positionFactory;
     }
 
-    public final SubmitOption submitBuilder(final OrderParams orderParams) {
-        return orderUtilBuilder.submitBuilder(checkNotNull(orderParams));
+    public final Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
+        return orderTaskExecutor
+            .submitOrder(orderParams)
+            .toObservable()
+            .flatMap(order -> orderUtilHandler.callObservable(order, OrderCallReason.SUBMIT));
     }
 
-    public final MergeOption mergeBuilder(final String mergeOrderLabel,
-                                          final Collection<IOrder> toMergeOrders) {
-        return orderUtilBuilder.mergeBuilder(checkNotNull(mergeOrderLabel),
-                                             checkNotNull(toMergeOrders));
+    public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
+                                              final Collection<IOrder> toMergeOrders) {
+        return orderTaskExecutor
+            .mergeOrders(mergeOrderLabel, toMergeOrders)
+            .toObservable()
+            .flatMap(order -> orderUtilHandler.callObservable(order, OrderCallReason.MERGE));
     }
 
-    public final CloseOption closeBuilder(final IOrder orderToClose) {
-        return orderUtilBuilder.closeBuilder(checkNotNull(orderToClose));
+    public Observable<OrderEvent> close(final IOrder order) {
+        return orderTaskExecutor
+            .close(order)
+            .andThen(orderUtilHandler.callObservable(order, OrderCallReason.CLOSE));
     }
 
-    public final ChangeOption setLabelBuilder(final IOrder order,
-                                              final String newLabel) {
-        return orderUtilBuilder.setLabelBuilder(checkNotNull(order),
-                                                checkNotNull(newLabel));
+    public Observable<OrderEvent> setLabel(final IOrder order,
+                                           final String label) {
+        return orderTaskExecutor
+            .setLabel(order, label)
+            .andThen(orderUtilHandler.callObservable(order, OrderCallReason.CHANGE_LABEL));
     }
 
-    public final ChangeOption setGTTBuilder(final IOrder order,
-                                            final long newGTT) {
-        return orderUtilBuilder.setGTTBuilder(checkNotNull(order), newGTT);
+    public Observable<OrderEvent> setGoodTillTime(final IOrder order,
+                                                  final long newGTT) {
+        return orderTaskExecutor
+            .setGoodTillTime(order, newGTT)
+            .andThen(orderUtilHandler.callObservable(order, OrderCallReason.CHANGE_GTT));
     }
 
-    public final ChangeOption setAmountBuilder(final IOrder order,
-                                               final double newAmount) {
-        return orderUtilBuilder.setAmountBuilder(checkNotNull(order), newAmount);
+    public Observable<OrderEvent> setRequestedAmount(final IOrder order,
+                                                     final double newRequestedAmount) {
+        return orderTaskExecutor
+            .setRequestedAmount(order, newRequestedAmount)
+            .andThen(orderUtilHandler.callObservable(order, OrderCallReason.CHANGE_AMOUNT));
     }
 
-    public final ChangeOption setOpenPriceBuilder(final IOrder order,
-                                                  final double newPrice) {
-        return orderUtilBuilder.setOpenPriceBuilder(checkNotNull(order), newPrice);
+    public Observable<OrderEvent> setOpenPrice(final IOrder order,
+                                               final double newOpenPrice) {
+        return orderTaskExecutor
+            .setOpenPrice(order, newOpenPrice)
+            .andThen(orderUtilHandler.callObservable(order, OrderCallReason.CHANGE_PRICE));
     }
 
-    public final ChangeOption setSLBuilder(final IOrder order,
-                                           final double newSL) {
-        return orderUtilBuilder.setSLBuilder(checkNotNull(order), newSL);
+    public Observable<OrderEvent> setStopLossPrice(final IOrder order,
+                                                   final double newSL) {
+        return orderTaskExecutor
+            .setStopLossPrice(order, newSL)
+            .andThen(orderUtilHandler.callObservable(order, OrderCallReason.CHANGE_SL));
     }
 
-    public final ChangeOption setTPBuilder(final IOrder order,
-                                           final double newTP) {
-        return orderUtilBuilder.setTPBuilder(checkNotNull(order), newTP);
-    }
-
-    public final Completable mergePosition(final Instrument instrument,
-                                           final Function<Collection<IOrder>, MergeOption> mergeOption) {
-        return positionUtil.merge(checkNotNull(instrument),
-                                  checkNotNull(mergeOption));
-    }
-
-    public final Completable mergeAllPositions(final Function<Collection<IOrder>, MergeOption> mergeOption) {
-        return positionUtil.mergeAll(checkNotNull(mergeOption));
-    }
-
-    public final Completable closePosition(final Instrument instrument,
-                                           final Function<Collection<IOrder>, MergeOption> mergeOption,
-                                           final Function<IOrder, CloseOption> closeOption) {
-        return positionUtil.close(checkNotNull(instrument),
-                                  checkNotNull(mergeOption),
-                                  checkNotNull(closeOption));
-    }
-
-    public final Completable closeAllPositions(final Function<Collection<IOrder>, MergeOption> mergeOption,
-                                               final Function<IOrder, CloseOption> closeOption) {
-        return positionUtil.closeAll(checkNotNull(mergeOption),
-                                     checkNotNull(closeOption));
-    }
-
-    public final Completable commandToCompletable(final Command command) {
-        return orderUtilCompletable.forCommand(checkNotNull(command));
+    public Observable<OrderEvent> setTakeProfitPrice(final IOrder order,
+                                                     final double newTP) {
+        return orderTaskExecutor
+            .setTakeProfitPrice(order, newTP)
+            .andThen(orderUtilHandler.callObservable(order, OrderCallReason.CHANGE_TP));
     }
 
     public final PositionOrders positionOrders(final Instrument instrument) {
-        return positionUtil.positionOrders(checkNotNull(instrument));
+        return positionFactory.forInstrument(checkNotNull(instrument));
     }
 }
