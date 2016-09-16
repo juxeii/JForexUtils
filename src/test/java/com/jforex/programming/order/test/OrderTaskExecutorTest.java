@@ -43,12 +43,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
     @Before
     public void setUp() throws Exception {
-        setUpMocks();
-
         orderTaskExecutor = new OrderTaskExecutor(taskExecutorMock, engineUtilMock);
-    }
-
-    private void setUpMocks() throws Exception {
     }
 
     private void setUpTaskExecutorSingle(final Callable<IOrder> callable,

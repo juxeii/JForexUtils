@@ -19,20 +19,20 @@ public class OrderUtilHandler {
     private final Map<OrderCallReason, Function<IOrder, OrderTaskData>> changeDoneByReason;
 
     public OrderUtilHandler(final OrderEventGateway orderEventGateway,
-                            final OrderTaskDataFactory orderTaskDataProvider) {
+                            final OrderTaskDataFactory orderTaskDataFactory) {
         this.orderEventGateway = orderEventGateway;
 
         changeDoneByReason =
                 Maps.immutableEnumMap(ImmutableMap.<OrderCallReason, Function<IOrder, OrderTaskData>> builder()
-                    .put(OrderCallReason.SUBMIT, orderTaskDataProvider::forSubmit)
-                    .put(OrderCallReason.MERGE, orderTaskDataProvider::forMerge)
-                    .put(OrderCallReason.CLOSE, orderTaskDataProvider::forClose)
-                    .put(OrderCallReason.CHANGE_LABEL, orderTaskDataProvider::forSetLabel)
-                    .put(OrderCallReason.CHANGE_GTT, orderTaskDataProvider::forSetGoodTillTime)
-                    .put(OrderCallReason.CHANGE_AMOUNT, orderTaskDataProvider::forSetRequestedAmount)
-                    .put(OrderCallReason.CHANGE_PRICE, orderTaskDataProvider::forSetOpenPrice)
-                    .put(OrderCallReason.CHANGE_SL, orderTaskDataProvider::forSetStopLossPrice)
-                    .put(OrderCallReason.CHANGE_TP, orderTaskDataProvider::forSetTakeProfitPrice)
+                    .put(OrderCallReason.SUBMIT, orderTaskDataFactory::forSubmit)
+                    .put(OrderCallReason.MERGE, orderTaskDataFactory::forMerge)
+                    .put(OrderCallReason.CLOSE, orderTaskDataFactory::forClose)
+                    .put(OrderCallReason.CHANGE_LABEL, orderTaskDataFactory::forSetLabel)
+                    .put(OrderCallReason.CHANGE_GTT, orderTaskDataFactory::forSetGoodTillTime)
+                    .put(OrderCallReason.CHANGE_AMOUNT, orderTaskDataFactory::forSetRequestedAmount)
+                    .put(OrderCallReason.CHANGE_PRICE, orderTaskDataFactory::forSetOpenPrice)
+                    .put(OrderCallReason.CHANGE_SL, orderTaskDataFactory::forSetStopLossPrice)
+                    .put(OrderCallReason.CHANGE_TP, orderTaskDataFactory::forSetTakeProfitPrice)
                     .build());
     }
 

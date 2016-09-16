@@ -27,7 +27,6 @@ import static com.jforex.programming.order.OrderStaticUtil.labelPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.ofInstrument;
 import static com.jforex.programming.order.OrderStaticUtil.offerSideForOrderCommand;
 import static com.jforex.programming.order.OrderStaticUtil.openPricePredicate;
-import static com.jforex.programming.order.OrderStaticUtil.runnableToCallable;
 import static com.jforex.programming.order.OrderStaticUtil.sellOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.signedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.slPredicate;
@@ -57,7 +56,6 @@ import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
@@ -593,9 +591,10 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void runnableToCallableIsCorrect() throws Exception {
-        final JFRunnable runnable = () -> buyOrderEURUSD.getLabel();
-
-        final Callable<IOrder> callable = runnableToCallable(runnable, buyOrderEURUSD);
+        final Callable<IOrder> callable = () -> {
+            buyOrderEURUSD.getLabel();
+            return buyOrderEURUSD;
+        };
         final IOrder order = callable.call();
 
         assertThat(order, equalTo(buyOrderEURUSD));

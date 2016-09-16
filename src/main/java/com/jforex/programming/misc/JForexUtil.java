@@ -24,10 +24,7 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
-import com.jforex.programming.position.PositionClose;
 import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.PositionMerge;
-import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -60,9 +57,6 @@ public class JForexUtil {
     private OrderUtilHandler orderUtilHandler;
     private final OrderTaskDataFactory orderTaskDataFactory = new OrderTaskDataFactory();
     private OrderUtil orderUtil;
-    private PositionUtil positionUtil;
-    private PositionMerge positionMerge;
-    private PositionClose positionClose;
     private final OrderEventFactory messageToOrderEvent = new OrderEventFactory();
 
     private final CalculationUtil calculationUtil;
@@ -117,13 +111,6 @@ public class JForexUtil {
         orderUtilHandler = new OrderUtilHandler(orderEventGateway, orderTaskDataFactory);
         engineUtil = new IEngineUtil(engine);
         orderTaskExecutor = new OrderTaskExecutor(taskExecutor, engineUtil);
-        positionMerge = new PositionMerge(orderUtilCompletable, positionFactory);
-        positionClose = new PositionClose(positionMerge,
-                                          positionFactory,
-                                          commandUtil);
-        positionUtil = new PositionUtil(positionMerge,
-                                        positionClose,
-                                        positionFactory);
         orderUtil = new OrderUtil(orderTaskExecutor,
                                   orderUtilHandler,
                                   positionFactory);

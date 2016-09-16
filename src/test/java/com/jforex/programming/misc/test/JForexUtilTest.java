@@ -70,11 +70,6 @@ public class JForexUtilTest extends QuoteProviderForTest {
     }
 
     @Test
-    public void returnedCommandUtilIsValid() {
-        assertNotNull(jForexUtil.commandUtil());
-    }
-
-    @Test
     public void onMessageRouting() {
         jForexUtil.onMessage(mock(IMessage.class));
     }
