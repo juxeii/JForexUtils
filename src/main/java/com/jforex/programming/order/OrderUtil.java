@@ -5,11 +5,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.PositionOrders;
 
 import io.reactivex.Observable;
 
@@ -17,14 +14,11 @@ public final class OrderUtil {
 
     private final OrderTaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
-    private final PositionFactory positionFactory;
 
     public OrderUtil(final OrderTaskExecutor orderTaskExecutor,
-                     final OrderUtilHandler orderUtilHandler,
-                     final PositionFactory positionFactory) {
+                     final OrderUtilHandler orderUtilHandler) {
         this.orderTaskExecutor = orderTaskExecutor;
         this.orderUtilHandler = orderUtilHandler;
-        this.positionFactory = positionFactory;
     }
 
     public final Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
@@ -94,9 +88,5 @@ public final class OrderUtil {
                                                        final OrderCallReason orderCallReason) {
         return Observable
             .defer(() -> orderUtilHandler.callObservable(order, orderCallReason));
-    }
-
-    public final PositionOrders positionOrders(final Instrument instrument) {
-        return positionFactory.forInstrument(checkNotNull(instrument));
     }
 }
