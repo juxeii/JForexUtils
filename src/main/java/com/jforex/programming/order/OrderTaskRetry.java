@@ -29,15 +29,19 @@ public class OrderTaskRetry {
         this.delayInMillis = delayInMillis;
     }
 
-    public static final
-           Function<? super Observable<? extends java.lang.Throwable>, ? extends Observable<?>>
-           onRejectRetryWith(final int noOfRetries,
-                             final long delayInMillis) {
+    public static Function<Observable<OrderEvent>, Observable<OrderEvent>> onRejectRetryWith(final int noOfRetries,
+                                                                                             final long delayInMillis) {
         final OrderTaskRetry orderTaskRetry = new OrderTaskRetry(noOfRetries, delayInMillis);
-        return orderTaskRetry::retryOnReject;
+        return orderTaskRetry::trans;
     }
 
-    public static final Observable<OrderEvent> rejectAsError(final OrderEvent orderEvent) {
+    private final Observable<OrderEvent> trans(final Observable<OrderEvent> sourceObservable) {
+        return sourceObservable
+            .flatMap(this::rejectAsError)
+            .retryWhen(this::retryOnReject);
+    }
+
+    private final Observable<OrderEvent> rejectAsError(final OrderEvent orderEvent) {
         return rejectEvents.contains(orderEvent.type())
                 ? Observable.error(new OrderCallRejectException("Reject event", orderEvent))
                 : Observable.just(orderEvent);

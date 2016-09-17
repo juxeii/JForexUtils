@@ -35,8 +35,7 @@ public class OrderTaskRetryTest extends CommonUtilForTest {
     @Before
     public void setUp() {
         testObserver = subject
-            .flatMap(OrderTaskRetry::rejectAsError)
-            .retryWhen(OrderTaskRetry.onRejectRetryWith(noOfRetries, delayInMillis))
+            .compose(OrderTaskRetry.onRejectRetryWith(noOfRetries, delayInMillis))
             .test();
     }
 
