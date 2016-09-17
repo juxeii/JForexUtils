@@ -27,12 +27,38 @@ import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
 
 import java.util.EnumSet;
+import java.util.Map;
 
 import com.dukascopy.api.IOrder;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class OrderTaskDataFactory {
+
+    private final Map<OrderCallReason, Function<IOrder, OrderTaskData>> changeDoneByReason;
+
+    public OrderTaskDataFactory() {
+        changeDoneByReason =
+                Maps.immutableEnumMap(ImmutableMap.<OrderCallReason, Function<IOrder, OrderTaskData>> builder()
+                    .put(OrderCallReason.SUBMIT, this::forSubmit)
+                    .put(OrderCallReason.MERGE, this::forMerge)
+                    .put(OrderCallReason.CLOSE, this::forClose)
+                    .put(OrderCallReason.CHANGE_LABEL, this::forSetLabel)
+                    .put(OrderCallReason.CHANGE_GTT, this::forSetGoodTillTime)
+                    .put(OrderCallReason.CHANGE_AMOUNT, this::forSetRequestedAmount)
+                    .put(OrderCallReason.CHANGE_PRICE, this::forSetOpenPrice)
+                    .put(OrderCallReason.CHANGE_SL, this::forSetStopLossPrice)
+                    .put(OrderCallReason.CHANGE_TP, this::forSetTakeProfitPrice)
+                    .build());
+    }
+
+    public OrderTaskData forCallReason(final IOrder order,
+                                       final OrderCallReason callReason) {
+        return changeDoneByReason.get(callReason).apply(order);
+    }
 
     public OrderTaskData forSubmit(final IOrder order) {
         final OrderEventTypeData typeData =

@@ -27,19 +27,9 @@ public class OrderTaskData {
         return callReason;
     }
 
-    public OrderEventTypeData typeData() {
-        return typeData;
-    }
-
-    public boolean isEventTypeForCommand(final OrderEventType orderEventType) {
+    public boolean isEventTypeForTask(final OrderEventType orderEventType) {
         return typeData
             .allEventTypes()
-            .contains(orderEventType);
-    }
-
-    private boolean isDoneEventType(final OrderEventType orderEventType) {
-        return typeData
-            .doneEventTypes()
             .contains(orderEventType);
     }
 
@@ -51,5 +41,11 @@ public class OrderTaskData {
 
     public boolean isFinishEventType(final OrderEventType orderEventType) {
         return isDoneEventType(orderEventType) || isRejectEventType(orderEventType);
+    }
+
+    public boolean isDoneEventType(final OrderEventType orderEventType) {
+        return typeData
+            .doneEventTypes()
+            .contains(orderEventType);
     }
 }

@@ -1,5 +1,8 @@
 package com.jforex.programming.order.test;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import java.util.Collection;
 
 import org.junit.Before;
@@ -14,6 +17,7 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -33,6 +37,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderUtilHandler orderUtilHandlerMock;
     @Mock
     private PositionFactory positionFactoryMock;
+    @Mock
+    private Position positionMock;
     private final IOrder orderForTest = buyOrderEURUSD;
     private TestObserver<OrderEvent> testObserver;
 
@@ -51,6 +57,14 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     private void verifyOrderUtilHandlerMockCall(final OrderCallReason callReason) {
         verify(orderUtilHandlerMock).callObservable(orderForTest, callReason);
+    }
+
+    @Test
+    public void positionOrdersIsCorrect() {
+        when(positionFactoryMock.forInstrument(instrumentEURUSD))
+            .thenReturn(positionMock);
+
+        assertThat(orderUtil.positionOrders(instrumentEURUSD), equalTo(positionMock));
     }
 
     public class SubmitOrderSetup {
