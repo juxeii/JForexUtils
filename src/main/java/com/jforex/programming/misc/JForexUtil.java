@@ -18,7 +18,7 @@ import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.order.OrderTaskDataFactory;
+import com.jforex.programming.order.OrderEventTypeDataFactory;
 import com.jforex.programming.order.OrderTaskExecutor;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -55,7 +55,7 @@ public class JForexUtil {
     private TaskExecutor taskExecutor;
     private OrderTaskExecutor orderTaskExecutor;
     private OrderUtilHandler orderUtilHandler;
-    private final OrderTaskDataFactory orderTaskDataFactory = new OrderTaskDataFactory();
+    private final OrderEventTypeDataFactory orderEventTypeDataFactory = new OrderEventTypeDataFactory();
     private OrderUtil orderUtil;
     private final OrderEventFactory messageToOrderEvent = new OrderEventFactory();
 
@@ -108,7 +108,7 @@ public class JForexUtil {
     private void initOrderRelated() {
         taskExecutor = new TaskExecutor(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
-        orderUtilHandler = new OrderUtilHandler(orderEventGateway, orderTaskDataFactory);
+        orderUtilHandler = new OrderUtilHandler(orderEventGateway, orderEventTypeDataFactory);
         engineUtil = new IEngineUtil(engine);
         orderTaskExecutor = new OrderTaskExecutor(taskExecutor, engineUtil);
         orderUtil = new OrderUtil(orderTaskExecutor,

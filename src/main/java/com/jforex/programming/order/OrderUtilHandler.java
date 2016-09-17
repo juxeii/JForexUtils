@@ -5,38 +5,42 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
+import com.jforex.programming.order.event.OrderEventTypeData;
 
 import io.reactivex.Observable;
 
 public class OrderUtilHandler {
 
     private final OrderEventGateway orderEventGateway;
-    private final OrderTaskDataFactory orderTaskDataFactory;
+    private final OrderEventTypeDataFactory orderEventTypeDataFactory;
 
     public OrderUtilHandler(final OrderEventGateway orderEventGateway,
-                            final OrderTaskDataFactory orderTaskDataFactory) {
+                            final OrderEventTypeDataFactory orderEventTypeDataFactory) {
         this.orderEventGateway = orderEventGateway;
-        this.orderTaskDataFactory = orderTaskDataFactory;
+        this.orderEventTypeDataFactory = orderEventTypeDataFactory;
     }
 
-    public Observable<OrderEvent> callObservable(final IOrder order,
+    public Observable<OrderEvent> callObservable(final IOrder orderOfCall,
                                                  final OrderCallReason callReason) {
         return Observable
-            .just(orderTaskDataFactory.forCallReason(order, callReason))
-            .doOnNext(this::registerOrder)
-            .flatMap(this::gatewayObservable);
+            .just(orderOfCall)
+            .doOnSubscribe(d -> registerOrder(orderOfCall, callReason))
+            .map(order -> orderEventTypeDataFactory.forCallReason(callReason))
+            .flatMap(type -> gatewayObservable(orderOfCall, type));
     }
 
-    private final void registerOrder(final OrderTaskData taskData) {
-        final OrderCallRequest orderCallRequest = new OrderCallRequest(taskData.order(), taskData.callReason());
+    private final void registerOrder(final IOrder order,
+                                     final OrderCallReason callReason) {
+        final OrderCallRequest orderCallRequest = new OrderCallRequest(order, callReason);
         orderEventGateway.registerOrderCallRequest(orderCallRequest);
     }
 
-    private final Observable<OrderEvent> gatewayObservable(final OrderTaskData taskData) {
+    private final Observable<OrderEvent> gatewayObservable(final IOrder order,
+                                                           final OrderEventTypeData typeData) {
         return orderEventGateway
             .observable()
-            .filter(orderEvent -> orderEvent.order().equals(taskData.order()))
-            .filter(orderEvent -> taskData.isEventTypeForTask(orderEvent.type()))
-            .takeUntil((final OrderEvent orderEvent) -> taskData.isFinishEventType(orderEvent.type()));
+            .filter(orderEvent -> orderEvent.order().equals(order))
+            .filter(orderEvent -> typeData.allEventTypes().contains(orderEvent.type()))
+            .takeUntil((final OrderEvent orderEvent) -> typeData.finishEventTypes().contains(orderEvent.type()));
     }
 }

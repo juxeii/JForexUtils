@@ -1,7 +1,12 @@
 package com.jforex.programming.order.test;
 
+import static com.jforex.programming.order.event.OrderEventType.CLOSE_OK;
+import static com.jforex.programming.order.event.OrderEventType.CLOSE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.PARTIAL_CLOSE_OK;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+
+import java.util.EnumSet;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -12,14 +17,14 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.OrderTaskData;
-import com.jforex.programming.order.OrderTaskDataFactory;
+import com.jforex.programming.order.OrderEventTypeDataFactory;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -36,36 +41,41 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     @Mock
     private OrderEventGateway orderEventGatewayMock;
     @Mock
-    private OrderTaskDataFactory orderTaskDataFactoryMock;
+    private OrderEventTypeDataFactory orderEventTypeDataFactory;
     @Mock
-    private OrderTaskData orderTaskDataMock;
+    private OrderEventTypeData orderEventTypeData;
     @Captor
     private ArgumentCaptor<OrderCallRequest> callRequestCaptor;
     private final IOrder orderForTest = buyOrderEURUSD;
     private final OrderCallReason orderCallReason = OrderCallReason.SUBMIT;
+    private final EnumSet<OrderEventType> doneEventTypes = EnumSet.of(CLOSE_OK);
+    private final EnumSet<OrderEventType> rejectEventTypes = EnumSet.of(CLOSE_REJECTED);
+    private final EnumSet<OrderEventType> infoEventTypes = EnumSet.of(PARTIAL_CLOSE_OK);
+    private final EnumSet<OrderEventType> allEventTypes = EnumSet.of(CLOSE_OK,
+                                                                     CLOSE_REJECTED,
+                                                                     PARTIAL_CLOSE_OK);
+    private final EnumSet<OrderEventType> finishEventTypes = EnumSet.of(CLOSE_OK,
+                                                                        CLOSE_REJECTED);
     private final Subject<OrderEvent> orderEventSubject = PublishSubject.create();
 
     @Before
     public void setUp() {
         setUpMocks();
 
-        orderUtilHandler = new OrderUtilHandler(orderEventGatewayMock, new OrderTaskDataFactory());
+        orderUtilHandler = new OrderUtilHandler(orderEventGatewayMock, orderEventTypeDataFactory);
     }
 
     public void setUpMocks() {
         when(orderEventGatewayMock.observable()).thenReturn(orderEventSubject);
 
-        when(orderTaskDataMock.order()).thenReturn(orderForTest);
-        when(orderTaskDataMock.callReason()).thenReturn(orderCallReason);
-        when(orderTaskDataMock.isEventTypeForTask(OrderEventType.SUBMIT_OK))
-            .thenReturn(true);
-        when(orderTaskDataMock.isFinishEventType(OrderEventType.FULLY_FILLED))
-            .thenReturn(true);
-        when(orderTaskDataMock.isRejectEventType(OrderEventType.SUBMIT_REJECTED))
-            .thenReturn(true);
+        when(orderEventTypeData.doneEventTypes()).thenReturn(doneEventTypes);
+        when(orderEventTypeData.rejectEventTypes()).thenReturn(rejectEventTypes);
+        when(orderEventTypeData.infoEventTypes()).thenReturn(infoEventTypes);
+        when(orderEventTypeData.allEventTypes()).thenReturn(allEventTypes);
+        when(orderEventTypeData.finishEventTypes()).thenReturn(finishEventTypes);
 
-        when(orderTaskDataFactoryMock.forCallReason(orderForTest, orderCallReason))
-            .thenReturn(orderTaskDataMock);
+        when(orderEventTypeDataFactory.forCallReason(orderCallReason))
+            .thenReturn(orderEventTypeData);
     }
 
     private OrderEvent sendOrderEvent(final IOrder order,
@@ -141,18 +151,18 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                 assertNoEventsReceived();
             }
 
-            public class OnSubmitEvent {
+            public class OnPatialCloseEvent {
 
-                private OrderEvent submitEvent;
+                private OrderEvent partialCloseEvent;
 
                 @Before
                 public void setUp() {
-                    submitEvent = sendOrderEvent(orderForTest, OrderEventType.SUBMIT_OK);
+                    partialCloseEvent = sendOrderEvent(orderForTest, OrderEventType.PARTIAL_CLOSE_OK);
                 }
 
                 @Test
                 public void submitEventReceived() {
-                    testObserver.assertValue(submitEvent);
+                    testObserver.assertValue(partialCloseEvent);
                 }
 
                 @Test
@@ -160,18 +170,18 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
                     testObserver.assertNotComplete();
                 }
 
-                public class OnFillEvent {
+                public class OnCloseEvent {
 
-                    private OrderEvent fillEvent;
+                    private OrderEvent closeEvent;
 
                     @Before
                     public void setUp() {
-                        fillEvent = sendOrderEvent(orderForTest, OrderEventType.FULLY_FILLED);
+                        closeEvent = sendOrderEvent(orderForTest, OrderEventType.CLOSE_OK);
                     }
 
                     @Test
                     public void submitEventReceived() {
-                        testObserver.assertValues(submitEvent, fillEvent);
+                        testObserver.assertValues(partialCloseEvent, closeEvent);
                     }
 
                     @Test
