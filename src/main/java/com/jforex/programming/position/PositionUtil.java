@@ -6,7 +6,7 @@ import java.util.Set;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
@@ -14,12 +14,12 @@ import io.reactivex.functions.Function;
 
 public class PositionUtil {
 
-    private final OrderUtil orderUtil;
+    private final OrderTask orderTask;
     private final PositionFactory positionFactory;
 
-    public PositionUtil(final OrderUtil orderUtil,
+    public PositionUtil(final OrderTask orderTask,
                         final PositionFactory positionFactory) {
-        this.orderUtil = orderUtil;
+        this.orderTask = orderTask;
         this.positionFactory = positionFactory;
     }
 
@@ -29,27 +29,33 @@ public class PositionUtil {
 
     public final Observable<OrderEvent> merge(final Instrument instrument,
                                               final String mergeOrderLabel) {
+        checkNotNull(instrument);
+        checkNotNull(mergeOrderLabel);
+
         return Observable.defer(() -> {
-            final Set<IOrder> toMergeOrders = filledOrders(checkNotNull(instrument));
+            final Set<IOrder> toMergeOrders = filledOrders(instrument);
             return toMergeOrders.size() < 2
                     ? Observable.empty()
-                    : orderUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
+                    : orderTask.mergeOrders(mergeOrderLabel, toMergeOrders);
         });
     }
 
     public final Observable<OrderEvent> close(final Instrument instrument,
                                               final String mergeOrderLabel) {
+        checkNotNull(instrument);
+        checkNotNull(mergeOrderLabel);
+
         final Observable<OrderEvent> mergeObservable = merge(instrument, mergeOrderLabel);
-        final Observable<OrderEvent> closeObservable = batch(instrument, orderUtil::close);
+        final Observable<OrderEvent> closeObservable = batch(instrument, orderTask::close);
         return mergeObservable.concatWith(closeObservable);
     }
 
     public final Observable<OrderEvent> cancelStopLossPrice(final Instrument instrument) {
-        return batch(checkNotNull(instrument), orderUtil::cancelStopLossPrice);
+        return batch(checkNotNull(instrument), orderTask::cancelStopLossPrice);
     }
 
     public final Observable<OrderEvent> cancelTakeProfitPrice(final Instrument instrument) {
-        return batch(checkNotNull(instrument), orderUtil::cancelTakeProfitPrice);
+        return batch(checkNotNull(instrument), orderTask::cancelTakeProfitPrice);
     }
 
     private final Observable<OrderEvent> batch(final Instrument instrument,

@@ -19,6 +19,7 @@ import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderEventTypeDataFactory;
+import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.OrderTaskExecutor;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -56,6 +57,7 @@ public class JForexUtil {
     private OrderEventGateway orderEventGateway;
     private TaskExecutor taskExecutor;
     private OrderTaskExecutor orderTaskExecutor;
+    private OrderTask orderTask;
     private OrderUtilHandler orderUtilHandler;
     private final OrderEventTypeDataFactory orderEventTypeDataFactory = new OrderEventTypeDataFactory();
     private OrderUtil orderUtil;
@@ -99,12 +101,12 @@ public class JForexUtil {
                                                       historyUtil,
                                                       context.getSubscribedInstruments());
         tickQuoteProvider = new TickQuoteProvider(tickQuoteObservable.observable(),
-                                                 tickQuoteRepository);
+                                                  tickQuoteRepository);
         barQuoteRepository = new BarQuoteRepository(barQuoteObservable.observable(),
                                                     historyUtil);
         barQuoteProvider = new BarQuoteProvider(this,
-                                               barQuoteObservable.observable(),
-                                               barQuoteRepository);
+                                                barQuoteObservable.observable(),
+                                                barQuoteRepository);
     }
 
     private void initOrderRelated() {
@@ -113,8 +115,9 @@ public class JForexUtil {
         orderUtilHandler = new OrderUtilHandler(orderEventGateway, orderEventTypeDataFactory);
         engineUtil = new IEngineUtil(engine);
         orderTaskExecutor = new OrderTaskExecutor(taskExecutor, engineUtil);
-        orderUtil = new OrderUtil(orderTaskExecutor, orderUtilHandler);
-        positionUtil = new PositionUtil(orderUtil, positionFactory);
+        orderTask = new OrderTask(orderTaskExecutor, orderUtilHandler);
+        positionUtil = new PositionUtil(orderTask, positionFactory);
+        orderUtil = new OrderUtil(orderTask, positionUtil);
     }
 
     public IContext context() {

@@ -5,100 +5,100 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.JForexUtil;
-import com.jforex.programming.order.call.OrderCallReason;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.position.PositionOrders;
+import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
 
 public class OrderUtil {
 
-    private final OrderTaskExecutor orderTaskExecutor;
-    private final OrderUtilHandler orderUtilHandler;
+    private final OrderTask orderTask;
+    private final PositionUtil positionUtil;
 
-    private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
-
-    public OrderUtil(final OrderTaskExecutor orderTaskExecutor,
-                     final OrderUtilHandler orderUtilHandler) {
-        this.orderTaskExecutor = orderTaskExecutor;
-        this.orderUtilHandler = orderUtilHandler;
+    public OrderUtil(final OrderTask orderTaskExecutor,
+                     final PositionUtil positionUtil) {
+        this.orderTask = orderTaskExecutor;
+        this.positionUtil = positionUtil;
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
-        return orderTaskExecutor
-            .submitOrder(checkNotNull(orderParams))
-            .toObservable()
-            .flatMap(order -> orderUtilObservable(order, OrderCallReason.SUBMIT));
+        return orderTask.submitOrder(checkNotNull(orderParams));
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
-        return orderTaskExecutor
-            .mergeOrders(checkNotNull(mergeOrderLabel), checkNotNull(toMergeOrders))
-            .toObservable()
-            .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE));
+        return orderTask.mergeOrders(checkNotNull(mergeOrderLabel), checkNotNull(toMergeOrders));
     }
 
     public Observable<OrderEvent> close(final IOrder order) {
-        return orderTaskExecutor
-            .close(checkNotNull(order))
-            .andThen(orderUtilObservable(order, OrderCallReason.CLOSE));
+        return orderTask.close(checkNotNull(order));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder order,
                                            final String label) {
-        return orderTaskExecutor
-            .setLabel(checkNotNull(order), checkNotNull(label))
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_LABEL));
+        return orderTask.setLabel(checkNotNull(order), checkNotNull(label));
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder order,
                                                   final long newGTT) {
-        return orderTaskExecutor
-            .setGoodTillTime(checkNotNull(order), newGTT)
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_GTT));
+        return orderTask.setGoodTillTime(checkNotNull(order), newGTT);
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder order,
                                                      final double newRequestedAmount) {
-        return orderTaskExecutor
-            .setRequestedAmount(checkNotNull(order), newRequestedAmount)
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_AMOUNT));
+        return orderTask.setRequestedAmount(checkNotNull(order), newRequestedAmount);
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder order,
                                                final double newOpenPrice) {
-        return orderTaskExecutor
-            .setOpenPrice(checkNotNull(order), newOpenPrice)
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_PRICE));
+        return orderTask.setOpenPrice(checkNotNull(order), newOpenPrice);
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder order,
                                                    final double newSL) {
-        return orderTaskExecutor
-            .setStopLossPrice(checkNotNull(order), newSL)
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL));
+        return orderTask.setStopLossPrice(checkNotNull(order), newSL);
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder order,
                                                      final double newTP) {
-        return orderTaskExecutor
-            .setTakeProfitPrice(checkNotNull(order), newTP)
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_TP));
+        return orderTask.setTakeProfitPrice(checkNotNull(order), newTP);
     }
 
     public Observable<OrderEvent> cancelStopLossPrice(final IOrder order) {
-        return setStopLossPrice(checkNotNull(order), platformSettings.noSLPrice());
+        return orderTask.cancelStopLossPrice(checkNotNull(order));
     }
 
     public Observable<OrderEvent> cancelTakeProfitPrice(final IOrder order) {
-        return setTakeProfitPrice(checkNotNull(order), platformSettings.noTPPrice());
+        return orderTask.cancelTakeProfitPrice(checkNotNull(order));
     }
 
-    private Observable<OrderEvent> orderUtilObservable(final IOrder order,
-                                                       final OrderCallReason orderCallReason) {
-        return Observable
-            .defer(() -> orderUtilHandler.callObservable(order, orderCallReason));
+    public final Observable<OrderEvent> mergePosition(final Instrument instrument,
+                                                      final String mergeOrderLabel) {
+        checkNotNull(instrument);
+        checkNotNull(mergeOrderLabel);
+
+        return positionUtil.merge(instrument, mergeOrderLabel);
+    }
+
+    public final Observable<OrderEvent> closePosition(final Instrument instrument,
+                                                      final String mergeOrderLabel) {
+        checkNotNull(instrument);
+        checkNotNull(mergeOrderLabel);
+
+        return positionUtil.close(instrument, mergeOrderLabel);
+    }
+
+    public final Observable<OrderEvent> cancelStopLossPrice(final Instrument instrument) {
+        return positionUtil.cancelStopLossPrice(checkNotNull(instrument));
+    }
+
+    public final Observable<OrderEvent> cancelTakeProfitPrice(final Instrument instrument) {
+        return positionUtil.cancelTakeProfitPrice(checkNotNull(instrument));
+    }
+
+    public final PositionOrders positionOrders(final Instrument instrument) {
+        return positionUtil.positionOrders(checkNotNull(instrument));
     }
 }

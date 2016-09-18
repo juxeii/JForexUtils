@@ -13,7 +13,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
@@ -30,7 +30,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
     private PositionUtil positionUtil;
 
     @Mock
-    private OrderUtil orderUtilMock;
+    private OrderTask orderTaskMock;
     @Mock
     private PositionFactory positionFactoryMock;
     @Mock
@@ -42,7 +42,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        positionUtil = new PositionUtil(orderUtilMock, positionFactoryMock);
+        positionUtil = new PositionUtil(orderTaskMock, positionFactoryMock);
     }
 
     private void setUpMocks() {
@@ -74,19 +74,19 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
         @Test
         public void observableIsDeferredWithNoInteractionsToMocks() {
-            verifyZeroInteractions(orderUtilMock);
+            verifyZeroInteractions(orderTaskMock);
             verifyZeroInteractions(positionFactoryMock);
         }
 
         @Test
         public void completesImmediatelyWhenNoOrdersInPosition() {
-            when(orderUtilMock.cancelStopLossPrice(buyOrderEURUSD))
+            when(orderTaskMock.cancelStopLossPrice(buyOrderEURUSD))
                 .thenReturn(emptyObservable());
 
             testSubscriber = cancelSLObservable.test();
 
             testSubscriber.assertComplete();
-            verifyZeroInteractions(orderUtilMock);
+            verifyZeroInteractions(orderTaskMock);
         }
 
         public class TwoOrdersForCancelSL {
@@ -97,15 +97,15 @@ public class PositionUtilTest extends InstrumentUtilForTest {
             }
 
             private void verifyBothCancelCalls() {
-                verify(orderUtilMock).cancelStopLossPrice(buyOrderEURUSD);
-                verify(orderUtilMock).cancelStopLossPrice(sellOrderEURUSD);
+                verify(orderTaskMock).cancelStopLossPrice(buyOrderEURUSD);
+                verify(orderTaskMock).cancelStopLossPrice(sellOrderEURUSD);
             }
 
             private void setUpCancelSLObservables(final Observable<OrderEvent> buyObservable,
                                                   final Observable<OrderEvent> sellObservable) {
-                when(orderUtilMock.cancelStopLossPrice(buyOrderEURUSD))
+                when(orderTaskMock.cancelStopLossPrice(buyOrderEURUSD))
                     .thenReturn(buyObservable);
-                when(orderUtilMock.cancelStopLossPrice(sellOrderEURUSD))
+                when(orderTaskMock.cancelStopLossPrice(sellOrderEURUSD))
                     .thenReturn(sellObservable);
             }
 
@@ -141,19 +141,19 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
         @Test
         public void observableIsDeferredWithNoInteractionsToMocks() {
-            verifyZeroInteractions(orderUtilMock);
+            verifyZeroInteractions(orderTaskMock);
             verifyZeroInteractions(positionFactoryMock);
         }
 
         @Test
         public void completesImmediatelyWhenNoOrdersInPosition() {
-            when(orderUtilMock.cancelTakeProfitPrice(buyOrderEURUSD))
+            when(orderTaskMock.cancelTakeProfitPrice(buyOrderEURUSD))
                 .thenReturn(emptyObservable());
 
             testSubscriber = cancelTPObservable.test();
 
             testSubscriber.assertComplete();
-            verifyZeroInteractions(orderUtilMock);
+            verifyZeroInteractions(orderTaskMock);
         }
 
         public class TwoOrdersForCancelTP {
@@ -164,15 +164,15 @@ public class PositionUtilTest extends InstrumentUtilForTest {
             }
 
             private void verifyBothCancelCalls() {
-                verify(orderUtilMock).cancelTakeProfitPrice(buyOrderEURUSD);
-                verify(orderUtilMock).cancelTakeProfitPrice(sellOrderEURUSD);
+                verify(orderTaskMock).cancelTakeProfitPrice(buyOrderEURUSD);
+                verify(orderTaskMock).cancelTakeProfitPrice(sellOrderEURUSD);
             }
 
             private void setUpCancelTPObservables(final Observable<OrderEvent> buyObservable,
                                                   final Observable<OrderEvent> sellObservable) {
-                when(orderUtilMock.cancelTakeProfitPrice(buyOrderEURUSD))
+                when(orderTaskMock.cancelTakeProfitPrice(buyOrderEURUSD))
                     .thenReturn(buyObservable);
-                when(orderUtilMock.cancelTakeProfitPrice(sellOrderEURUSD))
+                when(orderTaskMock.cancelTakeProfitPrice(sellOrderEURUSD))
                     .thenReturn(sellObservable);
             }
 
@@ -208,13 +208,13 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
         private void setUpOrderUtilMergeObservables(final Collection<IOrder> toMergeOrders,
                                                     final Observable<OrderEvent> observable) {
-            when(orderUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders))
+            when(orderTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
                 .thenReturn(observable);
         }
 
         @Test
         public void observableIsDeferredWithNoInteractionsToMocks() {
-            verifyZeroInteractions(orderUtilMock);
+            verifyZeroInteractions(orderTaskMock);
             verifyZeroInteractions(positionFactoryMock);
         }
 
@@ -232,7 +232,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
                 prepareToMergeOrdersAndSubscribe(Sets.newHashSet());
 
                 testSubscriber.assertComplete();
-                verifyZeroInteractions(orderUtilMock);
+                verifyZeroInteractions(orderTaskMock);
             }
 
             @Test
@@ -240,7 +240,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
                 prepareToMergeOrdersAndSubscribe(Sets.newHashSet(buyOrderEURUSD));
 
                 testSubscriber.assertComplete();
-                verifyZeroInteractions(orderUtilMock);
+                verifyZeroInteractions(orderTaskMock);
             }
 
             @Test
@@ -249,7 +249,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
                 prepareToMergeOrdersAndSubscribe(toMergeOrders);
 
                 testSubscriber.assertComplete();
-                verify(orderUtilMock).mergeOrders(mergeOrderLabel, toMergeOrders);
+                verify(orderTaskMock).mergeOrders(mergeOrderLabel, toMergeOrders);
             }
         }
     }
@@ -265,7 +265,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
         @Test
         public void observableIsDeferredWithNoInteractionsToMocks() {
-            verifyZeroInteractions(orderUtilMock);
+            verifyZeroInteractions(orderTaskMock);
             verifyZeroInteractions(positionFactoryMock);
         }
 
@@ -287,19 +287,19 @@ public class PositionUtilTest extends InstrumentUtilForTest {
                 expectFilledOrders(Sets.newHashSet(buyOrderEURUSD));
                 expectFilledOrOpenedOrders(Sets.newHashSet(buyOrderEURUSD));
 
-                when(orderUtilMock.close(buyOrderEURUSD)).thenReturn(emptyObservable());
+                when(orderTaskMock.close(buyOrderEURUSD)).thenReturn(emptyObservable());
 
                 testSubscriber = closeObservable.test();
             }
 
             @Test
             public void noMergeCall() {
-                verify(orderUtilMock, never()).mergeOrders(any(), any());
+                verify(orderTaskMock, never()).mergeOrders(any(), any());
             }
 
             @Test
             public void oneCloseCall() {
-                verify(orderUtilMock).close(buyOrderEURUSD);
+                verify(orderTaskMock).close(buyOrderEURUSD);
             }
 
             @Test
@@ -315,19 +315,19 @@ public class PositionUtilTest extends InstrumentUtilForTest {
                 expectFilledOrders(Sets.newHashSet());
                 expectFilledOrOpenedOrders(Sets.newHashSet(buyOrderEURUSD));
 
-                when(orderUtilMock.close(buyOrderEURUSD)).thenReturn(emptyObservable());
+                when(orderTaskMock.close(buyOrderEURUSD)).thenReturn(emptyObservable());
 
                 testSubscriber = closeObservable.test();
             }
 
             @Test
             public void noMergeCall() {
-                verify(orderUtilMock, never()).mergeOrders(any(), any());
+                verify(orderTaskMock, never()).mergeOrders(any(), any());
             }
 
             @Test
             public void oneCloseCall() {
-                verify(orderUtilMock).close(buyOrderEURUSD);
+                verify(orderTaskMock).close(buyOrderEURUSD);
             }
 
             @Test
@@ -347,19 +347,19 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
             @Test
             public void mergeIsCalled() {
-                when(orderUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders))
+                when(orderTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
                     .thenReturn(emptyObservable());
 
                 testSubscriber = closeObservable.test();
 
-                verify(orderUtilMock).mergeOrders(mergeOrderLabel, toMergeOrders);
+                verify(orderTaskMock).mergeOrders(mergeOrderLabel, toMergeOrders);
             }
 
             public class MergeNeverCompletes {
 
                 @Before
                 public void setUp() {
-                    when(orderUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders))
+                    when(orderTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
                         .thenReturn(neverObservable());
 
                     testSubscriber = closeObservable.test();
@@ -375,7 +375,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
                 @Before
                 public void setUp() {
-                    when(orderUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders))
+                    when(orderTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
                         .thenReturn(errorObservable());
 
                     expectFilledOrOpenedOrders(toMergeOrders);
@@ -385,7 +385,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
                 @Test
                 public void noCloseCalls() {
-                    verify(orderUtilMock, never()).close(any());
+                    verify(orderTaskMock, never()).close(any());
                 }
 
                 @Test
@@ -398,7 +398,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
                 @Before
                 public void setUp() {
-                    when(orderUtilMock.mergeOrders(mergeOrderLabel, toMergeOrders))
+                    when(orderTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
                         .thenReturn(emptyObservable());
                 }
 
@@ -418,7 +418,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
                     @Test
                     public void noCloseCall() {
-                        verify(orderUtilMock, never()).close(any());
+                        verify(orderTaskMock, never()).close(any());
                     }
                 }
 
@@ -435,8 +435,8 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
                         @Before
                         public void setUp() {
-                            when(orderUtilMock.close(buyOrderEURUSD)).thenReturn(neverObservable());
-                            when(orderUtilMock.close(sellOrderEURUSD)).thenReturn(neverObservable());
+                            when(orderTaskMock.close(buyOrderEURUSD)).thenReturn(neverObservable());
+                            when(orderTaskMock.close(sellOrderEURUSD)).thenReturn(neverObservable());
 
                             testSubscriber = closeObservable.test();
                         }
@@ -448,8 +448,8 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
                         @Test
                         public void closeCallsAreNotConcatenated() {
-                            verify(orderUtilMock).close(buyOrderEURUSD);
-                            verify(orderUtilMock).close(sellOrderEURUSD);
+                            verify(orderTaskMock).close(buyOrderEURUSD);
+                            verify(orderTaskMock).close(sellOrderEURUSD);
                         }
                     }
 
@@ -457,7 +457,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
                         @Before
                         public void setUp() {
-                            when(orderUtilMock.close(any())).thenReturn(emptyObservable());
+                            when(orderTaskMock.close(any())).thenReturn(emptyObservable());
 
                             testSubscriber = closeObservable.test();
                         }
@@ -469,8 +469,8 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
                         @Test
                         public void twoCloseCalls() {
-                            verify(orderUtilMock).close(buyOrderEURUSD);
-                            verify(orderUtilMock).close(sellOrderEURUSD);
+                            verify(orderTaskMock).close(buyOrderEURUSD);
+                            verify(orderTaskMock).close(sellOrderEURUSD);
                         }
                     }
                 }

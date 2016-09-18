@@ -1,5 +1,8 @@
 package com.jforex.programming.order.test;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import java.util.Collection;
 
 import org.junit.Before;
@@ -9,18 +12,14 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.OrderTaskExecutor;
+import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.OrderUtilHandler;
-import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {
@@ -28,451 +27,121 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderUtil orderUtil;
 
     @Mock
-    private OrderTaskExecutor orderTaskExecutorMock;
+    private OrderTask orderTaskMock;
     @Mock
-    private OrderUtilHandler orderUtilHandlerMock;
-    @Mock
-    private Position positionMock;
+    private PositionUtil positionUtilMock;
     private final IOrder orderForTest = buyOrderEURUSD;
-    private TestObserver<OrderEvent> testObserver;
+    private Observable<OrderEvent> orderEventObservable;
 
     @Before
     public void setUp() {
-        orderUtil = new OrderUtil(orderTaskExecutorMock, orderUtilHandlerMock);
+        orderUtil = new OrderUtil(orderTaskMock, positionUtilMock);
     }
 
-    private void setUpOrderUtilHandlerMock(final Observable<OrderEvent> observable,
-                                           final OrderCallReason callReason) {
-        when(orderUtilHandlerMock.callObservable(orderForTest, callReason))
-            .thenReturn(observable);
+    @Test
+    public void submitOrderDelegatesToOrderTask() {
+        when(orderTaskMock.submitOrder(buyParamsEURUSD))
+            .thenReturn(orderEventObservable);
+
+        final Observable<OrderEvent> actualObservable = orderUtil.submitOrder(buyParamsEURUSD);
+
+        verify(orderTaskMock).submitOrder(buyParamsEURUSD);
+        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
-    private void verifyOrderUtilHandlerMockCall(final OrderCallReason callReason) {
-        verify(orderUtilHandlerMock).callObservable(orderForTest, callReason);
+    @Test
+    public void mergeOrdersDelegatesToOrderTask() {
+        final String mergeOrderLabel = "mergeOrderLabel";
+        final Collection<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+        when(orderTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
+            .thenReturn(orderEventObservable);
+
+        final Observable<OrderEvent> actualObservable = orderUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
+
+        verify(orderTaskMock).mergeOrders(mergeOrderLabel, toMergeOrders);
+        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
-    public class SubmitOrderSetup {
+    @Test
+    public void closeDelegatesToOrderTask() {
+        when(orderTaskMock.close(orderForTest))
+            .thenReturn(orderEventObservable);
 
-        private Observable<OrderEvent> observable;
+        final Observable<OrderEvent> actualObservable = orderUtil.close(orderForTest);
 
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.submitOrder(buyParamsEURUSD)).thenReturn(Single.just(orderForTest));
-
-            observable = orderUtil.submitOrder(buyParamsEURUSD);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.SUBMIT);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.SUBMIT);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
+        verify(orderTaskMock).close(orderForTest);
+        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
-    public class MergeOrdersSetup {
+    @Test
+    public void setLabelDelegatesToOrderTask() {
+        final String newLabel = "newLabel";
+        when(orderTaskMock.setLabel(orderForTest, newLabel))
+            .thenReturn(orderEventObservable);
 
-        private Observable<OrderEvent> observable;
-        private final String mergeOrderLabel = "mergeOrderLabel";
-        private final Collection<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+        final Observable<OrderEvent> actualObservable = orderUtil.setLabel(orderForTest, newLabel);
 
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.mergeOrders(mergeOrderLabel, toMergeOrders))
-                .thenReturn(Single.just(orderForTest));
-
-            observable = orderUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.MERGE);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.MERGE);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
+        verify(orderTaskMock).setLabel(orderForTest, newLabel);
+        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
-    public class CloseSetup {
+    @Test
+    public void setGTTDelegatesToOrderTask() {
+        final long newGTT = 1L;
+        when(orderTaskMock.setGoodTillTime(orderForTest, newGTT))
+            .thenReturn(orderEventObservable);
 
-        private Observable<OrderEvent> observable;
+        final Observable<OrderEvent> actualObservable = orderUtil.setGoodTillTime(orderForTest, newGTT);
 
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.close(orderForTest))
-                .thenReturn(emptyCompletable());
-
-            observable = orderUtil.close(orderForTest);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CLOSE);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.CLOSE);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
+        verify(orderTaskMock).setGoodTillTime(orderForTest, newGTT);
+        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
-    public class SetLabelSetup {
+    @Test
+    public void setRequestedAmountDelegatesToOrderTask() {
+        final double newRequestedAmount = 0.12;
+        when(orderTaskMock.setRequestedAmount(orderForTest, newRequestedAmount))
+            .thenReturn(orderEventObservable);
 
-        private Observable<OrderEvent> observable;
-        private final String newLabel = "newLabel";
+        final Observable<OrderEvent> actualObservable = orderUtil.setRequestedAmount(orderForTest, newRequestedAmount);
 
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.setLabel(orderForTest, newLabel))
-                .thenReturn(emptyCompletable());
-
-            observable = orderUtil.setLabel(orderForTest, newLabel);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_LABEL);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_LABEL);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
+        verify(orderTaskMock).setRequestedAmount(orderForTest, newRequestedAmount);
+        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
-    public class SetGTTSetup {
+    @Test
+    public void setOpenPriceDelegatesToOrderTask() {
+        final double newOpenPrice = 1.1234;
+        when(orderTaskMock.setOpenPrice(orderForTest, newOpenPrice))
+            .thenReturn(orderEventObservable);
 
-        private Observable<OrderEvent> observable;
-        private final long newGTT = 1L;
+        final Observable<OrderEvent> actualObservable = orderUtil.setOpenPrice(orderForTest, newOpenPrice);
 
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.setGoodTillTime(orderForTest, newGTT))
-                .thenReturn(emptyCompletable());
-
-            observable = orderUtil.setGoodTillTime(orderForTest, newGTT);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_GTT);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_GTT);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
+        verify(orderTaskMock).setOpenPrice(orderForTest, newOpenPrice);
+        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
-    public class SetRequestedAmountSetup {
+    @Test
+    public void setSLDelegatesToOrderTask() {
+        final double newSL = 1.1234;
+        when(orderTaskMock.setStopLossPrice(orderForTest, newSL))
+            .thenReturn(orderEventObservable);
 
-        private Observable<OrderEvent> observable;
-        private final double newRequestedAmount = 0.12;
+        final Observable<OrderEvent> actualObservable = orderUtil.setStopLossPrice(orderForTest, newSL);
 
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.setRequestedAmount(orderForTest, newRequestedAmount))
-                .thenReturn(emptyCompletable());
-
-            observable = orderUtil.setRequestedAmount(orderForTest, newRequestedAmount);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_AMOUNT);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_AMOUNT);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
+        verify(orderTaskMock).setStopLossPrice(orderForTest, newSL);
+        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
-    public class SetOpenPriceSetup {
+    @Test
+    public void setTPDelegatesToOrderTask() {
+        final double newTP = 1.1234;
+        when(orderTaskMock.setTakeProfitPrice(orderForTest, newTP))
+            .thenReturn(orderEventObservable);
 
-        private Observable<OrderEvent> observable;
-        private final double newOpenPrice = 1.1234;
+        final Observable<OrderEvent> actualObservable = orderUtil.setTakeProfitPrice(orderForTest, newTP);
 
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.setOpenPrice(orderForTest, newOpenPrice))
-                .thenReturn(emptyCompletable());
-
-            observable = orderUtil.setOpenPrice(orderForTest, newOpenPrice);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_PRICE);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_PRICE);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
-    }
-
-    public class SetSLSetup {
-
-        private Observable<OrderEvent> observable;
-        private final double newSL = 1.1234;
-
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.setStopLossPrice(orderForTest, newSL))
-                .thenReturn(emptyCompletable());
-
-            observable = orderUtil.setStopLossPrice(orderForTest, newSL);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_SL);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_SL);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
-    }
-
-    public class SetTPSetup {
-
-        private Observable<OrderEvent> observable;
-        private final double newTP = 1.1234;
-
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.setTakeProfitPrice(orderForTest, newTP))
-                .thenReturn(emptyCompletable());
-
-            observable = orderUtil.setTakeProfitPrice(orderForTest, newTP);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_TP);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_TP);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
-    }
-
-    public class CancelSLSetup {
-
-        private Observable<OrderEvent> observable;
-
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.setStopLossPrice(orderForTest, noSL))
-                .thenReturn(emptyCompletable());
-
-            observable = orderUtil.cancelStopLossPrice(orderForTest);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_SL);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_SL);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
-    }
-
-    public class CancelTPSetup {
-
-        private Observable<OrderEvent> observable;
-
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.setTakeProfitPrice(orderForTest, noTP))
-                .thenReturn(emptyCompletable());
-
-            observable = orderUtil.cancelTakeProfitPrice(orderForTest);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_TP);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_TP);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
+        verify(orderTaskMock).setTakeProfitPrice(orderForTest, newTP);
+        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 }
