@@ -63,7 +63,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHanlder() {
+        public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -82,7 +82,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void submitCompleted() {
+            public void subscriberCompletes() {
                 testObserver.assertComplete();
             }
         }
@@ -103,7 +103,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHanlder() {
+        public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -122,7 +122,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void submitCompleted() {
+            public void subscriberCompletes() {
                 testObserver.assertComplete();
             }
         }
@@ -141,7 +141,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHanlder() {
+        public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -160,7 +160,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void submitCompleted() {
+            public void subscriberCompletes() {
                 testObserver.assertComplete();
             }
         }
@@ -180,7 +180,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHanlder() {
+        public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -199,7 +199,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void submitCompleted() {
+            public void subscriberCompletes() {
                 testObserver.assertComplete();
             }
         }
@@ -219,7 +219,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHanlder() {
+        public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -238,7 +238,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void submitCompleted() {
+            public void subscriberCompletes() {
                 testObserver.assertComplete();
             }
         }
@@ -258,7 +258,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHanlder() {
+        public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -277,7 +277,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void submitCompleted() {
+            public void subscriberCompletes() {
                 testObserver.assertComplete();
             }
         }
@@ -297,7 +297,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHanlder() {
+        public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -316,7 +316,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void submitCompleted() {
+            public void subscriberCompletes() {
                 testObserver.assertComplete();
             }
         }
@@ -336,7 +336,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHanlder() {
+        public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -355,7 +355,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void submitCompleted() {
+            public void subscriberCompletes() {
                 testObserver.assertComplete();
             }
         }
@@ -375,7 +375,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHanlder() {
+        public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -394,7 +394,83 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
 
             @Test
-            public void submitCompleted() {
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class CancelSLSetup {
+
+        private Observable<OrderEvent> observable;
+
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.setStopLossPrice(orderForTest, noSL))
+                .thenReturn(emptyCompletable());
+
+            observable = orderUtil.cancelStopLossPrice(orderForTest);
+        }
+
+        @Test
+        public void noCallToOrderUtilHandler() {
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_SL);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_SL);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class CancelTPSetup {
+
+        private Observable<OrderEvent> observable;
+
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.setTakeProfitPrice(orderForTest, noTP))
+                .thenReturn(emptyCompletable());
+
+            observable = orderUtil.cancelTakeProfitPrice(orderForTest);
+        }
+
+        @Test
+        public void noCallToOrderUtilHandler() {
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_TP);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_TP);
+            }
+
+            @Test
+            public void subscriberCompletes() {
                 testObserver.assertComplete();
             }
         }

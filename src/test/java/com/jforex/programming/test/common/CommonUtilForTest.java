@@ -7,7 +7,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
-import org.aeonbits.owner.ConfigFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.mockito.BDDMockito;
@@ -97,7 +96,7 @@ public class CommonUtilForTest extends BDDMockito {
     protected final IOrder sellOrderAUDUSD = orderUtilForTest.sellOrderAUDUSD();
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
     protected static final PlatformSettings platformSettings = JForexUtil.platformSettings;
-    protected static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
+    protected static final UserSettings userSettings = JForexUtil.userSettings;
     protected static final double noSL = platformSettings.noSLPrice();
     protected static final double noTP = platformSettings.noTPPrice();
 
