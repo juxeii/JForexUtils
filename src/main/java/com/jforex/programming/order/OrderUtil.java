@@ -10,7 +10,7 @@ import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
 
-public final class OrderUtil {
+public class OrderUtil {
 
     private final OrderTaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
@@ -21,7 +21,7 @@ public final class OrderUtil {
         this.orderUtilHandler = orderUtilHandler;
     }
 
-    public final Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
+    public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
         return orderTaskExecutor
             .submitOrder(checkNotNull(orderParams))
             .toObservable()

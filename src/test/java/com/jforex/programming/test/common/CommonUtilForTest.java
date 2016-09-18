@@ -175,16 +175,8 @@ public class CommonUtilForTest extends BDDMockito {
         return Completable.complete();
     }
 
-    protected final Completable neverCompletable() {
-        return Completable.never();
-    }
-
     protected final Observable<OrderEvent> emptyObservable() {
         return Observable.empty();
-    }
-
-    protected final Observable<OrderEvent> neverObservable() {
-        return Observable.never();
     }
 
     protected final Observable<OrderEvent> eventObservable(final OrderEvent orderEvent) {

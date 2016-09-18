@@ -46,9 +46,9 @@ public class JForexUtil {
     private IDataService dataService;
     private IEngineUtil engineUtil;
 
-    private TickQuoteProvider tickQuoteHandler;
+    private TickQuoteProvider tickQuoteProvider;
     private TickQuoteRepository tickQuoteRepository;
-    private BarQuoteProvider barQuoteHandler;
+    private BarQuoteProvider barQuoteProvider;
     private BarQuoteRepository barQuoteRepository;
 
     private PositionFactory positionFactory;
@@ -78,7 +78,7 @@ public class JForexUtil {
         initQuoteProvider();
         initOrderRelated();
 
-        calculationUtil = new CalculationUtil(tickQuoteHandler);
+        calculationUtil = new CalculationUtil(tickQuoteProvider);
     }
 
     private void initContextRelated() {
@@ -98,11 +98,11 @@ public class JForexUtil {
         tickQuoteRepository = new TickQuoteRepository(tickQuoteObservable.observable(),
                                                       historyUtil,
                                                       context.getSubscribedInstruments());
-        tickQuoteHandler = new TickQuoteProvider(tickQuoteObservable.observable(),
+        tickQuoteProvider = new TickQuoteProvider(tickQuoteObservable.observable(),
                                                  tickQuoteRepository);
         barQuoteRepository = new BarQuoteRepository(barQuoteObservable.observable(),
                                                     historyUtil);
-        barQuoteHandler = new BarQuoteProvider(this,
+        barQuoteProvider = new BarQuoteProvider(this,
                                                barQuoteObservable.observable(),
                                                barQuoteRepository);
     }
@@ -114,7 +114,7 @@ public class JForexUtil {
         engineUtil = new IEngineUtil(engine);
         orderTaskExecutor = new OrderTaskExecutor(taskExecutor, engineUtil);
         orderUtil = new OrderUtil(orderTaskExecutor, orderUtilHandler);
-        positionUtil = new PositionUtil(positionFactory);
+        positionUtil = new PositionUtil(orderUtil, positionFactory);
     }
 
     public IContext context() {
@@ -138,17 +138,17 @@ public class JForexUtil {
     }
 
     public TickQuoteProvider tickQuoteProvider() {
-        return tickQuoteHandler;
+        return tickQuoteProvider;
     }
 
     public BarQuoteProvider barQuoteProvider() {
-        return barQuoteHandler;
+        return barQuoteProvider;
     }
 
     public InstrumentUtil instrumentUtil(final Instrument instrument) {
         return new InstrumentUtil(checkNotNull(instrument),
-                                  tickQuoteHandler,
-                                  barQuoteHandler);
+                                  tickQuoteProvider,
+                                  barQuoteProvider);
     }
 
     public CalculationUtil calculationUtil() {

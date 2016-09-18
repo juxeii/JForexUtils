@@ -32,10 +32,10 @@ public class OrderTaskRetry {
     public static Function<Observable<OrderEvent>, Observable<OrderEvent>> onRejectRetryWith(final int noOfRetries,
                                                                                              final long delayInMillis) {
         final OrderTaskRetry orderTaskRetry = new OrderTaskRetry(noOfRetries, delayInMillis);
-        return orderTaskRetry::trans;
+        return orderTaskRetry::retryTransform;
     }
 
-    private final Observable<OrderEvent> trans(final Observable<OrderEvent> sourceObservable) {
+    private final Observable<OrderEvent> retryTransform(final Observable<OrderEvent> sourceObservable) {
         return sourceObservable
             .flatMap(this::rejectAsError)
             .retryWhen(this::retryOnReject);
