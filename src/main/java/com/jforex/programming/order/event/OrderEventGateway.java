@@ -13,13 +13,13 @@ import io.reactivex.Observable;
 public class OrderEventGateway {
 
     private final JFHotObservable<OrderEvent> orderEventPublisher = new JFHotObservable<>();
-    private final OrderEventFactory messageToOrderEvent;
+    private final OrderEventFactory orderEventFactory;
 
     private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);
 
     public OrderEventGateway(final Observable<IMessage> messageObservable,
-                             final OrderEventFactory orderEventMapper) {
-        this.messageToOrderEvent = orderEventMapper;
+                             final OrderEventFactory orderEventFactory) {
+        this.orderEventFactory = orderEventFactory;
 
         messageObservable
             .filter(message -> message.getOrder() != null)
@@ -31,11 +31,11 @@ public class OrderEventGateway {
     }
 
     public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
-        messageToOrderEvent.registerOrderCallRequest(orderCallRequest);
+        orderEventFactory.registerOrderCallRequest(orderCallRequest);
     }
 
     private void onOrderMessage(final IMessage message) {
-        final OrderEvent orderEvent = messageToOrderEvent.fromMessage(message);
+        final OrderEvent orderEvent = orderEventFactory.fromMessage(message);
         final IOrder order = orderEvent.order();
         logger.debug("Received order event with label " + order.getLabel()
                 + " for " + order.getInstrument() + " " + orderEvent);
