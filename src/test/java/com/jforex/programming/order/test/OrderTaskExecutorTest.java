@@ -1,6 +1,5 @@
 package com.jforex.programming.order.test;
 
-import static com.jforex.programming.order.OrderStaticUtil.runnableToCallable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -52,9 +51,9 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
             .thenReturn(single);
     }
 
-    private void setUpTaskExecutorCompletableSingle(final Callable<Void> callable) {
+    private void setUpTaskExecutorCompletableSingle() {
         when(taskExecutorMock.onStrategyThread(callableCaptor.capture()))
-            .thenReturn(Single.fromCallable(callable));
+            .thenReturn(Single.never());
     }
 
     public class SubmitOrderSetup {
@@ -131,11 +130,9 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
     public class CloseSetup {
 
-        private final Callable<Void> closeCallable = runnableToCallable(() -> orderForTest.close());
-
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle(closeCallable);
+            setUpTaskExecutorCompletableSingle();
 
             orderTaskExecutor.close(orderForTest);
         }
@@ -157,11 +154,10 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
     public class SetLabelSetup {
 
         private final String newLabel = "newLabel";
-        private final Callable<Void> setLabelCallable = runnableToCallable(() -> orderForTest.setLabel(newLabel));
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle(setLabelCallable);
+            setUpTaskExecutorCompletableSingle();
 
             orderTaskExecutor.setLabel(orderForTest, newLabel);
         }
@@ -183,12 +179,10 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
     public class SetGTTSetup {
 
         private final long newGTT = 1L;
-        private final Callable<Void> setGoodTillTimeCallable =
-                runnableToCallable(() -> orderForTest.setGoodTillTime(newGTT));
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle(setGoodTillTimeCallable);
+            setUpTaskExecutorCompletableSingle();
 
             orderTaskExecutor.setGoodTillTime(orderForTest, newGTT);
         }
@@ -210,12 +204,10 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
     public class SetRequestedAmountSetup {
 
         private final double newRequestedAmount = 0.12;
-        private final Callable<Void> setRequestedAmountCallable =
-                runnableToCallable(() -> orderForTest.setRequestedAmount(newRequestedAmount));
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle(setRequestedAmountCallable);
+            setUpTaskExecutorCompletableSingle();
 
             orderTaskExecutor.setRequestedAmount(orderForTest, newRequestedAmount);
         }
@@ -237,12 +229,10 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
     public class SetOpenPriceSetup {
 
         private final double newOpenPrice = 1.1234;
-        private final Callable<Void> setOpenPriceCallable =
-                runnableToCallable(() -> orderForTest.setOpenPrice(newOpenPrice));
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle(setOpenPriceCallable);
+            setUpTaskExecutorCompletableSingle();
 
             orderTaskExecutor.setOpenPrice(orderForTest, newOpenPrice);
         }
@@ -264,12 +254,10 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
     public class SetStopLossSetup {
 
         private final double newSL = 1.1234;
-        private final Callable<Void> setStopLossCallable =
-                runnableToCallable(() -> orderForTest.setStopLossPrice(newSL));
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle(setStopLossCallable);
+            setUpTaskExecutorCompletableSingle();
 
             orderTaskExecutor.setStopLossPrice(orderForTest, newSL);
         }
@@ -291,12 +279,10 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
     public class SetTakeProfitSetup {
 
         private final double newTP = 1.1234;
-        private final Callable<Void> setTakeProfitCallable =
-                runnableToCallable(() -> orderForTest.setTakeProfitPrice(newTP));
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle(setTakeProfitCallable);
+            setUpTaskExecutorCompletableSingle();
 
             orderTaskExecutor.setTakeProfitPrice(orderForTest, newTP);
         }
