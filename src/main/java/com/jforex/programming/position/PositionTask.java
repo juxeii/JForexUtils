@@ -1,7 +1,5 @@
 package com.jforex.programming.position;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Set;
 
 import com.dukascopy.api.IOrder;
@@ -24,14 +22,11 @@ public class PositionTask {
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
-        return positionFactory.forInstrument(checkNotNull(instrument));
+        return positionFactory.forInstrument(instrument);
     }
 
     public Observable<OrderEvent> merge(final Instrument instrument,
                                         final String mergeOrderLabel) {
-        checkNotNull(instrument);
-        checkNotNull(mergeOrderLabel);
-
         return Observable.defer(() -> {
             final Set<IOrder> toMergeOrders = filledOrders(instrument);
             return toMergeOrders.size() < 2
@@ -42,20 +37,17 @@ public class PositionTask {
 
     public Observable<OrderEvent> close(final Instrument instrument,
                                         final String mergeOrderLabel) {
-        checkNotNull(instrument);
-        checkNotNull(mergeOrderLabel);
-
         final Observable<OrderEvent> mergeObservable = merge(instrument, mergeOrderLabel);
         final Observable<OrderEvent> closeObservable = batch(instrument, orderTask::close);
         return mergeObservable.concatWith(closeObservable);
     }
 
     public Observable<OrderEvent> cancelStopLossPrice(final Instrument instrument) {
-        return batch(checkNotNull(instrument), orderTask::cancelStopLossPrice);
+        return batch(instrument, orderTask::cancelStopLossPrice);
     }
 
     public Observable<OrderEvent> cancelTakeProfitPrice(final Instrument instrument) {
-        return batch(checkNotNull(instrument), orderTask::cancelTakeProfitPrice);
+        return batch(instrument, orderTask::cancelTakeProfitPrice);
     }
 
     private final Observable<OrderEvent> batch(final Instrument instrument,
