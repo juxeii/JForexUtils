@@ -12,23 +12,23 @@ import com.jforex.programming.order.event.OrderEvent;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 
-public class PositionUtil {
+public class PositionTask {
 
     private final OrderTask orderTask;
     private final PositionFactory positionFactory;
 
-    public PositionUtil(final OrderTask orderTask,
+    public PositionTask(final OrderTask orderTask,
                         final PositionFactory positionFactory) {
         this.orderTask = orderTask;
         this.positionFactory = positionFactory;
     }
 
-    public final PositionOrders positionOrders(final Instrument instrument) {
+    public PositionOrders positionOrders(final Instrument instrument) {
         return positionFactory.forInstrument(checkNotNull(instrument));
     }
 
-    public final Observable<OrderEvent> merge(final Instrument instrument,
-                                              final String mergeOrderLabel) {
+    public Observable<OrderEvent> merge(final Instrument instrument,
+                                        final String mergeOrderLabel) {
         checkNotNull(instrument);
         checkNotNull(mergeOrderLabel);
 
@@ -40,8 +40,8 @@ public class PositionUtil {
         });
     }
 
-    public final Observable<OrderEvent> close(final Instrument instrument,
-                                              final String mergeOrderLabel) {
+    public Observable<OrderEvent> close(final Instrument instrument,
+                                        final String mergeOrderLabel) {
         checkNotNull(instrument);
         checkNotNull(mergeOrderLabel);
 
@@ -50,11 +50,11 @@ public class PositionUtil {
         return mergeObservable.concatWith(closeObservable);
     }
 
-    public final Observable<OrderEvent> cancelStopLossPrice(final Instrument instrument) {
+    public Observable<OrderEvent> cancelStopLossPrice(final Instrument instrument) {
         return batch(checkNotNull(instrument), orderTask::cancelStopLossPrice);
     }
 
-    public final Observable<OrderEvent> cancelTakeProfitPrice(final Instrument instrument) {
+    public Observable<OrderEvent> cancelTakeProfitPrice(final Instrument instrument) {
         return batch(checkNotNull(instrument), orderTask::cancelTakeProfitPrice);
     }
 

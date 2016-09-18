@@ -17,7 +17,7 @@ import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.PositionUtil;
+import com.jforex.programming.position.PositionTask;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -25,9 +25,9 @@ import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class PositionUtilTest extends InstrumentUtilForTest {
+public class PositionTaskTest extends InstrumentUtilForTest {
 
-    private PositionUtil positionUtil;
+    private PositionTask positionTask;
 
     @Mock
     private OrderTask orderTaskMock;
@@ -42,7 +42,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        positionUtil = new PositionUtil(orderTaskMock, positionFactoryMock);
+        positionTask = new PositionTask(orderTaskMock, positionFactoryMock);
     }
 
     private void setUpMocks() {
@@ -60,7 +60,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void positionOrdersIsCorrect() {
-        assertThat(positionUtil.positionOrders(instrumentEURUSD), equalTo(positionMock));
+        assertThat(positionTask.positionOrders(instrumentEURUSD), equalTo(positionMock));
     }
 
     public class CancelSLTests {
@@ -69,7 +69,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            cancelSLObservable = positionUtil.cancelStopLossPrice(instrumentEURUSD);
+            cancelSLObservable = positionTask.cancelStopLossPrice(instrumentEURUSD);
         }
 
         @Test
@@ -136,7 +136,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            cancelTPObservable = positionUtil.cancelTakeProfitPrice(instrumentEURUSD);
+            cancelTPObservable = positionTask.cancelTakeProfitPrice(instrumentEURUSD);
         }
 
         @Test
@@ -203,7 +203,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            mergeObservable = positionUtil.merge(instrumentEURUSD, mergeOrderLabel);
+            mergeObservable = positionTask.merge(instrumentEURUSD, mergeOrderLabel);
         }
 
         private void setUpOrderUtilMergeObservables(final Collection<IOrder> toMergeOrders,
@@ -260,7 +260,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            closeObservable = positionUtil.close(instrumentEURUSD, mergeOrderLabel);
+            closeObservable = positionTask.close(instrumentEURUSD, mergeOrderLabel);
         }
 
         @Test

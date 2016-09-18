@@ -8,17 +8,17 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
-import com.jforex.programming.position.PositionUtil;
+import com.jforex.programming.position.PositionTask;
 
 import io.reactivex.Observable;
 
 public class OrderUtil {
 
     private final OrderTask orderTask;
-    private final PositionUtil positionUtil;
+    private final PositionTask positionUtil;
 
     public OrderUtil(final OrderTask orderTaskExecutor,
-                     final PositionUtil positionUtil) {
+                     final PositionTask positionUtil) {
         this.orderTask = orderTaskExecutor;
         this.positionUtil = positionUtil;
     }
@@ -90,11 +90,11 @@ public class OrderUtil {
         return positionUtil.close(instrument, mergeOrderLabel);
     }
 
-    public final Observable<OrderEvent> cancelStopLossPrice(final Instrument instrument) {
+    public final Observable<OrderEvent> cancelStopLossPriceOnPosition(final Instrument instrument) {
         return positionUtil.cancelStopLossPrice(checkNotNull(instrument));
     }
 
-    public final Observable<OrderEvent> cancelTakeProfitPrice(final Instrument instrument) {
+    public final Observable<OrderEvent> cancelTakeProfitPriceOnPosition(final Instrument instrument) {
         return positionUtil.cancelTakeProfitPrice(checkNotNull(instrument));
     }
 

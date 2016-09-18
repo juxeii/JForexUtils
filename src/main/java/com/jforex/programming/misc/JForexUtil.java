@@ -26,7 +26,7 @@ import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.PositionUtil;
+import com.jforex.programming.position.PositionTask;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -53,7 +53,7 @@ public class JForexUtil {
     private BarQuoteRepository barQuoteRepository;
 
     private PositionFactory positionFactory;
-    private PositionUtil positionUtil;
+    private PositionTask positionTask;
     private OrderEventGateway orderEventGateway;
     private TaskExecutor taskExecutor;
     private OrderTaskExecutor orderTaskExecutor;
@@ -116,8 +116,8 @@ public class JForexUtil {
         engineUtil = new IEngineUtil(engine);
         orderTaskExecutor = new OrderTaskExecutor(taskExecutor, engineUtil);
         orderTask = new OrderTask(orderTaskExecutor, orderUtilHandler);
-        positionUtil = new PositionUtil(orderTask, positionFactory);
-        orderUtil = new OrderUtil(orderTask, positionUtil);
+        positionTask = new PositionTask(orderTask, positionFactory);
+        orderUtil = new OrderUtil(orderTask, positionTask);
     }
 
     public IContext context() {
@@ -162,8 +162,8 @@ public class JForexUtil {
         return orderUtil;
     }
 
-    public PositionUtil positionUtil() {
-        return positionUtil;
+    public PositionTask positionTask() {
+        return positionTask;
     }
 
     public void onStop() {
