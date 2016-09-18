@@ -2,6 +2,7 @@ package com.jforex.programming.position;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
 import java.util.Set;
 
 import com.dukascopy.api.IOrder;
@@ -29,11 +30,35 @@ public class PositionUtil {
     public final Observable<OrderEvent> merge(final Instrument instrument,
                                               final String mergeOrderLabel) {
         return Observable.defer(() -> {
-            final Position position = positionFactory.forInstrument(instrument);
-            final Set<IOrder> toMergeOrders = position.filled();
+            final Set<IOrder> toMergeOrders = filledOrders(checkNotNull(instrument));
             return toMergeOrders.size() < 2
                     ? Observable.empty()
                     : orderUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
         });
+    }
+
+    public final Observable<OrderEvent> close(final Instrument instrument,
+                                              final String mergeOrderLabel) {
+        return Observable.defer(() -> {
+            final Observable<OrderEvent> mergeObservable = merge(instrument, mergeOrderLabel);
+            final Observable<OrderEvent> closeObservable =
+                    Observable.defer(() -> closeBatch(filledOrOpenedOrders(instrument)));
+
+            return mergeObservable.concatWith(closeObservable);
+        });
+    }
+
+    private final Observable<OrderEvent> closeBatch(final Collection<IOrder> toCloseOrders) {
+        return Observable
+            .fromIterable(toCloseOrders)
+            .flatMap(orderUtil::close);
+    }
+
+    private final Set<IOrder> filledOrders(final Instrument instrument) {
+        return positionOrders(instrument).filled();
+    }
+
+    private final Set<IOrder> filledOrOpenedOrders(final Instrument instrument) {
+        return positionOrders(instrument).filledOrOpened();
     }
 }
