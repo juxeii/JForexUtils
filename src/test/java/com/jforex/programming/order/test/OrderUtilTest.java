@@ -15,8 +15,6 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.position.CancelSLPositionCommand;
-import com.jforex.programming.position.CancelTPPositionCommand;
 import com.jforex.programming.position.ClosePositionCommand;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionTask;
@@ -172,36 +170,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final Observable<OrderEvent> actualObservable = orderUtil.closePosition(command);
 
         verify(positionTaskMock).close(command);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void cancelStopLossPriceOnPositionDelegatesToPositionTask() {
-        final CancelSLPositionCommand command = CancelSLPositionCommand
-            .with(instrumentEURUSD)
-            .build();
-
-        when(positionTaskMock.cancelStopLossPrice(command))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.cancelStopLossPriceOnPosition(command);
-
-        verify(positionTaskMock).cancelStopLossPrice(command);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void cancelTakeProfitPriceOnPositionDelegatesToPositionTask() {
-        final CancelTPPositionCommand command = CancelTPPositionCommand
-            .with(instrumentEURUSD)
-            .build();
-
-        when(positionTaskMock.cancelTakeProfitPrice(command))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.cancelTakeProfitPriceOnPosition(command);
-
-        verify(positionTaskMock).cancelTakeProfitPrice(command);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 

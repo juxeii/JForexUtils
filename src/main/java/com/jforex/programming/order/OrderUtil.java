@@ -7,8 +7,6 @@ import java.util.Collection;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.position.CancelSLPositionCommand;
-import com.jforex.programming.position.CancelTPPositionCommand;
 import com.jforex.programming.position.ClosePositionCommand;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionTask;
@@ -101,14 +99,6 @@ public class OrderUtil {
         checkNotNull(command);
 
         return positionTask.close(command);
-    }
-
-    public Observable<OrderEvent> cancelStopLossPriceOnPosition(final CancelSLPositionCommand command) {
-        return positionTask.cancelStopLossPrice(command);
-    }
-
-    public Observable<OrderEvent> cancelTakeProfitPriceOnPosition(final CancelTPPositionCommand command) {
-        return positionTask.cancelTakeProfitPrice(command);
     }
 
     public final PositionOrders positionOrders(final Instrument instrument) {

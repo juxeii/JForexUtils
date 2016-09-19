@@ -19,11 +19,12 @@ public class ClosePositionCommand {
 
     public interface ClosePositionCompose {
 
-        public ClosePositionCompose
-               withMergeCompose(Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeCompose);
+        public ClosePositionCompose withMergeCompose(Function<Observable<OrderEvent>,
+                                                              Observable<OrderEvent>> mergeCompose);
 
-        public ClosePositionCompose
-               withCloseCompose(BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> closeCompose);
+        public ClosePositionCompose withCloseCompose(BiFunction<Observable<OrderEvent>,
+                                                                IOrder,
+                                                                Observable<OrderEvent>> closeCompose);
 
         public ClosePositionCommand build();
     }
@@ -80,8 +81,9 @@ public class ClosePositionCommand {
         }
 
         @Override
-        public ClosePositionCompose
-               withCloseCompose(final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> closeCompose) {
+        public ClosePositionCompose withCloseCompose(final BiFunction<Observable<OrderEvent>,
+                                                                      IOrder,
+                                                                      Observable<OrderEvent>> closeCompose) {
             this.closeCompose = checkNotNull(closeCompose);
             return this;
         }
