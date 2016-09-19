@@ -7,6 +7,8 @@ import java.util.Collection;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.position.CancelSLPositionCommand;
+import com.jforex.programming.position.CancelTPPositionCommand;
 import com.jforex.programming.position.ClosePositionCommand;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionTask;
@@ -16,12 +18,12 @@ import io.reactivex.Observable;
 public class OrderUtil {
 
     private final OrderTask orderTask;
-    private final PositionTask positionUtil;
+    private final PositionTask positionTask;
 
     public OrderUtil(final OrderTask orderTaskExecutor,
-                     final PositionTask positionUtil) {
+                     final PositionTask positionTask) {
         this.orderTask = orderTaskExecutor;
-        this.positionUtil = positionUtil;
+        this.positionTask = positionTask;
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
@@ -92,18 +94,26 @@ public class OrderUtil {
         checkNotNull(instrument);
         checkNotNull(mergeOrderLabel);
 
-        return positionUtil.merge(instrument, mergeOrderLabel);
+        return positionTask.merge(instrument, mergeOrderLabel);
     }
 
     public Observable<OrderEvent> closePosition(final ClosePositionCommand command) {
         checkNotNull(command);
 
-        return positionUtil.close(command);
+        return positionTask.close(command);
+    }
+
+    public Observable<OrderEvent> cancelStopLossPriceOnPosition(final CancelSLPositionCommand command) {
+        return positionTask.cancelStopLossPrice(command);
+    }
+
+    public Observable<OrderEvent> cancelTakeProfitPriceOnPosition(final CancelTPPositionCommand command) {
+        return positionTask.cancelTakeProfitPrice(command);
     }
 
     public final PositionOrders positionOrders(final Instrument instrument) {
         checkNotNull(instrument);
 
-        return positionUtil.positionOrders(instrument);
+        return positionTask.positionOrders(instrument);
     }
 }
