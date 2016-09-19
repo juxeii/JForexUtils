@@ -4,8 +4,10 @@ import java.util.Set;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.settings.PlatformSettings;
 
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
@@ -14,6 +16,8 @@ public class PositionTask {
 
     private final OrderTask orderTask;
     private final PositionFactory positionFactory;
+
+    private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
 
     public PositionTask(final OrderTask orderTask,
                         final PositionFactory positionFactory) {
@@ -46,6 +50,18 @@ public class PositionTask {
             .compose(command.closeComposer(order)));
 
         return mergeObservable.concatWith(closeObservable);
+    }
+
+    public Observable<OrderEvent> cancelStopLossPrice(final CancelSLPositionCommand command) {
+        return batch(command.instrument(), order -> orderTask
+            .setStopLossPrice(order, platformSettings.noSLPrice())
+            .compose(command.cancelSLComposer(order)));
+    }
+
+    public Observable<OrderEvent> cancelTakeProfitPrice(final CancelTPPositionCommand command) {
+        return batch(command.instrument(), order -> orderTask
+            .setTakeProfitPrice(order, platformSettings.noTPPrice())
+            .compose(command.cancelTPComposer(order)));
     }
 
     private final Observable<OrderEvent> batch(final Instrument instrument,

@@ -15,6 +15,8 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.position.CancelSLPositionCommand;
+import com.jforex.programming.position.CancelTPPositionCommand;
 import com.jforex.programming.position.ClosePositionCommand;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
@@ -23,6 +25,7 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
+import io.reactivex.functions.Action;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -36,6 +39,8 @@ public class PositionTaskTest extends InstrumentUtilForTest {
     private PositionFactory positionFactoryMock;
     @Mock
     private Position positionMock;
+    @Mock
+    private Action actionMock;
     private final String mergeOrderLabel = "mergeOrderLabel";
     private TestObserver<OrderEvent> testSubscriber;
 
@@ -357,6 +362,154 @@ public class PositionTaskTest extends InstrumentUtilForTest {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    public class CancelSLTests {
+
+        private CancelSLPositionCommand command;
+        private Observable<OrderEvent> cancelSLObservable;
+
+        @Before
+        public void setUp() {
+            command = CancelSLPositionCommand
+                .with(instrumentEURUSD)
+                .withcancelSLCompose((obs, order) -> obs
+                    .doOnSubscribe(d -> logger.info("Starting to cancel SL for order " + order.getLabel()))
+                    .doOnComplete(() -> logger.info("Cancel SL for order " + order.getLabel() + " finished."))
+                    .doOnComplete(actionMock))
+                .build();
+
+            cancelSLObservable = positionTask
+                .cancelStopLossPrice(command)
+                .doOnSubscribe(d -> logger.info("Starting to cancel SL for position " + instrumentEURUSD))
+                .doOnTerminate(() -> logger.info("Cancel for position " + instrumentEURUSD + " done."));
+        }
+
+        @Test
+        public void observableIsDeferredWithNoInteractionsToMocks() {
+            verifyZeroInteractions(orderTaskMock);
+            verifyZeroInteractions(positionFactoryMock);
+        }
+
+        @Test
+        public void observableCompletesImmediatelyWhenNoOrdersForCancelSL() {
+            expectFilledOrOpenedOrders(Sets.newHashSet());
+
+            testSubscriber = cancelSLObservable.test();
+
+            testSubscriber.assertNoValues();
+            testSubscriber.assertComplete();
+        }
+
+        public class PositionHasTwoOrdersWithSL {
+
+            private final Set<IOrder> toCancelSLOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+
+            @Before
+            public void setUp() {
+                expectFilledOrOpenedOrders(toCancelSLOrders);
+            }
+
+            @Test
+            public void setSLIsCalledInMergedFashion() {
+                when(orderTaskMock.setStopLossPrice(buyOrderEURUSD, noSL))
+                    .thenReturn(neverObservable());
+                when(orderTaskMock.setStopLossPrice(sellOrderEURUSD, noTP))
+                    .thenReturn(neverObservable());
+
+                testSubscriber = cancelSLObservable.test();
+
+                testSubscriber.assertNotComplete();
+                verify(orderTaskMock).setStopLossPrice(buyOrderEURUSD, noSL);
+                verify(orderTaskMock).setStopLossPrice(sellOrderEURUSD, noSL);
+            }
+
+            @Test
+            public void cancelSLComposerIsAttached() throws Exception {
+                when(orderTaskMock.setStopLossPrice(buyOrderEURUSD, noSL))
+                    .thenReturn(emptyObservable());
+                when(orderTaskMock.setStopLossPrice(sellOrderEURUSD, noTP))
+                    .thenReturn(emptyObservable());
+
+                testSubscriber = cancelSLObservable.test();
+
+                verify(actionMock, times(2)).run();
+            }
+        }
+    }
+
+    public class CancelTPTests {
+
+        private CancelTPPositionCommand command;
+        private Observable<OrderEvent> cancelTPObservable;
+
+        @Before
+        public void setUp() {
+            command = CancelTPPositionCommand
+                .with(instrumentEURUSD)
+                .withcancelTPCompose((obs, order) -> obs
+                    .doOnSubscribe(d -> logger.info("Starting to cancel TP for order " + order.getLabel()))
+                    .doOnComplete(() -> logger.info("Cancel TP for order " + order.getLabel() + " finished."))
+                    .doOnComplete(actionMock))
+                .build();
+
+            cancelTPObservable = positionTask
+                .cancelTakeProfitPrice(command)
+                .doOnSubscribe(d -> logger.info("Starting to cancel TP for position " + instrumentEURUSD))
+                .doOnTerminate(() -> logger.info("Cancel for position " + instrumentEURUSD + " done."));
+        }
+
+        @Test
+        public void observableIsDeferredWithNoInteractionsToMocks() {
+            verifyZeroInteractions(orderTaskMock);
+            verifyZeroInteractions(positionFactoryMock);
+        }
+
+        @Test
+        public void observableCompletesImmediatelyWhenNoOrdersForCancelTP() {
+            expectFilledOrOpenedOrders(Sets.newHashSet());
+
+            testSubscriber = cancelTPObservable.test();
+
+            testSubscriber.assertNoValues();
+            testSubscriber.assertComplete();
+        }
+
+        public class PositionHasTwoOrdersWithTP {
+
+            private final Set<IOrder> toCancelTPOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+
+            @Before
+            public void setUp() {
+                expectFilledOrOpenedOrders(toCancelTPOrders);
+            }
+
+            @Test
+            public void setTPIsCalledInMergedFashion() {
+                when(orderTaskMock.setTakeProfitPrice(buyOrderEURUSD, noTP))
+                    .thenReturn(neverObservable());
+                when(orderTaskMock.setTakeProfitPrice(sellOrderEURUSD, noTP))
+                    .thenReturn(neverObservable());
+
+                testSubscriber = cancelTPObservable.test();
+
+                testSubscriber.assertNotComplete();
+                verify(orderTaskMock).setTakeProfitPrice(buyOrderEURUSD, noTP);
+                verify(orderTaskMock).setTakeProfitPrice(sellOrderEURUSD, noTP);
+            }
+
+            @Test
+            public void cancelTPComposerIsAttached() throws Exception {
+                when(orderTaskMock.setTakeProfitPrice(buyOrderEURUSD, noTP))
+                    .thenReturn(emptyObservable());
+                when(orderTaskMock.setTakeProfitPrice(sellOrderEURUSD, noTP))
+                    .thenReturn(emptyObservable());
+
+                testSubscriber = cancelTPObservable.test();
+
+                verify(actionMock, times(2)).run();
             }
         }
     }

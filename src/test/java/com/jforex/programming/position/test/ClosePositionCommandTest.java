@@ -56,7 +56,7 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void composersAreCorrect() throws Exception {
+    public void closeComposerIsCorrect() {
         command = ClosePositionCommand
             .with(instrumentEURUSD, mergeOrderLabel)
             .withCloseCompose(closeComposer)
