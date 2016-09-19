@@ -1,7 +1,9 @@
 package com.jforex.programming.order.event.test;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -60,8 +62,8 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
     }
 
     private void registerCallRequest(final OrderCallReason orderCallReason) {
-        orderEventFactory
-            .registerOrderCallRequest(new OrderCallRequest(orderForTest, orderCallReason));
+        orderEventFactory.registerOrderCallRequest(new OrderCallRequest(orderForTest,
+                                                                        orderCallReason));
     }
 
     @Test
@@ -275,6 +277,17 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
         assertThat(actualEvent.type(), equalTo(OrderEventType.CHANGED_REJECTED));
     }
 
+    @Test
+    public void unknownOrderGetsExternalInOrderEvent() {
+        final IMessage message = mockForIMessage(orderUtilForTest.sellOrderAUDUSD(),
+                                                 IMessage.Type.ORDER_CHANGED_REJECTED,
+                                                 Sets.newHashSet());
+
+        final OrderEvent actualEvent = orderEventFactory.fromMessage(message);
+
+        assertFalse(actualEvent.isInternal());
+    }
+
     public class MultipleCallRequestsRegistered {
 
         private OrderEvent getEvent(final IMessage.Type messageType,
@@ -284,6 +297,8 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
+            orderEventFactory.registerOrderCallRequest(new OrderCallRequest(sellOrderAUDUSD,
+                                                                            OrderCallReason.SUBMIT));
             registerCallRequest(OrderCallReason.SUBMIT);
             registerCallRequest(OrderCallReason.CHANGE_LABEL);
             registerCallRequest(OrderCallReason.CHANGE_PRICE);
@@ -291,14 +306,16 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
             registerCallRequest(OrderCallReason.CLOSE);
         }
 
-        public class OnSubmitOK {
+        public class OnSubmitOKForAUDUSD {
 
             private OrderEvent submitEvent;
+            private final IMessage message = mockForIMessage(sellOrderAUDUSD,
+                                                             IMessage.Type.ORDER_FILL_OK,
+                                                             Sets.newHashSet(IMessage.Reason.ORDER_FULLY_FILLED));
 
             @Before
             public void setUp() {
-                submitEvent = getEvent(IMessage.Type.ORDER_FILL_OK,
-                                       IMessage.Reason.ORDER_FULLY_FILLED);
+                submitEvent = orderEventFactory.fromMessage(message);
             }
 
             @Test
@@ -306,63 +323,156 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
                 assertThat(submitEvent.type(), equalTo(OrderEventType.FULLY_FILLED));
             }
 
-            public class OnChangeLabelRejected {
+            @Test
+            public void assertOrderIsInternal() {
+                assertTrue(submitEvent.isInternal());
+            }
 
-                private OrderEvent changeLabelEvent;
+            @Test
+            public void nextEventForNotQueuedAUDUSDOrderIsInternal() {
+                logger.info("STAAAAART");
+                submitEvent = orderEventFactory.fromMessage(message);
+
+                assertTrue(submitEvent.isInternal());
+                logger.info("EEEEEEEEEEEEEEND");
+            }
+
+            public class OnSubmitOK {
+
+                private OrderEvent submitEvent;
 
                 @Before
                 public void setUp() {
-                    changeLabelEvent = getEvent(IMessage.Type.ORDER_CHANGED_REJECTED);
+                    submitEvent = getEvent(IMessage.Type.ORDER_FILL_OK,
+                                           IMessage.Reason.ORDER_FULLY_FILLED);
                 }
 
                 @Test
-                public void eventTypeIsLabelRejected() {
-                    assertThat(changeLabelEvent.type(),
-                               equalTo(OrderEventType.CHANGE_LABEL_REJECTED));
+                public void eventTypeIsFullyFilled() {
+                    assertThat(submitEvent.type(), equalTo(OrderEventType.FULLY_FILLED));
                 }
 
-                public class OnChangeOpenPriceRejected {
+                @Test
+                public void assertOrderIsInternal() {
+                    assertTrue(submitEvent.isInternal());
+                }
 
-                    private OrderEvent changeOpenPriceEvent;
+                public class OnChangeLabelRejected {
+
+                    private OrderEvent changeLabelEvent;
 
                     @Before
                     public void setUp() {
-                        changeOpenPriceEvent = getEvent(IMessage.Type.ORDER_CHANGED_REJECTED);
+                        changeLabelEvent = getEvent(IMessage.Type.ORDER_CHANGED_REJECTED);
                     }
 
                     @Test
-                    public void eventTypeIsOpenPriceRejected() {
-                        assertThat(changeOpenPriceEvent.type(),
-                                   equalTo(OrderEventType.CHANGE_PRICE_REJECTED));
+                    public void eventTypeIsLabelRejected() {
+                        assertThat(changeLabelEvent.type(),
+                                   equalTo(OrderEventType.CHANGE_LABEL_REJECTED));
                     }
 
-                    public class OnChangeSL {
+                    @Test
+                    public void assertOrderIsInternal() {
+                        assertTrue(changeLabelEvent.isInternal());
+                    }
 
-                        private OrderEvent changeSLEvent;
+                    public class OnChangeOpenPriceRejected {
+
+                        private OrderEvent changeOpenPriceEvent;
 
                         @Before
                         public void setUp() {
-                            changeSLEvent = getEvent(IMessage.Type.ORDER_CHANGED_OK,
-                                                     IMessage.Reason.ORDER_CHANGED_SL);
+                            changeOpenPriceEvent = getEvent(IMessage.Type.ORDER_CHANGED_REJECTED);
                         }
 
                         @Test
-                        public void eventTypeChangeSL() {
-                            assertThat(changeSLEvent.type(), equalTo(OrderEventType.CHANGED_SL));
+                        public void eventTypeIsOpenPriceRejected() {
+                            assertThat(changeOpenPriceEvent.type(),
+                                       equalTo(OrderEventType.CHANGE_PRICE_REJECTED));
                         }
 
-                        public class OnClose {
+                        @Test
+                        public void assertOrderIsInternal() {
+                            assertTrue(changeOpenPriceEvent.isInternal());
+                        }
 
-                            private OrderEvent closeEvent;
+                        public class OnChangeSL {
+
+                            private OrderEvent changeSLEvent;
 
                             @Before
                             public void setUp() {
-                                closeEvent = getEvent(IMessage.Type.ORDER_CLOSE_OK);
+                                changeSLEvent = getEvent(IMessage.Type.ORDER_CHANGED_OK,
+                                                         IMessage.Reason.ORDER_CHANGED_SL);
                             }
 
                             @Test
-                            public void eventClose() {
-                                assertThat(closeEvent.type(), equalTo(OrderEventType.CLOSE_OK));
+                            public void eventTypeChangeSL() {
+                                assertThat(changeSLEvent.type(), equalTo(OrderEventType.CHANGED_SL));
+                            }
+
+                            @Test
+                            public void assertOrderIsInternal() {
+                                assertTrue(changeSLEvent.isInternal());
+                            }
+
+                            public class OnClose {
+
+                                private OrderEvent closeEvent;
+
+                                @Before
+                                public void setUp() {
+                                    orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+                                    closeEvent = getEvent(IMessage.Type.ORDER_CLOSE_OK);
+                                }
+
+                                @Test
+                                public void eventClose() {
+                                    assertThat(closeEvent.type(), equalTo(OrderEventType.CLOSE_OK));
+                                }
+
+                                @Test
+                                public void assertOrderIsInternal() {
+                                    assertTrue(submitEvent.isInternal());
+                                }
+
+                                @Test
+                                public void afterCloseMessageAllEventsAreNowExternal() {
+                                    closeEvent = getEvent(IMessage.Type.ORDER_CLOSE_OK);
+
+                                    assertFalse(closeEvent.isInternal());
+                                }
+                            }
+
+                            public class OnCancelled {
+
+                                private OrderEvent rejectEvent;
+
+                                @Before
+                                public void setUp() {
+                                    orderUtilForTest.setState(orderForTest, IOrder.State.CANCELED);
+
+                                    rejectEvent = getEvent(IMessage.Type.ORDER_SUBMIT_REJECTED);
+                                }
+
+                                @Test
+                                public void eventReject() {
+                                    assertThat(rejectEvent.type(), equalTo(OrderEventType.SUBMIT_REJECTED));
+                                }
+
+                                @Test
+                                public void assertOrderIsExternal() {
+                                    assertTrue(rejectEvent.isInternal());
+                                }
+
+                                @Test
+                                public void afterCancelStateMessageAllEventsAreNowExternal() {
+                                    rejectEvent = getEvent(IMessage.Type.ORDER_SUBMIT_REJECTED);
+
+                                    assertFalse(rejectEvent.isInternal());
+                                }
                             }
                         }
                     }
