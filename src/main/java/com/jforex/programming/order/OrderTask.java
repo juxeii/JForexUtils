@@ -11,10 +11,8 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.settings.PlatformSettings;
 
 import io.reactivex.Observable;
 
@@ -22,8 +20,6 @@ public class OrderTask {
 
     private final OrderTaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
-
-    private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
 
     public OrderTask(final OrderTaskExecutor orderTaskExecutor,
                      final OrderUtilHandler orderUtilHandler) {
@@ -113,14 +109,6 @@ public class OrderTask {
             .flatMap(order -> orderTaskExecutor
                 .setTakeProfitPrice(order, newTP)
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_TP)));
-    }
-
-    public Observable<OrderEvent> cancelStopLossPrice(final IOrder order) {
-        return setStopLossPrice(order, platformSettings.noSLPrice());
-    }
-
-    public Observable<OrderEvent> cancelTakeProfitPrice(final IOrder order) {
-        return setTakeProfitPrice(order, platformSettings.noTPPrice());
     }
 
     private Observable<OrderEvent> orderUtilObservable(final IOrder order,

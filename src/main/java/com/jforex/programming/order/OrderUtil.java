@@ -86,18 +86,6 @@ public class OrderUtil {
         return orderTask.setTakeProfitPrice(order, newTP);
     }
 
-    public Observable<OrderEvent> cancelStopLossPrice(final IOrder order) {
-        checkNotNull(order);
-
-        return orderTask.cancelStopLossPrice(order);
-    }
-
-    public Observable<OrderEvent> cancelTakeProfitPrice(final IOrder order) {
-        checkNotNull(order);
-
-        return orderTask.cancelTakeProfitPrice(order);
-    }
-
     public final Observable<OrderEvent> mergePosition(final Instrument instrument,
                                                       final String mergeOrderLabel) {
         checkNotNull(instrument);
@@ -112,18 +100,6 @@ public class OrderUtil {
         checkNotNull(mergeOrderLabel);
 
         return positionUtil.close(instrument, mergeOrderLabel);
-    }
-
-    public final Observable<OrderEvent> cancelStopLossPriceOnPosition(final Instrument instrument) {
-        checkNotNull(instrument);
-
-        return positionUtil.cancelStopLossPrice(instrument);
-    }
-
-    public final Observable<OrderEvent> cancelTakeProfitPriceOnPosition(final Instrument instrument) {
-        checkNotNull(instrument);
-
-        return positionUtil.cancelTakeProfitPrice(instrument);
     }
 
     public final PositionOrders positionOrders(final Instrument instrument) {

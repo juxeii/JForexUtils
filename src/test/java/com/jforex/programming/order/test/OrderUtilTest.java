@@ -147,28 +147,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void cancelSLDelegatesToOrderTask() {
-        when(orderTaskMock.cancelStopLossPrice(orderForTest))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.cancelStopLossPrice(orderForTest);
-
-        verify(orderTaskMock).cancelStopLossPrice(orderForTest);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void cancelTPDelegatesToOrderTask() {
-        when(orderTaskMock.cancelTakeProfitPrice(orderForTest))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.cancelTakeProfitPrice(orderForTest);
-
-        verify(orderTaskMock).cancelTakeProfitPrice(orderForTest);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
     public void mergePositionDelegatesToPositionTask() {
         when(positionTaskMock.merge(instrumentEURUSD, mergeOrderLabel))
             .thenReturn(orderEventObservable);
@@ -187,28 +165,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final Observable<OrderEvent> actualObservable = orderUtil.closePosition(instrumentEURUSD, mergeOrderLabel);
 
         verify(positionTaskMock).close(instrumentEURUSD, mergeOrderLabel);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void cancelSLOnPositionDelegatesToPositionTask() {
-        when(positionTaskMock.cancelStopLossPrice(instrumentEURUSD))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.cancelStopLossPriceOnPosition(instrumentEURUSD);
-
-        verify(positionTaskMock).cancelStopLossPrice(instrumentEURUSD);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void cancelTPOnPositionDelegatesToPositionTask() {
-        when(positionTaskMock.cancelTakeProfitPrice(instrumentEURUSD))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.cancelTakeProfitPriceOnPosition(instrumentEURUSD);
-
-        verify(positionTaskMock).cancelTakeProfitPrice(instrumentEURUSD);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 

@@ -42,14 +42,6 @@ public class PositionTask {
         return mergeObservable.concatWith(closeObservable);
     }
 
-    public Observable<OrderEvent> cancelStopLossPrice(final Instrument instrument) {
-        return batch(instrument, orderTask::cancelStopLossPrice);
-    }
-
-    public Observable<OrderEvent> cancelTakeProfitPrice(final Instrument instrument) {
-        return batch(instrument, orderTask::cancelTakeProfitPrice);
-    }
-
     private final Observable<OrderEvent> batch(final Instrument instrument,
                                                final Function<IOrder, Observable<OrderEvent>> batchTask) {
         return Observable.defer(() -> Observable
