@@ -24,54 +24,78 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
-        return orderTask.submitOrder(checkNotNull(orderParams));
+        checkNotNull(orderParams);
+
+        return orderTask.submitOrder(orderParams);
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
-        return orderTask.mergeOrders(checkNotNull(mergeOrderLabel), checkNotNull(toMergeOrders));
+        checkNotNull(mergeOrderLabel);
+        checkNotNull(toMergeOrders);
+
+        return orderTask.mergeOrders(mergeOrderLabel, toMergeOrders);
     }
 
     public Observable<OrderEvent> close(final IOrder order) {
-        return orderTask.close(checkNotNull(order));
+        checkNotNull(order);
+
+        return orderTask.close(order);
     }
 
     public Observable<OrderEvent> setLabel(final IOrder order,
                                            final String label) {
-        return orderTask.setLabel(checkNotNull(order), checkNotNull(label));
+        checkNotNull(order);
+        checkNotNull(label);
+
+        return orderTask.setLabel(order, label);
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder order,
                                                   final long newGTT) {
-        return orderTask.setGoodTillTime(checkNotNull(order), newGTT);
+        checkNotNull(order);
+
+        return orderTask.setGoodTillTime(order, newGTT);
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder order,
                                                      final double newRequestedAmount) {
-        return orderTask.setRequestedAmount(checkNotNull(order), newRequestedAmount);
+        checkNotNull(order);
+
+        return orderTask.setRequestedAmount(order, newRequestedAmount);
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder order,
                                                final double newOpenPrice) {
-        return orderTask.setOpenPrice(checkNotNull(order), newOpenPrice);
+        checkNotNull(order);
+
+        return orderTask.setOpenPrice(order, newOpenPrice);
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder order,
                                                    final double newSL) {
-        return orderTask.setStopLossPrice(checkNotNull(order), newSL);
+        checkNotNull(order);
+
+        return orderTask.setStopLossPrice(order, newSL);
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder order,
                                                      final double newTP) {
-        return orderTask.setTakeProfitPrice(checkNotNull(order), newTP);
+        checkNotNull(order);
+
+        return orderTask.setTakeProfitPrice(order, newTP);
     }
 
     public Observable<OrderEvent> cancelStopLossPrice(final IOrder order) {
-        return orderTask.cancelStopLossPrice(checkNotNull(order));
+        checkNotNull(order);
+
+        return orderTask.cancelStopLossPrice(order);
     }
 
     public Observable<OrderEvent> cancelTakeProfitPrice(final IOrder order) {
-        return orderTask.cancelTakeProfitPrice(checkNotNull(order));
+        checkNotNull(order);
+
+        return orderTask.cancelTakeProfitPrice(order);
     }
 
     public final Observable<OrderEvent> mergePosition(final Instrument instrument,
@@ -91,14 +115,20 @@ public class OrderUtil {
     }
 
     public final Observable<OrderEvent> cancelStopLossPriceOnPosition(final Instrument instrument) {
-        return positionUtil.cancelStopLossPrice(checkNotNull(instrument));
+        checkNotNull(instrument);
+
+        return positionUtil.cancelStopLossPrice(instrument);
     }
 
     public final Observable<OrderEvent> cancelTakeProfitPriceOnPosition(final Instrument instrument) {
-        return positionUtil.cancelTakeProfitPrice(checkNotNull(instrument));
+        checkNotNull(instrument);
+
+        return positionUtil.cancelTakeProfitPrice(instrument);
     }
 
     public final PositionOrders positionOrders(final Instrument instrument) {
-        return positionUtil.positionOrders(checkNotNull(instrument));
+        checkNotNull(instrument);
+
+        return positionUtil.positionOrders(instrument);
     }
 }
