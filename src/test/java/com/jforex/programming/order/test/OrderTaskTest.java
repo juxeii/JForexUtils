@@ -34,6 +34,7 @@ public class OrderTaskTest extends InstrumentUtilForTest {
     @Mock
     private Position positionMock;
     private final IOrder orderForTest = buyOrderEURUSD;
+    private Observable<OrderEvent> observable;
     private TestObserver<OrderEvent> testObserver;
 
     @Before
@@ -51,9 +52,15 @@ public class OrderTaskTest extends InstrumentUtilForTest {
         verify(orderUtilHandlerMock).callObservable(orderForTest, callReason);
     }
 
-    public class SubmitOrderSetup {
+    private void assertValueAlreadySet() {
+        testObserver = observable.test();
 
-        private Observable<OrderEvent> observable;
+        testObserver.assertComplete();
+        verifyZeroInteractions(orderTaskExecutorMock);
+        verifyZeroInteractions(orderUtilHandlerMock);
+    }
+
+    public class SubmitOrderSetup {
 
         @Before
         public void setUp() {
@@ -90,7 +97,6 @@ public class OrderTaskTest extends InstrumentUtilForTest {
 
     public class MergeOrdersSetup {
 
-        private Observable<OrderEvent> observable;
         private final String mergeOrderLabel = "mergeOrderLabel";
         private final Collection<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
@@ -130,8 +136,6 @@ public class OrderTaskTest extends InstrumentUtilForTest {
 
     public class CloseSetup {
 
-        private Observable<OrderEvent> observable;
-
         @Before
         public void setUp() {
             when(orderTaskExecutorMock.close(orderForTest))
@@ -143,6 +147,13 @@ public class OrderTaskTest extends InstrumentUtilForTest {
         @Test
         public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenOrderAlreadyClosed() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+            assertValueAlreadySet();
         }
 
         public class OnSubscribe {
@@ -168,7 +179,6 @@ public class OrderTaskTest extends InstrumentUtilForTest {
 
     public class SetLabelSetup {
 
-        private Observable<OrderEvent> observable;
         private final String newLabel = "newLabel";
 
         @Before
@@ -182,6 +192,13 @@ public class OrderTaskTest extends InstrumentUtilForTest {
         @Test
         public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenLabelAlreadyClosed() {
+            orderUtilForTest.setLabel(orderForTest, newLabel);
+
+            assertValueAlreadySet();
         }
 
         public class OnSubscribe {
@@ -207,7 +224,6 @@ public class OrderTaskTest extends InstrumentUtilForTest {
 
     public class SetGTTSetup {
 
-        private Observable<OrderEvent> observable;
         private final long newGTT = 1L;
 
         @Before
@@ -221,6 +237,13 @@ public class OrderTaskTest extends InstrumentUtilForTest {
         @Test
         public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenGTTAlreadyClosed() {
+            orderUtilForTest.setGTT(orderForTest, newGTT);
+
+            assertValueAlreadySet();
         }
 
         public class OnSubscribe {
@@ -246,7 +269,6 @@ public class OrderTaskTest extends InstrumentUtilForTest {
 
     public class SetRequestedAmountSetup {
 
-        private Observable<OrderEvent> observable;
         private final double newRequestedAmount = 0.12;
 
         @Before
@@ -260,6 +282,13 @@ public class OrderTaskTest extends InstrumentUtilForTest {
         @Test
         public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenAmountAlreadyClosed() {
+            orderUtilForTest.setRequestedAmount(orderForTest, newRequestedAmount);
+
+            assertValueAlreadySet();
         }
 
         public class OnSubscribe {
@@ -285,7 +314,6 @@ public class OrderTaskTest extends InstrumentUtilForTest {
 
     public class SetOpenPriceSetup {
 
-        private Observable<OrderEvent> observable;
         private final double newOpenPrice = 1.1234;
 
         @Before
@@ -299,6 +327,13 @@ public class OrderTaskTest extends InstrumentUtilForTest {
         @Test
         public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenOpenPriceAlreadyClosed() {
+            orderUtilForTest.setOpenPrice(orderForTest, newOpenPrice);
+
+            assertValueAlreadySet();
         }
 
         public class OnSubscribe {
@@ -324,7 +359,6 @@ public class OrderTaskTest extends InstrumentUtilForTest {
 
     public class SetSLSetup {
 
-        private Observable<OrderEvent> observable;
         private final double newSL = 1.1234;
 
         @Before
@@ -338,6 +372,13 @@ public class OrderTaskTest extends InstrumentUtilForTest {
         @Test
         public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenSLAlreadyClosed() {
+            orderUtilForTest.setSL(orderForTest, newSL);
+
+            assertValueAlreadySet();
         }
 
         public class OnSubscribe {
@@ -363,7 +404,6 @@ public class OrderTaskTest extends InstrumentUtilForTest {
 
     public class SetTPSetup {
 
-        private Observable<OrderEvent> observable;
         private final double newTP = 1.1234;
 
         @Before
@@ -377,6 +417,13 @@ public class OrderTaskTest extends InstrumentUtilForTest {
         @Test
         public void noCallToOrderUtilHandler() {
             verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenTPAlreadyClosed() {
+            orderUtilForTest.setTP(orderForTest, newTP);
+
+            assertValueAlreadySet();
         }
 
         public class OnSubscribe {
@@ -401,8 +448,6 @@ public class OrderTaskTest extends InstrumentUtilForTest {
     }
 
     public class CancelSLSetup {
-
-        private Observable<OrderEvent> observable;
 
         @Before
         public void setUp() {
@@ -439,8 +484,6 @@ public class OrderTaskTest extends InstrumentUtilForTest {
     }
 
     public class CancelTPSetup {
-
-        private Observable<OrderEvent> observable;
 
         @Before
         public void setUp() {

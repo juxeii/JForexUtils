@@ -1,5 +1,13 @@
 package com.jforex.programming.order;
 
+import static com.jforex.programming.order.OrderStaticUtil.isAmountSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+import static com.jforex.programming.order.OrderStaticUtil.isGTTSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isLabelSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isOpenPriceSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
+
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
@@ -38,52 +46,73 @@ public class OrderTask {
             .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE));
     }
 
-    public Observable<OrderEvent> close(final IOrder order) {
-        return orderTaskExecutor
-            .close(order)
-            .andThen(orderUtilObservable(order, OrderCallReason.CLOSE));
+    public Observable<OrderEvent> close(final IOrder orderToClose) {
+        return Observable
+            .just(orderToClose)
+            .filter(order -> !isClosed.test(order))
+            .flatMap(order -> orderTaskExecutor
+                .close(order)
+                .andThen(orderUtilObservable(order, OrderCallReason.CLOSE)));
     }
 
-    public Observable<OrderEvent> setLabel(final IOrder order,
+    public Observable<OrderEvent> setLabel(final IOrder orderToSetLabel,
                                            final String label) {
-        return orderTaskExecutor
-            .setLabel(order, label)
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_LABEL));
+        return Observable
+            .just(orderToSetLabel)
+            .filter(order -> !isLabelSetTo(label).test(order))
+            .flatMap(order -> orderTaskExecutor
+                .setLabel(order, label)
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_LABEL)));
     }
 
-    public Observable<OrderEvent> setGoodTillTime(final IOrder order,
+    public Observable<OrderEvent> setGoodTillTime(final IOrder orderToSetGTT,
                                                   final long newGTT) {
-        return orderTaskExecutor
-            .setGoodTillTime(order, newGTT)
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_GTT));
+        return Observable
+            .just(orderToSetGTT)
+            .filter(order -> !isGTTSetTo(newGTT).test(order))
+            .flatMap(order -> orderTaskExecutor
+                .setGoodTillTime(order, newGTT)
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_GTT)));
     }
 
-    public Observable<OrderEvent> setRequestedAmount(final IOrder order,
+    public Observable<OrderEvent> setRequestedAmount(final IOrder orderToSetAmount,
                                                      final double newRequestedAmount) {
-        return orderTaskExecutor
-            .setRequestedAmount(order, newRequestedAmount)
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_AMOUNT));
+        return Observable
+            .just(orderToSetAmount)
+            .filter(order -> !isAmountSetTo(newRequestedAmount).test(order))
+            .flatMap(order -> orderTaskExecutor
+                .setRequestedAmount(order, newRequestedAmount)
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_AMOUNT)));
     }
 
-    public Observable<OrderEvent> setOpenPrice(final IOrder order,
+    public Observable<OrderEvent> setOpenPrice(final IOrder orderToSetOpenPrice,
                                                final double newOpenPrice) {
-        return orderTaskExecutor
-            .setOpenPrice(order, newOpenPrice)
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_PRICE));
+        return Observable
+            .just(orderToSetOpenPrice)
+            .filter(order -> !isOpenPriceSetTo(newOpenPrice).test(order))
+            .flatMap(order -> orderTaskExecutor
+                .setOpenPrice(order, newOpenPrice)
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_PRICE)));
     }
 
-    public Observable<OrderEvent> setStopLossPrice(final IOrder order,
+    public Observable<OrderEvent> setStopLossPrice(final IOrder orderToSetSL,
                                                    final double newSL) {
-        return orderTaskExecutor
-            .setStopLossPrice(order, newSL)
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL));
+        return Observable
+            .just(orderToSetSL)
+            .filter(order -> !isSLSetTo(newSL).test(order))
+            .flatMap(order -> orderTaskExecutor
+                .setStopLossPrice(order, newSL)
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL)));
     }
 
-    public Observable<OrderEvent> setTakeProfitPrice(final IOrder order,
+    public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToSetTP,
                                                      final double newTP) {
-        return orderTaskExecutor
-            .setTakeProfitPrice(order, newTP)
-            .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_TP));
+        return Observable
+            .just(orderToSetTP)
+            .filter(order -> !isTPSetTo(newTP).test(order))
+            .flatMap(order -> orderTaskExecutor
+                .setTakeProfitPrice(order, newTP)
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_TP)));
     }
 
     public Observable<OrderEvent> cancelStopLossPrice(final IOrder order) {
