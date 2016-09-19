@@ -7,6 +7,7 @@ import java.util.Collection;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.position.ClosePositionCommand;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionTask;
 
@@ -94,12 +95,10 @@ public class OrderUtil {
         return positionUtil.merge(instrument, mergeOrderLabel);
     }
 
-    public final Observable<OrderEvent> closePosition(final Instrument instrument,
-                                                      final String mergeOrderLabel) {
-        checkNotNull(instrument);
-        checkNotNull(mergeOrderLabel);
+    public Observable<OrderEvent> closePosition(final ClosePositionCommand command) {
+        checkNotNull(command);
 
-        return positionUtil.close(instrument, mergeOrderLabel);
+        return positionUtil.close(command);
     }
 
     public final PositionOrders positionOrders(final Instrument instrument) {

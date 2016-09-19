@@ -15,6 +15,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.position.ClosePositionCommand;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionTask;
@@ -122,11 +123,27 @@ public class PositionTaskTest extends InstrumentUtilForTest {
 
     public class ClosePositionTests {
 
+        private ClosePositionCommand command;
         private Observable<OrderEvent> closeObservable;
 
         @Before
         public void setUp() {
-            closeObservable = positionTask.close(instrumentEURUSD, mergeOrderLabel);
+            command = ClosePositionCommand
+                .with(instrumentEURUSD, mergeOrderLabel)
+                .withMergeCompose(obs -> obs
+                    .doOnSubscribe(d -> logger.info("Start merge task for " +
+                            instrumentEURUSD + " with label " + mergeOrderLabel))
+                    .doOnTerminate(() -> logger.info("Merge task for " +
+                            instrumentEURUSD + " and label " + mergeOrderLabel + " done")))
+                .withCloseCompose((obs, order) -> obs
+                    .doOnSubscribe(d -> logger.info("Starting close task for order " + order.getLabel()))
+                    .doOnComplete(() -> logger.info("Close task for order " + order.getLabel() + " finished.")))
+                .build();
+
+            closeObservable = positionTask
+                .close(command)
+                .doOnSubscribe(d -> logger.info("Start close position task for " + instrumentEURUSD))
+                .doOnTerminate(() -> logger.info("Close position task for " + instrumentEURUSD + " done"));
         }
 
         @Test

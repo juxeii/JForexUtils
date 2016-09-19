@@ -35,10 +35,16 @@ public class PositionTask {
         });
     }
 
-    public Observable<OrderEvent> close(final Instrument instrument,
-                                        final String mergeOrderLabel) {
-        final Observable<OrderEvent> mergeObservable = merge(instrument, mergeOrderLabel);
-        final Observable<OrderEvent> closeObservable = batch(instrument, orderTask::close);
+    public Observable<OrderEvent> close(final ClosePositionCommand command) {
+        final Instrument instrument = command.instrument();
+        final String mergeOrderLabel = command.mergeOrderLabel();
+
+        final Observable<OrderEvent> mergeObservable =
+                merge(instrument, mergeOrderLabel).compose(command.mergeComposer());
+        final Observable<OrderEvent> closeObservable = batch(instrument, order -> orderTask
+            .close(order)
+            .compose(command.closeComposer(order)));
+
         return mergeObservable.concatWith(closeObservable);
     }
 

@@ -15,6 +15,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.position.ClosePositionCommand;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionTask;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -159,12 +160,16 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void closePositionDelegatesToPositionTask() {
-        when(positionTaskMock.close(instrumentEURUSD, mergeOrderLabel))
+        final ClosePositionCommand command = ClosePositionCommand
+            .with(instrumentEURUSD, mergeOrderLabel)
+            .build();
+
+        when(positionTaskMock.close(command))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.closePosition(instrumentEURUSD, mergeOrderLabel);
+        final Observable<OrderEvent> actualObservable = orderUtil.closePosition(command);
 
-        verify(positionTaskMock).close(instrumentEURUSD, mergeOrderLabel);
+        verify(positionTaskMock).close(command);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
