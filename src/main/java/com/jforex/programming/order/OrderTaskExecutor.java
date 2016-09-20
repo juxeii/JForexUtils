@@ -1,17 +1,15 @@
 package com.jforex.programming.order;
 
-import static com.jforex.programming.order.OrderStaticUtil.runnableToCallable;
-
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
-import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.TaskExecutor;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.functions.Action;
 
 public class OrderTaskExecutor {
 
@@ -73,9 +71,7 @@ public class OrderTaskExecutor {
         return taskExecutor.onStrategyThread(callable);
     }
 
-    private Completable completable(final JFRunnable jfRunnable) {
-        return taskExecutor
-            .onStrategyThread(runnableToCallable(jfRunnable))
-            .toCompletable();
+    private Completable completable(final Action action) {
+        return taskExecutor.onStrategyThread(action);
     }
 }

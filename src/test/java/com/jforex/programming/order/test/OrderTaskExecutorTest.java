@@ -22,6 +22,7 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Single;
+import io.reactivex.functions.Action;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderTaskExecutorTest extends CommonUtilForTest {
@@ -35,7 +36,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
     @Mock
     private Callable<IOrder> orderCallableMock;
     @Captor
-    private ArgumentCaptor<Callable<Void>> callableCaptor;
+    private ArgumentCaptor<Action> actionCaptor;
     private final IOrder orderForTest = buyOrderEURUSD;
     private final Single<IOrder> testOrderSingle = Single.just(orderForTest);
     private Single<IOrder> returnedOrderSingle;
@@ -51,9 +52,9 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
             .thenReturn(single);
     }
 
-    private void setUpTaskExecutorCompletableSingle() {
-        when(taskExecutorMock.onStrategyThread(callableCaptor.capture()))
-            .thenReturn(Single.never());
+    private void captureAndRunAction() throws Exception {
+        verify(taskExecutorMock).onStrategyThread(actionCaptor.capture());
+        actionCaptor.getValue().run();
     }
 
     public class SubmitOrderSetup {
@@ -73,7 +74,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void taskExecutorCallsOnStrategyThreadWithCallable() {
+        public void taskExecutorCallsOnStrategyThreadWithAction() {
             verify(taskExecutorMock).onStrategyThread(orderCallableMock);
         }
 
@@ -111,7 +112,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void taskExecutorCallsOnStrategyThreadWithCallable() {
+        public void taskExecutorCallsOnStrategyThreadWithAction() {
             verify(taskExecutorMock).onStrategyThread(orderCallableMock);
         }
 
@@ -132,8 +133,6 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle();
-
             orderTaskExecutor.close(orderForTest);
         }
 
@@ -143,11 +142,9 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
-            callableCaptor.getValue().call();
-
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
             verify(orderForTest).close();
-            verify(taskExecutorMock).onStrategyThread(any());
         }
     }
 
@@ -157,8 +154,6 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle();
-
             orderTaskExecutor.setLabel(orderForTest, newLabel);
         }
 
@@ -168,11 +163,9 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
-            callableCaptor.getValue().call();
-
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
             verify(orderForTest).setLabel(newLabel);
-            verify(taskExecutorMock).onStrategyThread(any());
         }
     }
 
@@ -182,8 +175,6 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle();
-
             orderTaskExecutor.setGoodTillTime(orderForTest, newGTT);
         }
 
@@ -193,11 +184,9 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
-            callableCaptor.getValue().call();
-
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
             verify(orderForTest).setGoodTillTime(newGTT);
-            verify(taskExecutorMock).onStrategyThread(any());
         }
     }
 
@@ -207,8 +196,6 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle();
-
             orderTaskExecutor.setRequestedAmount(orderForTest, newRequestedAmount);
         }
 
@@ -218,11 +205,9 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
-            callableCaptor.getValue().call();
-
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
             verify(orderForTest).setRequestedAmount(newRequestedAmount);
-            verify(taskExecutorMock).onStrategyThread(any());
         }
     }
 
@@ -232,8 +217,6 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle();
-
             orderTaskExecutor.setOpenPrice(orderForTest, newOpenPrice);
         }
 
@@ -243,11 +226,9 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
-            callableCaptor.getValue().call();
-
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
             verify(orderForTest).setOpenPrice(newOpenPrice);
-            verify(taskExecutorMock).onStrategyThread(any());
         }
     }
 
@@ -257,8 +238,6 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle();
-
             orderTaskExecutor.setStopLossPrice(orderForTest, newSL);
         }
 
@@ -268,11 +247,9 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
-            callableCaptor.getValue().call();
-
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
             verify(orderForTest).setStopLossPrice(newSL);
-            verify(taskExecutorMock).onStrategyThread(any());
         }
     }
 
@@ -282,8 +259,6 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            setUpTaskExecutorCompletableSingle();
-
             orderTaskExecutor.setTakeProfitPrice(orderForTest, newTP);
         }
 
@@ -293,11 +268,9 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void taskExecutorCallsOnStrategyThreadWithCallable() throws Exception {
-            callableCaptor.getValue().call();
-
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
             verify(orderForTest).setTakeProfitPrice(newTP);
-            verify(taskExecutorMock).onStrategyThread(any());
         }
     }
 }
