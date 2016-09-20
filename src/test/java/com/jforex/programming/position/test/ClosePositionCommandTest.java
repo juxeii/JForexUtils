@@ -29,11 +29,10 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
     @Test
     public void defaultCommandValuesAreCorrect() throws Exception {
         command = ClosePositionCommand
-            .with(instrumentEURUSD, mergeOrderLabel)
+            .with(mergeOrderLabel)
             .closeOpened(closeOpenedComposer)
             .build();
 
-        assertThat(command.instrument(), equalTo(instrumentEURUSD));
         assertThat(command.mergeOrderLabel(), equalTo(mergeOrderLabel));
     }
 }

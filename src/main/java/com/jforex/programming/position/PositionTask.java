@@ -1,7 +1,9 @@
 package com.jforex.programming.position;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -30,38 +32,48 @@ public class PositionTask {
 
     public Observable<OrderEvent> merge(final Instrument instrument,
                                         final MergeCommand command) {
-        return Observable.defer(() -> mergeFromCommand(filledOrders(instrument), command));
+        return Observable.defer(() -> {
+            final Collection<IOrder> toMergeOrders = filledOrders(instrument);
+            final Observable<OrderEvent> cancelSLTP = orderTask.createCancelSLTP(toMergeOrders, command);
+            final Observable<OrderEvent> merge = orderTask.createMerge(toMergeOrders, command);
+
+            return cancelSLTP.concatWith(merge);
+        });
     }
 
-    private Observable<OrderEvent> mergeFromCommand(final Collection<IOrder> toMergeOrders,
-                                                    final MergeCommand command) {
-        final Observable<OrderEvent> cancelSLTP = orderTask.createCancelSLTP(toMergeOrders, command);
-        final Observable<OrderEvent> merge = orderTask.createMerge(toMergeOrders, command);
-
-        return cancelSLTP.concatWith(merge);
-    }
-
-    public Observable<OrderEvent> close(final ClosePositionCommand command) {
-        final Observable<OrderEvent> merge = merge(command.instrument(), command.mergeCommand());
-        final Observable<OrderEvent> close = createClose(command);
+    public Observable<OrderEvent> close(final Instrument instrument,
+                                        final ClosePositionCommand command) {
+        final Observable<OrderEvent> merge = merge(instrument, command.mergeCommand());
+        final Observable<OrderEvent> close = createClose(instrument, command);
 
         return merge.concatWith(close);
     }
 
-    private Observable<OrderEvent> createClose(final ClosePositionCommand command) {
+    private Observable<OrderEvent> createClose(final Instrument instrument,
+                                               final ClosePositionCommand command) {
         final CloseExecutionMode executionMode = command.executionMode();
         if (executionMode == CloseExecutionMode.CloseFilled)
-            return batchFilled(command.instrument(), order -> orderTask
+            return batchFilled(instrument, order -> orderTask
                 .close(order)
                 .compose(command.closeFilledCompose(order)));
         if (executionMode == CloseExecutionMode.CloseOpened)
-            return batchOpened(command.instrument(), order -> orderTask
+            return batchOpened(instrument, order -> orderTask
                 .close(order)
                 .compose(command.closeOpenedCompose(order)));
 
-        return batchFilledOrOpened(command.instrument(), order -> orderTask
+        return batchFilledOrOpened(instrument, order -> orderTask
             .close(order)
             .compose(command.closeAllCompose(order)));
+    }
+
+    public Observable<OrderEvent> closeAll(final ClosePositionCommand command) {
+        final List<Observable<OrderEvent>> observables = positionFactory
+            .all()
+            .stream()
+            .map(Position::instrument)
+            .map(instrument -> close(instrument, command))
+            .collect(Collectors.toList());
+        return Observable.merge(observables);
     }
 
     private final Observable<OrderEvent> batchFilledOrOpened(final Instrument instrument,

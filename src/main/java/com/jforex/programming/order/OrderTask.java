@@ -40,8 +40,8 @@ public class OrderTask {
             .flatMap(order -> orderUtilObservable(order, OrderCallReason.SUBMIT));
     }
 
-    private Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
-                                               final Collection<IOrder> toMergeOrders) {
+    private Observable<OrderEvent> mergeOrdersWithExecutor(final String mergeOrderLabel,
+                                                           final Collection<IOrder> toMergeOrders) {
         return toMergeOrders.size() < 2
                 ? Observable.empty()
                 : orderTaskExecutor
@@ -53,7 +53,7 @@ public class OrderTask {
     public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
                                               final MergeCommand mergeCommand) {
         final Observable<OrderEvent> cancelSLTP = createCancelSLTP(toMergeOrders, mergeCommand);
-        final Observable<OrderEvent> merge = mergeOrders(mergeCommand.mergeOrderLabel(), toMergeOrders);
+        final Observable<OrderEvent> merge = mergeOrdersWithExecutor(mergeCommand.mergeOrderLabel(), toMergeOrders);
 
         return cancelSLTP.concatWith(merge);
     }
@@ -80,7 +80,7 @@ public class OrderTask {
 
     public Observable<OrderEvent> createMerge(final Collection<IOrder> toMergeOrders,
                                               final MergeCommand command) {
-        return mergeOrders(command.mergeOrderLabel(), toMergeOrders)
+        return mergeOrdersWithExecutor(command.mergeOrderLabel(), toMergeOrders)
             .compose(command.mergeCompose());
     }
 

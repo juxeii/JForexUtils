@@ -3,7 +3,6 @@ package com.jforex.programming.position;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.MergeCommand;
 import com.jforex.programming.order.MergeCommand.MergeOption;
 import com.jforex.programming.order.event.OrderEvent;
@@ -14,7 +13,6 @@ import io.reactivex.functions.Function;
 
 public class ClosePositionCommand {
 
-    private final Instrument instrument;
     private final String mergeOrderLabel;
     private final CloseExecutionMode executionMode;
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> closeFilledCompose;
@@ -54,7 +52,6 @@ public class ClosePositionCommand {
     }
 
     private ClosePositionCommand(final Builder builder) {
-        instrument = builder.instrument;
         mergeOrderLabel = builder.mergeOrderLabel;
         executionMode = builder.executionMode;
         closeFilledCompose = builder.closeFilledCompose;
@@ -63,18 +60,12 @@ public class ClosePositionCommand {
         mergeCommand = builder.mergeCommand;
     }
 
-    public static final CloseOption with(final Instrument instrument,
-                                         final String mergeOrderLabel) {
-        return new Builder(checkNotNull(instrument),
-                           checkNotNull(mergeOrderLabel));
+    public static final CloseOption with(final String mergeOrderLabel) {
+        return new Builder(checkNotNull(mergeOrderLabel));
     }
 
     public final MergeCommand mergeCommand() {
         return mergeCommand;
-    }
-
-    public final Instrument instrument() {
-        return instrument;
     }
 
     public final String mergeOrderLabel() {
@@ -102,7 +93,6 @@ public class ClosePositionCommand {
                                 MergeForCloseOption,
                                 BuildOption {
 
-        private final Instrument instrument;
         private final String mergeOrderLabel;
         private CloseExecutionMode executionMode;
         private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> closeFilledCompose;
@@ -110,9 +100,7 @@ public class ClosePositionCommand {
         private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> closeAllCompose;
         private MergeCommand mergeCommand;
 
-        private Builder(final Instrument instrument,
-                        final String mergeOrderLabel) {
-            this.instrument = instrument;
+        private Builder(final String mergeOrderLabel) {
             this.mergeOrderLabel = mergeOrderLabel;
         }
 

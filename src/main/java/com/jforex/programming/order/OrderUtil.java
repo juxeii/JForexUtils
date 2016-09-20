@@ -95,10 +95,17 @@ public class OrderUtil {
         return positionTask.merge(instrument, command);
     }
 
-    public Observable<OrderEvent> closePosition(final ClosePositionCommand command) {
+    public Observable<OrderEvent> closePosition(final Instrument instrument,
+                                                final ClosePositionCommand command) {
         checkNotNull(command);
 
-        return positionTask.close(command);
+        return positionTask.close(instrument, command);
+    }
+
+    public Observable<OrderEvent> closeAllPositions(final ClosePositionCommand command) {
+        checkNotNull(command);
+
+        return positionTask.closeAll(command);
     }
 
     public final PositionOrders positionOrders(final Instrument instrument) {

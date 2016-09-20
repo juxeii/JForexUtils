@@ -163,12 +163,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void closePositionDelegatesToPositionTask() {
         final ClosePositionCommand command = mock(ClosePositionCommand.class);
 
-        when(positionTaskMock.close(command))
+        when(positionTaskMock.close(instrumentEURUSD, command))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.closePosition(command);
+        final Observable<OrderEvent> actualObservable = orderUtil.closePosition(instrumentEURUSD, command);
 
-        verify(positionTaskMock).close(command);
+        verify(positionTaskMock).close(instrumentEURUSD, command);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
