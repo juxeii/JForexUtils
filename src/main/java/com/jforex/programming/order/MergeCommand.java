@@ -1,39 +1,40 @@
-package com.jforex.programming.position;
+package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Optional;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.position.ClosePositionCommand;
 
 import io.reactivex.Observable;
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 
-public class MergePositionCommand {
+public class MergeCommand {
 
-    private final Instrument instrument;
     private final String mergeOrderLabel;
-    private final ExecutionMode executionMode;
+    private final MergeExecutionMode executionMode;
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLTPCompose;
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeCompose;
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> cancelSLCompose;
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> cancelTPCompose;
 
-    public enum ExecutionMode {
+    public enum MergeExecutionMode {
         ConcatSLAndTP,
         ConcatTPAndSL,
         MergeSLAndTP
     }
 
-    public interface MergePositionOption {
+    public interface MergeOption {
 
         public CancelSLOption withCancelSLAndTP(Function<Observable<OrderEvent>,
                                                          Observable<OrderEvent>> cancelSLTPCompose);
 
-        public MergePositionCommand build();
+        public ClosePositionCommand.Builder done();
+
+        public MergeCommand build();
     }
 
     public interface CancelSLOption {
@@ -52,10 +53,10 @@ public class MergePositionCommand {
 
     public interface ExecutionOption {
 
-        public MergeOption withExecutionMode(ExecutionMode executionMode);
+        public MergeComposeOption withExecutionMode(MergeExecutionMode executionMode);
     }
 
-    public interface MergeOption {
+    public interface MergeComposeOption {
 
         public BuildOption withMerge(Function<Observable<OrderEvent>,
                                               Observable<OrderEvent>> mergeCompose);
@@ -63,27 +64,18 @@ public class MergePositionCommand {
 
     public interface BuildOption {
 
-        public MergePositionCommand build();
+        public ClosePositionCommand.Builder done();
+
+        public MergeCommand build();
     }
 
-    private MergePositionCommand(final Builder builder) {
-        instrument = builder.instrument;
+    private MergeCommand(final Builder builder) {
         mergeOrderLabel = builder.mergeOrderLabel;
         cancelSLTPCompose = builder.cancelSLTPCompose;
         cancelSLCompose = builder.cancelSLCompose;
         cancelTPCompose = builder.cancelTPCompose;
         executionMode = builder.executionMode;
         mergeCompose = builder.mergeCompose;
-    }
-
-    public static final MergePositionOption with(final Instrument instrument,
-                                                 final String mergeOrderLabel) {
-        return new Builder(checkNotNull(instrument),
-                           checkNotNull(mergeOrderLabel));
-    }
-
-    public final Instrument instrument() {
-        return instrument;
     }
 
     public final String mergeOrderLabel() {
@@ -106,20 +98,30 @@ public class MergePositionCommand {
         return mergeCompose;
     }
 
-    public final ExecutionMode executionMode() {
+    public final MergeExecutionMode executionMode() {
         return executionMode;
     }
 
-    private static class Builder implements
-                                 MergePositionOption,
-                                 CancelSLOption,
-                                 CancelTPOption,
-                                 ExecutionOption,
-                                 MergeOption,
-                                 BuildOption {
+    public static final MergeOption with(final String mergeOrderLabel) {
+        return new Builder(checkNotNull(mergeOrderLabel));
+    }
 
-        private final Instrument instrument;
+    public static final MergeOption with(final ClosePositionCommand.Builder closePositionCommandBuilder,
+                                         final String mergeOrderLabel) {
+        return new Builder(checkNotNull(closePositionCommandBuilder),
+                           checkNotNull(mergeOrderLabel));
+    }
+
+    public static class Builder implements
+                                MergeOption,
+                                CancelSLOption,
+                                CancelTPOption,
+                                ExecutionOption,
+                                MergeComposeOption,
+                                BuildOption {
+
         private final String mergeOrderLabel;
+        private ClosePositionCommand.Builder closePositionCommandBuilder;
         private Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLTPCompose;
         private BiFunction<Observable<OrderEvent>,
                            IOrder,
@@ -127,18 +129,22 @@ public class MergePositionCommand {
         private BiFunction<Observable<OrderEvent>,
                            IOrder,
                            Observable<OrderEvent>> cancelTPCompose = (observable, o) -> observable;
-        private ExecutionMode executionMode;
         private Function<Observable<OrderEvent>,
                          Observable<OrderEvent>> mergeCompose = observable -> observable;
+        private MergeExecutionMode executionMode;
 
-        private Builder(final Instrument instrument,
-                        final String mergeOrderLabel) {
-            this.instrument = instrument;
+        public Builder(final String mergeOrderLabel) {
+            this.mergeOrderLabel = mergeOrderLabel;
+        }
+
+        public Builder(final ClosePositionCommand.Builder closePositionCommandBuilder,
+                       final String mergeOrderLabel) {
+            this.closePositionCommandBuilder = closePositionCommandBuilder;
             this.mergeOrderLabel = mergeOrderLabel;
         }
 
         @Override
-        public MergeOption withExecutionMode(final ExecutionMode executionMode) {
+        public MergeComposeOption withExecutionMode(final MergeExecutionMode executionMode) {
             this.executionMode = executionMode;
             return this;
         }
@@ -174,8 +180,14 @@ public class MergePositionCommand {
         }
 
         @Override
-        public MergePositionCommand build() {
-            return new MergePositionCommand(this);
+        public MergeCommand build() {
+            return new MergeCommand(this);
+        }
+
+        @Override
+        public ClosePositionCommand.Builder done() {
+            closePositionCommandBuilder.registerMergeCommand(this.build());
+            return closePositionCommandBuilder;
         }
     }
 }

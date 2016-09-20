@@ -11,15 +11,21 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.order.MergeCommand.MergeExecutionMode;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.settings.PlatformSettings;
 
 import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 public class OrderTask {
 
     private final OrderTaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
+
+    private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
 
     public OrderTask(final OrderTaskExecutor orderTaskExecutor,
                      final OrderUtilHandler orderUtilHandler) {
@@ -34,12 +40,67 @@ public class OrderTask {
             .flatMap(order -> orderUtilObservable(order, OrderCallReason.SUBMIT));
     }
 
-    public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
-                                              final Collection<IOrder> toMergeOrders) {
-        return orderTaskExecutor
-            .mergeOrders(mergeOrderLabel, toMergeOrders)
-            .toObservable()
-            .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE));
+    private Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
+                                               final Collection<IOrder> toMergeOrders) {
+        return toMergeOrders.size() < 2
+                ? Observable.empty()
+                : orderTaskExecutor
+                    .mergeOrders(mergeOrderLabel, toMergeOrders)
+                    .toObservable()
+                    .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE));
+    }
+
+    public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
+                                              final MergeCommand mergeCommand) {
+        final Observable<OrderEvent> cancelSLTP = createCancelSLTP(toMergeOrders, mergeCommand);
+        final Observable<OrderEvent> merge = mergeOrders(mergeCommand.mergeOrderLabel(), toMergeOrders);
+
+        return cancelSLTP.concatWith(merge);
+    }
+
+    public Observable<OrderEvent> createCancelSLTP(final Collection<IOrder> toMergeOrders,
+                                                   final MergeCommand command) {
+        if (!command.maybeCancelSLTPCompose().isPresent())
+            return Observable.empty();
+
+        final MergeExecutionMode executionMode = command.executionMode();
+        Observable<OrderEvent> obs;
+        if (executionMode == MergeExecutionMode.ConcatSLAndTP)
+            obs = cancelSL(toMergeOrders, command)
+                .concatWith(cancelTP(toMergeOrders, command));
+        else if (executionMode == MergeExecutionMode.ConcatTPAndSL)
+            obs = cancelTP(toMergeOrders, command)
+                .concatWith(cancelSL(toMergeOrders, command));
+        else
+            obs = cancelSL(toMergeOrders, command)
+                .mergeWith(cancelTP(toMergeOrders, command));
+
+        return obs.compose(command.maybeCancelSLTPCompose().get());
+    }
+
+    public Observable<OrderEvent> createMerge(final Collection<IOrder> toMergeOrders,
+                                              final MergeCommand command) {
+        return mergeOrders(command.mergeOrderLabel(), toMergeOrders)
+            .compose(command.mergeCompose());
+    }
+
+    private Observable<OrderEvent> cancelSL(final Collection<IOrder> toMergeOrders,
+                                            final MergeCommand command) {
+        return batch(toMergeOrders, order -> setStopLossPrice(order, platformSettings.noSLPrice())
+            .compose(command.cancelSLCompose(order)));
+    }
+
+    private Observable<OrderEvent> cancelTP(final Collection<IOrder> toMergeOrders,
+                                            final MergeCommand command) {
+        return batch(toMergeOrders, order -> setTakeProfitPrice(order, platformSettings.noTPPrice())
+            .compose(command.cancelTPCompose(order)));
+    }
+
+    public final Observable<OrderEvent> batch(final Collection<IOrder> orders,
+                                              final Function<IOrder, Observable<OrderEvent>> batchTask) {
+        return Observable.defer(() -> Observable
+            .fromIterable(orders)
+            .flatMap(batchTask::apply));
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {

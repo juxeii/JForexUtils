@@ -23,6 +23,8 @@ public interface PositionOrders {
 
     public Set<IOrder> filled();
 
+    public Set<IOrder> opened();
+
     public Set<IOrder> filledOrOpened();
 
     public Set<IOrder> filter(Predicate<IOrder> orderPredicate);

@@ -1,14 +1,11 @@
 package com.jforex.programming.order.test;
 
-import java.util.Collection;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.OrderTaskExecutor;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -27,12 +24,9 @@ public class OrderTaskTest extends InstrumentUtilForTest {
 
     private OrderTask orderTask;
 
-    @Mock
-    private OrderTaskExecutor orderTaskExecutorMock;
-    @Mock
-    private OrderUtilHandler orderUtilHandlerMock;
-    @Mock
-    private Position positionMock;
+    @Mock private OrderTaskExecutor orderTaskExecutorMock;
+    @Mock private OrderUtilHandler orderUtilHandlerMock;
+    @Mock private Position positionMock;
     private final IOrder orderForTest = buyOrderEURUSD;
     private Observable<OrderEvent> observable;
     private TestObserver<OrderEvent> testObserver;
@@ -86,45 +80,6 @@ public class OrderTaskTest extends InstrumentUtilForTest {
             @Test
             public void orderUtilHandlerIsCalled() {
                 verifyOrderUtilHandlerMockCall(OrderCallReason.SUBMIT);
-            }
-
-            @Test
-            public void subscriberCompletes() {
-                testObserver.assertComplete();
-            }
-        }
-    }
-
-    public class MergeOrdersSetup {
-
-        private final String mergeOrderLabel = "mergeOrderLabel";
-        private final Collection<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
-
-        @Before
-        public void setUp() {
-            when(orderTaskExecutorMock.mergeOrders(mergeOrderLabel, toMergeOrders))
-                .thenReturn(Single.just(orderForTest));
-
-            observable = orderTask.mergeOrders(mergeOrderLabel, toMergeOrders);
-        }
-
-        @Test
-        public void noCallToOrderUtilHandler() {
-            verifyZeroInteractions(orderUtilHandlerMock);
-        }
-
-        public class OnSubscribe {
-
-            @Before
-            public void setUp() {
-                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.MERGE);
-
-                testObserver = observable.test();
-            }
-
-            @Test
-            public void orderUtilHandlerIsCalled() {
-                verifyOrderUtilHandlerMockCall(OrderCallReason.MERGE);
             }
 
             @Test

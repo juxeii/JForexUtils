@@ -144,6 +144,11 @@ public class Position implements PositionOrders {
     }
 
     @Override
+    public Set<IOrder> opened() {
+        return notProcessingOrders(isOpened);
+    }
+
+    @Override
     public Set<IOrder> filledOrOpened() {
         return notProcessingOrders(isFilled.or(isOpened));
     }

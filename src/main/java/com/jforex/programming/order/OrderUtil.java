@@ -30,12 +30,12 @@ public class OrderUtil {
         return orderTask.submitOrder(orderParams);
     }
 
-    public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
-                                              final Collection<IOrder> toMergeOrders) {
-        checkNotNull(mergeOrderLabel);
+    public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
+                                              final MergeCommand command) {
         checkNotNull(toMergeOrders);
+        checkNotNull(command);
 
-        return orderTask.mergeOrders(mergeOrderLabel, toMergeOrders);
+        return orderTask.mergeOrders(toMergeOrders, command);
     }
 
     public Observable<OrderEvent> close(final IOrder order) {
@@ -87,12 +87,12 @@ public class OrderUtil {
         return orderTask.setTakeProfitPrice(order, newTP);
     }
 
-    public final Observable<OrderEvent> mergePosition(final Instrument instrument,
-                                                      final String mergeOrderLabel) {
+    public Observable<OrderEvent> mergePosition(final Instrument instrument,
+                                                final MergeCommand command) {
         checkNotNull(instrument);
-        checkNotNull(mergeOrderLabel);
+        checkNotNull(command);
 
-        return positionTask.merge(instrument, mergeOrderLabel);
+        return positionTask.merge(instrument, command);
     }
 
     public Observable<OrderEvent> closePosition(final ClosePositionCommand command) {
