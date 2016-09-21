@@ -14,35 +14,15 @@ import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
 
-public class OrderTask {
+public class OrderChange {
 
     private final OrderTaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
-    private final OrderMerge orderMerge;
-    private final OrderCancelSLAndTP orderCancelSLAndTP;
 
-    public OrderTask(final OrderTaskExecutor orderTaskExecutor,
-                     final OrderUtilHandler orderUtilHandler,
-                     final OrderMerge orderMerge,
-                     final OrderCancelSLAndTP orderCancelSLAndTP) {
+    public OrderChange(final OrderTaskExecutor orderTaskExecutor,
+                       final OrderUtilHandler orderUtilHandler) {
         this.orderTaskExecutor = orderTaskExecutor;
         this.orderUtilHandler = orderUtilHandler;
-        this.orderMerge = orderMerge;
-        this.orderCancelSLAndTP = orderCancelSLAndTP;
-    }
-
-    public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
-        return orderTaskExecutor
-            .submitOrder(orderParams)
-            .toObservable()
-            .flatMap(order -> orderUtilObservable(order, OrderCallReason.SUBMIT));
-    }
-
-    public Observable<OrderEvent> mergeOrders(final MergeCommand command) {
-        final Observable<OrderEvent> cancelSLTP = orderCancelSLAndTP.observeTask(command);
-        final Observable<OrderEvent> merge = orderMerge.mergeOrders(command);
-
-        return cancelSLTP.concatWith(merge);
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {

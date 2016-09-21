@@ -18,9 +18,9 @@ public class OrderUtil {
     private final OrderTask orderTask;
     private final PositionTask positionTask;
 
-    public OrderUtil(final OrderTask orderTaskExecutor,
+    public OrderUtil(final OrderTask orderTask,
                      final PositionTask positionTask) {
-        this.orderTask = orderTaskExecutor;
+        this.orderTask = orderTask;
         this.positionTask = positionTask;
     }
 
