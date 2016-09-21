@@ -1,13 +1,12 @@
 package com.jforex.programming.position;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.MergeCommand;
+import com.jforex.programming.order.MergeCommandWithParent;
+import com.jforex.programming.order.MergePositionCommand;
 import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.ClosePositionCommand.CloseExecutionMode;
@@ -30,23 +29,28 @@ public class PositionTask {
         return positionFactory.forInstrument(instrument);
     }
 
-    public Observable<OrderEvent> merge(final Instrument instrument,
-                                        final MergeCommand command) {
-        return Observable.defer(() -> {
-            final Collection<IOrder> toMergeOrders = filledOrders(instrument);
-            final Observable<OrderEvent> cancelSLTP = orderTask.createCancelSLTP(toMergeOrders, command);
-            final Observable<OrderEvent> merge = orderTask.createMerge(toMergeOrders, command);
-
-            return cancelSLTP.concatWith(merge);
-        });
+    public Observable<OrderEvent> merge(final MergePositionCommand command) {
+        return Observable.defer(() -> mergeForInnerCommand(command.mergeCommandWithParent(),
+                                                           command.instrument()));
     }
 
-    public Observable<OrderEvent> close(final Instrument instrument,
-                                        final ClosePositionCommand command) {
-        final Observable<OrderEvent> merge = merge(instrument, command.mergeCommand());
-        final Observable<OrderEvent> close = createClose(instrument, command);
+    private Observable<OrderEvent> mergeForInnerCommand(final MergeCommandWithParent innerMerge,
+                                                        final Instrument instrument) {
+        final Collection<IOrder> toMergeOrders = filledOrders(instrument);
+        final Observable<OrderEvent> cancelSLTP = orderTask.createCancelSLTP(toMergeOrders, innerMerge);
+        final Observable<OrderEvent> merge = orderTask.createMerge(toMergeOrders, innerMerge);
 
-        return merge.concatWith(close);
+        return cancelSLTP.concatWith(merge);
+    }
+
+    public Observable<OrderEvent> close(final ClosePositionCommand command) {
+        return Observable.defer(() -> {
+            final Observable<OrderEvent> merge = mergeForInnerCommand(command.mergeCommandWithParent(),
+                                                                      command.instrument());
+            final Observable<OrderEvent> close = createClose(command.instrument(), command);
+
+            return merge.concatWith(close);
+        });
     }
 
     private Observable<OrderEvent> createClose(final Instrument instrument,
@@ -66,15 +70,16 @@ public class PositionTask {
             .compose(command.closeAllCompose(order)));
     }
 
-    public Observable<OrderEvent> closeAll(final ClosePositionCommand command) {
-        final List<Observable<OrderEvent>> observables = positionFactory
-            .all()
-            .stream()
-            .map(Position::instrument)
-            .map(instrument -> close(instrument, command))
-            .collect(Collectors.toList());
-        return Observable.merge(observables);
-    }
+    // public Observable<OrderEvent> closeAll(final ClosePositionCommand
+    // command) {
+    // final List<Observable<OrderEvent>> observables = positionFactory
+    // .all()
+    // .stream()
+    // .map(Position::instrument)
+    // .map(instrument -> close(instrument, command))
+    // .collect(Collectors.toList());
+    // return Observable.merge(observables);
+    // }
 
     private final Observable<OrderEvent> batchFilledOrOpened(final Instrument instrument,
                                                              final Function<IOrder, Observable<OrderEvent>> batchTask) {

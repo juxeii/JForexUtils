@@ -3,8 +3,9 @@ package com.jforex.programming.position;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.MergeCommand;
-import com.jforex.programming.order.MergeCommand.MergeOption;
+import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.CommandParent;
+import com.jforex.programming.order.MergeCommandWithParent;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
@@ -13,12 +14,12 @@ import io.reactivex.functions.Function;
 
 public class ClosePositionCommand {
 
-    private final String mergeOrderLabel;
+    private final Instrument instrument;
     private final CloseExecutionMode executionMode;
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> closeFilledCompose;
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> closeOpenedCompose;
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> closeAllCompose;
-    private final MergeCommand mergeCommand;
+    private final MergeCommandWithParent mergeCommandWithParent;
 
     public enum CloseExecutionMode {
         CloseFilled,
@@ -43,7 +44,7 @@ public class ClosePositionCommand {
 
     public interface MergeForCloseOption {
 
-        public MergeOption withMergeCommand();
+        MergeCommandWithParent.MergeOption<BuildOption> withMergeOption(String mergeOrderLabel);
     }
 
     public interface BuildOption {
@@ -52,24 +53,20 @@ public class ClosePositionCommand {
     }
 
     private ClosePositionCommand(final Builder builder) {
-        mergeOrderLabel = builder.mergeOrderLabel;
+        instrument = builder.instrument;
         executionMode = builder.executionMode;
         closeFilledCompose = builder.closeFilledCompose;
         closeOpenedCompose = builder.closeOpenedCompose;
         closeAllCompose = builder.closeAllCompose;
-        mergeCommand = builder.mergeCommand;
+        mergeCommandWithParent = builder.mergeCommandWithParent;
     }
 
-    public static final CloseOption with(final String mergeOrderLabel) {
-        return new Builder(checkNotNull(mergeOrderLabel));
+    public final Instrument instrument() {
+        return instrument;
     }
 
-    public final MergeCommand mergeCommand() {
-        return mergeCommand;
-    }
-
-    public final String mergeOrderLabel() {
-        return mergeOrderLabel;
+    public final MergeCommandWithParent mergeCommandWithParent() {
+        return mergeCommandWithParent;
     }
 
     public final CloseExecutionMode executionMode() {
@@ -88,20 +85,26 @@ public class ClosePositionCommand {
         return obs -> closeAllCompose.apply(obs, order);
     }
 
+    public static CloseOption newBuilder(final Instrument instrument) {
+        return new Builder(checkNotNull(instrument));
+    }
+
     public static class Builder implements
                                 CloseOption,
                                 MergeForCloseOption,
+                                CommandParent<BuildOption>,
                                 BuildOption {
 
-        private final String mergeOrderLabel;
+        private final Instrument instrument;
         private CloseExecutionMode executionMode;
         private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> closeFilledCompose;
         private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> closeOpenedCompose;
         private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> closeAllCompose;
-        private MergeCommand mergeCommand;
+        private MergeCommandWithParent mergeCommandWithParent;
+        private MergeCommandWithParent.MergeOption<BuildOption> option;
 
-        private Builder(final String mergeOrderLabel) {
-            this.mergeOrderLabel = mergeOrderLabel;
+        private Builder(final Instrument instrument) {
+            this.instrument = instrument;
         }
 
         @Override
@@ -132,17 +135,19 @@ public class ClosePositionCommand {
         }
 
         @Override
-        public MergeOption withMergeCommand() {
-            return MergeCommand.with(this, mergeOrderLabel);
-        }
-
-        public void registerMergeCommand(final MergeCommand mergeCommand) {
-            this.mergeCommand = mergeCommand;
+        public ClosePositionCommand build() {
+            return new ClosePositionCommand(this);
         }
 
         @Override
-        public ClosePositionCommand build() {
-            return new ClosePositionCommand(this);
+        public MergeCommandWithParent.MergeOption<BuildOption> withMergeOption(final String mergeOrderLabel) {
+            option = MergeCommandWithParent.newBuilder(this, mergeOrderLabel);
+            return option;
+        }
+
+        @Override
+        public void addChild(final Object mergeCommandWithParent) {
+            this.mergeCommandWithParent = (MergeCommandWithParent) mergeCommandWithParent;
         }
     }
 }

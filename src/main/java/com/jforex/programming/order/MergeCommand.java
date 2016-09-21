@@ -7,11 +7,11 @@ import com.dukascopy.api.IOrder;
 public class MergeCommand {
 
     private final Collection<IOrder> toMergeOrders;
-    private MergeCommandWithParent mergeCommandWithParent;
+    private final MergeCommandWithParent mergeCommandWithParent;
 
     public interface MergeOption {
 
-        MergeCommandWithParent.MergeOption withMergeOption();
+        MergeCommandWithParent.MergeOption<BuildOption> withMergeOption();
 
         public MergeCommand build();
     }
@@ -23,10 +23,15 @@ public class MergeCommand {
 
     private MergeCommand(final Builder builder) {
         toMergeOrders = builder.toMergeOrders;
+        mergeCommandWithParent = builder.mergeCommandWithParent;
     }
 
     public final Collection<IOrder> toMergeOrders() {
         return toMergeOrders;
+    }
+
+    public final MergeCommandWithParent mergeCommandWithParent() {
+        return mergeCommandWithParent;
     }
 
     public static MergeOption newBuilder(final String mergeOrderLabel,
@@ -34,13 +39,13 @@ public class MergeCommand {
         return new Builder(mergeOrderLabel, toMergeOrders);
     }
 
-    public static class Builder implements
-                                BuildOption,
-                                CommandParent<BuildOption, MergeCommandWithParent>,
-                                MergeOption {
+    private static class Builder implements
+                                 BuildOption,
+                                 CommandParent<BuildOption>,
+                                 MergeOption {
 
         private MergeCommandWithParent mergeCommandWithParent;
-        private MergeCommandWithParent.MergeOption mergeChild;
+        private MergeCommandWithParent.MergeOption<BuildOption> option;
         private final String mergeOrderLabel;
         private final Collection<IOrder> toMergeOrders;
 
@@ -56,15 +61,14 @@ public class MergeCommand {
         }
 
         @Override
-        public com.jforex.programming.order.MergeCommandWithParent.MergeOption withMergeOption() {
-            mergeChild = MergeCommandWithParent.newBuilder(this, mergeOrderLabel);
-            return mergeChild;
+        public void addChild(final Object mergeCommandWithParent) {
+            this.mergeCommandWithParent = (MergeCommandWithParent) mergeCommandWithParent;
         }
 
         @Override
-        public BuildOption addChild(final MergeCommandWithParent mergeCommandWithParent) {
-            this.mergeCommandWithParent = mergeCommandWithParent;
-            return this;
+        public MergeCommandWithParent.MergeOption<BuildOption> withMergeOption() {
+            option = MergeCommandWithParent.newBuilder(this, mergeOrderLabel);
+            return option;
         }
     }
 }

@@ -2,8 +2,6 @@ package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Collection;
-
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
@@ -30,12 +28,10 @@ public class OrderUtil {
         return orderTask.submitOrder(orderParams);
     }
 
-    public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
-                                              final MergeCommand command) {
-        checkNotNull(toMergeOrders);
+    public Observable<OrderEvent> mergeOrders(final MergeCommand command) {
         checkNotNull(command);
 
-        return orderTask.mergeOrders(toMergeOrders, command);
+        return orderTask.mergeOrders(command);
     }
 
     public Observable<OrderEvent> close(final IOrder order) {
@@ -87,26 +83,24 @@ public class OrderUtil {
         return orderTask.setTakeProfitPrice(order, newTP);
     }
 
-    public Observable<OrderEvent> mergePosition(final Instrument instrument,
-                                                final MergeCommand command) {
-        checkNotNull(instrument);
+    public Observable<OrderEvent> mergePosition(final MergePositionCommand command) {
         checkNotNull(command);
 
-        return positionTask.merge(instrument, command);
+        return positionTask.merge(command);
     }
 
-    public Observable<OrderEvent> closePosition(final Instrument instrument,
-                                                final ClosePositionCommand command) {
+    public Observable<OrderEvent> closePosition(final ClosePositionCommand command) {
         checkNotNull(command);
 
-        return positionTask.close(instrument, command);
+        return positionTask.close(command);
     }
 
-    public Observable<OrderEvent> closeAllPositions(final ClosePositionCommand command) {
-        checkNotNull(command);
-
-        return positionTask.closeAll(command);
-    }
+    // public Observable<OrderEvent> closeAllPositions(final
+    // ClosePositionCommand command) {
+    // checkNotNull(command);
+    //
+    // return positionTask.closeAll(command);
+    // }
 
     public final PositionOrders positionOrders(final Instrument instrument) {
         checkNotNull(instrument);

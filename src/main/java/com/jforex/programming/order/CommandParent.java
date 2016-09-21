@@ -1,6 +1,6 @@
 package com.jforex.programming.order;
 
-public interface CommandParent<T, V> {
+public interface CommandParent<T> {
 
-    public T addChild(V child);
+    public void addChild(Object child);
 }

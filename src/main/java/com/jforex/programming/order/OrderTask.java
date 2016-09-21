@@ -12,7 +12,7 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.JForexUtil;
-import com.jforex.programming.order.MergeCommand.MergeExecutionMode;
+import com.jforex.programming.order.MergeCommandWithParent.MergeExecutionMode;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
@@ -50,19 +50,18 @@ public class OrderTask {
                     .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE));
     }
 
-    public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
-                                              final MergeCommand mergeCommand) {
-        final Observable<OrderEvent> cancelSLTP = createCancelSLTP(toMergeOrders, mergeCommand);
-        final Observable<OrderEvent> merge = mergeOrdersWithExecutor(mergeCommand.mergeOrderLabel(), toMergeOrders);
+    public Observable<OrderEvent> mergeOrders(final MergeCommand command) {
+        final Collection<IOrder> toMergeOrders = command.toMergeOrders();
+        final MergeCommandWithParent innerMerge = command.mergeCommandWithParent();
+
+        final Observable<OrderEvent> cancelSLTP = createCancelSLTP(toMergeOrders, innerMerge);
+        final Observable<OrderEvent> merge = mergeOrdersWithExecutor(innerMerge.mergeOrderLabel(), toMergeOrders);
 
         return cancelSLTP.concatWith(merge);
     }
 
     public Observable<OrderEvent> createCancelSLTP(final Collection<IOrder> toMergeOrders,
-                                                   final MergeCommand command) {
-        if (!command.maybeCancelSLTPCompose().isPresent())
-            return Observable.empty();
-
+                                                   final MergeCommandWithParent command) {
         final MergeExecutionMode executionMode = command.executionMode();
         Observable<OrderEvent> obs;
         if (executionMode == MergeExecutionMode.ConcatSLAndTP)
@@ -75,23 +74,23 @@ public class OrderTask {
             obs = cancelSL(toMergeOrders, command)
                 .mergeWith(cancelTP(toMergeOrders, command));
 
-        return obs.compose(command.maybeCancelSLTPCompose().get());
+        return obs.compose(command.cancelSLTPCompose());
     }
 
     public Observable<OrderEvent> createMerge(final Collection<IOrder> toMergeOrders,
-                                              final MergeCommand command) {
+                                              final MergeCommandWithParent command) {
         return mergeOrdersWithExecutor(command.mergeOrderLabel(), toMergeOrders)
             .compose(command.mergeCompose());
     }
 
     private Observable<OrderEvent> cancelSL(final Collection<IOrder> toMergeOrders,
-                                            final MergeCommand command) {
+                                            final MergeCommandWithParent command) {
         return batch(toMergeOrders, order -> setStopLossPrice(order, platformSettings.noSLPrice())
             .compose(command.cancelSLCompose(order)));
     }
 
     private Observable<OrderEvent> cancelTP(final Collection<IOrder> toMergeOrders,
-                                            final MergeCommand command) {
+                                            final MergeCommandWithParent command) {
         return batch(toMergeOrders, order -> setTakeProfitPrice(order, platformSettings.noTPPrice())
             .compose(command.cancelTPCompose(order)));
     }
