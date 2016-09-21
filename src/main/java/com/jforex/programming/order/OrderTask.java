@@ -62,6 +62,9 @@ public class OrderTask {
 
     public Observable<OrderEvent> createCancelSLTP(final Collection<IOrder> toMergeOrders,
                                                    final MergeCommandWithParent command) {
+        if (toMergeOrders.size() < 2)
+            return Observable.empty();
+
         final MergeExecutionMode executionMode = command.executionMode();
         Observable<OrderEvent> obs;
         if (executionMode == MergeExecutionMode.ConcatSLAndTP)

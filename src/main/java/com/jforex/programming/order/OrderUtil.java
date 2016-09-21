@@ -2,6 +2,8 @@ package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Function;
+
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
@@ -95,12 +97,11 @@ public class OrderUtil {
         return positionTask.close(command);
     }
 
-    // public Observable<OrderEvent> closeAllPositions(final
-    // ClosePositionCommand command) {
-    // checkNotNull(command);
-    //
-    // return positionTask.closeAll(command);
-    // }
+    public Observable<OrderEvent> closeAllPositions(final Function<Instrument, ClosePositionCommand> commandFactory) {
+        checkNotNull(commandFactory);
+
+        return positionTask.closeAll(commandFactory);
+    }
 
     public final PositionOrders positionOrders(final Instrument instrument) {
         checkNotNull(instrument);
