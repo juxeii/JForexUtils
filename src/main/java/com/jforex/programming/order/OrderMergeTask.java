@@ -12,38 +12,34 @@ import io.reactivex.Observable;
 
 public class OrderMergeTask {
 
-    private final OrderCancelSLAndTP orderCancelSLAndTP;
-    private final OrderBasicTask orderBasicTask;
+    private final MergeCommandHandler commandHandler;
     private final PositionUtil positionUtil;
 
-    public OrderMergeTask(final OrderCancelSLAndTP orderCancelSLAndTP,
-                          final OrderBasicTask orderBasicTask,
+    public OrderMergeTask(final MergeCommandHandler commandHandler,
                           final PositionUtil positionUtil) {
-        this.orderCancelSLAndTP = orderCancelSLAndTP;
-        this.orderBasicTask = orderBasicTask;
+        this.commandHandler = commandHandler;
         this.positionUtil = positionUtil;
     }
 
-    public Observable<OrderEvent> observeCommand(final MergeCommand command) {
-        return observeCommonCommand(command.commonMergeCommand(),
-                                    command.toMergeOrders());
+    public Observable<OrderEvent> merge(final MergeCommand command) {
+        return Observable.defer(() -> splitCancelSLTPAndMerge(command.toMergeOrders(),
+                                                              command.commonMergeCommand()));
     }
 
-    public Observable<OrderEvent> observePositionCommand(final MergePositionCommand command) {
-        return observeCommonCommand(command.commonMergeCommand(),
-                                    positionUtil.filledOrders(command.instrument()));
+    public Observable<OrderEvent> mergePosition(final MergePositionCommand command) {
+        return Observable.defer(() -> splitCancelSLTPAndMerge(positionUtil.filledOrders(command.instrument()),
+                                                              command.commonMergeCommand()));
     }
 
-    public Observable<OrderEvent> observeCommonCommand(final CommonMergeCommand command,
-                                                       final Collection<IOrder> toMergeOrders) {
+    public Observable<OrderEvent> merge(final CommonMergeCommand command,
+                                        final Collection<IOrder> toMergeOrders) {
         return Observable.defer(() -> splitCancelSLTPAndMerge(toMergeOrders, command));
     }
 
     public Observable<OrderEvent> splitCancelSLTPAndMerge(final Collection<IOrder> toMergeOrders,
                                                           final CommonMergeCommand command) {
-        final String mergeOrderLabel = command.mergeOrderLabel();
-        final Observable<OrderEvent> cancelSLTP = orderCancelSLAndTP.observeTask(toMergeOrders, command);
-        final Observable<OrderEvent> merge = orderBasicTask.mergeOrders(mergeOrderLabel, toMergeOrders);
+        final Observable<OrderEvent> cancelSLTP = commandHandler.observeCancelSLTP(toMergeOrders, command);
+        final Observable<OrderEvent> merge = commandHandler.observeMerge(toMergeOrders, command);
 
         return cancelSLTP.concatWith(merge);
     }

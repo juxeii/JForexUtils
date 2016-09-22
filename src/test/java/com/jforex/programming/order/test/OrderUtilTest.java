@@ -80,12 +80,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void mergeOrdersWithCommandDelegatesToMergeTask() {
         final MergeCommand command = mock(MergeCommand.class);
-        when(orderMergeTaskMock.observeCommand(command))
+        when(orderMergeTaskMock.merge(command))
             .thenReturn(orderEventObservable);
 
         final Observable<OrderEvent> actualObservable = orderUtil.mergeOrders(command);
 
-        verify(orderMergeTaskMock).observeCommand(command);
+        verify(orderMergeTaskMock).merge(command);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
@@ -176,12 +176,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void mergePositionDelegatesToMergeTask() {
         final MergePositionCommand command = mock(MergePositionCommand.class);
 
-        when(orderMergeTaskMock.observePositionCommand(command))
+        when(orderMergeTaskMock.mergePosition(command))
             .thenReturn(orderEventObservable);
 
         final Observable<OrderEvent> actualObservable = orderUtil.mergePosition(command);
 
-        verify(orderMergeTaskMock).observePositionCommand(command);
+        verify(orderMergeTaskMock).mergePosition(command);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 

@@ -20,19 +20,33 @@ public class OrderChangeBatch {
         this.orderBasicTask = orderBasicTask;
     }
 
-    public Observable<OrderEvent> close(final Collection<IOrder> orders) {
+    public Observable<OrderEvent> close(final Collection<IOrder> orders,
+                                        final Function<IOrder,
+                                                       Function<Observable<OrderEvent>,
+                                                                Observable<OrderEvent>>> composer) {
         return forBasicTask(orders,
-                            order -> orderBasicTask.close(order));
+                            order -> orderBasicTask
+                                .close(order)
+                                .compose(composer.apply(order)));
     }
 
-    public Observable<OrderEvent> cancelSL(final Collection<IOrder> orders) {
+    public Observable<OrderEvent> cancelSL(final Collection<IOrder> orders,
+                                           final Function<IOrder,
+                                                          Function<Observable<OrderEvent>,
+                                                                   Observable<OrderEvent>>> composer) {
         return forBasicTask(orders,
-                            order -> orderBasicTask.setStopLossPrice(order, platformSettings.noSLPrice()));
+                            order -> orderBasicTask
+                                .setStopLossPrice(order, platformSettings.noSLPrice())
+                                .compose(composer.apply(order)));
     }
 
-    public Observable<OrderEvent> cancelTP(final Collection<IOrder> orders) {
+    public Observable<OrderEvent> cancelTP(final Collection<IOrder> orders,
+                                           final Function<IOrder,
+                                                          Function<Observable<OrderEvent>,
+                                                                   Observable<OrderEvent>>> composer) {
         return forBasicTask(orders,
-                            order -> orderBasicTask.setTakeProfitPrice(order, platformSettings.noTPPrice()));
+                            order -> orderBasicTask.setTakeProfitPrice(order, platformSettings.noTPPrice())
+                                .compose(composer.apply(order)));
     }
 
     public Observable<OrderEvent> forBasicTask(final Collection<IOrder> orders,

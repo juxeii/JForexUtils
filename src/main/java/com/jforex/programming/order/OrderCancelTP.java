@@ -18,7 +18,7 @@ public class OrderCancelTP {
     public Observable<OrderEvent> observeTask(final Collection<IOrder> toCancelTPOrders,
                                               final CommonMergeCommand command) {
         return Observable.defer(() -> orderChangeBatch
-            .cancelSL(toCancelTPOrders)
+            .cancelSL(toCancelTPOrders, command::singleCancelTPCompose)
             .compose(command.cancelSLTPCompose()));
     }
 }

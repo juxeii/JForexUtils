@@ -48,7 +48,7 @@ public class OrderUtil {
     public Observable<OrderEvent> mergeOrders(final MergeCommand command) {
         checkNotNull(command);
 
-        return orderMergeTask.observeCommand(command);
+        return orderMergeTask.merge(command);
     }
 
     public Observable<OrderEvent> close(final IOrder order) {
@@ -103,7 +103,7 @@ public class OrderUtil {
     public Observable<OrderEvent> mergePosition(final MergePositionCommand command) {
         checkNotNull(command);
 
-        return orderMergeTask.observePositionCommand(command);
+        return orderMergeTask.mergePosition(command);
     }
 
     public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, MergePositionCommand> commandFactory) {

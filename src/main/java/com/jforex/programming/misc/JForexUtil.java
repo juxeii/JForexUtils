@@ -18,6 +18,8 @@ import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.order.ClosePositionCommandHandler;
+import com.jforex.programming.order.MergeCommandHandler;
 import com.jforex.programming.order.OrderBasicTask;
 import com.jforex.programming.order.OrderCancelSL;
 import com.jforex.programming.order.OrderCancelSLAndTP;
@@ -69,6 +71,8 @@ public class JForexUtil {
     private OrderChangeBatch orderChangeBatch;
     private OrderMergeTask orderMergeTask;
     private OrderCloseTask orderCloseTask;
+    private MergeCommandHandler mergeCommandHandler;
+    private ClosePositionCommandHandler closePositionCommandHandler;
     private OrderCancelSLAndTP orderCancelSLAndTP;
     private OrderCancelSL orderCancelSL;
     private OrderCancelTP orderCancelTP;
@@ -130,15 +134,15 @@ public class JForexUtil {
         orderTaskExecutor = new OrderTaskExecutor(taskExecutor, engineUtil);
         orderBasicTask = new OrderBasicTask(orderTaskExecutor, orderUtilHandler);
         orderChangeBatch = new OrderChangeBatch(orderBasicTask);
-        orderMergeTask = new OrderMergeTask(orderCancelSLAndTP,
-                                            orderBasicTask,
-                                            positionUtil);
-        orderCloseTask = new OrderCloseTask(orderMergeTask,
-                                            orderChangeBatch,
-                                            positionUtil);
         orderCancelSL = new OrderCancelSL(orderChangeBatch);
         orderCancelTP = new OrderCancelTP(orderChangeBatch);
         orderCancelSLAndTP = new OrderCancelSLAndTP(orderCancelSL, orderCancelTP);
+        mergeCommandHandler = new MergeCommandHandler(orderCancelSLAndTP, orderBasicTask);
+        orderMergeTask = new OrderMergeTask(mergeCommandHandler, positionUtil);
+        closePositionCommandHandler = new ClosePositionCommandHandler(orderMergeTask,
+                                                                      orderChangeBatch,
+                                                                      positionUtil);
+        orderCloseTask = new OrderCloseTask(closePositionCommandHandler);
         orderUtil = new OrderUtil(orderBasicTask,
                                   orderMergeTask,
                                   orderCloseTask,

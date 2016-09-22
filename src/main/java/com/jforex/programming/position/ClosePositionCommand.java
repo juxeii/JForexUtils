@@ -2,6 +2,9 @@ package com.jforex.programming.position;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.BiFunction;
+
+import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.CommandParent;
 import com.jforex.programming.order.CommonMergeCommand;
@@ -17,12 +20,20 @@ public class ClosePositionCommand {
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> closeFilledCompose;
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> closeOpenedCompose;
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> closeAllCompose;
+    private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCloseCompose;
     private final CommonMergeCommand mergeCommandWithParent;
 
     public enum CloseExecutionMode {
         CloseFilled,
         CloseOpened,
         CloseAll
+    }
+
+    public interface SingleCloseOption {
+
+        CloseOption singleCloseCompose(BiFunction<Observable<OrderEvent>,
+                                                  IOrder,
+                                                  Observable<OrderEvent>> singleCloseCompose);
     }
 
     public interface CloseOption {
@@ -53,6 +64,7 @@ public class ClosePositionCommand {
         closeFilledCompose = builder.closeFilledCompose;
         closeOpenedCompose = builder.closeOpenedCompose;
         closeAllCompose = builder.closeAllCompose;
+        singleCloseCompose = builder.singleCloseCompose;
         mergeCommandWithParent = builder.mergeCommandWithParent;
     }
 
@@ -80,6 +92,12 @@ public class ClosePositionCommand {
         return closeAllCompose;
     }
 
+    public final Function<Observable<OrderEvent>,
+                          Observable<OrderEvent>>
+           singleCloseCompose(final IOrder orderToClose) {
+        return obs -> singleCloseCompose.apply(obs, orderToClose);
+    }
+
     public static CloseOption newBuilder(final Instrument instrument) {
         return new Builder(checkNotNull(instrument));
     }
@@ -87,6 +105,7 @@ public class ClosePositionCommand {
     public static class Builder implements
                                 CloseOption,
                                 MergeForCloseOption,
+                                SingleCloseOption,
                                 CommandParent<BuildOption>,
                                 BuildOption {
 
@@ -95,11 +114,20 @@ public class ClosePositionCommand {
         private Function<Observable<OrderEvent>, Observable<OrderEvent>> closeFilledCompose;
         private Function<Observable<OrderEvent>, Observable<OrderEvent>> closeOpenedCompose;
         private Function<Observable<OrderEvent>, Observable<OrderEvent>> closeAllCompose;
+        private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCloseCompose;
         private CommonMergeCommand mergeCommandWithParent;
         private CommonMergeCommand.MergeOption<BuildOption> option;
 
         private Builder(final Instrument instrument) {
             this.instrument = instrument;
+        }
+
+        @Override
+        public CloseOption singleCloseCompose(final BiFunction<Observable<OrderEvent>,
+                                                               IOrder,
+                                                               Observable<OrderEvent>> singleCloseCompose) {
+            this.singleCloseCompose = checkNotNull(singleCloseCompose);
+            return this;
         }
 
         @Override
