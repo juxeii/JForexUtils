@@ -98,7 +98,7 @@ public class ClosePositionCommand {
         return obs -> singleCloseCompose.apply(obs, orderToClose);
     }
 
-    public static CloseOption newBuilder(final Instrument instrument) {
+    public static SingleCloseOption newBuilder(final Instrument instrument) {
         return new Builder(checkNotNull(instrument));
     }
 

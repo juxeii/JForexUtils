@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import java.util.Set;
-import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +27,7 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {

@@ -3,7 +3,6 @@ package com.jforex.programming.order;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -13,6 +12,7 @@ import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 public class OrderUtil {
 

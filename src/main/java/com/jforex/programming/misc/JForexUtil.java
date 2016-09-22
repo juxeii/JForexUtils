@@ -142,7 +142,7 @@ public class JForexUtil {
         closePositionCommandHandler = new ClosePositionCommandHandler(orderMergeTask,
                                                                       orderChangeBatch,
                                                                       positionUtil);
-        orderCloseTask = new OrderCloseTask(closePositionCommandHandler);
+        orderCloseTask = new OrderCloseTask(closePositionCommandHandler, positionUtil);
         orderUtil = new OrderUtil(orderBasicTask,
                                   orderMergeTask,
                                   orderCloseTask,

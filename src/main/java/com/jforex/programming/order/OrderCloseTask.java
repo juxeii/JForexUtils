@@ -3,15 +3,20 @@ package com.jforex.programming.order;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.ClosePositionCommand;
+import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 public class OrderCloseTask {
 
     private final ClosePositionCommandHandler commandHandler;
+    private final PositionUtil positionUtil;
 
-    public OrderCloseTask(final ClosePositionCommandHandler commandHandler) {
+    public OrderCloseTask(final ClosePositionCommandHandler commandHandler,
+                          final PositionUtil positionUtil) {
         this.commandHandler = commandHandler;
+        this.positionUtil = positionUtil;
     }
 
     public Observable<OrderEvent> close(final ClosePositionCommand command) {
@@ -23,17 +28,11 @@ public class OrderCloseTask {
         });
     }
 
-    public Observable<OrderEvent> closeAll(final java.util.function.Function<Instrument,
-                                                                             ClosePositionCommand> commandFactory) {
-//        return Observable.defer(() -> {
-//            final List<Observable<OrderEvent>> observables = positionFactory
-//                .all()
-//                .stream()
-//                .map(Position::instrument)
-//                .map(instrument -> close(commandFactory.apply(instrument)))
-//                .collect(Collectors.toList());
-//            return Observable.merge(observables);
-//        });
-        return Observable.empty();
+    public Observable<OrderEvent> closeAll(final Function<Instrument, ClosePositionCommand> commandFactory) {
+        return Observable.defer(() -> {
+            final Function<Instrument, Observable<OrderEvent>> observablesFromFactory =
+                    instrument -> close(commandFactory.apply(instrument));
+            return Observable.merge(positionUtil.observablesFromFactory(observablesFromFactory));
+        });
     }
 }
