@@ -25,11 +25,5 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
 
     @Test
     public void defaultCommandValuesAreCorrect() throws Exception {
-        command = ClosePositionCommand
-            .newBuilder(instrumentEURUSD)
-            .closeOpened((obs, o) -> obs)
-            .build();
-
-        // assertThat(command.mergeOrderLabel(), equalTo(mergeOrderLabel));
     }
 }

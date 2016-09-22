@@ -1,6 +1,9 @@
 package com.jforex.programming.order;
 
-import com.jforex.programming.order.MergeCommandWithParent.MergeExecutionMode;
+import java.util.Collection;
+
+import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.CommonMergeCommand.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
@@ -16,15 +19,17 @@ public class OrderCancelSLAndTP {
         this.orderCancelTP = orderCancelTP;
     }
 
-    public Observable<OrderEvent> observeTask(final MergeCommand command) {
-        return command.toMergeOrders().size() < 2
+    public Observable<OrderEvent> observeTask(final Collection<IOrder> toCancelSLTPOrders,
+                                              final CommonMergeCommand command) {
+        return Observable.defer(() -> toCancelSLTPOrders.size() < 2
                 ? Observable.empty()
-                : createTask(command.mergeCommandWithParent());
+                : createTask(toCancelSLTPOrders, command));
     }
 
-    private Observable<OrderEvent> createTask(final MergeCommandWithParent command) {
-        final Observable<OrderEvent> cancelSL = orderCancelSL.observeTask(command);
-        final Observable<OrderEvent> cancelTP = orderCancelTP.observeTask(command);
+    private Observable<OrderEvent> createTask(final Collection<IOrder> toCancelSLTPOrders,
+                                              final CommonMergeCommand command) {
+        final Observable<OrderEvent> cancelSL = orderCancelSL.observeTask(toCancelSLTPOrders, command);
+        final Observable<OrderEvent> cancelTP = orderCancelTP.observeTask(toCancelSLTPOrders, command);
 
         return arrangeObservables(cancelSL, cancelTP, command.executionMode())
             .compose(command.cancelSLTPCompose());

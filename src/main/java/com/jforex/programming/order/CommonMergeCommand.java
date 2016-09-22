@@ -9,7 +9,7 @@ import io.reactivex.Observable;
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 
-public class MergeCommandWithParent {
+public class CommonMergeCommand {
 
     private final String mergeOrderLabel;
     private final MergeExecutionMode executionMode;
@@ -62,7 +62,7 @@ public class MergeCommandWithParent {
         public V done();
     }
 
-    private MergeCommandWithParent(final Builder<?> builder) {
+    private CommonMergeCommand(final Builder<?> builder) {
         mergeOrderLabel = builder.mergeOrderLabel;
         cancelSLTPCompose = builder.cancelSLTPCompose;
         cancelSLCompose = builder.cancelSLCompose;
@@ -127,8 +127,8 @@ public class MergeCommandWithParent {
             this.mergeOrderLabel = mergeOrderLabel;
         }
 
-        private MergeCommandWithParent build() {
-            return new MergeCommandWithParent(this);
+        private CommonMergeCommand build() {
+            return new CommonMergeCommand(this);
         }
 
         @SuppressWarnings("unchecked")

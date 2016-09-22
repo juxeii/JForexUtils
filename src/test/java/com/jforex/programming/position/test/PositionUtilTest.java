@@ -11,11 +11,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.OrderTask;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.PositionTask;
+import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -23,12 +22,10 @@ import io.reactivex.functions.Action;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class PositionTaskTest extends InstrumentUtilForTest {
+public class PositionUtilTest extends InstrumentUtilForTest {
 
-    private PositionTask positionTask;
+    private PositionUtil positionUtil;
 
-    @Mock
-    private OrderTask orderTaskMock;
     @Mock
     private PositionFactory positionFactoryMock;
     @Mock
@@ -42,7 +39,7 @@ public class PositionTaskTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        positionTask = new PositionTask(orderTaskMock, positionFactoryMock);
+        positionUtil = new PositionUtil(positionFactoryMock);
     }
 
     private void setUpMocks() {
@@ -60,7 +57,7 @@ public class PositionTaskTest extends InstrumentUtilForTest {
 
     @Test
     public void positionOrdersIsCorrect() {
-        assertThat(positionTask.positionOrders(instrumentEURUSD), equalTo(positionMock));
+        assertThat(positionUtil.positionOrders(instrumentEURUSD), equalTo(positionMock));
     }
 
     // public class ClosePositionTests {

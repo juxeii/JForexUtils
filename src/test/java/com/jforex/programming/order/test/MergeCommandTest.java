@@ -7,7 +7,7 @@ import org.junit.Test;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.MergeCommand;
-import com.jforex.programming.order.MergeCommandWithParent.MergeExecutionMode;
+import com.jforex.programming.order.CommonMergeCommand.MergeExecutionMode;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class MergeCommandTest extends InstrumentUtilForTest {

@@ -7,11 +7,11 @@ import com.dukascopy.api.IOrder;
 public class MergeCommand {
 
     private final Collection<IOrder> toMergeOrders;
-    private final MergeCommandWithParent mergeCommandWithParent;
+    private final CommonMergeCommand mergeCommandWithParent;
 
     public interface MergeOption {
 
-        MergeCommandWithParent.MergeOption<BuildOption> withMergeOption();
+        CommonMergeCommand.MergeOption<BuildOption> withMergeOption();
 
         public MergeCommand build();
     }
@@ -30,7 +30,7 @@ public class MergeCommand {
         return toMergeOrders;
     }
 
-    public final MergeCommandWithParent mergeCommandWithParent() {
+    public final CommonMergeCommand commonMergeCommand() {
         return mergeCommandWithParent;
     }
 
@@ -44,8 +44,8 @@ public class MergeCommand {
                                  CommandParent<BuildOption>,
                                  MergeOption {
 
-        private MergeCommandWithParent mergeCommandWithParent;
-        private MergeCommandWithParent.MergeOption<BuildOption> option;
+        private CommonMergeCommand mergeCommandWithParent;
+        private CommonMergeCommand.MergeOption<BuildOption> option;
         private final String mergeOrderLabel;
         private final Collection<IOrder> toMergeOrders;
 
@@ -62,12 +62,12 @@ public class MergeCommand {
 
         @Override
         public void addChild(final Object mergeCommandWithParent) {
-            this.mergeCommandWithParent = (MergeCommandWithParent) mergeCommandWithParent;
+            this.mergeCommandWithParent = (CommonMergeCommand) mergeCommandWithParent;
         }
 
         @Override
-        public MergeCommandWithParent.MergeOption<BuildOption> withMergeOption() {
-            option = MergeCommandWithParent.newBuilder(this, mergeOrderLabel);
+        public CommonMergeCommand.MergeOption<BuildOption> withMergeOption() {
+            option = CommonMergeCommand.newBuilder(this, mergeOrderLabel);
             return option;
         }
     }

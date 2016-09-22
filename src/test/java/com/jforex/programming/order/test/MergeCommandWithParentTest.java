@@ -4,13 +4,13 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.jforex.programming.order.CommandParent;
-import com.jforex.programming.order.MergeCommandWithParent;
-import com.jforex.programming.order.MergeCommandWithParent.MergeExecutionMode;
+import com.jforex.programming.order.CommonMergeCommand;
+import com.jforex.programming.order.CommonMergeCommand.MergeExecutionMode;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class MergeCommandWithParentTest extends InstrumentUtilForTest {
 
-    private MergeCommandWithParent mergeCommandWithParent;
+    private CommonMergeCommand mergeCommandWithParent;
 
     private static final String mergeOrderLabel = "mergeOrderLabel";
 
@@ -19,7 +19,7 @@ public class MergeCommandWithParentTest extends InstrumentUtilForTest {
 
     @Test
     public void defaultCommandValuesAreCorrect() throws Exception {
-        MergeCommandWithParent
+        CommonMergeCommand
             .newBuilder(commandParentMock, mergeOrderLabel)
             .withCancelSLAndTP(obs -> obs)
             .withCancelSL((obs, o) -> obs)

@@ -18,15 +18,21 @@ import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.order.OrderBasicTask;
+import com.jforex.programming.order.OrderCancelSL;
+import com.jforex.programming.order.OrderCancelSLAndTP;
+import com.jforex.programming.order.OrderCancelTP;
+import com.jforex.programming.order.OrderChangeBatch;
+import com.jforex.programming.order.OrderCloseTask;
 import com.jforex.programming.order.OrderEventTypeDataFactory;
-import com.jforex.programming.order.OrderTask;
+import com.jforex.programming.order.OrderMergeTask;
 import com.jforex.programming.order.OrderTaskExecutor;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.position.PositionFactory;
-import com.jforex.programming.position.PositionTask;
+import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -53,13 +59,19 @@ public class JForexUtil {
     private BarQuoteRepository barQuoteRepository;
 
     private PositionFactory positionFactory;
-    private PositionTask positionTask;
+    private PositionUtil positionUtil;
     private OrderEventGateway orderEventGateway;
     private TaskExecutor taskExecutor;
     private OrderTaskExecutor orderTaskExecutor;
-    private OrderTask orderTask;
     private OrderUtilHandler orderUtilHandler;
     private final OrderEventTypeDataFactory orderEventTypeDataFactory = new OrderEventTypeDataFactory();
+    private OrderBasicTask orderBasicTask;
+    private OrderChangeBatch orderChangeBatch;
+    private OrderMergeTask orderMergeTask;
+    private OrderCloseTask orderCloseTask;
+    private OrderCancelSLAndTP orderCancelSLAndTP;
+    private OrderCancelSL orderCancelSL;
+    private OrderCancelTP orderCancelTP;
     private OrderUtil orderUtil;
     private final OrderEventFactory messageToOrderEvent = new OrderEventFactory();
 
@@ -110,14 +122,27 @@ public class JForexUtil {
     }
 
     private void initOrderRelated() {
+        engineUtil = new IEngineUtil(engine);
         taskExecutor = new TaskExecutor(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
+        positionUtil = new PositionUtil(positionFactory);
         orderUtilHandler = new OrderUtilHandler(orderEventGateway, orderEventTypeDataFactory);
-        engineUtil = new IEngineUtil(engine);
         orderTaskExecutor = new OrderTaskExecutor(taskExecutor, engineUtil);
-        orderTask = new OrderTask(orderTaskExecutor, orderUtilHandler);
-        positionTask = new PositionTask(orderTask, positionFactory);
-        orderUtil = new OrderUtil(orderTask, positionTask);
+        orderBasicTask = new OrderBasicTask(orderTaskExecutor, orderUtilHandler);
+        orderChangeBatch = new OrderChangeBatch(orderBasicTask);
+        orderMergeTask = new OrderMergeTask(orderCancelSLAndTP,
+                                            orderBasicTask,
+                                            positionUtil);
+        orderCloseTask = new OrderCloseTask(orderMergeTask,
+                                            orderChangeBatch,
+                                            positionUtil);
+        orderCancelSL = new OrderCancelSL(orderChangeBatch);
+        orderCancelTP = new OrderCancelTP(orderChangeBatch);
+        orderCancelSLAndTP = new OrderCancelSLAndTP(orderCancelSL, orderCancelTP);
+        orderUtil = new OrderUtil(orderBasicTask,
+                                  orderMergeTask,
+                                  orderCloseTask,
+                                  positionUtil);
     }
 
     public IContext context() {
@@ -162,8 +187,8 @@ public class JForexUtil {
         return orderUtil;
     }
 
-    public PositionTask positionTask() {
-        return positionTask;
+    public PositionUtil positionUtil() {
+        return positionUtil;
     }
 
     public void onStop() {

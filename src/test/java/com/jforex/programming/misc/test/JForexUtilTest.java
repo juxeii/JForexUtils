@@ -70,8 +70,8 @@ public class JForexUtilTest extends QuoteProviderForTest {
     }
 
     @Test
-    public void returnedPositionTaskIsValid() {
-        assertNotNull(jForexUtil.positionTask());
+    public void returnedPositionUtilIsValid() {
+        assertNotNull(jForexUtil.positionUtil());
     }
 
     @Test
