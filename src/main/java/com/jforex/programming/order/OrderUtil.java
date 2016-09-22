@@ -27,19 +27,19 @@ public class OrderUtil {
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
         checkNotNull(orderParams);
 
-        return orderTask.submitOrder(orderParams);
+        return defer(orderTask.submitOrder(orderParams));
     }
 
     public Observable<OrderEvent> mergeOrders(final MergeCommand command) {
         checkNotNull(command);
 
-        return orderTask.mergeOrders(command);
+        return defer(orderTask.mergeOrders(command));
     }
 
     public Observable<OrderEvent> close(final IOrder order) {
         checkNotNull(order);
 
-        return orderTask.close(order);
+        return defer(orderTask.close(order));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder order,
@@ -47,60 +47,64 @@ public class OrderUtil {
         checkNotNull(order);
         checkNotNull(label);
 
-        return orderTask.setLabel(order, label);
+        return defer(orderTask.setLabel(order, label));
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder order,
                                                   final long newGTT) {
         checkNotNull(order);
 
-        return orderTask.setGoodTillTime(order, newGTT);
+        return defer(orderTask.setGoodTillTime(order, newGTT));
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder order,
                                                      final double newRequestedAmount) {
         checkNotNull(order);
 
-        return orderTask.setRequestedAmount(order, newRequestedAmount);
+        return defer(orderTask.setRequestedAmount(order, newRequestedAmount));
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder order,
                                                final double newOpenPrice) {
         checkNotNull(order);
 
-        return orderTask.setOpenPrice(order, newOpenPrice);
+        return defer(orderTask.setOpenPrice(order, newOpenPrice));
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder order,
                                                    final double newSL) {
         checkNotNull(order);
 
-        return orderTask.setStopLossPrice(order, newSL);
+        return defer(orderTask.setStopLossPrice(order, newSL));
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder order,
                                                      final double newTP) {
         checkNotNull(order);
 
-        return orderTask.setTakeProfitPrice(order, newTP);
+        return defer(orderTask.setTakeProfitPrice(order, newTP));
     }
 
     public Observable<OrderEvent> mergePosition(final MergePositionCommand command) {
         checkNotNull(command);
 
-        return positionTask.merge(command);
+        return defer(positionTask.merge(command));
     }
 
     public Observable<OrderEvent> closePosition(final ClosePositionCommand command) {
         checkNotNull(command);
 
-        return positionTask.close(command);
+        return defer(positionTask.close(command));
     }
 
     public Observable<OrderEvent> closeAllPositions(final Function<Instrument, ClosePositionCommand> commandFactory) {
         checkNotNull(commandFactory);
 
-        return positionTask.closeAll(commandFactory);
+        return defer(positionTask.closeAll(commandFactory));
+    }
+
+    private final Observable<OrderEvent> defer(final Observable<OrderEvent> observable) {
+        return Observable.defer(() -> observable);
     }
 
     public final PositionOrders positionOrders(final Instrument instrument) {
