@@ -1,4 +1,4 @@
-package com.jforex.programming.position;
+package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -6,8 +6,6 @@ import java.util.function.BiFunction;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.CommandParent;
-import com.jforex.programming.order.CommonMergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;

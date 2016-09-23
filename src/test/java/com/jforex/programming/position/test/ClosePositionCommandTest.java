@@ -3,9 +3,9 @@ package com.jforex.programming.position.test;
 import org.junit.Test;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.ClosePositionCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.position.ClosePositionCommand;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;

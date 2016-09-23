@@ -4,9 +4,8 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.ClosePositionCommand.CloseExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.position.ClosePositionCommand;
-import com.jforex.programming.position.ClosePositionCommand.CloseExecutionMode;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
