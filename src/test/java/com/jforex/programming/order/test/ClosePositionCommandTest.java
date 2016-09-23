@@ -1,4 +1,4 @@
-package com.jforex.programming.position.test;
+package com.jforex.programming.order.test;
 
 import org.junit.Test;
 

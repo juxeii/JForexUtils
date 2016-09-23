@@ -19,12 +19,12 @@ public class MergeCommandHandler {
     }
 
     public Observable<OrderEvent> observeCancelSLTP(final Collection<IOrder> toMergeOrders,
-                                                    final CommonMergeCommand command) {
+                                                    final MergeCommand command) {
         return orderCancelSLAndTP.observeTask(toMergeOrders, command);
     }
 
     public Observable<OrderEvent> observeMerge(final Collection<IOrder> toMergeOrders,
-                                               final CommonMergeCommand command) {
+                                               final MergeCommand command) {
         return orderBasicTask
             .mergeOrders(command.mergeOrderLabel(), toMergeOrders)
             .compose(command.mergeCompose());

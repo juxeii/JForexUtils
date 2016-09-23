@@ -1,9 +1,9 @@
-package com.jforex.programming.position.test;
+package com.jforex.programming.order.test;
 
-import com.jforex.programming.order.MergeCommand;
+import com.jforex.programming.order.MergeOrdersCommand;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class MergePositionCommandTest extends InstrumentUtilForTest {
 
-    private MergeCommand command;
+    private MergeOrdersCommand command;
 }

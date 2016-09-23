@@ -14,7 +14,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.ClosePositionCommand;
-import com.jforex.programming.order.MergeCommand;
+import com.jforex.programming.order.MergeOrdersCommand;
 import com.jforex.programming.order.MergePositionCommand;
 import com.jforex.programming.order.OrderBasicTask;
 import com.jforex.programming.order.OrderCloseTask;
@@ -79,7 +79,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergeOrdersWithCommandDelegatesToMergeTask() {
-        final MergeCommand command = mock(MergeCommand.class);
+        final MergeOrdersCommand command = mock(MergeOrdersCommand.class);
         when(orderMergeTaskMock.merge(command))
             .thenReturn(orderEventObservable);
 

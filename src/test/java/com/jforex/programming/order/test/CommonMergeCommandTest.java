@@ -1,20 +1,15 @@
 package com.jforex.programming.order.test;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
-import com.jforex.programming.order.CommandParent;
-import com.jforex.programming.order.CommonMergeCommand;
+import com.jforex.programming.order.MergeCommand;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class CommonMergeCommandTest extends InstrumentUtilForTest {
 
-    private CommonMergeCommand mergeCommandWithParent;
+    private MergeCommand mergeCommandWithParent;
 
     private static final String mergeOrderLabel = "mergeOrderLabel";
-
-    @Mock
-    private CommandParent<String> commandParentMock;
 
     @Test
     public void defaultCommandValuesAreCorrect() throws Exception {

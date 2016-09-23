@@ -19,7 +19,7 @@ public class ClosePositionCommand {
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> closeOpenedCompose;
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> closeAllCompose;
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCloseCompose;
-    private final CommonMergeCommand mergeCommandWithParent;
+    private final MergeCommand mergeCommand;
 
     public enum CloseExecutionMode {
         CloseFilled,
@@ -48,7 +48,7 @@ public class ClosePositionCommand {
 
     public interface MergeForCloseOption {
 
-        CommonMergeCommand.MergeOption<BuildOption> withMergeOption(String mergeOrderLabel);
+        BuildOption withMergeCommand(MergeCommand mergeCommand);
     }
 
     public interface BuildOption {
@@ -63,15 +63,15 @@ public class ClosePositionCommand {
         closeOpenedCompose = builder.closeOpenedCompose;
         closeAllCompose = builder.closeAllCompose;
         singleCloseCompose = builder.singleCloseCompose;
-        mergeCommandWithParent = builder.mergeCommandWithParent;
+        mergeCommand = builder.mergeCommand;
     }
 
     public final Instrument instrument() {
         return instrument;
     }
 
-    public final CommonMergeCommand commonMergeCommand() {
-        return mergeCommandWithParent;
+    public final MergeCommand commonMergeCommand() {
+        return mergeCommand;
     }
 
     public final CloseExecutionMode executionMode() {
@@ -104,7 +104,6 @@ public class ClosePositionCommand {
                                 CloseOption,
                                 MergeForCloseOption,
                                 SingleCloseOption,
-                                CommandParent<BuildOption>,
                                 BuildOption {
 
         private final Instrument instrument;
@@ -113,8 +112,7 @@ public class ClosePositionCommand {
         private Function<Observable<OrderEvent>, Observable<OrderEvent>> closeOpenedCompose;
         private Function<Observable<OrderEvent>, Observable<OrderEvent>> closeAllCompose;
         private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCloseCompose;
-        private CommonMergeCommand mergeCommandWithParent;
-        private CommonMergeCommand.MergeOption<BuildOption> option;
+        private MergeCommand mergeCommand;
 
         private Builder(final Instrument instrument) {
             this.instrument = instrument;
@@ -153,19 +151,14 @@ public class ClosePositionCommand {
         }
 
         @Override
+        public BuildOption withMergeCommand(final MergeCommand mergeCommand) {
+            this.mergeCommand = checkNotNull(mergeCommand);
+            return this;
+        }
+
+        @Override
         public ClosePositionCommand build() {
             return new ClosePositionCommand(this);
-        }
-
-        @Override
-        public CommonMergeCommand.MergeOption<BuildOption> withMergeOption(final String mergeOrderLabel) {
-            option = CommonMergeCommand.newBuilder(this, mergeOrderLabel);
-            return option;
-        }
-
-        @Override
-        public void addChild(final Object mergeCommandWithParent) {
-            this.mergeCommandWithParent = (CommonMergeCommand) mergeCommandWithParent;
         }
     }
 }

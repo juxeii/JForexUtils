@@ -7,68 +7,19 @@ import com.dukascopy.api.Instrument;
 public class MergePositionCommand {
 
     private final Instrument instrument;
-    private final CommonMergeCommand mergeCommandWithParent;
+    private final MergeCommand mergeCommand;
 
-    public interface MergeOption {
-
-        CommonMergeCommand.MergeOption<BuildOption> withMergeOption();
-
-        public MergePositionCommand build();
-    }
-
-    public interface BuildOption {
-
-        public MergePositionCommand build();
-    }
-
-    private MergePositionCommand(final Builder builder) {
-        instrument = builder.instrument;
-        mergeCommandWithParent = builder.mergeCommandWithParent;
+    public MergePositionCommand(final Instrument instrument,
+                                final MergeCommand mergeCommand) {
+        this.instrument = checkNotNull(instrument);
+        this.mergeCommand = checkNotNull(mergeCommand);
     }
 
     public final Instrument instrument() {
         return instrument;
     }
 
-    public final CommonMergeCommand commonMergeCommand() {
-        return mergeCommandWithParent;
-    }
-
-    public static MergeOption newBuilder(final String mergeOrderLabel,
-                                         final Instrument instrument) {
-        return new Builder(checkNotNull(mergeOrderLabel), checkNotNull(instrument));
-    }
-
-    private static class Builder implements
-                                 BuildOption,
-                                 CommandParent<BuildOption>,
-                                 MergeOption {
-
-        private CommonMergeCommand mergeCommandWithParent;
-        private CommonMergeCommand.MergeOption<BuildOption> option;
-        private final String mergeOrderLabel;
-        private final Instrument instrument;
-
-        public Builder(final String mergeOrderLabel,
-                       final Instrument instrument) {
-            this.mergeOrderLabel = mergeOrderLabel;
-            this.instrument = instrument;
-        }
-
-        @Override
-        public MergePositionCommand build() {
-            return new MergePositionCommand(this);
-        }
-
-        @Override
-        public void addChild(final Object mergeCommandWithParent) {
-            this.mergeCommandWithParent = (CommonMergeCommand) mergeCommandWithParent;
-        }
-
-        @Override
-        public CommonMergeCommand.MergeOption<BuildOption> withMergeOption() {
-            option = CommonMergeCommand.newBuilder(this, mergeOrderLabel);
-            return option;
-        }
+    public final MergeCommand mergeCommand() {
+        return mergeCommand;
     }
 }

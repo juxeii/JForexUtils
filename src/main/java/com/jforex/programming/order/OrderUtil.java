@@ -44,7 +44,7 @@ public class OrderUtil {
         return orderBasicTask.mergeOrders(mergeOrderLabel, toMergeOrders);
     }
 
-    public Observable<OrderEvent> mergeOrders(final MergeCommand command) {
+    public Observable<OrderEvent> mergeOrders(final MergeOrdersCommand command) {
         checkNotNull(command);
 
         return orderMergeTask.merge(command);

@@ -21,23 +21,23 @@ public class OrderMergeTask {
         this.positionUtil = positionUtil;
     }
 
-    public Observable<OrderEvent> merge(final MergeCommand command) {
+    public Observable<OrderEvent> merge(final MergeOrdersCommand command) {
         return Observable.defer(() -> splitCancelSLTPAndMerge(command.toMergeOrders(),
-                                                              command.commonMergeCommand()));
+                                                              command.mergeCommand()));
     }
 
     public Observable<OrderEvent> mergePosition(final MergePositionCommand command) {
         return Observable.defer(() -> splitCancelSLTPAndMerge(positionUtil.filledOrders(command.instrument()),
-                                                              command.commonMergeCommand()));
+                                                              command.mergeCommand()));
     }
 
-    public Observable<OrderEvent> merge(final CommonMergeCommand command,
+    public Observable<OrderEvent> merge(final MergeCommand command,
                                         final Collection<IOrder> toMergeOrders) {
         return Observable.defer(() -> splitCancelSLTPAndMerge(toMergeOrders, command));
     }
 
     public Observable<OrderEvent> splitCancelSLTPAndMerge(final Collection<IOrder> toMergeOrders,
-                                                          final CommonMergeCommand command) {
+                                                          final MergeCommand command) {
         final Observable<OrderEvent> cancelSLTP = commandHandler.observeCancelSLTP(toMergeOrders, command);
         final Observable<OrderEvent> merge = commandHandler.observeMerge(toMergeOrders, command);
 
@@ -45,7 +45,10 @@ public class OrderMergeTask {
     }
 
     public Observable<OrderEvent> mergeAll(final Function<Instrument, MergePositionCommand> commandFactory) {
-        // TODO Auto-generated method stub
-        return Observable.empty();
+        return Observable.defer(() -> {
+            final Function<Instrument, Observable<OrderEvent>> observablesFromFactory =
+                    instrument -> mergePosition(commandFactory.apply(instrument));
+            return Observable.merge(positionUtil.observablesFromFactory(observablesFromFactory));
+        });
     }
 }

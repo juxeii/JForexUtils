@@ -33,7 +33,7 @@ public class ClosePositionCommandHandler {
     private Observable<OrderEvent> observeMergeForFilledOrders(final ClosePositionCommand command) {
         final Instrument instrument = command.instrument();
         final Collection<IOrder> ordersToMerge = positionUtil.filledOrders(instrument);
-        final CommonMergeCommand mergeCommand = command.commonMergeCommand();
+        final MergeCommand mergeCommand = command.commonMergeCommand();
 
         return orderMergeTask.merge(mergeCommand, ordersToMerge);
     }

@@ -3,7 +3,7 @@ package com.jforex.programming.order;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.CommonMergeCommand.MergeExecutionMode;
+import com.jforex.programming.order.MergeCommand.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
@@ -20,14 +20,14 @@ public class OrderCancelSLAndTP {
     }
 
     public Observable<OrderEvent> observeTask(final Collection<IOrder> toCancelSLTPOrders,
-                                              final CommonMergeCommand command) {
+                                              final MergeCommand command) {
         return Observable.defer(() -> toCancelSLTPOrders.size() < 2
                 ? Observable.empty()
                 : createTask(toCancelSLTPOrders, command));
     }
 
     private Observable<OrderEvent> createTask(final Collection<IOrder> toCancelSLTPOrders,
-                                              final CommonMergeCommand command) {
+                                              final MergeCommand command) {
         final Observable<OrderEvent> cancelSL = orderCancelSL.observeTask(toCancelSLTPOrders, command);
         final Observable<OrderEvent> cancelTP = orderCancelTP.observeTask(toCancelSLTPOrders, command);
 

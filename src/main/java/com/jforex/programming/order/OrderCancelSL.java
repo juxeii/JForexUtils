@@ -16,7 +16,7 @@ public class OrderCancelSL {
     }
 
     public Observable<OrderEvent> observeTask(final Collection<IOrder> toCancelSLOrders,
-                                              final CommonMergeCommand command) {
+                                              final MergeCommand command) {
         return Observable.defer(() -> orderChangeBatch
             .cancelSL(toCancelSLOrders, command::singleCancelSLCompose));
     }

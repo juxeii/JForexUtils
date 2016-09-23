@@ -6,12 +6,12 @@ import org.junit.Test;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.MergeCommand;
+import com.jforex.programming.order.MergeOrdersCommand;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class MergeCommandTest extends InstrumentUtilForTest {
 
-    private MergeCommand mergeCommand;
+    private MergeOrdersCommand mergeCommand;
 
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private static final String mergeOrderLabel = "mergeOrderLabel";
