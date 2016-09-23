@@ -5,7 +5,7 @@ import org.junit.Test;
 import com.jforex.programming.order.MergeCommand;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
-public class CommonMergeCommandTest extends InstrumentUtilForTest {
+public class MergeCommandTest extends InstrumentUtilForTest {
 
     private MergeCommand mergeCommandWithParent;
 
