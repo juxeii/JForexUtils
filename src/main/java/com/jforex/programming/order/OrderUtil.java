@@ -6,6 +6,9 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.command.ClosePositionCommand;
+import com.jforex.programming.order.command.MergeOrdersCommand;
+import com.jforex.programming.order.command.MergePositionCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;

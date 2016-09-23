@@ -10,9 +10,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.ClosePositionCommand;
-import com.jforex.programming.order.ClosePositionCommandHandler;
 import com.jforex.programming.order.OrderCloseTask;
+import com.jforex.programming.order.command.ClosePositionCommand;
+import com.jforex.programming.order.command.ClosePositionCommandHandler;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.PositionUtil;

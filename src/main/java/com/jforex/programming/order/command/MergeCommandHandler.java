@@ -1,8 +1,10 @@
-package com.jforex.programming.order;
+package com.jforex.programming.order.command;
 
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.OrderBasicTask;
+import com.jforex.programming.order.OrderCancelSLAndTP;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;

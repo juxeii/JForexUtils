@@ -1,4 +1,4 @@
-package com.jforex.programming.order;
+package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -110,10 +110,8 @@ public class MergeCommand {
                                 CancelSLAndTPOption {
 
         private final String mergeOrderLabel;
-        private MergeExecutionMode executionMode;
+        private MergeExecutionMode executionMode = MergeExecutionMode.MergeCancelSLAndTP;
         private Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLTPCompose =
-                observable -> observable;
-        private Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeCompose =
                 observable -> observable;
         private Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLCompose =
                 observable -> observable;
@@ -123,6 +121,8 @@ public class MergeCommand {
                 (observable, order) -> observable;
         private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> orderCancelTPComposer =
                 (observable, order) -> observable;
+        private Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeCompose =
+                observable -> observable;
 
         public Builder(final String mergeOrderLabel) {
             this.mergeOrderLabel = mergeOrderLabel;

@@ -3,7 +3,8 @@ package com.jforex.programming.order;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.MergeCommand.MergeExecutionMode;
+import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.MergeCommand.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;

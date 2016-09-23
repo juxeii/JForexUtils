@@ -1,4 +1,4 @@
-package com.jforex.programming.order.test;
+package com.jforex.programming.order.command.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -10,8 +10,8 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.MergeCommand;
-import com.jforex.programming.order.MergeOrdersCommand;
+import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.MergeOrdersCommand;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 public class MergeOrdersCommandTest extends InstrumentUtilForTest {

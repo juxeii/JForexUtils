@@ -35,6 +35,8 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderProcessState;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.command.ClosePositionCommand;
+import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -168,6 +170,10 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(OrderDirection.FLAT.toString());
         AuthentificationUtil.FSMTrigger
             .valueOf(AuthentificationUtil.FSMTrigger.CONNECT.toString());
+        MergeCommand.MergeExecutionMode
+            .valueOf(MergeCommand.MergeExecutionMode.ConcatCancelSLAndTP.toString());
+        ClosePositionCommand.CloseExecutionMode
+            .valueOf(ClosePositionCommand.CloseExecutionMode.CloseAll.toString());
     }
 
     protected final Completable emptyCompletable() {

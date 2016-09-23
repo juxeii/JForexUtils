@@ -1,6 +1,8 @@
 package com.jforex.programming.order;
 
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.command.ClosePositionCommand;
+import com.jforex.programming.order.command.ClosePositionCommandHandler;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionUtil;
 
