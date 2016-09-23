@@ -1,6 +1,5 @@
 package com.jforex.programming.client.test;
 
-import static info.solidsoft.mockito.java8.LambdaMatcher.argLambda;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -54,7 +53,7 @@ public class ClientUtilTest extends CommonUtilForTest {
     @Test
     public void cacheDirectoryIsInitialized() {
         verify(clientMock)
-            .setCacheDirectory(argLambda(file -> file.getName().equals(cacheDirectory)));
+            .setCacheDirectory(argThat(file -> file.getName().equals(cacheDirectory)));
     }
 
     @Test

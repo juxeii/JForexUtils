@@ -17,63 +17,45 @@ public class MergeCommand {
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeCompose;
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLCompose;
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelTPCompose;
-    private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCancelSLCompose;
-    private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCancelTPCompose;
+    private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> orderCancelSLComposer;
+    private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> orderCancelTPComposer;
 
     public enum MergeExecutionMode {
-        ConcatSLAndTP,
-        ConcatTPAndSL,
-        MergeSLAndTP
+        ConcatCancelSLAndTP,
+        ConcatCancelTPAndSL,
+        MergeCancelSLAndTP
     }
 
     public interface MergeOption {
 
-        public CancelSLOption withCancelSLAndTP(Function<Observable<OrderEvent>,
-                                                         Observable<OrderEvent>> cancelSLTPCompose);
+        public CancelSLAndTPOption composeCancelSLAndTP(Function<Observable<OrderEvent>,
+                                                                 Observable<OrderEvent>> cancelSLTPCompose);
+
+        public MergeOption composeMerge(Function<Observable<OrderEvent>,
+                                                 Observable<OrderEvent>> mergeCompose);
 
         public MergeCommand build();
     }
 
-    public interface CancelSLOption {
+    public interface CancelSLAndTPOption {
 
-        public SingleCancelSLOption withCancelSL(Function<Observable<OrderEvent>,
-                                                          Observable<OrderEvent>> cancelSLCompose);
-    }
+        public CancelSLAndTPOption composeCancelSL(Function<Observable<OrderEvent>,
+                                                            Observable<OrderEvent>> cancelSLCompose);
 
-    public interface SingleCancelSLOption {
+        public CancelSLAndTPOption composeCancelTP(Function<Observable<OrderEvent>,
+                                                            Observable<OrderEvent>> cancelTPCompose);
 
-        public CancelTPOption withSingleCancelSL(BiFunction<Observable<OrderEvent>,
-                                                            IOrder,
-                                                            Observable<OrderEvent>> singleCancelSLCompose);
-    }
+        public CancelSLAndTPOption composeOrderCancelSL(BiFunction<Observable<OrderEvent>,
+                                                                   IOrder,
+                                                                   Observable<OrderEvent>> singleCancelSLCompose);
 
-    public interface CancelTPOption {
+        public CancelSLAndTPOption composeOrderCancelTP(BiFunction<Observable<OrderEvent>,
+                                                                   IOrder,
+                                                                   Observable<OrderEvent>> orderCancelTPComposer);
 
-        public SingleCancelTPOption withCancelTP(Function<Observable<OrderEvent>,
-                                                          Observable<OrderEvent>> cancelTPCompose);
-    }
+        public CancelSLAndTPOption withExecutionMode(MergeExecutionMode executionMode);
 
-    public interface SingleCancelTPOption {
-
-        public ExecutionOption withSingleCancelTP(BiFunction<Observable<OrderEvent>,
-                                                             IOrder,
-                                                             Observable<OrderEvent>> singleCancelTPCompose);
-    }
-
-    public interface ExecutionOption {
-
-        public MergeComposeOption withExecutionMode(MergeExecutionMode executionMode);
-    }
-
-    public interface MergeComposeOption {
-
-        public BuildOption withMerge(Function<Observable<OrderEvent>,
-                                              Observable<OrderEvent>> mergeCompose);
-    }
-
-    public interface BuildOption {
-
-        public MergeCommand build();
+        public MergeOption done();
     }
 
     private MergeCommand(final Builder builder) {
@@ -81,41 +63,41 @@ public class MergeCommand {
         cancelSLTPCompose = builder.cancelSLTPCompose;
         cancelSLCompose = builder.cancelSLCompose;
         cancelTPCompose = builder.cancelTPCompose;
-        singleCancelSLCompose = builder.singleCancelSLCompose;
-        singleCancelTPCompose = builder.singleCancelTPCompose;
+        orderCancelSLComposer = builder.singleCancelSLCompose;
+        orderCancelTPComposer = builder.orderCancelTPComposer;
         executionMode = builder.executionMode;
         mergeCompose = builder.mergeCompose;
     }
 
-    public final String mergeOrderLabel() {
+    public String mergeOrderLabel() {
         return mergeOrderLabel;
     }
 
-    public final Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLTPCompose() {
+    public Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLTPCompose() {
         return cancelSLTPCompose;
     }
 
-    public final Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLCompose() {
+    public Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLCompose() {
         return cancelSLCompose;
     }
 
-    public final Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelTPCompose() {
+    public Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelTPCompose() {
         return cancelTPCompose;
     }
 
-    public final Function<Observable<OrderEvent>, Observable<OrderEvent>> singleCancelSLCompose(final IOrder order) {
-        return obs -> singleCancelSLCompose.apply(obs, order);
+    public Function<Observable<OrderEvent>, Observable<OrderEvent>> orderCancelSLComposer(final IOrder order) {
+        return obs -> orderCancelSLComposer.apply(obs, order);
     }
 
-    public final Function<Observable<OrderEvent>, Observable<OrderEvent>> singleCancelTPCompose(final IOrder order) {
-        return obs -> singleCancelTPCompose.apply(obs, order);
+    public Function<Observable<OrderEvent>, Observable<OrderEvent>> orderCancelTPComposer(final IOrder order) {
+        return obs -> orderCancelTPComposer.apply(obs, order);
     }
 
-    public final Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeCompose() {
+    public Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeCompose() {
         return mergeCompose;
     }
 
-    public final MergeExecutionMode executionMode() {
+    public MergeExecutionMode executionMode() {
         return executionMode;
     }
 
@@ -125,22 +107,22 @@ public class MergeCommand {
 
     public static class Builder implements
                                 MergeOption,
-                                CancelSLOption,
-                                CancelTPOption,
-                                SingleCancelSLOption,
-                                SingleCancelTPOption,
-                                ExecutionOption,
-                                MergeComposeOption,
-                                BuildOption {
+                                CancelSLAndTPOption {
 
         private final String mergeOrderLabel;
-        private Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLTPCompose;
-        private Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeCompose;
         private MergeExecutionMode executionMode;
-        private Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLCompose;
-        private Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelTPCompose;
-        private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCancelSLCompose;
-        private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCancelTPCompose;
+        private Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLTPCompose =
+                observable -> observable;
+        private Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeCompose =
+                observable -> observable;
+        private Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelSLCompose =
+                observable -> observable;
+        private Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelTPCompose =
+                observable -> observable;
+        private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCancelSLCompose =
+                (observable, order) -> observable;
+        private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> orderCancelTPComposer =
+                (observable, order) -> observable;
 
         public Builder(final String mergeOrderLabel) {
             this.mergeOrderLabel = mergeOrderLabel;
@@ -152,51 +134,56 @@ public class MergeCommand {
         }
 
         @Override
-        public CancelSLOption withCancelSLAndTP(final Function<Observable<OrderEvent>,
-                                                               Observable<OrderEvent>> cancelSLTPCompose) {
+        public CancelSLAndTPOption composeCancelSLAndTP(final Function<Observable<OrderEvent>,
+                                                                       Observable<OrderEvent>> cancelSLTPCompose) {
             this.cancelSLTPCompose = checkNotNull(cancelSLTPCompose);
             return this;
         }
 
         @Override
-        public BuildOption withMerge(final Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeCompose) {
+        public MergeOption composeMerge(final Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeCompose) {
             this.mergeCompose = checkNotNull(mergeCompose);
             return this;
         }
 
         @Override
-        public MergeComposeOption withExecutionMode(final MergeExecutionMode executionMode) {
+        public CancelSLAndTPOption withExecutionMode(final MergeExecutionMode executionMode) {
             this.executionMode = executionMode;
             return this;
         }
 
         @Override
-        public ExecutionOption withSingleCancelTP(final BiFunction<Observable<OrderEvent>,
-                                                                   IOrder,
-                                                                   Observable<OrderEvent>> singleCancelTPCompose) {
-            this.singleCancelTPCompose = checkNotNull(singleCancelTPCompose);
+        public CancelSLAndTPOption composeOrderCancelTP(final BiFunction<Observable<OrderEvent>,
+                                                                         IOrder,
+                                                                         Observable<OrderEvent>> orderCancelTPComposer) {
+            this.orderCancelTPComposer = checkNotNull(orderCancelTPComposer);
             return this;
         }
 
         @Override
-        public CancelTPOption withSingleCancelSL(final BiFunction<Observable<OrderEvent>,
-                                                                  IOrder,
-                                                                  Observable<OrderEvent>> singleCancelSLCompose) {
+        public CancelSLAndTPOption composeOrderCancelSL(final BiFunction<Observable<OrderEvent>,
+                                                                         IOrder,
+                                                                         Observable<OrderEvent>> singleCancelSLCompose) {
             this.singleCancelSLCompose = checkNotNull(singleCancelSLCompose);
             return this;
         }
 
         @Override
-        public SingleCancelTPOption withCancelTP(final Function<Observable<OrderEvent>,
-                                                                Observable<OrderEvent>> cancelTPCompose) {
+        public CancelSLAndTPOption composeCancelTP(final Function<Observable<OrderEvent>,
+                                                                  Observable<OrderEvent>> cancelTPCompose) {
             this.cancelTPCompose = checkNotNull(cancelTPCompose);
             return this;
         }
 
         @Override
-        public SingleCancelSLOption withCancelSL(final Function<Observable<OrderEvent>,
-                                                                Observable<OrderEvent>> cancelSLCompose) {
+        public CancelSLAndTPOption composeCancelSL(final Function<Observable<OrderEvent>,
+                                                                  Observable<OrderEvent>> cancelSLCompose) {
             this.cancelSLCompose = checkNotNull(cancelSLCompose);
+            return this;
+        }
+
+        @Override
+        public MergeOption done() {
             return this;
         }
     }

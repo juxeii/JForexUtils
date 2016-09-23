@@ -45,7 +45,8 @@ public class OrderChangeBatch {
                                                           Function<Observable<OrderEvent>,
                                                                    Observable<OrderEvent>>> composer) {
         return forBasicTask(orders,
-                            order -> orderBasicTask.setTakeProfitPrice(order, platformSettings.noTPPrice())
+                            order -> orderBasicTask
+                                .setTakeProfitPrice(order, platformSettings.noTPPrice())
                                 .compose(composer.apply(order)));
     }
 

@@ -28,8 +28,8 @@ public class OrderCancelSLAndTP {
 
     private Observable<OrderEvent> createTask(final Collection<IOrder> toCancelSLTPOrders,
                                               final MergeCommand command) {
-        final Observable<OrderEvent> cancelSL = orderCancelSL.observeTask(toCancelSLTPOrders, command);
-        final Observable<OrderEvent> cancelTP = orderCancelTP.observeTask(toCancelSLTPOrders, command);
+        final Observable<OrderEvent> cancelSL = orderCancelSL.observe(toCancelSLTPOrders, command);
+        final Observable<OrderEvent> cancelTP = orderCancelTP.observe(toCancelSLTPOrders, command);
 
         return arrangeObservables(cancelSL, cancelTP, command.executionMode())
             .compose(command.cancelSLTPCompose());
@@ -38,9 +38,9 @@ public class OrderCancelSLAndTP {
     private Observable<OrderEvent> arrangeObservables(final Observable<OrderEvent> cancelSL,
                                                       final Observable<OrderEvent> cancelTP,
                                                       final MergeExecutionMode executionMode) {
-        if (executionMode == MergeExecutionMode.ConcatSLAndTP)
+        if (executionMode == MergeExecutionMode.ConcatCancelSLAndTP)
             return cancelSL.concatWith(cancelTP);
-        else if (executionMode == MergeExecutionMode.ConcatTPAndSL)
+        else if (executionMode == MergeExecutionMode.ConcatCancelTPAndSL)
             return cancelTP.concatWith(cancelSL);
         return cancelSL.mergeWith(cancelTP);
     }

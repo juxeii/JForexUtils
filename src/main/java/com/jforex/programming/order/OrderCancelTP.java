@@ -15,9 +15,9 @@ public class OrderCancelTP {
         this.orderChangeBatch = orderChangeBatch;
     }
 
-    public Observable<OrderEvent> observeTask(final Collection<IOrder> toCancelTPOrders,
-                                              final MergeCommand command) {
+    public Observable<OrderEvent> observe(final Collection<IOrder> toCancelTPOrders,
+                                          final MergeCommand mergeCommand) {
         return Observable.defer(() -> orderChangeBatch
-            .cancelSL(toCancelTPOrders, command::singleCancelTPCompose));
+            .cancelTP(toCancelTPOrders, mergeCommand::orderCancelTPComposer));
     }
 }
