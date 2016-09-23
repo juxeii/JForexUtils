@@ -33,10 +33,10 @@ import java.util.function.Supplier;
 
 import org.junit.Test;
 
-import com.jforex.programming.order.OrderEventTypeDataFactory;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeData;
+import com.jforex.programming.order.event.OrderEventTypeDataFactory;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 public class OrderEventTypeDataFactoryTest extends CommonUtilForTest {

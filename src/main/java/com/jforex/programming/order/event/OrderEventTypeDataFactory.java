@@ -1,4 +1,4 @@
-package com.jforex.programming.order;
+package com.jforex.programming.order.event;
 
 import static com.jforex.programming.order.event.OrderEventType.CHANGED_AMOUNT;
 import static com.jforex.programming.order.event.OrderEventType.CHANGED_GTT;
@@ -32,8 +32,6 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.event.OrderEventTypeData;
 
 public class OrderEventTypeDataFactory {
 

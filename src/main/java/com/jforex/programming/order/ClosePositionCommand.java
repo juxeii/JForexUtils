@@ -108,10 +108,14 @@ public class ClosePositionCommand {
 
         private final Instrument instrument;
         private CloseExecutionMode executionMode;
-        private Function<Observable<OrderEvent>, Observable<OrderEvent>> closeFilledCompose;
-        private Function<Observable<OrderEvent>, Observable<OrderEvent>> closeOpenedCompose;
-        private Function<Observable<OrderEvent>, Observable<OrderEvent>> closeAllCompose;
-        private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCloseCompose;
+        private Function<Observable<OrderEvent>, Observable<OrderEvent>> closeFilledCompose =
+                observable -> observable;
+        private Function<Observable<OrderEvent>, Observable<OrderEvent>> closeOpenedCompose =
+                observable -> observable;
+        private Function<Observable<OrderEvent>, Observable<OrderEvent>> closeAllCompose =
+                observable -> observable;
+        private BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCloseCompose =
+                (observable, order) -> observable;
         private MergeCommand mergeCommand;
 
         private Builder(final Instrument instrument) {
