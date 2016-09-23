@@ -1,5 +1,8 @@
 package com.jforex.programming.misc.test;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -15,6 +18,7 @@ import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import io.reactivex.Observable;
 import io.reactivex.functions.Action;
 import io.reactivex.subscribers.TestSubscriber;
 
@@ -82,6 +86,30 @@ public class TaskExecutorTest extends CommonUtilForTest {
         taskExecutor.onCurrentThread(actionMock);
 
         verifyNoExecutions();
+    }
+
+    @Test
+    public void executeOnContextForActionIsCorrect() throws Exception {
+        when(contextMock.executeTask(any())).thenReturn(futureVoidMock);
+
+        final Future<Void> future = taskExecutor.executeOnContext(actionMock);
+
+        assertThat(future, equalTo(futureVoidMock));
+        verify(contextMock).executeTask(argThat(callable -> {
+            Observable
+                .fromCallable(callable)
+                .test();
+            return true;
+        }));
+        verify(actionMock, times(2)).run();
+    }
+
+    @Test
+    public void executeOnContextForCallableIsCorrect() throws Exception {
+        final Future<IOrder> future = taskExecutor.executeOnContext(callableMock);
+
+        assertThat(future, equalTo(futureMock));
+        verify(contextMock).executeTask(callableMock);
     }
 
     public class WhenStrategyThread {

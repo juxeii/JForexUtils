@@ -144,7 +144,13 @@ public class PositionTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void testNoFilledOrOpenedOrdersHasBuyOrder() {
+        public void openOrdersContainsBuyOrder() {
+            final Set<IOrder> openedOrders = position.opened();
+            assertTrue(openedOrders.contains(buyOrderEURUSD));
+        }
+
+        @Test
+        public void filledOrOpenedOrdersHasBuyOrder() {
             final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
             assertTrue(filledOrOpenedOrders.contains(buyOrderEURUSD));
         }
@@ -170,6 +176,12 @@ public class PositionTest extends InstrumentUtilForTest {
             public void testFilledOrdersHasBuyOrder() {
                 final Set<IOrder> filledOrders = position.filled();
                 assertTrue(filledOrders.contains(buyOrderEURUSD));
+            }
+
+            @Test
+            public void openOrdersIsEmpty() {
+                final Set<IOrder> openedOrders = position.opened();
+                assertTrue(openedOrders.isEmpty());
             }
 
             @Test
@@ -230,6 +242,12 @@ public class PositionTest extends InstrumentUtilForTest {
                     final Set<IOrder> filledOrders = position.filled();
                     assertTrue(filledOrders.contains(buyOrderEURUSD));
                     assertTrue(filledOrders.contains(sellOrderEURUSD));
+                }
+
+                @Test
+                public void openOrdersIsEmpty() {
+                    final Set<IOrder> openedOrders = position.opened();
+                    assertTrue(openedOrders.isEmpty());
                 }
 
                 @Test
