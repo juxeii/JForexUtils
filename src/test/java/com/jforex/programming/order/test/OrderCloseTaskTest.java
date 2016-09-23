@@ -129,25 +129,20 @@ public class OrderCloseTaskTest extends InstrumentUtilForTest {
             closeAllSubscribe();
         }
 
+        @SuppressWarnings("unchecked")
         @Test
         public void verifyThatPositionUtilIsCalledWithCorrectFactory() throws Exception {
+            doAnswer(invocation -> ((Function<Instrument, Observable<OrderEvent>>) invocation.getArgument(0))
+                .apply(instrumentEURUSD)
+                .subscribe())
+                    .when(positionUtilMock).observablesFromFactory(any());
+
             setUpCommandObservables(emptyObservable(), emptyObservable());
             closeAllSubscribe();
 
-            verify(positionUtilMock)
-                .observablesFromFactory(argThat(factory -> {
-                    try {
-                        factory
-                            .apply(instrumentEURUSD)
-                            .subscribe();
-                    } catch (final Exception e) {
-                    }
-                    return true;
-                }));
-
-            verify(commandFactoryMock, times(2)).apply(instrumentEURUSD);
-            verify(commandHandlerMock, times(2)).observeMerge(closePositionCommandMock);
-            verify(commandHandlerMock, times(2)).observeClose(closePositionCommandMock);
+            verify(commandFactoryMock).apply(instrumentEURUSD);
+            verify(commandHandlerMock).observeMerge(closePositionCommandMock);
+            verify(commandHandlerMock).observeClose(closePositionCommandMock);
         }
 
         @Test
