@@ -18,8 +18,8 @@ import com.jforex.programming.order.OrderCloseTask;
 import com.jforex.programming.order.OrderMergeTask;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.command.ClosePositionCommand;
+import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergeOrdersCommand;
-import com.jforex.programming.order.command.MergePositionCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
@@ -174,20 +174,20 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergePositionDelegatesToMergeTask() {
-        final MergePositionCommand command = mock(MergePositionCommand.class);
+        final MergeCommand command = mock(MergeCommand.class);
 
-        when(orderMergeTaskMock.mergePosition(command))
+        when(orderMergeTaskMock.mergePosition(instrumentEURUSD, command))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.mergePosition(command);
+        final Observable<OrderEvent> actualObservable = orderUtil.mergePosition(instrumentEURUSD, command);
 
-        verify(orderMergeTaskMock).mergePosition(command);
+        verify(orderMergeTaskMock).mergePosition(instrumentEURUSD, command);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void mergeAllPositionsDelegatesToMergeTask() {
-        final Function<Instrument, MergePositionCommand> commandFactory = i -> null;
+        final Function<Instrument, MergeCommand> commandFactory = i -> null;
 
         when(orderMergeTaskMock.mergeAll(commandFactory))
             .thenReturn(orderEventObservable);

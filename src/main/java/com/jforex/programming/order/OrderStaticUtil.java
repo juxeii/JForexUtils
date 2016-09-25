@@ -3,7 +3,6 @@ package com.jforex.programming.order;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
-import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -15,7 +14,6 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
 
@@ -191,13 +189,6 @@ public final class OrderStaticUtil {
                                                final double price,
                                                final double pips) {
         return slPriceWithPips(checkNotNull(order), price, -pips);
-    }
-
-    public static final Callable<Void> runnableToCallable(final JFRunnable runnable) {
-        return () -> {
-            runnable.run();
-            return null;
-        };
     }
 
     public static final OrderParams adaptedOrderParamsForSignedAmount(final OrderParams orderParams,

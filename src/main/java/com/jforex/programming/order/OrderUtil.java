@@ -7,8 +7,8 @@ import java.util.Collection;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.ClosePositionCommand;
+import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergeOrdersCommand;
-import com.jforex.programming.order.command.MergePositionCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
@@ -102,13 +102,15 @@ public class OrderUtil {
         return orderBasicTask.setTakeProfitPrice(order, newTP);
     }
 
-    public Observable<OrderEvent> mergePosition(final MergePositionCommand command) {
+    public Observable<OrderEvent> mergePosition(final Instrument instrument,
+                                                final MergeCommand command) {
+        checkNotNull(instrument);
         checkNotNull(command);
 
-        return orderMergeTask.mergePosition(command);
+        return orderMergeTask.mergePosition(instrument, command);
     }
 
-    public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, MergePositionCommand> commandFactory) {
+    public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, MergeCommand> commandFactory) {
         checkNotNull(commandFactory);
 
         return orderMergeTask.mergeAll(commandFactory);
