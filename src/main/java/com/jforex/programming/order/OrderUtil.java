@@ -8,7 +8,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.MergeOrdersCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
@@ -47,10 +46,12 @@ public class OrderUtil {
         return orderBasicTask.mergeOrders(mergeOrderLabel, toMergeOrders);
     }
 
-    public Observable<OrderEvent> mergeOrders(final MergeOrdersCommand command) {
+    public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
+                                              final MergeCommand command) {
+        checkNotNull(toMergeOrders);
         checkNotNull(command);
 
-        return orderMergeTask.merge(command);
+        return orderMergeTask.merge(toMergeOrders, command);
     }
 
     public Observable<OrderEvent> close(final IOrder order) {

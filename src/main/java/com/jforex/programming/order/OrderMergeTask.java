@@ -6,7 +6,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergeCommandHandler;
-import com.jforex.programming.order.command.MergeOrdersCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionUtil;
 
@@ -24,9 +23,9 @@ public class OrderMergeTask {
         this.positionUtil = positionUtil;
     }
 
-    public Observable<OrderEvent> merge(final MergeOrdersCommand command) {
-        return Observable.defer(() -> splitCancelSLTPAndMerge(command.toMergeOrders(),
-                                                              command.mergeCommand()));
+    public Observable<OrderEvent> merge(final Collection<IOrder> toMergeOrders,
+                                        final MergeCommand command) {
+        return Observable.defer(() -> splitCancelSLTPAndMerge(toMergeOrders, command));
     }
 
     public Observable<OrderEvent> mergePosition(final Instrument instrument,

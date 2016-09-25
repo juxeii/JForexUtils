@@ -19,7 +19,6 @@ import com.jforex.programming.order.OrderMergeTask;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.MergeOrdersCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
@@ -42,8 +41,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderCloseTask orderCloseTaskMock;
     @Mock
     private PositionUtil positionUtilMock;
+    @Mock
+    private MergeCommand mergeCommandMock;
     private final IOrder orderForTest = buyOrderEURUSD;
     private Observable<OrderEvent> orderEventObservable;
+    private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Before
     public void setUp() {
@@ -66,7 +68,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergeOrdersDelegatesToOrderBasicTask() {
-        final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
         final String mergeOrderLabel = "mergeOrderLabel";
         when(orderBasicTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
             .thenReturn(orderEventObservable);
@@ -79,13 +80,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergeOrdersWithCommandDelegatesToMergeTask() {
-        final MergeOrdersCommand command = mock(MergeOrdersCommand.class);
-        when(orderMergeTaskMock.merge(command))
+        when(orderMergeTaskMock.merge(toMergeOrders, mergeCommandMock))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.mergeOrders(command);
+        final Observable<OrderEvent> actualObservable = orderUtil.mergeOrders(toMergeOrders, mergeCommandMock);
 
-        verify(orderMergeTaskMock).merge(command);
+        verify(orderMergeTaskMock).merge(toMergeOrders, mergeCommandMock);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
@@ -174,14 +174,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergePositionDelegatesToMergeTask() {
-        final MergeCommand command = mock(MergeCommand.class);
-
-        when(orderMergeTaskMock.mergePosition(instrumentEURUSD, command))
+        when(orderMergeTaskMock.mergePosition(instrumentEURUSD, mergeCommandMock))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.mergePosition(instrumentEURUSD, command);
+        final Observable<OrderEvent> actualObservable = orderUtil.mergePosition(instrumentEURUSD, mergeCommandMock);
 
-        verify(orderMergeTaskMock).mergePosition(instrumentEURUSD, command);
+        verify(orderMergeTaskMock).mergePosition(instrumentEURUSD, mergeCommandMock);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
