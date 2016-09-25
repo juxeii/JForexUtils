@@ -35,7 +35,7 @@ public class ClosePositionCommandHandler {
     private Observable<OrderEvent> observeMergeForFilledOrders(final ClosePositionCommand command) {
         final Instrument instrument = command.instrument();
         final Collection<IOrder> ordersToMerge = positionUtil.filledOrders(instrument);
-        final MergeCommand mergeCommand = command.commonMergeCommand();
+        final MergeCommand mergeCommand = command.maybeMergeCommand().get();
 
         return orderMergeTask.merge(mergeCommand, ordersToMerge);
     }
@@ -44,7 +44,7 @@ public class ClosePositionCommandHandler {
         return Observable.defer(() -> {
             final Collection<IOrder> ordersToClose = ordersToClose(command);
             final Observable<OrderEvent> batchClose =
-                    orderChangeBatch.close(ordersToClose, command::singleCloseCompose);
+                    orderChangeBatch.close(ordersToClose, command::singleCloseComposer);
             return composeBatchClose(batchClose, command);
         });
     }
@@ -65,9 +65,9 @@ public class ClosePositionCommandHandler {
         final CloseExecutionMode executionMode = command.executionMode();
 
         if (executionMode == CloseExecutionMode.CloseFilled)
-            return batchClose.compose(command.closeFilledCompose());
+            return batchClose.compose(command.closeFilledComposer());
         if (executionMode == CloseExecutionMode.CloseOpened)
-            return batchClose.compose(command.closeOpenedCompose());
-        return batchClose.compose(command.closeAllCompose());
+            return batchClose.compose(command.closeOpenedComposer());
+        return batchClose.compose(command.closeAllComposer());
     }
 }
