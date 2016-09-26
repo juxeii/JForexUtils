@@ -59,13 +59,14 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
     public void defaultCommandValuesAreCorrect() {
         command = ClosePositionCommand
             .newBuilder(instrumentEURUSD)
-            .singleCloseComposer(testOrderComposer)
-            .closeOpened(testComposer, BatchMode.MERGE)
+            .closeOpenedComposer(testComposer, BatchMode.MERGE)
             .build();
 
         assertThat(command.instrument(), equalTo(instrumentEURUSD));
         assertFalse(command.maybeMergeCommand().isPresent());
-        assertComposerEmitsComposerEvent(command.singleCloseComposer(buyOrderEURUSD));
+        assertThat(command.closeBatchMode(), equalTo(BatchMode.MERGE));
+        assertComposerIsNeutral(command.singleCloseComposer(buyOrderEURUSD));
+        assertComposerIsNeutral(command.singleCloseComposer(buyOrderEURUSD));
         assertComposerIsNeutral(command.closeAllComposer());
         assertComposerIsNeutral(command.closeFilledComposer());
     }
@@ -75,15 +76,17 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
         command = ClosePositionCommand
             .newBuilder(instrumentEURUSD)
             .singleCloseComposer(testOrderComposer)
-            .closeFilled(testComposer, BatchMode.MERGE)
+            .closeFilledComposer(testComposer, BatchMode.CONCAT)
             .withMergeCommand(mergeCommandMock)
             .build();
 
         assertThat(command.instrument(), equalTo(instrumentEURUSD));
         assertTrue(command.maybeMergeCommand().isPresent());
+        assertThat(command.closeBatchMode(), equalTo(BatchMode.CONCAT));
         assertThat(command.executionMode(), equalTo(CloseExecutionMode.CloseFilled));
         assertComposerIsNeutral(command.closeAllComposer());
         assertComposerIsNeutral(command.closeOpenedComposer());
+        assertComposerEmitsComposerEvent(command.singleCloseComposer(buyOrderEURUSD));
         assertComposerEmitsComposerEvent(command.closeFilledComposer());
     }
 
@@ -92,7 +95,7 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
         command = ClosePositionCommand
             .newBuilder(instrumentEURUSD)
             .singleCloseComposer(testOrderComposer)
-            .closeAll(testComposer, BatchMode.MERGE)
+            .closeAllComposer(testComposer, BatchMode.MERGE)
             .withMergeCommand(mergeCommandMock)
             .build();
 
@@ -109,7 +112,7 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
         command = ClosePositionCommand
             .newBuilder(instrumentEURUSD)
             .singleCloseComposer(testOrderComposer)
-            .closeOpened(testComposer, BatchMode.MERGE)
+            .closeOpenedComposer(testComposer, BatchMode.MERGE)
             .build();
 
         assertThat(command.instrument(), equalTo(instrumentEURUSD));

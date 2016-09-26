@@ -78,7 +78,7 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
         @Before
         public void setUp() {
             when(closeCommandMock.maybeMergeCommand()).thenReturn(Optional.of(mergeCommandMock));
-            when(orderMergeTaskMock.merge(mergeCommandMock, filledOrders))
+            when(orderMergeTaskMock.merge(filledOrders, mergeCommandMock))
                 .thenReturn(eventObservable(testEvent));
         }
 
@@ -111,7 +111,7 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
         public void observeMergeForFilledOrdersReturnsObservableFromOrderMergeTask() {
             setExecutionModeAndSubscribe(CloseExecutionMode.CloseFilled);
 
-            verify(orderMergeTaskMock).merge(mergeCommandMock, filledOrders);
+            verify(orderMergeTaskMock).merge(filledOrders, mergeCommandMock);
             testObserver.assertComplete();
             testObserver.assertValue(testEvent);
         }
@@ -120,7 +120,7 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
         public void observeMergeForFilledOrOpenedOrdersReturnsObservableFromOrderMergeTask() {
             setExecutionModeAndSubscribe(CloseExecutionMode.CloseAll);
 
-            verify(orderMergeTaskMock).merge(mergeCommandMock, filledOrders);
+            verify(orderMergeTaskMock).merge(filledOrders, mergeCommandMock);
             testObserver.assertComplete();
             testObserver.assertValue(testEvent);
         }

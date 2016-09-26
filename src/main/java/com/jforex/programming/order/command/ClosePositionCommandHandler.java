@@ -37,7 +37,7 @@ public class ClosePositionCommandHandler {
             final Collection<IOrder> ordersToMerge = positionUtil.filledOrders(instrument);
             final MergeCommand mergeCommand = command.maybeMergeCommand().get();
 
-            return orderMergeTask.merge(mergeCommand, ordersToMerge);
+            return orderMergeTask.merge(ordersToMerge, mergeCommand);
         });
     }
 

@@ -54,6 +54,8 @@ public class MergeCommandTest extends InstrumentUtilForTest {
 
         assertThat(mergeCommand.mergeOrderLabel(), equalTo(mergeOrderLabel));
         assertThat(mergeCommand.executionMode(), equalTo(MergeExecutionMode.MergeCancelSLAndTP));
+        assertThat(mergeCommand.orderCancelSLMode(), equalTo(BatchMode.MERGE));
+        assertThat(mergeCommand.orderCancelTPMode(), equalTo(BatchMode.MERGE));
         assertComposerIsNeutral(mergeCommand.cancelSLTPCompose());
         assertComposerIsNeutral(mergeCommand.cancelSLCompose());
         assertComposerIsNeutral(mergeCommand.cancelTPCompose());
@@ -75,7 +77,7 @@ public class MergeCommandTest extends InstrumentUtilForTest {
             .composeCancelSL(testComposer)
             .composeCancelTP(testComposer)
             .composeOrderCancelSL(testOrderComposer, BatchMode.MERGE)
-            .composeOrderCancelTP(testOrderComposer, BatchMode.MERGE)
+            .composeOrderCancelTP(testOrderComposer, BatchMode.CONCAT)
             .withExecutionMode(MergeExecutionMode.ConcatCancelSLAndTP)
             .done()
             .composeMerge(testComposer)
@@ -83,6 +85,8 @@ public class MergeCommandTest extends InstrumentUtilForTest {
 
         assertThat(mergeCommand.mergeOrderLabel(), equalTo(mergeOrderLabel));
         assertThat(mergeCommand.executionMode(), equalTo(MergeExecutionMode.ConcatCancelSLAndTP));
+        assertThat(mergeCommand.orderCancelSLMode(), equalTo(BatchMode.MERGE));
+        assertThat(mergeCommand.orderCancelTPMode(), equalTo(BatchMode.CONCAT));
         assertComposerEmitsComposerEvent(mergeCommand.cancelSLTPCompose());
         assertComposerEmitsComposerEvent(mergeCommand.cancelSLCompose());
         assertComposerEmitsComposerEvent(mergeCommand.cancelTPCompose());

@@ -43,6 +43,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private PositionUtil positionUtilMock;
     @Mock
     private MergeCommand mergeCommandMock;
+    @Mock
+    private Function<Instrument, MergeCommand> mergeCommandFactory;
+    @Mock
+    private Function<Instrument, ClosePositionCommand> closeCommandFactory;
     private final IOrder orderForTest = buyOrderEURUSD;
     private Observable<OrderEvent> orderEventObservable;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
@@ -185,14 +189,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergeAllPositionsDelegatesToMergeTask() {
-        final Function<Instrument, MergeCommand> commandFactory = i -> null;
-
-        when(orderMergeTaskMock.mergeAll(commandFactory))
+        when(orderMergeTaskMock.mergeAll(mergeCommandFactory))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.mergeAllPositions(commandFactory);
+        final Observable<OrderEvent> actualObservable = orderUtil.mergeAllPositions(mergeCommandFactory);
 
-        verify(orderMergeTaskMock).mergeAll(commandFactory);
+        verify(orderMergeTaskMock).mergeAll(mergeCommandFactory);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
@@ -211,14 +213,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void closeAllPositionsDelegatesToCloseTask() {
-        final Function<Instrument, ClosePositionCommand> commandFactory = i -> null;
-
-        when(orderCloseTaskMock.closeAll(commandFactory))
+        when(orderCloseTaskMock.closeAll(closeCommandFactory))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.closeAllPositions(commandFactory);
+        final Observable<OrderEvent> actualObservable = orderUtil.closeAllPositions(closeCommandFactory);
 
-        verify(orderCloseTaskMock).closeAll(commandFactory);
+        verify(orderCloseTaskMock).closeAll(closeCommandFactory);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 

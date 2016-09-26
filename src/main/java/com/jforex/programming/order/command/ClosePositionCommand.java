@@ -24,26 +24,23 @@ public class ClosePositionCommand {
     private final Optional<MergeCommand> maybeMergeCommand;
     private final BatchMode closeBatchMode;
 
-    public interface SingleCloseOption {
-
-        CloseOption singleCloseComposer(BiFunction<Observable<OrderEvent>,
-                                                   IOrder,
-                                                   Observable<OrderEvent>> singleCloseComposer);
-    }
-
     public interface CloseOption {
 
-        public MergeForCloseOption closeFilled(Function<Observable<OrderEvent>,
-                                                        Observable<OrderEvent>> closeFilledComposer,
+        public CloseOption singleCloseComposer(BiFunction<Observable<OrderEvent>,
+                                                          IOrder,
+                                                          Observable<OrderEvent>> singleCloseComposer);
+
+        public MergeForCloseOption closeFilledComposer(Function<Observable<OrderEvent>,
+                                                                Observable<OrderEvent>> closeFilledComposer,
+                                                       BatchMode batchMode);
+
+        public BuildOption closeOpenedComposer(Function<Observable<OrderEvent>,
+                                                        Observable<OrderEvent>> closeOpenedComposer,
                                                BatchMode batchMode);
 
-        public BuildOption closeOpened(Function<Observable<OrderEvent>,
-                                                Observable<OrderEvent>> closeOpenedComposer,
-                                       BatchMode batchMode);
-
-        public MergeForCloseOption closeAll(Function<Observable<OrderEvent>,
-                                                     Observable<OrderEvent>> closeAllComposer,
-                                            BatchMode batchMode);
+        public MergeForCloseOption closeAllComposer(Function<Observable<OrderEvent>,
+                                                             Observable<OrderEvent>> closeAllComposer,
+                                                    BatchMode batchMode);
     }
 
     public interface MergeForCloseOption {
@@ -101,14 +98,13 @@ public class ClosePositionCommand {
         return closeBatchMode;
     }
 
-    public static SingleCloseOption newBuilder(final Instrument instrument) {
+    public static CloseOption newBuilder(final Instrument instrument) {
         return new Builder(checkNotNull(instrument));
     }
 
     public static class Builder implements
                                 CloseOption,
                                 MergeForCloseOption,
-                                SingleCloseOption,
                                 BuildOption {
 
         private final Instrument instrument;
@@ -137,9 +133,9 @@ public class ClosePositionCommand {
         }
 
         @Override
-        public MergeForCloseOption closeFilled(final Function<Observable<OrderEvent>,
-                                                              Observable<OrderEvent>> closeFilledComposer,
-                                               final BatchMode batchMode) {
+        public MergeForCloseOption closeFilledComposer(final Function<Observable<OrderEvent>,
+                                                                      Observable<OrderEvent>> closeFilledComposer,
+                                                       final BatchMode batchMode) {
             this.executionMode = CloseExecutionMode.CloseFilled;
             this.closeFilledComposer = checkNotNull(closeFilledComposer);
             this.closeBatchMode = batchMode;
@@ -147,9 +143,9 @@ public class ClosePositionCommand {
         }
 
         @Override
-        public BuildOption closeOpened(final Function<Observable<OrderEvent>,
-                                                      Observable<OrderEvent>> closeOpenedComposer,
-                                       final BatchMode batchMode) {
+        public BuildOption closeOpenedComposer(final Function<Observable<OrderEvent>,
+                                                              Observable<OrderEvent>> closeOpenedComposer,
+                                               final BatchMode batchMode) {
             this.executionMode = CloseExecutionMode.CloseOpened;
             this.closeOpenedComposer = checkNotNull(closeOpenedComposer);
             this.closeBatchMode = batchMode;
@@ -157,9 +153,9 @@ public class ClosePositionCommand {
         }
 
         @Override
-        public MergeForCloseOption closeAll(final Function<Observable<OrderEvent>,
-                                                           Observable<OrderEvent>> closeAllComposer,
-                                            final BatchMode batchMode) {
+        public MergeForCloseOption closeAllComposer(final Function<Observable<OrderEvent>,
+                                                                   Observable<OrderEvent>> closeAllComposer,
+                                                    final BatchMode batchMode) {
             this.executionMode = CloseExecutionMode.CloseAll;
             this.closeAllComposer = checkNotNull(closeAllComposer);
             this.closeBatchMode = batchMode;

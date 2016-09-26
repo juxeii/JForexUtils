@@ -34,11 +34,6 @@ public class OrderMergeTask {
                                                               command));
     }
 
-    public Observable<OrderEvent> merge(final MergeCommand command,
-                                        final Collection<IOrder> toMergeOrders) {
-        return Observable.defer(() -> splitCancelSLTPAndMerge(toMergeOrders, command));
-    }
-
     public Observable<OrderEvent> mergeAll(final Function<Instrument, MergeCommand> commandFactory) {
         return Observable.defer(() -> {
             final Function<Instrument, Observable<OrderEvent>> observablesFromFactory =
