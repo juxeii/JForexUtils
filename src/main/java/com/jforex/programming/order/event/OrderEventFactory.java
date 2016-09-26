@@ -5,9 +5,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IMessage.Reason;
 import com.dukascopy.api.IOrder;
@@ -22,11 +19,7 @@ public class OrderEventFactory {
     private final ConcurrentMap<IOrder, Boolean> ordersOfQueue =
             new MapMaker().weakKeys().makeMap();
 
-    private static final Logger logger = LogManager.getLogger(OrderEventFactory.class);
-
     public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
-        logger.info("Queueing callrequest " + orderCallRequest.order().getLabel() + " reason "
-                + orderCallRequest.reason());
         callRequestQueue.add(orderCallRequest);
         ordersOfQueue.put(orderCallRequest.order(), true);
     }
