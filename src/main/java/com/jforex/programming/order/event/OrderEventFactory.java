@@ -1,14 +1,17 @@
 package com.jforex.programming.order.event;
 
-import java.util.Collections;
 import java.util.Queue;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IMessage.Reason;
 import com.dukascopy.api.IOrder;
+import com.google.common.collect.MapMaker;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -16,10 +19,16 @@ import com.jforex.programming.order.call.OrderCallRequest;
 public class OrderEventFactory {
 
     private final Queue<OrderCallRequest> callRequestQueue = new ConcurrentLinkedQueue<>();
-    private final Set<IOrder> registeredOrders = Collections.newSetFromMap(new WeakHashMap<IOrder, Boolean>());
+    private final ConcurrentMap<IOrder, Boolean> ordersOfQueue =
+            new MapMaker().weakKeys().makeMap();
+
+    private static final Logger logger = LogManager.getLogger(OrderEventFactory.class);
 
     public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
+        logger.info("Queueing callrequest " + orderCallRequest.order().getLabel() + " reason "
+                + orderCallRequest.reason());
         callRequestQueue.add(orderCallRequest);
+        ordersOfQueue.put(orderCallRequest.order(), true);
     }
 
     public OrderEvent fromMessage(final IMessage message) {
@@ -41,12 +50,12 @@ public class OrderEventFactory {
     private final void cleanUpRegisteredOrder(final IOrder order) {
         if (OrderStaticUtil.isClosed.test(order) ||
                 OrderStaticUtil.isCanceled.test(order))
-            registeredOrders.remove(order);
+            ordersOfQueue.remove(order);
+
     }
 
     private final OrderEvent eventForQueuedOrder(final IOrder order,
                                                  final OrderEventType rawOrderEventType) {
-        registeredOrders.add(order);
         return new OrderEvent(order,
                               refineTypeForRegisteredOrder(rawOrderEventType),
                               true);
@@ -54,7 +63,7 @@ public class OrderEventFactory {
 
     private final OrderEvent eventForNotQueuedOrder(final IOrder order,
                                                     final OrderEventType orderEventType) {
-        final boolean isInternal = registeredOrders.contains(order);
+        final boolean isInternal = ordersOfQueue.keySet().contains(order);
         return new OrderEvent(order,
                               orderEventType,
                               isInternal);
