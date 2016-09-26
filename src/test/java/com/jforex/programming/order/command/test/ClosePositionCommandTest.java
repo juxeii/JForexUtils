@@ -9,11 +9,10 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.command.CloseExecutionMode;
 import com.jforex.programming.order.command.ClosePositionCommand;
-import com.jforex.programming.order.command.ClosePositionCommand.CloseExecutionMode;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
@@ -27,12 +26,8 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
 
     @Mock
     private MergeCommand mergeCommandMock;
-    private final OrderEvent testEvent = new OrderEvent(buyOrderEURUSD,
-                                                        OrderEventType.CLOSE_OK,
-                                                        true);
-    private final OrderEvent composerEvent = new OrderEvent(buyOrderEURUSD,
-                                                            OrderEventType.CHANGED_LABEL,
-                                                            true);
+    private final OrderEvent testEvent = closeEvent;
+    private final OrderEvent composerEvent = changedLabelEvent;
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> testComposer =
             obs -> obs.flatMap(orderEvent -> Observable.just(composerEvent));
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> testOrderComposer =

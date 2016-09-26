@@ -6,7 +6,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderChangeBatch;
 import com.jforex.programming.order.OrderMergeTask;
-import com.jforex.programming.order.command.ClosePositionCommand.CloseExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionUtil;
 
@@ -27,17 +26,19 @@ public class ClosePositionCommandHandler {
     }
 
     public Observable<OrderEvent> observeMerge(final ClosePositionCommand command) {
-        return Observable.defer(() -> command.executionMode() == CloseExecutionMode.CloseOpened
+        return command.executionMode() == CloseExecutionMode.CloseOpened
                 ? Observable.empty()
-                : observeMergeForFilledOrders(command));
+                : observeMergeForFilledOrders(command);
     }
 
     private Observable<OrderEvent> observeMergeForFilledOrders(final ClosePositionCommand command) {
-        final Instrument instrument = command.instrument();
-        final Collection<IOrder> ordersToMerge = positionUtil.filledOrders(instrument);
-        final MergeCommand mergeCommand = command.maybeMergeCommand().get();
+        return Observable.defer(() -> {
+            final Instrument instrument = command.instrument();
+            final Collection<IOrder> ordersToMerge = positionUtil.filledOrders(instrument);
+            final MergeCommand mergeCommand = command.maybeMergeCommand().get();
 
-        return orderMergeTask.merge(mergeCommand, ordersToMerge);
+            return orderMergeTask.merge(mergeCommand, ordersToMerge);
+        });
     }
 
     public Observable<OrderEvent> observeClose(final ClosePositionCommand command) {

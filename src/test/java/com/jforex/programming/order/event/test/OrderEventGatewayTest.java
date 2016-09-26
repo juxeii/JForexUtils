@@ -1,8 +1,5 @@
 package com.jforex.programming.order.event.test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -15,7 +12,6 @@ import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import io.reactivex.observers.TestObserver;
@@ -67,12 +63,8 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Test
     public void subscriberIsNotifiedOnOrderMessageData() {
-        final OrderEvent orderEventMock = new OrderEvent(orderUnderTest,
-                                                         OrderEventType.CHANGED_REJECTED,
-                                                         true);
-
         when(orderEventMapperMock.fromMessage(any()))
-            .thenReturn(orderEventMock);
+            .thenReturn(changedRejectEvent);
 
         orderEventGateway
             .observable()
@@ -80,10 +72,6 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
         messageSubject.onNext(message);
 
         subscriber.assertNoErrors();
-        subscriber.assertValueCount(1);
-        final OrderEvent orderEvent = getOnNextEvent(subscriber, 0);
-
-        assertThat(orderEvent.order(), equalTo(orderUnderTest));
-        assertThat(orderEvent.type(), equalTo(OrderEventType.CHANGED_REJECTED));
+        subscriber.assertValue(changedRejectEvent);
     }
 }

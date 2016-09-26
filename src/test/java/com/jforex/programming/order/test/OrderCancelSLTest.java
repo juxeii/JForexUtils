@@ -13,7 +13,6 @@ import com.jforex.programming.order.OrderCancelSL;
 import com.jforex.programming.order.OrderChangeBatch;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -52,9 +51,7 @@ public class OrderCancelSLTest extends InstrumentUtilForTest {
     public class WhenSubscribedTests {
 
         private TestObserver<OrderEvent> testObserver;
-        private final OrderEvent event = new OrderEvent(buyOrderEURUSD,
-                                                        OrderEventType.SUBMIT_CONDITIONAL_OK,
-                                                        true);
+        private final OrderEvent event = submitEvent;
 
         @Before
         public void setUp() {

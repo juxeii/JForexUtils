@@ -20,12 +20,6 @@ public class MergeCommand {
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> orderCancelSLComposer;
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> orderCancelTPComposer;
 
-    public enum MergeExecutionMode {
-        ConcatCancelSLAndTP,
-        ConcatCancelTPAndSL,
-        MergeCancelSLAndTP
-    }
-
     public interface MergeOption {
 
         public CancelSLAndTPOption composeCancelSLAndTP(Function<Observable<OrderEvent>,

@@ -7,9 +7,8 @@ import org.junit.Test;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.MergeCommand.MergeExecutionMode;
+import com.jforex.programming.order.command.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
@@ -22,12 +21,8 @@ public class MergeCommandTest extends InstrumentUtilForTest {
     private MergeCommand mergeCommand;
 
     private static final String mergeOrderLabel = "mergeOrderLabel";
-    private final OrderEvent testEvent = new OrderEvent(buyOrderEURUSD,
-                                                        OrderEventType.CLOSE_OK,
-                                                        true);
-    private final OrderEvent composerEvent = new OrderEvent(buyOrderEURUSD,
-                                                            OrderEventType.CHANGED_LABEL,
-                                                            true);
+    private final OrderEvent testEvent = mergeEvent;
+    private final OrderEvent composerEvent = changedLabelEvent;
 
     private void assertComposerIsNeutral(final Function<Observable<OrderEvent>, Observable<OrderEvent>> composer) {
         final TestObserver<OrderEvent> testObserver = Observable

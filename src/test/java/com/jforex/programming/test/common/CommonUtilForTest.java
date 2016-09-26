@@ -35,8 +35,8 @@ import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderProcessState;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.command.ClosePositionCommand;
-import com.jforex.programming.order.command.MergeCommand;
+import com.jforex.programming.order.command.CloseExecutionMode;
+import com.jforex.programming.order.command.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -96,6 +96,12 @@ public class CommonUtilForTest extends BDDMockito {
     protected final IOrder sellOrderEURUSD = orderUtilForTest.sellOrderEURUSD();
     protected final IOrder buyOrderAUDUSD = orderUtilForTest.buyOrderAUDUSD();
     protected final IOrder sellOrderAUDUSD = orderUtilForTest.sellOrderAUDUSD();
+    protected OrderEvent submitEvent = createEvent(OrderEventType.SUBMIT_OK);
+    protected OrderEvent closeEvent = createEvent(OrderEventType.CLOSE_OK);
+    protected OrderEvent mergeEvent = createEvent(OrderEventType.MERGE_OK);
+    protected OrderEvent changedLabelEvent = createEvent(OrderEventType.CHANGED_LABEL);
+    protected OrderEvent changedRejectEvent = createEvent(OrderEventType.CHANGED_REJECTED);
+
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
     protected static final PlatformSettings platformSettings = JForexUtil.platformSettings;
     protected static final UserSettings userSettings = JForexUtil.userSettings;
@@ -170,10 +176,10 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(OrderDirection.FLAT.toString());
         AuthentificationUtil.FSMTrigger
             .valueOf(AuthentificationUtil.FSMTrigger.CONNECT.toString());
-        MergeCommand.MergeExecutionMode
-            .valueOf(MergeCommand.MergeExecutionMode.ConcatCancelSLAndTP.toString());
-        ClosePositionCommand.CloseExecutionMode
-            .valueOf(ClosePositionCommand.CloseExecutionMode.CloseAll.toString());
+        MergeExecutionMode
+            .valueOf(MergeExecutionMode.ConcatCancelSLAndTP.toString());
+        CloseExecutionMode
+            .valueOf(CloseExecutionMode.CloseAll.toString());
     }
 
     protected final Completable emptyCompletable() {
@@ -216,5 +222,11 @@ public class CommonUtilForTest extends BDDMockito {
             .verify();
 
         logger.info("toString() for " + instance.toString());
+    }
+
+    protected OrderEvent createEvent(final OrderEventType type) {
+        return new OrderEvent(buyOrderEURUSD,
+                              type,
+                              true);
     }
 }

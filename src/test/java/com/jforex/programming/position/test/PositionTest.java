@@ -77,9 +77,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
     @Test
     public void orderOfOtherPositionAreNotAdded() {
-        orderEventSubject.onNext(new OrderEvent(buyOrderAUDUSD,
-                                                OrderEventType.SUBMIT_OK,
-                                                true));
+        orderEventSubject.onNext(submitEvent);
         assertFalse(position.contains(buyOrderAUDUSD));
     }
 

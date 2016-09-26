@@ -14,7 +14,6 @@ import com.jforex.programming.order.OrderCloseTask;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.ClosePositionCommandHandler;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -36,9 +35,7 @@ public class OrderCloseTaskTest extends InstrumentUtilForTest {
     private ClosePositionCommand closePositionCommandMock;
     @Mock
     private Function<Instrument, ClosePositionCommand> commandFactoryMock;
-    private final OrderEvent event = new OrderEvent(buyOrderEURUSD,
-                                                    OrderEventType.CLOSE_OK,
-                                                    true);
+    private final OrderEvent event = closeEvent;
     private TestObserver<OrderEvent> testObserver;
 
     @Before

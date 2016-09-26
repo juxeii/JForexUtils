@@ -12,9 +12,7 @@ import com.jforex.programming.test.common.QuoteProviderForTest;
 
 public class OrderEventTest extends QuoteProviderForTest {
 
-    private final OrderEvent orderEvent = new OrderEvent(buyOrderEURUSD,
-                                                         OrderEventType.SUBMIT_OK,
-                                                         true);
+    private final OrderEvent orderEvent = submitEvent;
 
     @Test
     public void allAccessorsAreCorrect() {

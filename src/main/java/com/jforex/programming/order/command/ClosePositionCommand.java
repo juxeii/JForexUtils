@@ -22,12 +22,6 @@ public class ClosePositionCommand {
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> singleCloseComposer;
     private final Optional<MergeCommand> maybeMergeCommand;
 
-    public enum CloseExecutionMode {
-        CloseFilled,
-        CloseOpened,
-        CloseAll
-    }
-
     public interface SingleCloseOption {
 
         CloseOption singleCloseComposer(BiFunction<Observable<OrderEvent>,
@@ -67,32 +61,32 @@ public class ClosePositionCommand {
         maybeMergeCommand = builder.maybeMergeCommand;
     }
 
-    public final Instrument instrument() {
+    public Instrument instrument() {
         return instrument;
     }
 
-    public final Optional<MergeCommand> maybeMergeCommand() {
+    public Optional<MergeCommand> maybeMergeCommand() {
         return maybeMergeCommand;
     }
 
-    public final CloseExecutionMode executionMode() {
+    public CloseExecutionMode executionMode() {
         return executionMode;
     }
 
-    public final Function<Observable<OrderEvent>, Observable<OrderEvent>> closeFilledComposer() {
+    public Function<Observable<OrderEvent>, Observable<OrderEvent>> closeFilledComposer() {
         return closeFilledComposer;
     }
 
-    public final Function<Observable<OrderEvent>, Observable<OrderEvent>> closeOpenedComposer() {
+    public Function<Observable<OrderEvent>, Observable<OrderEvent>> closeOpenedComposer() {
         return closeOpenedComposer;
     }
 
-    public final Function<Observable<OrderEvent>, Observable<OrderEvent>> closeAllComposer() {
+    public Function<Observable<OrderEvent>, Observable<OrderEvent>> closeAllComposer() {
         return closeAllComposer;
     }
 
-    public final Function<Observable<OrderEvent>,
-                          Observable<OrderEvent>>
+    public Function<Observable<OrderEvent>,
+                    Observable<OrderEvent>>
            singleCloseComposer(final IOrder orderToClose) {
         return obs -> singleCloseComposer.apply(obs, orderToClose);
     }
