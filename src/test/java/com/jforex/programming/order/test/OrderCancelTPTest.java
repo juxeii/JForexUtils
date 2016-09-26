@@ -9,6 +9,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
+import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.OrderCancelTP;
 import com.jforex.programming.order.OrderChangeBatch;
 import com.jforex.programming.order.command.MergeCommand;
@@ -37,6 +38,7 @@ public class OrderCancelTPTest extends InstrumentUtilForTest {
     @Before
     public void setUp() {
         when(mergeCommandMock.orderCancelTPComposer(any())).thenReturn(orderCancelTPComposerMock);
+        when(mergeCommandMock.orderCancelTPMode()).thenReturn(BatchMode.MERGE);
 
         orderCancelTP = new OrderCancelTP(orderChangeBatchMock);
     }
@@ -55,8 +57,10 @@ public class OrderCancelTPTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(orderChangeBatchMock.cancelTP(eq(toCancelTPOrders), any()))
-                .thenReturn(eventObservable(event));
+            when(orderChangeBatchMock.cancelTP(eq(toCancelTPOrders),
+                                               eq(BatchMode.MERGE),
+                                               any()))
+                                                   .thenReturn(eventObservable(event));
 
             testObserver = orderCancelTP
                 .observe(toCancelTPOrders, mergeCommandMock)
@@ -67,6 +71,7 @@ public class OrderCancelTPTest extends InstrumentUtilForTest {
         public void subscribeCallsChangeBatchWithCorrectParams() {
             verify(orderChangeBatchMock)
                 .cancelTP(eq(toCancelTPOrders),
+                          eq(BatchMode.MERGE),
                           argThat(c -> {
                               Observable
                                   .fromCallable(() -> c.apply(buyOrderEURUSD))

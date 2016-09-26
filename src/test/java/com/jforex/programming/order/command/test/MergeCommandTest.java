@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
@@ -73,8 +74,8 @@ public class MergeCommandTest extends InstrumentUtilForTest {
             .composeCancelSLAndTP(testComposer)
             .composeCancelSL(testComposer)
             .composeCancelTP(testComposer)
-            .composeOrderCancelSL(testOrderComposer)
-            .composeOrderCancelTP(testOrderComposer)
+            .composeOrderCancelSL(testOrderComposer, BatchMode.MERGE)
+            .composeOrderCancelTP(testOrderComposer, BatchMode.MERGE)
             .withExecutionMode(MergeExecutionMode.ConcatCancelSLAndTP)
             .done()
             .composeMerge(testComposer)

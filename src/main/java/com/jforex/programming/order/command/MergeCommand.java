@@ -3,6 +3,7 @@ package com.jforex.programming.order.command;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
@@ -19,6 +20,8 @@ public class MergeCommand {
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> cancelTPComposer;
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> orderCancelSLComposer;
     private final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> orderCancelTPComposer;
+    private final BatchMode orderCancelSLMode;
+    private final BatchMode orderCancelTPMode;
 
     public interface MergeOption {
 
@@ -41,11 +44,13 @@ public class MergeCommand {
 
         public CancelSLAndTPOption composeOrderCancelSL(BiFunction<Observable<OrderEvent>,
                                                                    IOrder,
-                                                                   Observable<OrderEvent>> singleCancelSLCompose);
+                                                                   Observable<OrderEvent>> singleCancelSLCompose,
+                                                        BatchMode batchMode);
 
         public CancelSLAndTPOption composeOrderCancelTP(BiFunction<Observable<OrderEvent>,
                                                                    IOrder,
-                                                                   Observable<OrderEvent>> orderCancelTPComposer);
+                                                                   Observable<OrderEvent>> orderCancelTPComposer,
+                                                        BatchMode batchMode);
 
         public CancelSLAndTPOption withExecutionMode(MergeExecutionMode executionMode);
 
@@ -61,6 +66,8 @@ public class MergeCommand {
         orderCancelTPComposer = builder.orderCancelTPComposer;
         executionMode = builder.executionMode;
         mergeComposer = builder.mergeComposer;
+        orderCancelSLMode = builder.orderCancelSLMode;
+        orderCancelTPMode = builder.orderCancelTPMode;
     }
 
     public String mergeOrderLabel() {
@@ -95,6 +102,14 @@ public class MergeCommand {
         return executionMode;
     }
 
+    public BatchMode orderCancelSLMode() {
+        return orderCancelSLMode;
+    }
+
+    public BatchMode orderCancelTPMode() {
+        return orderCancelTPMode;
+    }
+
     public static MergeOption newBuilder(final String mergeOrderLabel) {
         return new Builder(checkNotNull(mergeOrderLabel));
     }
@@ -117,6 +132,8 @@ public class MergeCommand {
                 (observable, order) -> observable;
         private Function<Observable<OrderEvent>, Observable<OrderEvent>> mergeComposer =
                 observable -> observable;
+        private BatchMode orderCancelSLMode = BatchMode.MERGE;
+        private BatchMode orderCancelTPMode = BatchMode.MERGE;
 
         public Builder(final String mergeOrderLabel) {
             this.mergeOrderLabel = mergeOrderLabel;
@@ -147,18 +164,22 @@ public class MergeCommand {
         }
 
         @Override
-        public CancelSLAndTPOption composeOrderCancelTP(final BiFunction<Observable<OrderEvent>,
+        public CancelSLAndTPOption composeOrderCancelSL(final BiFunction<Observable<OrderEvent>,
                                                                          IOrder,
-                                                                         Observable<OrderEvent>> orderCancelTPComposer) {
-            this.orderCancelTPComposer = checkNotNull(orderCancelTPComposer);
+                                                                         Observable<OrderEvent>> singleCancelSLCompose,
+                                                        final BatchMode batchMode) {
+            this.singleCancelSLComposer = checkNotNull(singleCancelSLCompose);
+            this.orderCancelSLMode = batchMode;
             return this;
         }
 
         @Override
-        public CancelSLAndTPOption composeOrderCancelSL(final BiFunction<Observable<OrderEvent>,
+        public CancelSLAndTPOption composeOrderCancelTP(final BiFunction<Observable<OrderEvent>,
                                                                          IOrder,
-                                                                         Observable<OrderEvent>> singleCancelSLCompose) {
-            this.singleCancelSLComposer = checkNotNull(singleCancelSLCompose);
+                                                                         Observable<OrderEvent>> orderCancelTPComposer,
+                                                        final BatchMode batchMode) {
+            this.orderCancelTPComposer = checkNotNull(orderCancelTPComposer);
+            this.orderCancelTPMode = batchMode;
             return this;
         }
 

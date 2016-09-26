@@ -11,6 +11,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
+import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.OrderChangeBatch;
 import com.jforex.programming.order.OrderMergeTask;
 import com.jforex.programming.order.command.CloseExecutionMode;
@@ -61,6 +62,7 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
 
     private void setUpMocks() {
         when(closeCommandMock.instrument()).thenReturn(instrumentEURUSD);
+        when(closeCommandMock.closeBatchMode()).thenReturn(BatchMode.MERGE);
 
         when(positionUtilMock.filledOrders(instrumentEURUSD)).thenReturn(filledOrders);
         when(positionUtilMock.filledOrOpenedOrders(instrumentEURUSD)).thenReturn(allOrders);
@@ -135,8 +137,10 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
         }
 
         public void setChangeBatchMock(final Collection<IOrder> orders) {
-            when(orderChangeBatchMock.close(eq(orders), any()))
-                .thenReturn(eventObservable(testEvent));
+            when(orderChangeBatchMock.close(eq(orders),
+                                            eq(BatchMode.MERGE),
+                                            any()))
+                                                .thenReturn(eventObservable(testEvent));
         }
 
         private void setExecutionModeAndSubscribe(final CloseExecutionMode mode) {
@@ -166,7 +170,9 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void orderChangeBatchIsCalledCorrect() {
-                verify(orderChangeBatchMock).close(eq(allOrders), any());
+                verify(orderChangeBatchMock).close(eq(allOrders),
+                                                   eq(BatchMode.MERGE),
+                                                   any());
             }
 
             @Test
@@ -186,7 +192,9 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void orderChangeBatchIsCalledCorrect() {
-                verify(orderChangeBatchMock).close(eq(filledOrders), any());
+                verify(orderChangeBatchMock).close(eq(filledOrders),
+                                                   eq(BatchMode.MERGE),
+                                                   any());
             }
 
             @Test
@@ -206,7 +214,9 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void orderChangeBatchIsCalledCorrect() {
-                verify(orderChangeBatchMock).close(eq(openOrders), any());
+                verify(orderChangeBatchMock).close(eq(openOrders),
+                                                   eq(BatchMode.MERGE),
+                                                   any());
             }
 
             @Test

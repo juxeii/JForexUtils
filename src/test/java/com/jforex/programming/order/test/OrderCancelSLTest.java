@@ -9,6 +9,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
+import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.OrderCancelSL;
 import com.jforex.programming.order.OrderChangeBatch;
 import com.jforex.programming.order.command.MergeCommand;
@@ -37,6 +38,7 @@ public class OrderCancelSLTest extends InstrumentUtilForTest {
     @Before
     public void setUp() {
         when(mergeCommandMock.orderCancelSLComposer(any())).thenReturn(orderCancelSLComposerMock);
+        when(mergeCommandMock.orderCancelSLMode()).thenReturn(BatchMode.MERGE);
 
         orderCancelSL = new OrderCancelSL(orderChangeBatchMock);
     }
@@ -55,8 +57,10 @@ public class OrderCancelSLTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(orderChangeBatchMock.cancelSL(eq(toCancelSLOrders), any()))
-                .thenReturn(eventObservable(event));
+            when(orderChangeBatchMock.cancelSL(eq(toCancelSLOrders),
+                                               eq(BatchMode.MERGE),
+                                               any()))
+                                                   .thenReturn(eventObservable(event));
 
             testObserver = orderCancelSL
                 .observe(toCancelSLOrders, mergeCommandMock)
@@ -67,6 +71,7 @@ public class OrderCancelSLTest extends InstrumentUtilForTest {
         public void subscribeCallsChangeBatchWithCorrecSLarams() {
             verify(orderChangeBatchMock)
                 .cancelSL(eq(toCancelSLOrders),
+                          eq(BatchMode.MERGE),
                           argThat(c -> {
                               Observable
                                   .fromCallable(() -> c.apply(buyOrderEURUSD))

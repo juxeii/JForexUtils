@@ -45,7 +45,9 @@ public class ClosePositionCommandHandler {
         return Observable.defer(() -> {
             final Collection<IOrder> ordersToClose = ordersToClose(command);
             final Observable<OrderEvent> batchClose =
-                    orderChangeBatch.close(ordersToClose, command::singleCloseComposer);
+                    orderChangeBatch.close(ordersToClose,
+                                           command.closeBatchMode(),
+                                           command::singleCloseComposer);
             return composeBatchClose(batchClose, command);
         });
     }

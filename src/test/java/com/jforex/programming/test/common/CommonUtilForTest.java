@@ -31,6 +31,7 @@ import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.currency.CurrencyCode;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderProcessState;
@@ -180,6 +181,8 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(MergeExecutionMode.ConcatCancelSLAndTP.toString());
         CloseExecutionMode
             .valueOf(CloseExecutionMode.CloseAll.toString());
+        BatchMode
+            .valueOf(BatchMode.CONCAT.toString());
     }
 
     protected final Completable emptyCompletable() {

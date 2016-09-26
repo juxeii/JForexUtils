@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.command.CloseExecutionMode;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.MergeCommand;
@@ -59,7 +60,7 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
         command = ClosePositionCommand
             .newBuilder(instrumentEURUSD)
             .singleCloseComposer(testOrderComposer)
-            .closeOpened(testComposer)
+            .closeOpened(testComposer, BatchMode.MERGE)
             .build();
 
         assertThat(command.instrument(), equalTo(instrumentEURUSD));
@@ -74,7 +75,7 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
         command = ClosePositionCommand
             .newBuilder(instrumentEURUSD)
             .singleCloseComposer(testOrderComposer)
-            .closeFilled(testComposer)
+            .closeFilled(testComposer, BatchMode.MERGE)
             .withMergeCommand(mergeCommandMock)
             .build();
 
@@ -91,7 +92,7 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
         command = ClosePositionCommand
             .newBuilder(instrumentEURUSD)
             .singleCloseComposer(testOrderComposer)
-            .closeAll(testComposer)
+            .closeAll(testComposer, BatchMode.MERGE)
             .withMergeCommand(mergeCommandMock)
             .build();
 
@@ -108,7 +109,7 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
         command = ClosePositionCommand
             .newBuilder(instrumentEURUSD)
             .singleCloseComposer(testOrderComposer)
-            .closeOpened(testComposer)
+            .closeOpened(testComposer, BatchMode.MERGE)
             .build();
 
         assertThat(command.instrument(), equalTo(instrumentEURUSD));
