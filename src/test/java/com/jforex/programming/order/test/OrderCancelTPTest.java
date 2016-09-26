@@ -68,11 +68,11 @@ public class OrderCancelTPTest extends InstrumentUtilForTest {
             verify(orderChangeBatchMock)
                 .cancelTP(eq(toCancelTPOrders),
                           argThat(c -> {
-                              try {
-                                  return orderCancelTPComposerMock.equals(c.apply(buyOrderEURUSD));
-                              } catch (final Exception e) {
-                                  return false;
-                              }
+                              Observable
+                                  .fromCallable(() -> c.apply(buyOrderEURUSD))
+                                  .test()
+                                  .assertValue(orderCancelTPComposerMock);
+                              return true;
                           }));
         }
 

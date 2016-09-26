@@ -68,11 +68,11 @@ public class OrderCancelSLTest extends InstrumentUtilForTest {
             verify(orderChangeBatchMock)
                 .cancelSL(eq(toCancelSLOrders),
                           argThat(c -> {
-                              try {
-                                  return orderCancelSLComposerMock.equals(c.apply(buyOrderEURUSD));
-                              } catch (final Exception e) {
-                                  return false;
-                              }
+                              Observable
+                                  .fromCallable(() -> c.apply(buyOrderEURUSD))
+                                  .test()
+                                  .assertValue(orderCancelSLComposerMock);
+                              return true;
                           }));
         }
 
