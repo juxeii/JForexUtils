@@ -51,7 +51,7 @@ public class MergeCommandHandlerTest extends InstrumentUtilForTest {
         when(mergeCommandMock.mergeOrderLabel()).thenReturn(mergeOrderLabel);
         when(mergeCommandMock.mergeCompose()).thenReturn(testComposer);
 
-        when(orderCancelSLAndTPMock.observeTask(toMergeOrders, mergeCommandMock))
+        when(orderCancelSLAndTPMock.observe(toMergeOrders, mergeCommandMock))
             .thenReturn(eventObservable(testEvent));
     }
 

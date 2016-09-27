@@ -22,7 +22,7 @@ public class MergeCommandHandler {
 
     public Observable<OrderEvent> observeCancelSLTP(final Collection<IOrder> toMergeOrders,
                                                     final MergeCommand command) {
-        return orderCancelSLAndTP.observeTask(toMergeOrders, command);
+        return orderCancelSLAndTP.observe(toMergeOrders, command);
     }
 
     public Observable<OrderEvent> observeMerge(final Collection<IOrder> toMergeOrders,

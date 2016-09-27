@@ -34,19 +34,19 @@ public class OrderMergeTask {
                                                               command));
     }
 
-    public Observable<OrderEvent> mergeAll(final Function<Instrument, MergeCommand> commandFactory) {
-        return Observable.defer(() -> {
-            final Function<Instrument, Observable<OrderEvent>> observablesFromFactory =
-                    instrument -> mergePosition(instrument, commandFactory.apply(instrument));
-            return Observable.merge(positionUtil.observablesFromFactory(observablesFromFactory));
-        });
-    }
-
     private Observable<OrderEvent> splitCancelSLTPAndMerge(final Collection<IOrder> toMergeOrders,
                                                            final MergeCommand command) {
         final Observable<OrderEvent> cancelSLTP = commandHandler.observeCancelSLTP(toMergeOrders, command);
         final Observable<OrderEvent> merge = commandHandler.observeMerge(toMergeOrders, command);
 
         return cancelSLTP.concatWith(merge);
+    }
+
+    public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, MergeCommand> commandFactory) {
+        return Observable.defer(() -> {
+            final Function<Instrument, Observable<OrderEvent>> observablesFromFactory =
+                    instrument -> mergePosition(instrument, commandFactory.apply(instrument));
+            return Observable.merge(positionUtil.observablesFromFactory(observablesFromFactory));
+        });
     }
 }

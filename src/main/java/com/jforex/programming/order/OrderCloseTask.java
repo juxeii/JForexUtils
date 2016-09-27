@@ -29,7 +29,7 @@ public class OrderCloseTask {
         });
     }
 
-    public Observable<OrderEvent> closeAll(final Function<Instrument, ClosePositionCommand> commandFactory) {
+    public Observable<OrderEvent> closeAllPositions(final Function<Instrument, ClosePositionCommand> commandFactory) {
         return Observable.defer(() -> {
             final Function<Instrument, Observable<OrderEvent>> observablesFromFactory =
                     instrument -> close(commandFactory.apply(instrument));

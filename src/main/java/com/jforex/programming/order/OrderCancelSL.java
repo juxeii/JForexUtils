@@ -16,11 +16,10 @@ public class OrderCancelSL {
         this.orderChangeBatch = orderChangeBatch;
     }
 
-    public Observable<OrderEvent> observe(final Collection<IOrder> toCancelSLOrders,
+    public Observable<OrderEvent> observe(final Collection<IOrder> ordersForCancelSL,
                                           final MergeCommand mergeCommand) {
-        return Observable.defer(() -> orderChangeBatch
-            .cancelSL(toCancelSLOrders,
-                      mergeCommand.orderCancelSLMode(),
-                      mergeCommand::orderCancelSLComposer));
+        return Observable.defer(() -> orderChangeBatch.cancelSL(ordersForCancelSL,
+                                                                mergeCommand.orderCancelSLMode(),
+                                                                mergeCommand::orderCancelSLComposer));
     }
 }

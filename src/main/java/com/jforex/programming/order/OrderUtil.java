@@ -114,7 +114,7 @@ public class OrderUtil {
     public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, MergeCommand> commandFactory) {
         checkNotNull(commandFactory);
 
-        return orderMergeTask.mergeAll(commandFactory);
+        return orderMergeTask.mergeAllPositions(commandFactory);
     }
 
     public Observable<OrderEvent> closePosition(final ClosePositionCommand command) {
@@ -126,7 +126,7 @@ public class OrderUtil {
     public Observable<OrderEvent> closeAllPositions(final Function<Instrument, ClosePositionCommand> commandFactory) {
         checkNotNull(commandFactory);
 
-        return orderCloseTask.closeAll(commandFactory);
+        return orderCloseTask.closeAllPositions(commandFactory);
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {

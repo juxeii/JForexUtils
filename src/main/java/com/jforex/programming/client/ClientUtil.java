@@ -23,23 +23,21 @@ import javafx.scene.image.Image;
 public final class ClientUtil {
 
     private final IClient client;
-
-    private final JFSystemListener jfSystemListener = new JFSystemListener();
     private AuthentificationUtil authentificationUtil;
+    private final JFSystemListener jfSystemListener = new JFSystemListener();
 
     private static final Logger logger = LogManager.getLogger(ClientUtil.class);
 
     public ClientUtil(final IClient client,
                       final String cacheDirectory) {
         this.client = checkNotNull(client);
-
-        setCacheDirectory(checkNotNull(cacheDirectory));
+        initCacheDirectory(checkNotNull(cacheDirectory));
         initSystemListener();
         initAuthentification();
-        keepConnection();
+        initConnectionKeeper();
     }
 
-    private void setCacheDirectory(final String cacheDirectory) {
+    private void initCacheDirectory(final String cacheDirectory) {
         final File cacheDirectoryFile = new File(cacheDirectory);
         client.setCacheDirectory(cacheDirectoryFile);
         logger.debug("Setting of cache directory " + cacheDirectory + " for client done.");
@@ -53,7 +51,7 @@ public final class ClientUtil {
         authentificationUtil = new AuthentificationUtil(client, observeConnectionState());
     }
 
-    private final void keepConnection() {
+    private final void initConnectionKeeper() {
         observeConnectionState().subscribe(connectionState -> {
             logger.debug(connectionState + " message received.");
             if (connectionState == ConnectionState.DISCONNECTED

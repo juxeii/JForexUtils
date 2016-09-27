@@ -20,8 +20,8 @@ public class OrderCancelSLAndTP {
         this.orderCancelTP = orderCancelTP;
     }
 
-    public Observable<OrderEvent> observeTask(final Collection<IOrder> toCancelSLTPOrders,
-                                              final MergeCommand command) {
+    public Observable<OrderEvent> observe(final Collection<IOrder> toCancelSLTPOrders,
+                                          final MergeCommand command) {
         return Observable.defer(() -> toCancelSLTPOrders.size() < 2
                 ? Observable.empty()
                 : createTask(toCancelSLTPOrders, command));

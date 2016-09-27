@@ -62,7 +62,7 @@ public class OrderCancelSLAndTPTest extends InstrumentUtilForTest {
 
     private void subscribeWithOrders(final Set<IOrder> orders) {
         testObserver = orderCancelSLAndTP
-            .observeTask(orders, mergeCommandMock)
+            .observe(orders, mergeCommandMock)
             .test();
     }
 

@@ -16,11 +16,10 @@ public class OrderCancelTP {
         this.orderChangeBatch = orderChangeBatch;
     }
 
-    public Observable<OrderEvent> observe(final Collection<IOrder> toCancelTPOrders,
+    public Observable<OrderEvent> observe(final Collection<IOrder> ordersForCancelTP,
                                           final MergeCommand mergeCommand) {
-        return Observable.defer(() -> orderChangeBatch
-            .cancelTP(toCancelTPOrders,
-                      mergeCommand.orderCancelTPMode(),
-                      mergeCommand::orderCancelTPComposer));
+        return Observable.defer(() -> orderChangeBatch.cancelTP(ordersForCancelTP,
+                                                                mergeCommand.orderCancelTPMode(),
+                                                                mergeCommand::orderCancelTPComposer));
     }
 }

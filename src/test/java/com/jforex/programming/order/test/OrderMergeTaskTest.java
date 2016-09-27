@@ -122,7 +122,7 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
 
         private void mergeAllSubscribe() {
             testObserver = orderMergeTask
-                .mergeAll(commandFactoryMock)
+                .mergeAllPositions(commandFactoryMock)
                 .test();
         }
 

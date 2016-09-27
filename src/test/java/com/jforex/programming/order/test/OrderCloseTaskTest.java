@@ -61,7 +61,7 @@ public class OrderCloseTaskTest extends InstrumentUtilForTest {
 
     @Test
     public void closeAllCallIsDeferred() {
-        orderCloseTask.closeAll(commandFactoryMock);
+        orderCloseTask.closeAllPositions(commandFactoryMock);
 
         verifyZeroInteractions(commandHandlerMock);
         verifyZeroInteractions(positionUtilMock);
@@ -112,7 +112,7 @@ public class OrderCloseTaskTest extends InstrumentUtilForTest {
 
         private void closeAllSubscribe() {
             testObserver = orderCloseTask
-                .closeAll(commandFactoryMock)
+                .closeAllPositions(commandFactoryMock)
                 .test();
         }
 
