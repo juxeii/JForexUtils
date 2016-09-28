@@ -22,7 +22,6 @@ import io.reactivex.Completable;
 import io.reactivex.observers.TestObserver;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
-import io.reactivex.subscribers.TestSubscriber;
 
 @RunWith(HierarchicalContextRunner.class)
 public class AuthentificationUtilTest extends CommonUtilForTest {
@@ -89,7 +88,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
                                                   final LoginCredentials loginCredentials) throws Exception {
         setExceptionOnConnect(loginCredentials, exceptionType);
 
-        final TestSubscriber<?> loginSubscriber = loginCall.get().test();
+        final TestObserver<Void> loginSubscriber = loginCall.get().test();
 
         loginSubscriber.assertError(exceptionType);
     }
@@ -139,7 +138,7 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     public class AfterLogin {
 
-        protected TestSubscriber<?> loginCompletionSubscriber;
+        protected TestObserver<Void> loginCompletionSubscriber;
 
         @Before
         public void setUp() {

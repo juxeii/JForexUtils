@@ -20,7 +20,7 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
 import io.reactivex.functions.Action;
-import io.reactivex.subscribers.TestSubscriber;
+import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
 public class TaskExecutorTest extends CommonUtilForTest {
@@ -35,8 +35,8 @@ public class TaskExecutorTest extends CommonUtilForTest {
     private Future<IOrder> futureMock;
     @Mock
     private Future<Object> futureVoidMock;
-    private TestSubscriber<Void> orderActionSubscriber = TestSubscriber.create();
-    private TestSubscriber<IOrder> orderCallableSubscriber = TestSubscriber.create();
+    private TestObserver<Void> orderActionSubscriber;
+    private TestObserver<IOrder> orderCallableSubscriber;
     private final Runnable onStrategyThreadForActionCall = () -> orderActionSubscriber = taskExecutor
         .onStrategyThread(actionMock)
         .test();

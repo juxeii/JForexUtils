@@ -41,6 +41,6 @@ public class PositionUtil {
             .map(Position::instrument)
             .map(commandFactory::apply)
             .toList()
-            .blockingFirst();
+            .blockingGet();
     }
 }

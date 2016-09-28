@@ -64,7 +64,7 @@ public class OrderChangeBatch {
             .fromIterable(orders)
             .map(basicTask::apply)
             .toList()
-            .blockingFirst();
+            .blockingGet();
 
         return batchMode == BatchMode.MERGE
                 ? Observable.merge(observables)
