@@ -56,12 +56,14 @@ public class OrderEventFactory {
     }
 
     private final OrderEvent eventForInternalOrder(final IOrder order,
-                                                   final OrderEventType orderEventType) {
-        return infoEvents.contains(orderEventType)
-                ? new OrderEvent(order,
-                                 orderEventType,
-                                 true)
-                : eventForDoneTrigger(order, orderEventType);
+                                                   final OrderEventType rawOrderEventType) {
+        final OrderEventType orderEventType = infoEvents.contains(rawOrderEventType)
+                ? rawOrderEventType
+                : eventTypeForDoneTrigger(order, rawOrderEventType);
+
+        return new OrderEvent(order,
+                              orderEventType,
+                              true);
     }
 
     private final OrderEvent eventForExternalOrder(final IOrder order,
@@ -71,20 +73,18 @@ public class OrderEventFactory {
                               false);
     }
 
-    private final OrderEvent eventForDoneTrigger(final IOrder order,
-                                                 final OrderEventType orderEventType) {
-        if (callReasonByOrder.get(order).isEmpty())
-            return new OrderEvent(order,
-                                  orderEventType,
-                                  true);
+    private final OrderEventType eventTypeForDoneTrigger(final IOrder order,
+                                                         final OrderEventType orderEventType) {
+        return callReasonByOrder.get(order).isEmpty()
+                ? orderEventType
+                : refineEventType(order, orderEventType);
+    }
 
+    private final OrderEventType refineEventType(final IOrder order,
+                                                 final OrderEventType orderEventType) {
         final OrderCallReason callReason = callReasonByOrder.get(order).poll();
-        final OrderEventType refinedEventType = orderEventType == OrderEventType.CHANGED_REJECTED
+        return orderEventType == OrderEventType.CHANGED_REJECTED
                 ? OrderEventTypeMapper.byChangeCallReason(callReason)
                 : orderEventType;
-
-        return new OrderEvent(order,
-                              refinedEventType,
-                              true);
     }
 }
