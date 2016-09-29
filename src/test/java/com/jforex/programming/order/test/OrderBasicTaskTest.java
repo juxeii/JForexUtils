@@ -70,7 +70,8 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHandler() {
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -110,7 +111,8 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHandler() {
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -168,7 +170,8 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHandler() {
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -213,7 +216,8 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHandler() {
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -258,7 +262,8 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHandler() {
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -303,7 +308,8 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHandler() {
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -348,7 +354,8 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHandler() {
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -393,7 +400,8 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHandler() {
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 
@@ -438,7 +446,8 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void noCallToOrderUtilHandler() {
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
             verifyZeroInteractions(orderUtilHandlerMock);
         }
 

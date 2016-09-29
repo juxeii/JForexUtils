@@ -1,5 +1,7 @@
 package com.jforex.programming.order.event;
 
+import static com.jforex.programming.order.event.OrderEventTypeSets.infoEvents;
+
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -15,13 +17,13 @@ import com.jforex.programming.order.call.OrderCallRequest;
 
 public class OrderEventFactory {
 
-    private final Queue<OrderCallRequest> callRequestQueue = new ConcurrentLinkedQueue<>();
-    private final ConcurrentMap<IOrder, Boolean> ordersOfQueue =
+    private final ConcurrentMap<IOrder, Queue<OrderCallReason>> callReasonByOrder =
             new MapMaker().weakKeys().makeMap();
 
     public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
-        callRequestQueue.add(orderCallRequest);
-        ordersOfQueue.put(orderCallRequest.order(), true);
+        final IOrder order = orderCallRequest.order();
+        callReasonByOrder.putIfAbsent(order, new ConcurrentLinkedQueue<>());
+        callReasonByOrder.get(order).add(orderCallRequest.reason());
     }
 
     public OrderEvent fromMessage(final IMessage message) {
@@ -33,56 +35,56 @@ public class OrderEventFactory {
         return orderEvent;
     }
 
+    private final OrderEventType calculateType(final IMessage message) {
+        final Set<Reason> reasons = message.getReasons();
+        return reasons.size() == 1
+                ? OrderEventTypeMapper.byMessageReason(reasons.iterator().next())
+                : OrderEventTypeMapper.byMessageType(message.getType(), message.getOrder());
+    }
+
     private final OrderEvent evaluateToOrderEvent(final IOrder order,
                                                   final OrderEventType orderEventType) {
-        return isOrderNextInRequestQueue(order)
-                ? eventForQueuedOrder(order, orderEventType)
-                : eventForNotQueuedOrder(order, orderEventType);
+        return callReasonByOrder.keySet().contains(order)
+                ? eventForInternalOrder(order, orderEventType)
+                : eventForExternalOrder(order, orderEventType);
     }
 
     private final void cleanUpRegisteredOrder(final IOrder order) {
         if (OrderStaticUtil.isClosed.test(order) ||
                 OrderStaticUtil.isCanceled.test(order))
-            ordersOfQueue.remove(order);
-
+            callReasonByOrder.remove(order).clear();
     }
 
-    private final OrderEvent eventForQueuedOrder(final IOrder order,
-                                                 final OrderEventType rawOrderEventType) {
-        return new OrderEvent(order,
-                              refineTypeForRegisteredOrder(rawOrderEventType),
-                              true);
+    private final OrderEvent eventForInternalOrder(final IOrder order,
+                                                   final OrderEventType orderEventType) {
+        return infoEvents.contains(orderEventType)
+                ? new OrderEvent(order,
+                                 orderEventType,
+                                 true)
+                : eventForDoneTrigger(order, orderEventType);
     }
 
-    private final OrderEvent eventForNotQueuedOrder(final IOrder order,
-                                                    final OrderEventType orderEventType) {
-        final boolean isInternal = ordersOfQueue.keySet().contains(order);
+    private final OrderEvent eventForExternalOrder(final IOrder order,
+                                                   final OrderEventType orderEventType) {
         return new OrderEvent(order,
                               orderEventType,
-                              isInternal);
+                              false);
     }
 
-    private final OrderEventType refineTypeForRegisteredOrder(final OrderEventType orderEventType) {
-        final OrderCallReason callReason = callRequestQueue.poll().reason();
-        return orderEventType == OrderEventType.CHANGED_REJECTED
+    private final OrderEvent eventForDoneTrigger(final IOrder order,
+                                                 final OrderEventType orderEventType) {
+        if (callReasonByOrder.get(order).isEmpty())
+            return new OrderEvent(order,
+                                  orderEventType,
+                                  true);
+
+        final OrderCallReason callReason = callReasonByOrder.get(order).poll();
+        final OrderEventType refinedEventType = orderEventType == OrderEventType.CHANGED_REJECTED
                 ? OrderEventTypeMapper.byChangeCallReason(callReason)
                 : orderEventType;
-    }
 
-    private final OrderEventType calculateType(final IMessage message) {
-        final Set<Reason> reasons = message.getReasons();
-        return reasons.size() == 1
-                ? OrderEventTypeMapper.byMessageReason(reasons.iterator().next())
-                : calculateTypeByMessageType(message);
-    }
-
-    private final OrderEventType calculateTypeByMessageType(final IMessage message) {
-        final IOrder order = message.getOrder();
-        return OrderEventTypeMapper.byMessageType(message.getType(), order);
-    }
-
-    private final boolean isOrderNextInRequestQueue(final IOrder messageOrder) {
-        return !callRequestQueue.isEmpty()
-                && callRequestQueue.peek().order().equals(messageOrder);
+        return new OrderEvent(order,
+                              refinedEventType,
+                              true);
     }
 }

@@ -28,7 +28,7 @@ public class OrderBasicTask {
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
-        return defer(orderTaskExecutor
+        return Observable.defer(() -> orderTaskExecutor
             .submitOrder(orderParams)
             .toObservable()
             .flatMap(order -> orderUtilObservable(order, OrderCallReason.SUBMIT)));
@@ -36,7 +36,7 @@ public class OrderBasicTask {
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
-        return defer(toMergeOrders.size() < 2
+        return Observable.defer(() -> toMergeOrders.size() < 2
                 ? Observable.empty()
                 : orderTaskExecutor
                     .mergeOrders(mergeOrderLabel, toMergeOrders)
@@ -45,76 +45,72 @@ public class OrderBasicTask {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-        return defer(Observable
+        return Observable
             .just(orderToClose)
             .filter(order -> !isClosed.test(order))
             .flatMap(order -> orderTaskExecutor
                 .close(order)
-                .andThen(orderUtilObservable(order, OrderCallReason.CLOSE))));
+                .andThen(orderUtilObservable(order, OrderCallReason.CLOSE)));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToSetLabel,
                                            final String label) {
-        return defer(Observable
+        return Observable
             .just(orderToSetLabel)
             .filter(order -> !isLabelSetTo(label).test(order))
             .flatMap(order -> orderTaskExecutor
                 .setLabel(order, label)
-                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_LABEL))));
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_LABEL)));
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder orderToSetGTT,
                                                   final long newGTT) {
-        return defer(Observable
+        return Observable
             .just(orderToSetGTT)
             .filter(order -> !isGTTSetTo(newGTT).test(order))
             .flatMap(order -> orderTaskExecutor
                 .setGoodTillTime(order, newGTT)
-                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_GTT))));
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_GTT)));
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder orderToSetAmount,
                                                      final double newRequestedAmount) {
-        return defer(Observable
+        return Observable
             .just(orderToSetAmount)
             .filter(order -> !isAmountSetTo(newRequestedAmount).test(order))
             .flatMap(order -> orderTaskExecutor
                 .setRequestedAmount(order, newRequestedAmount)
-                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_AMOUNT))));
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_AMOUNT)));
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder orderToSetOpenPrice,
                                                final double newOpenPrice) {
-        return defer(Observable
+        return Observable
             .just(orderToSetOpenPrice)
             .filter(order -> !isOpenPriceSetTo(newOpenPrice).test(order))
             .flatMap(order -> orderTaskExecutor
                 .setOpenPrice(order, newOpenPrice)
-                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_PRICE))));
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_PRICE)));
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToSetSL,
                                                    final double newSL) {
-        return defer(Observable
+        return Observable
             .just(orderToSetSL)
             .filter(order -> !isSLSetTo(newSL).test(order))
             .flatMap(order -> orderTaskExecutor
                 .setStopLossPrice(order, newSL)
-                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL))));
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL)));
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToSetTP,
                                                      final double newTP) {
-        return defer(Observable
+        return Observable
             .just(orderToSetTP)
             .filter(order -> !isTPSetTo(newTP).test(order))
             .flatMap(order -> orderTaskExecutor
                 .setTakeProfitPrice(order, newTP)
-                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_TP))));
-    }
-
-    private final Observable<OrderEvent> defer(final Observable<OrderEvent> observable) {
-        return Observable.defer(() -> observable);
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_TP)));
     }
 
     private final Observable<OrderEvent> orderUtilObservable(final IOrder order,

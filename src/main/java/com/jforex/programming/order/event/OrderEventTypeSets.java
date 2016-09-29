@@ -23,6 +23,9 @@ import static com.jforex.programming.order.event.OrderEventType.FULLY_FILLED;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_CLOSE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_OK;
 import static com.jforex.programming.order.event.OrderEventType.MERGE_REJECTED;
+import static com.jforex.programming.order.event.OrderEventType.NOTIFICATION;
+import static com.jforex.programming.order.event.OrderEventType.PARTIAL_CLOSE_OK;
+import static com.jforex.programming.order.event.OrderEventType.PARTIAL_FILL_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_CONDITIONAL_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_OK;
 import static com.jforex.programming.order.event.OrderEventType.SUBMIT_REJECTED;
@@ -68,6 +71,13 @@ public final class OrderEventTypeSets {
                                   CHANGE_LABEL_REJECTED,
                                   CHANGE_AMOUNT_REJECTED,
                                   CHANGE_PRICE_REJECTED);
+
+    public static final ImmutableSet<OrderEventType> infoEvents =
+            Sets.immutableEnumSet(NOTIFICATION,
+                                  SUBMIT_OK,
+                                  SUBMIT_CONDITIONAL_OK,
+                                  PARTIAL_FILL_OK,
+                                  PARTIAL_CLOSE_OK);
 
     public static final ImmutableSet<OrderEventType> createEvents =
             Sets.immutableEnumSet(SUBMIT_OK,
