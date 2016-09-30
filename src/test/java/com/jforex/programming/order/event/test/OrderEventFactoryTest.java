@@ -160,10 +160,10 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
     }
 
     @Test
-    public void testConditionalSubmitOKIsMappedCorrect() {
+    public void conditionalSubmitOKIsMappedCorrect() {
         orderUtilForTest.setOrderCommand(orderForTest, OrderCommand.BUYLIMIT);
 
-        assertCorrectMapping(OrderEventType.SUBMIT_CONDITIONAL_OK,
+        assertCorrectMapping(OrderEventType.SUBMIT_OK,
                              IMessage.Type.ORDER_SUBMIT_OK);
     }
 
@@ -208,13 +208,13 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
                              IMessage.Type.ORDERS_MERGE_OK);
     }
 
-    // @Test
-    // public void testMergeCloseOKIsMappedCorrect() {
-    // orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
-    //
-    // assertCorrectMapping(OrderEventType.MERGE_CLOSE_OK,
-    // IMessage.Type.ORDERS_MERGE_OK);
-    // }
+    @Test
+    public void testMergeCloseOKIsMappedCorrect() {
+        orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+        assertCorrectMapping(OrderEventType.MERGE_CLOSE_OK,
+                             IMessage.Type.ORDERS_MERGE_OK);
+    }
 
     @Test
     public void testMergeRejectIsMappedCorrect() {
@@ -224,6 +224,38 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
 
     @Test
     public void testPartialCloseOKIsMappedCorrect() {
+        orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+        assertCorrectMapping(OrderEventType.PARTIAL_CLOSE_OK,
+                             IMessage.Type.ORDER_CLOSE_OK);
+    }
+
+    @Test
+    public void notificationIsMappedCorrectForInternalOrder() {
+        final OrderCallRequest callRequest = new OrderCallRequest(orderForTest, OrderCallReason.SUBMIT);
+        orderEventFactory.registerOrderCallRequest(callRequest);
+
+        orderUtilForTest.setState(orderForTest, IOrder.State.CREATED);
+        assertCorrectMapping(OrderEventType.NOTIFICATION,
+                             IMessage.Type.NOTIFICATION);
+    }
+
+    @Test
+    public void partialFillIsMappedCorrectForInternalOrder() {
+        final OrderCallRequest callRequest = new OrderCallRequest(orderForTest, OrderCallReason.SUBMIT);
+        orderEventFactory.registerOrderCallRequest(callRequest);
+
+        orderUtilForTest.setState(orderForTest, IOrder.State.OPENED);
+        orderUtilForTest.setRequestedAmount(orderForTest, 0.2);
+        orderUtilForTest.setAmount(orderForTest, 0.1);
+        assertCorrectMapping(OrderEventType.PARTIAL_FILL_OK,
+                             IMessage.Type.ORDER_FILL_OK);
+    }
+
+    @Test
+    public void partialCloseOKIsMappedCorrectForInternalOrder() {
+        final OrderCallRequest callRequest = new OrderCallRequest(orderForTest, OrderCallReason.CLOSE);
+        orderEventFactory.registerOrderCallRequest(callRequest);
+
         orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
         assertCorrectMapping(OrderEventType.PARTIAL_CLOSE_OK,
                              IMessage.Type.ORDER_CLOSE_OK);

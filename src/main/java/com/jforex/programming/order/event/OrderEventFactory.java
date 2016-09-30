@@ -51,8 +51,10 @@ public class OrderEventFactory {
 
     private final void cleanUpRegisteredOrder(final IOrder order) {
         if (OrderStaticUtil.isClosed.test(order) ||
-                OrderStaticUtil.isCanceled.test(order))
-            callReasonByOrder.remove(order).clear();
+                OrderStaticUtil.isCanceled.test(order)) {
+            if (callReasonByOrder.containsKey(order))
+                callReasonByOrder.remove(order).clear();
+        }
     }
 
     private final OrderEvent eventForInternalOrder(final IOrder order,

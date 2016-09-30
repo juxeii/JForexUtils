@@ -28,10 +28,14 @@ public class OrderBasicTask {
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
+        final OrderCallReason callReason = orderParams.orderCommand().isConditional()
+                ? OrderCallReason.SUBMIT_CONDITIONAL
+                : OrderCallReason.SUBMIT;
+
         return Observable.defer(() -> orderTaskExecutor
             .submitOrder(orderParams)
             .toObservable()
-            .flatMap(order -> orderUtilObservable(order, OrderCallReason.SUBMIT)));
+            .flatMap(order -> orderUtilObservable(order, callReason)));
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,

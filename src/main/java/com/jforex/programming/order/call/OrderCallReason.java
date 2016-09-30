@@ -3,6 +3,7 @@ package com.jforex.programming.order.call;
 public enum OrderCallReason {
 
     SUBMIT,
+    SUBMIT_CONDITIONAL,
     MERGE,
     CLOSE,
     CHANGE_SL,

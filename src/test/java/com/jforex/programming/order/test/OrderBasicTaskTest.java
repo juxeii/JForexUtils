@@ -7,9 +7,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderBasicTask;
+import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderTaskExecutor;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -87,6 +89,47 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
             @Test
             public void orderUtilHandlerIsCalled() {
                 verifyOrderUtilHandlerMockCall(OrderCallReason.SUBMIT);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class ConditionalSubmitOrderSetup {
+
+        @Before
+        public void setUp() {
+            final OrderParams conditionalParams = buyParamsEURUSD
+                .clone()
+                .withOrderCommand(OrderCommand.BUYLIMIT)
+                .build();
+
+            when(orderTaskExecutorMock.submitOrder(conditionalParams)).thenReturn(Single.just(orderForTest));
+
+            observable = orderBasicTask.submitOrder(conditionalParams);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.SUBMIT_CONDITIONAL);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.SUBMIT_CONDITIONAL);
             }
 
             @Test

@@ -4,7 +4,6 @@ public enum OrderEventType {
 
     NOTIFICATION,
     SUBMIT_OK,
-    SUBMIT_CONDITIONAL_OK,
     PARTIAL_FILL_OK,
     FULLY_FILLED,
     CHANGED_SL,
