@@ -26,14 +26,13 @@ public class OrderCancelSLTest extends InstrumentUtilForTest {
 
     private OrderCancelSL orderCancelSL;
 
-    private final Set<IOrder> toCancelSLOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
-
     @Mock
     private OrderChangeBatch orderChangeBatchMock;
     @Mock
     private MergeCommand mergeCommandMock;
     @Mock
     private Function<Observable<OrderEvent>, Observable<OrderEvent>> orderCancelSLComposerMock;
+    private final Set<IOrder> toCancelSLOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Before
     public void setUp() {

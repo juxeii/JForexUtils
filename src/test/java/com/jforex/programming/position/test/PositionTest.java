@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
@@ -35,7 +34,7 @@ public class PositionTest extends InstrumentUtilForTest {
     private final Subject<OrderEvent> orderEventSubject = PublishSubject.create();
 
     @Before
-    public void setUp() throws JFException {
+    public void setUp() {
         position = new Position(instrumentEURUSD, orderEventSubject);
     }
 

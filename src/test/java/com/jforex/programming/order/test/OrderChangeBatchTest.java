@@ -18,7 +18,6 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
-import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderChangeBatchTest extends InstrumentUtilForTest {
@@ -28,7 +27,6 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
     @Mock
     private OrderBasicTask orderBasicTaskMock;
     private final List<IOrder> ordersForBatch = Lists.newArrayList(buyOrderEURUSD, sellOrderEURUSD);
-    private TestObserver<OrderEvent> testObserver;
     private final OrderEvent testEvent = submitEvent;
     private final OrderEvent composerEvent = closeEvent;
     private final Function<Observable<OrderEvent>, Observable<OrderEvent>> testComposer =
@@ -54,26 +52,24 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
 
         @Test
         public void forMergeIsNotConcatenated() {
-            testObserver = orderChangeBatch
+            orderChangeBatch
                 .close(ordersForBatch,
                        BatchMode.MERGE,
                        testOrderComposer)
-                .test();
-
-            testObserver.assertNotComplete();
-            testObserver.assertValue(composerEvent);
+                .test()
+                .assertNotComplete()
+                .assertValue(composerEvent);
         }
 
         @Test
         public void forConcatIsNotMerged() {
-            testObserver = orderChangeBatch
+            orderChangeBatch
                 .close(ordersForBatch,
                        BatchMode.CONCAT,
                        testOrderComposer)
-                .test();
-
-            testObserver.assertNotComplete();
-            testObserver.assertNoValues();
+                .test()
+                .assertNotComplete()
+                .assertNoValues();
         }
     }
 
@@ -89,26 +85,24 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
 
         @Test
         public void forMergeIsNotConcatenated() {
-            testObserver = orderChangeBatch
+            orderChangeBatch
                 .cancelSL(ordersForBatch,
                           BatchMode.MERGE,
                           testOrderComposer)
-                .test();
-
-            testObserver.assertNotComplete();
-            testObserver.assertValue(composerEvent);
+                .test()
+                .assertNotComplete()
+                .assertValue(composerEvent);
         }
 
         @Test
         public void forConcatIsNotMerged() {
-            testObserver = orderChangeBatch
+            orderChangeBatch
                 .cancelSL(ordersForBatch,
                           BatchMode.CONCAT,
                           testOrderComposer)
-                .test();
-
-            testObserver.assertNotComplete();
-            testObserver.assertNoValues();
+                .test()
+                .assertNotComplete()
+                .assertNoValues();
         }
     }
 
@@ -124,26 +118,24 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
 
         @Test
         public void forMergeIsNotConcatenated() {
-            testObserver = orderChangeBatch
+            orderChangeBatch
                 .cancelTP(ordersForBatch,
                           BatchMode.MERGE,
                           testOrderComposer)
-                .test();
-
-            testObserver.assertNotComplete();
-            testObserver.assertValue(composerEvent);
+                .test()
+                .assertNotComplete()
+                .assertValue(composerEvent);
         }
 
         @Test
         public void forConcatIsNotMerged() {
-            testObserver = orderChangeBatch
+            orderChangeBatch
                 .cancelTP(ordersForBatch,
                           BatchMode.CONCAT,
                           testOrderComposer)
-                .test();
-
-            testObserver.assertNotComplete();
-            testObserver.assertNoValues();
+                .test()
+                .assertNotComplete()
+                .assertNoValues();
         }
     }
 }

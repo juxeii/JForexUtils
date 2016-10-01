@@ -55,9 +55,10 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
     }
 
     private void assertValueAlreadySet() {
-        testObserver = observable.test();
+        observable
+            .test()
+            .assertComplete();
 
-        testObserver.assertComplete();
         verifyZeroInteractions(orderTaskExecutorMock);
         verifyZeroInteractions(orderUtilHandlerMock);
     }
@@ -161,24 +162,24 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void withNoOrdersToMergeNoCallToUtilHandler() {
-            testObserver = orderBasicTask
+            orderBasicTask
                 .mergeOrders(mergeOrderLabel, Sets.newHashSet())
-                .test();
+                .test()
+                .assertComplete()
+                .assertNoValues();
 
             verifyZeroInteractions(orderUtilHandlerMock);
-            testObserver.assertNoValues();
-            testObserver.assertComplete();
         }
 
         @Test
         public void withOneOrderForMergeNoCallToUtilHandler() {
-            testObserver = orderBasicTask
+            orderBasicTask
                 .mergeOrders(mergeOrderLabel, Sets.newHashSet(buyOrderEURUSD))
-                .test();
+                .test()
+                .assertComplete()
+                .assertNoValues();
 
             verifyZeroInteractions(orderUtilHandlerMock);
-            testObserver.assertNoValues();
-            testObserver.assertComplete();
         }
 
         public class OnSubscribe {

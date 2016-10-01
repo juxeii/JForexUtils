@@ -80,10 +80,10 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
         public void cancelSLTPAndMergeAreConcatenated() {
             setUpCommandObservables(neverObservable(), eventObservable(testEvent));
 
-            testObserver = testObservable.test();
-
-            testObserver.assertNotComplete();
-            testObserver.assertNoValues();
+            testObservable
+                .test()
+                .assertNotComplete()
+                .assertNoValues();
         }
     }
 
@@ -104,10 +104,10 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
         public void cancelSLTPAndMergeAreConcatenated() {
             setUpCommandObservables(neverObservable(), eventObservable(testEvent));
 
-            testObserver = testObservable.test();
-
-            testObserver.assertNotComplete();
-            testObserver.assertNoValues();
+            testObservable
+                .test()
+                .assertNotComplete()
+                .assertNoValues();
         }
     }
 

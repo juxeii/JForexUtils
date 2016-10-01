@@ -42,14 +42,7 @@ public class OrderCancelSLAndTPTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
-        setUpMocks();
-
         orderCancelSLAndTP = new OrderCancelSLAndTP(orderCancelSLMock, orderCancelTPMock);
-    }
-
-    private void setUpMocks() {
-//        when(positionUtilMock.filledOrders(instrumentEURUSD))
-//            .thenReturn(toCancelSLTPOrders);
     }
 
     private void setUpCommandObservables(final Observable<OrderEvent> cancelSLObservable,
