@@ -7,7 +7,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.dukascopy.api.IOrder;
 
-public final class OrderEvent {
+public class OrderEvent {
 
     private final IOrder order;
     private final OrderEventType type;
