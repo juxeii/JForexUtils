@@ -13,10 +13,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -46,6 +46,8 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private OrderEventTypeData orderEventTypeData;
     @Captor
     private ArgumentCaptor<OrderCallRequest> callRequestCaptor;
+    private final JFHotObservable<OrderCallRequest> callRequestPublisher = new JFHotObservable<>();
+    private final TestObserver<OrderCallRequest> requestObserver = callRequestPublisher.observable().test();
     private final IOrder orderForTest = buyOrderEURUSD;
     private final OrderCallReason orderCallReason = OrderCallReason.SUBMIT;
     private final EnumSet<OrderEventType> doneEventTypes = EnumSet.of(CLOSE_OK);
@@ -62,7 +64,9 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        orderUtilHandler = new OrderUtilHandler(orderEventGatewayMock, orderEventTypeDataFactory);
+        orderUtilHandler = new OrderUtilHandler(orderEventGatewayMock,
+                                                orderEventTypeDataFactory,
+                                                callRequestPublisher);
     }
 
     public void setUpMocks() {
@@ -117,19 +121,16 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
 
             @Test
             public void orderIsRegisteredWithCorrectCallRequest() {
-                verify(orderEventGatewayMock).registerOrderCallRequest(callRequestCaptor.capture());
-
-                final OrderCallRequest callRequest = callRequestCaptor.getValue();
+                final OrderCallRequest callRequest = getOnNextEvent(requestObserver, 0);
                 assertThat(callRequest.order(), equalTo(orderForTest));
                 assertThat(callRequest.reason(), equalTo(orderCallReason));
             }
 
             @Test
             public void orderIsRegisteredBeforeSubscriptionToEventGateway() {
-                final InOrder inOrder = inOrder(orderEventGatewayMock);
+                requestObserver.assertValueCount(1);
 
-                inOrder.verify(orderEventGatewayMock).registerOrderCallRequest(callRequestCaptor.capture());
-                inOrder.verify(orderEventGatewayMock).observable();
+                verify(orderEventGatewayMock).observable();
             }
 
             @Test

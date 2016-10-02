@@ -7,8 +7,6 @@ import org.mockito.Mock;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
@@ -34,16 +32,6 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
     @Before
     public void setUp() {
         orderEventGateway = new OrderEventGateway(messageSubject, orderEventMapperMock);
-    }
-
-    @Test
-    public void registerCallRequestIsRoutedToEventMapper() {
-        final OrderCallRequest orderCallRequest =
-                new OrderCallRequest(orderUnderTest, OrderCallReason.CHANGE_GTT);
-
-        orderEventGateway.registerOrderCallRequest(orderCallRequest);
-
-        verify(orderEventMapperMock).registerOrderCallRequest(orderCallRequest);
     }
 
     @Test

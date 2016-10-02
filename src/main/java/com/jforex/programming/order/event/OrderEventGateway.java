@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.JFHotObservable;
-import com.jforex.programming.order.call.OrderCallRequest;
 
 import io.reactivex.Observable;
 
@@ -28,10 +27,6 @@ public class OrderEventGateway {
 
     public Observable<OrderEvent> observable() {
         return orderEventPublisher.observable();
-    }
-
-    public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
-        orderEventFactory.registerOrderCallRequest(orderCallRequest);
     }
 
     private void onOrderMessage(final IMessage message) {

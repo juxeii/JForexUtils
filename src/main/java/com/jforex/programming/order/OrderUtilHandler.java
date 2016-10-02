@@ -1,6 +1,7 @@
 package com.jforex.programming.order;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
@@ -14,26 +15,23 @@ public class OrderUtilHandler {
 
     private final OrderEventGateway orderEventGateway;
     private final OrderEventTypeDataFactory orderEventTypeDataFactory;
+    private final JFHotObservable<OrderCallRequest> callRequestObservable;
 
     public OrderUtilHandler(final OrderEventGateway orderEventGateway,
-                            final OrderEventTypeDataFactory orderEventTypeDataFactory) {
+                            final OrderEventTypeDataFactory orderEventTypeDataFactory,
+                            final JFHotObservable<OrderCallRequest> callRequestObservable) {
         this.orderEventGateway = orderEventGateway;
         this.orderEventTypeDataFactory = orderEventTypeDataFactory;
+        this.callRequestObservable = callRequestObservable;
     }
 
     public Observable<OrderEvent> callObservable(final IOrder orderOfCall,
                                                  final OrderCallReason callReason) {
         return Observable
             .just(orderOfCall)
-            .doOnSubscribe(d -> registerOrder(orderOfCall, callReason))
+            .doOnSubscribe(d -> callRequestObservable.onNext(new OrderCallRequest(orderOfCall, callReason)))
             .map(order -> orderEventTypeDataFactory.forCallReason(callReason))
             .flatMap(type -> gatewayObservable(orderOfCall, type));
-    }
-
-    private final void registerOrder(final IOrder order,
-                                     final OrderCallReason callReason) {
-        final OrderCallRequest orderCallRequest = new OrderCallRequest(order, callReason);
-        orderEventGateway.registerOrderCallRequest(orderCallRequest);
     }
 
     private final Observable<OrderEvent> gatewayObservable(final IOrder order,

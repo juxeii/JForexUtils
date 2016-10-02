@@ -15,12 +15,18 @@ import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 
+import io.reactivex.Observable;
+
 public class OrderEventFactory {
 
     private final ConcurrentMap<IOrder, Queue<OrderCallReason>> callReasonByOrder =
             new MapMaker().weakKeys().makeMap();
 
-    public void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
+    public OrderEventFactory(final Observable<OrderCallRequest> callRequestObservable) {
+        callRequestObservable.subscribe(this::registerOrderCallRequest);
+    }
+
+    private void registerOrderCallRequest(final OrderCallRequest orderCallRequest) {
         final IOrder order = orderCallRequest.order();
         callReasonByOrder.putIfAbsent(order, new ConcurrentLinkedQueue<>());
         callReasonByOrder.get(order).add(orderCallRequest.reason());

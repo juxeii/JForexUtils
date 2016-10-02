@@ -5,11 +5,11 @@ import static com.jforex.programming.currency.CurrencyFactory.fromInstruments;
 import static com.jforex.programming.currency.CurrencyFactory.fromNames;
 import static com.jforex.programming.currency.CurrencyFactory.maybeFromName;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 
 import org.junit.Test;
@@ -88,8 +88,8 @@ public class CurrencyFactoryTest extends CurrencyUtilForTest {
     }
 
     @Test
-    public void testFromNameReturnsEmptyOptionalForInvalidName() {
-        assertThat(maybeFromName(invalidEmptyCurrencyName), equalTo(Optional.empty()));
+    public void fromNameReturnsEmptyOptionalForInvalidName() {
+        assertFalse(maybeFromName(invalidEmptyCurrencyName).isPresent());
     }
 
     @Test
@@ -113,7 +113,7 @@ public class CurrencyFactoryTest extends CurrencyUtilForTest {
     }
 
     @Test
-    public void testFromNamesWithEllipsis() {
+    public void testFromNamesWithVarargs() {
         assertCurrencies(fromNames(currencyNamesAsArray));
     }
 
@@ -137,7 +137,7 @@ public class CurrencyFactoryTest extends CurrencyUtilForTest {
     }
 
     @Test
-    public void testFromInstrumentsWithEllipsis() {
+    public void fromInstrumentsWithVarargs() {
         assertCurrenciesFromInstruments(fromInstruments(instrumentsAsArray));
     }
 }

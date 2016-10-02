@@ -28,6 +28,7 @@ import com.jforex.programming.order.OrderMergeTask;
 import com.jforex.programming.order.OrderTaskExecutor;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
+import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.command.ClosePositionCommandHandler;
 import com.jforex.programming.order.command.MergeCommandHandler;
 import com.jforex.programming.order.event.OrderEventFactory;
@@ -77,13 +78,14 @@ public class JForexUtil {
     private OrderCancelSL orderCancelSL;
     private OrderCancelTP orderCancelTP;
     private OrderUtil orderUtil;
-    private final OrderEventFactory messageToOrderEvent = new OrderEventFactory();
+    private OrderEventFactory orderEventFactory;
 
     private final CalculationUtil calculationUtil;
 
     private final JFHotObservable<TickQuote> tickQuoteObservable = new JFHotObservable<>();
     private final JFHotObservable<BarQuote> barQuoteObservable = new JFHotObservable<>();
     private final JFHotObservable<IMessage> messageObservable = new JFHotObservable<>();
+    private final JFHotObservable<OrderCallRequest> callRequestObservable = new JFHotObservable<>();
 
     public static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     public static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
@@ -109,7 +111,8 @@ public class JForexUtil {
     }
 
     private void initInfrastructure() {
-        orderEventGateway = new OrderEventGateway(messageObservable.observable(), messageToOrderEvent);
+        orderEventFactory = new OrderEventFactory(callRequestObservable.observable());
+        orderEventGateway = new OrderEventGateway(messageObservable.observable(), orderEventFactory);
     }
 
     private void initQuoteProvider() {
@@ -130,7 +133,9 @@ public class JForexUtil {
         taskExecutor = new TaskExecutor(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
         positionUtil = new PositionUtil(positionFactory);
-        orderUtilHandler = new OrderUtilHandler(orderEventGateway, orderEventTypeDataFactory);
+        orderUtilHandler = new OrderUtilHandler(orderEventGateway,
+                                                orderEventTypeDataFactory,
+                                                callRequestObservable);
         orderTaskExecutor = new OrderTaskExecutor(taskExecutor, engineUtil);
         orderBasicTask = new OrderBasicTask(orderTaskExecutor, orderUtilHandler);
         orderChangeBatch = new OrderChangeBatch(orderBasicTask);

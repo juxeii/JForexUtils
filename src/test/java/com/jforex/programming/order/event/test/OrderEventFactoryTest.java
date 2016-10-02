@@ -13,6 +13,7 @@ import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
+import com.jforex.programming.misc.JFHotObservable;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
@@ -23,17 +24,20 @@ import com.jforex.programming.order.event.OrderEventTypeSets;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
+import io.reactivex.Observable;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderEventFactoryTest extends CommonUtilForTest {
 
     private OrderEventFactory orderEventFactory;
 
+    private final JFHotObservable<OrderCallRequest> callRequestPublisher = new JFHotObservable<>();
+    private final Observable<OrderCallRequest> callRequestObservable = callRequestPublisher.observable();
     private final IOrder orderForTest = buyOrderEURUSD;
 
     @Before
     public void setUp() {
-        orderEventFactory = new OrderEventFactory();
+        orderEventFactory = new OrderEventFactory(callRequestObservable);
     }
 
     private IMessage createMessage(final IMessage.Type messageType,
@@ -53,17 +57,14 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
         assertThat(orderEvent.type(), equalTo(expectedType));
     }
 
-    private void
-            assertCorrectMappingForChangeRejectRefinement(final OrderCallReason orderCallReason,
-                                                          final OrderEventType expectedType) {
-        orderEventFactory
-            .registerOrderCallRequest(new OrderCallRequest(orderForTest, orderCallReason));
+    private void assertCorrectMappingForChangeRejectRefinement(final OrderCallReason orderCallReason,
+                                                               final OrderEventType expectedType) {
+        callRequestPublisher.onNext(new OrderCallRequest(orderForTest, orderCallReason));
         assertCorrectMapping(expectedType, IMessage.Type.ORDER_CHANGED_REJECTED);
     }
 
     private void registerCallRequest(final OrderCallReason orderCallReason) {
-        orderEventFactory.registerOrderCallRequest(new OrderCallRequest(orderForTest,
-                                                                        orderCallReason));
+        callRequestPublisher.onNext(new OrderCallRequest(orderForTest, orderCallReason));
     }
 
     @Test
@@ -231,8 +232,7 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
 
     @Test
     public void notificationIsMappedCorrectForInternalOrder() {
-        final OrderCallRequest callRequest = new OrderCallRequest(orderForTest, OrderCallReason.SUBMIT);
-        orderEventFactory.registerOrderCallRequest(callRequest);
+        registerCallRequest(OrderCallReason.SUBMIT);
 
         orderUtilForTest.setState(orderForTest, IOrder.State.CREATED);
         assertCorrectMapping(OrderEventType.NOTIFICATION,
@@ -241,8 +241,7 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
 
     @Test
     public void partialFillIsMappedCorrectForInternalOrder() {
-        final OrderCallRequest callRequest = new OrderCallRequest(orderForTest, OrderCallReason.SUBMIT);
-        orderEventFactory.registerOrderCallRequest(callRequest);
+        registerCallRequest(OrderCallReason.SUBMIT);
 
         orderUtilForTest.setState(orderForTest, IOrder.State.OPENED);
         orderUtilForTest.setRequestedAmount(orderForTest, 0.2);
@@ -253,8 +252,7 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
 
     @Test
     public void partialCloseOKIsMappedCorrectForInternalOrder() {
-        final OrderCallRequest callRequest = new OrderCallRequest(orderForTest, OrderCallReason.CLOSE);
-        orderEventFactory.registerOrderCallRequest(callRequest);
+        registerCallRequest(OrderCallReason.CLOSE);
 
         orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
         assertCorrectMapping(OrderEventType.PARTIAL_CLOSE_OK,
@@ -329,8 +327,8 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            orderEventFactory.registerOrderCallRequest(new OrderCallRequest(sellOrderAUDUSD,
-                                                                            OrderCallReason.SUBMIT));
+            callRequestPublisher.onNext(new OrderCallRequest(sellOrderAUDUSD, OrderCallReason.SUBMIT));
+
             registerCallRequest(OrderCallReason.SUBMIT);
             registerCallRequest(OrderCallReason.CHANGE_LABEL);
             registerCallRequest(OrderCallReason.CHANGE_PRICE);
@@ -470,14 +468,12 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
                                     assertTrue(submitEvent.isInternal());
                                 }
 
-                                // @Test
-                                // public void
-                                // afterCloseMessageAllEventsAreNowExternal() {
-                                // closeEvent =
-                                // getEvent(IMessage.Type.ORDER_CLOSE_OK);
-                                //
-                                // assertFalse(closeEvent.isInternal());
-                                // }
+                                @Test
+                                public void afterCloseMessageAllEventsAreNowExternal() {
+                                    closeEvent = getEvent(IMessage.Type.ORDER_CLOSE_OK);
+
+                                    assertFalse(closeEvent.isInternal());
+                                }
                             }
 
                             public class OnCancelled {
@@ -501,15 +497,12 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
                                     assertTrue(rejectEvent.isInternal());
                                 }
 
-                                // @Test
-                                // public void
-                                // afterCancelStateMessageAllEventsAreNowExternal()
-                                // {
-                                // rejectEvent =
-                                // getEvent(IMessage.Type.ORDER_SUBMIT_REJECTED);
-                                //
-                                // assertFalse(rejectEvent.isInternal());
-                                // }
+                                @Test
+                                public void afterCancelStateMessageAllEventsAreNowExternal() {
+                                    rejectEvent = getEvent(IMessage.Type.ORDER_SUBMIT_REJECTED);
+
+                                    assertFalse(rejectEvent.isInternal());
+                                }
                             }
                         }
                     }
