@@ -1,13 +1,13 @@
 package com.jforex.programming.misc;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.TimeUnit;
 
 public final class DateTimeUtil {
 
@@ -30,9 +30,9 @@ public final class DateTimeUtil {
 
     public static final long localMillisFromDateTime(final LocalDateTime localDateTime) {
         return checkNotNull(localDateTime)
-                .atZone(localZoneId)
-                .toInstant()
-                .toEpochMilli();
+            .atZone(localZoneId)
+            .toInstant()
+            .toEpochMilli();
     }
 
     public static final long localMillisNow() {
@@ -40,7 +40,7 @@ public final class DateTimeUtil {
     }
 
     public static final long millisFromNano(final long nanos) {
-        return TimeUnit.NANOSECONDS.toMillis(nanos);
+        return NANOSECONDS.toMillis(nanos);
     }
 
     public static final String format(final LocalDateTime localDateTime) {
