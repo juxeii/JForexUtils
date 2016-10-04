@@ -35,7 +35,7 @@ public class CalculationUtilTest extends QuoteProviderForTest {
     private void assertPipDistance(final Instrument instrument,
                                    final double priceA,
                                    final double priceB) {
-        final double pipDistance = calculationUtil.pipDistance(instrument,
+        final double pipDistance = CalculationUtil.pipDistance(instrument,
                                                                priceA,
                                                                priceB);
         assertThat(pipDistance,
@@ -58,11 +58,12 @@ public class CalculationUtilTest extends QuoteProviderForTest {
 
     @Test
     public void testConvertAmountIsCorrectForEqualCurrencies() {
-        final double convertedAmount = calculationUtil.convertAmount(213456.78,
+        final double amount = 213456.78;
+        final double convertedAmount = calculationUtil.convertAmount(amount,
                                                                      currencyEUR,
                                                                      currencyEUR,
                                                                      OfferSide.ASK);
-        assertThat(convertedAmount, equalTo(213456.78));
+        assertThat(convertedAmount, equalTo(amount));
     }
 
     @Test
@@ -166,14 +167,14 @@ public class CalculationUtilTest extends QuoteProviderForTest {
 
     @Test
     public void testRoundedPriceIsPipDivisible() {
-        assertTrue(calculationUtil.isPricePipDivisible(instrumentEURUSD, 1.12345));
-        assertTrue(calculationUtil.isPricePipDivisible(instrumentUSDJPY, 133.243));
+        assertTrue(CalculationUtil.isPricePipDivisible(instrumentEURUSD, 1.12345));
+        assertTrue(CalculationUtil.isPricePipDivisible(instrumentUSDJPY, 133.243));
     }
 
     @Test
     public void testNonRoundedPriceIsNotPipDivisible() {
-        assertFalse(calculationUtil.isPricePipDivisible(instrumentEURUSD, 1.123455));
-        assertFalse(calculationUtil.isPricePipDivisible(instrumentUSDJPY, 133.2432));
+        assertFalse(CalculationUtil.isPricePipDivisible(instrumentEURUSD, 1.123455));
+        assertFalse(CalculationUtil.isPricePipDivisible(instrumentUSDJPY, 133.2432));
     }
 
     @Test

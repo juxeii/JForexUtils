@@ -24,10 +24,10 @@ public class CalculationUtil {
         this.tickQuoteProvider = tickQuoteProvider;
     }
 
-    public final double convertAmount(final double amount,
-                                      final ICurrency sourceCurrency,
-                                      final ICurrency targetCurrency,
-                                      final OfferSide offerSide) {
+    public double convertAmount(final double amount,
+                                final ICurrency sourceCurrency,
+                                final ICurrency targetCurrency,
+                                final OfferSide offerSide) {
         return sourceCurrency.equals(targetCurrency)
                 ? amount
                 : roundAmount(amount * conversionQuote(sourceCurrency,
@@ -61,31 +61,31 @@ public class CalculationUtil {
         return roundAmount(pipValueAmount);
     }
 
-    public static double scalePipsToInstrument(final double pips,
-                                               final Instrument instrument) {
+    public static final double scalePipsToInstrument(final double pips,
+                                                     final Instrument instrument) {
         return roundPrice(checkNotNull(instrument).getPipValue() * pips, instrument);
     }
 
-    public static double addPips(final Instrument instrument,
-                                 final double price,
-                                 final double pipsToAdd) {
+    public static final double addPips(final Instrument instrument,
+                                       final double price,
+                                       final double pipsToAdd) {
         final double scaledPips = scalePipsToInstrument(pipsToAdd, checkNotNull(instrument));
         return roundPrice(price + scaledPips, instrument);
     }
 
-    public double pipDistance(final Instrument instrument,
-                              final double priceA,
-                              final double priceB) {
+    public static final double pipDistance(final Instrument instrument,
+                                           final double priceA,
+                                           final double priceB) {
         final double pipDistance = (priceA - priceB) / instrument.getPipValue();
         return roundPips(pipDistance);
     }
 
-    public boolean isPricePipDivisible(final Instrument instrument,
-                                       final double price) {
+    public static final boolean isPricePipDivisible(final Instrument instrument,
+                                                    final double price) {
         return isValueDivisibleByX(price, checkNotNull(instrument).getPipValue() / 10);
     }
 
-    public static double scaleToPlatformAmount(final double amount) {
+    public static final double scaleToPlatformAmount(final double amount) {
         return roundAmount(amount / platformSettings.baseAmount());
     }
 }

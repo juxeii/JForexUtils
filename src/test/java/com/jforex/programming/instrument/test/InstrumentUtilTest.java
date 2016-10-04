@@ -5,6 +5,7 @@ import static com.jforex.programming.instrument.InstrumentUtil.nameFromCurrencie
 import static com.jforex.programming.instrument.InstrumentUtil.numberOfDigits;
 import static com.jforex.programming.instrument.InstrumentUtil.quoteJavaCurrency;
 import static com.jforex.programming.instrument.InstrumentUtil.toStringNoSeparator;
+import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -17,9 +18,11 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.ICurrency;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.currency.CurrencyCode;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.math.MathUtil;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 public class InstrumentUtilTest extends QuoteProviderForTest {
@@ -67,12 +70,118 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
 
     @Test
     public void testSpreadCalculationIsCorrect() {
-        final double spreadOfCalculcationUtil = 12.3;
+        final double expectedSpread = 1.0 / instrumentEURUSD.getPipValue()
+                * MathUtil.roundPrice(askEURUSD - bidEURUSD, instrumentEURUSD);
 
-        when(calculationUtilMock.pipDistance(instrumentEURUSD, askEURUSD, bidEURUSD))
-            .thenReturn(spreadOfCalculcationUtil);
+        assertThat(instrumentUtil.spread(), equalTo(expectedSpread));
+    }
 
-        assertThat(instrumentUtil.spread(), equalTo(spreadOfCalculcationUtil));
+    @Test
+    public void scalePipsIsCorrect() {
+        assertThat(instrumentUtil.scalePips(20.5), equalTo(0.00205));
+        assertThat(instrumentUtil.scalePips(7.9), equalTo(0.00079));
+    }
+
+    @Test
+    public void addPipsToPriceIsCorrect() {
+        assertThat(instrumentUtil.addPipsToPrice(askEURUSD, 20.55),
+                   closeTo(askEURUSD + 0.00206, 0.001));
+        assertThat(instrumentUtil.addPipsToPrice(askGBPAUD, -7.41),
+                   closeTo(askGBPAUD - 0.00074, 0.001));
+    }
+
+    @Test
+    public void pipDistanceOfPricesIsCorrect() {
+        assertThat(instrumentUtil.pipDistanceOfPrices(askEURUSD, bidEURUSD),
+                   equalTo(MathUtil.roundPips((askEURUSD - bidEURUSD) / instrumentEURUSD.getPipValue())));
+    }
+
+    @Test
+    public void isPricePipDivisibleIsCorrect() {
+        assertTrue(instrumentUtil.isPricePipDivisible(1.12345));
+        assertTrue(instrumentUtil.isPricePipDivisible(133.243));
+    }
+
+    @Test
+    public void convertAmountForSameInstrumentCallsCalculcationUtilCorrect() {
+        final double amount = 213456.78;
+        when(calculationUtilMock.convertAmount(amount,
+                                               currencyEUR,
+                                               currencyEUR,
+                                               OfferSide.ASK))
+                                                   .thenReturn(amount);
+
+        final double convertedAmount = instrumentUtil.convertAmount(amount,
+                                                                    instrumentEURUSD,
+                                                                    OfferSide.ASK);
+
+        verify(calculationUtilMock).convertAmount(amount,
+                                                  currencyEUR,
+                                                  currencyEUR,
+                                                  OfferSide.ASK);
+        assertThat(convertedAmount, equalTo(amount));
+    }
+
+    @Test
+    public void convertAmountForOtherInstrumentCallsCalculcationUtilCorrect() {
+        final double amount = 213456.78;
+        when(calculationUtilMock.convertAmount(amount,
+                                               currencyEUR,
+                                               currencyAUD,
+                                               OfferSide.ASK))
+                                                   .thenReturn(amount);
+
+        final double convertedAmount = instrumentUtil.convertAmount(amount,
+                                                                    instrumentAUDJPY,
+                                                                    OfferSide.ASK);
+
+        verify(calculationUtilMock).convertAmount(amount,
+                                                  currencyEUR,
+                                                  currencyAUD,
+                                                  OfferSide.ASK);
+        assertThat(convertedAmount, equalTo(amount));
+    }
+
+    @Test
+    public void pipValueInCurrencyForSameCurrencyCallsCalculcationUtilCorrect() {
+        final double amount = 213456.78;
+        final double expectedPipValue = 1.23456;
+        when(calculationUtilMock.pipValueInCurrency(amount,
+                                                    instrumentEURUSD,
+                                                    currencyUSD,
+                                                    OfferSide.ASK))
+                                                        .thenReturn(expectedPipValue);
+
+        final double pipValue = instrumentUtil.pipValueInCurrency(amount,
+                                                                  currencyUSD,
+                                                                  OfferSide.ASK);
+
+        verify(calculationUtilMock).pipValueInCurrency(amount,
+                                                       instrumentEURUSD,
+                                                       currencyUSD,
+                                                       OfferSide.ASK);
+        assertThat(pipValue, equalTo(expectedPipValue));
+    }
+
+    @Test
+    public void pipValueInCurrencyForOtherCurrencyCallsCalculcationUtilCorrect() {
+        final double amount = 213456.78;
+        final double expectedPipValue = 1.23456;
+        when(calculationUtilMock.pipValueInCurrency(amount,
+                                                    instrumentEURUSD,
+                                                    currencyJPY,
+                                                    OfferSide.ASK))
+                                                        .thenReturn(expectedPipValue);
+
+        final double pipValue = instrumentUtil.pipValueInCurrency(amount,
+                                                                  currencyJPY,
+                                                                  OfferSide.ASK);
+
+        verify(calculationUtilMock).pipValueInCurrency(amount,
+                                                       instrumentEURUSD,
+                                                       currencyJPY,
+                                                       OfferSide.ASK);
+        assertThat(pipValue, equalTo(expectedPipValue));
     }
 
     @Test

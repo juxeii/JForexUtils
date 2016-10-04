@@ -9,6 +9,7 @@ import com.dukascopy.api.IBar;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.currency.CurrencyCode;
 import com.jforex.programming.currency.CurrencyFactory;
 import com.jforex.programming.currency.CurrencyUtil;
@@ -23,6 +24,8 @@ public final class InstrumentUtil {
     private final TickQuoteProvider tickQuoteProvider;
     private final BarQuoteProvider barQuoteProvider;
     private final CalculationUtil calculationUtil;
+    private final ICurrency baseCurrency;
+    private final ICurrency quoteCurrency;
     private final Currency baseJavaCurrency;
     private final Currency quoteJavaCurrency;
     private final int numberOfDigits;
@@ -41,12 +44,13 @@ public final class InstrumentUtil {
         this.barQuoteProvider = barQuoteProvider;
         this.calculationUtil = calculationUtil;
 
+        baseCurrency = instrument.getPrimaryJFCurrency();
+        quoteCurrency = instrument.getSecondaryJFCurrency();
         baseJavaCurrency = baseJavaCurrency(instrument);
         quoteJavaCurrency = quoteJavaCurrency(instrument);
         numberOfDigits = numberOfDigits(instrument);
         toStringNoSeparator = toStringNoSeparator(instrument);
-        toString = nameFromCurrencies(instrument.getPrimaryJFCurrency(),
-                                      instrument.getSecondaryJFCurrency());
+        toString = nameFromCurrencies(baseCurrency, quoteCurrency);
         currencies = CurrencyFactory.fromInstrument(instrument);
     }
 
@@ -67,7 +71,7 @@ public final class InstrumentUtil {
     }
 
     public final double spread() {
-        return calculationUtil.pipDistance(instrument,
+        return CalculationUtil.pipDistance(instrument,
                                            askQuote(),
                                            bidQuote());
     }
@@ -94,6 +98,46 @@ public final class InstrumentUtil {
 
     public final Set<ICurrency> currencies() {
         return currencies;
+    }
+
+    public double scalePips(final double pips) {
+        return CalculationUtil.scalePipsToInstrument(pips, instrument);
+    }
+
+    public double addPipsToPrice(final double price,
+                                 final double pipsToAdd) {
+        return CalculationUtil.addPips(instrument,
+                                       price,
+                                       pipsToAdd);
+    }
+
+    public double pipDistanceOfPrices(final double priceA,
+                                      final double priceB) {
+        return CalculationUtil.pipDistance(instrument,
+                                           priceA,
+                                           priceB);
+    }
+
+    public boolean isPricePipDivisible(final double price) {
+        return CalculationUtil.isPricePipDivisible(instrument, price);
+    }
+
+    public double convertAmount(final double amount,
+                                final Instrument targetInstrument,
+                                final OfferSide offerSide) {
+        return calculationUtil.convertAmount(amount,
+                                             baseCurrency,
+                                             targetInstrument.getPrimaryJFCurrency(),
+                                             offerSide);
+    }
+
+    public double pipValueInCurrency(final double amount,
+                                     final ICurrency targetCurrency,
+                                     final OfferSide offerSide) {
+        return calculationUtil.pipValueInCurrency(amount,
+                                                  instrument,
+                                                  targetCurrency,
+                                                  offerSide);
     }
 
     public final boolean containsCurrency(final ICurrency currency) {
