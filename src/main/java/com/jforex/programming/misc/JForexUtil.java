@@ -185,7 +185,8 @@ public class JForexUtil {
     public InstrumentUtil instrumentUtil(final Instrument instrument) {
         return new InstrumentUtil(checkNotNull(instrument),
                                   tickQuoteProvider,
-                                  barQuoteProvider);
+                                  barQuoteProvider,
+                                  calculationUtil);
     }
 
     public CalculationUtil calculationUtil() {

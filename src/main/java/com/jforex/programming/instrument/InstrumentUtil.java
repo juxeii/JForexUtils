@@ -22,6 +22,7 @@ public final class InstrumentUtil {
     private final Instrument instrument;
     private final TickQuoteProvider tickQuoteProvider;
     private final BarQuoteProvider barQuoteProvider;
+    private final CalculationUtil calculationUtil;
     private final Currency baseJavaCurrency;
     private final Currency quoteJavaCurrency;
     private final int numberOfDigits;
@@ -33,10 +34,12 @@ public final class InstrumentUtil {
 
     public InstrumentUtil(final Instrument instrument,
                           final TickQuoteProvider tickQuoteProvider,
-                          final BarQuoteProvider barQuoteProvider) {
+                          final BarQuoteProvider barQuoteProvider,
+                          final CalculationUtil calculationUtil) {
         this.instrument = instrument;
         this.tickQuoteProvider = tickQuoteProvider;
         this.barQuoteProvider = barQuoteProvider;
+        this.calculationUtil = calculationUtil;
 
         baseJavaCurrency = baseJavaCurrency(instrument);
         quoteJavaCurrency = quoteJavaCurrency(instrument);
@@ -64,10 +67,9 @@ public final class InstrumentUtil {
     }
 
     public final double spread() {
-        return CalculationUtil
-            .pipDistanceFrom(askQuote())
-            .to(bidQuote())
-            .forInstrument(instrument);
+        return calculationUtil.pipDistance(instrument,
+                                           askQuote(),
+                                           bidQuote());
     }
 
     public final Currency baseJavaCurrency() {

@@ -35,11 +35,9 @@ public class CalculationUtilTest extends QuoteProviderForTest {
     private void assertPipDistance(final Instrument instrument,
                                    final double priceA,
                                    final double priceB) {
-        final double pipDistance = CalculationUtil
-                .pipDistanceFrom(priceA)
-                .to(priceB)
-                .forInstrument(instrument);
-
+        final double pipDistance = calculationUtil.pipDistance(instrument,
+                                                               priceA,
+                                                               priceB);
         assertThat(pipDistance,
                    equalTo(MathUtil.roundPips((priceA - priceB) / instrument.getPipValue())));
     }
@@ -60,24 +58,20 @@ public class CalculationUtilTest extends QuoteProviderForTest {
 
     @Test
     public void testConvertAmountIsCorrectForEqualCurrencies() {
-        final double convertedAmount = calculationUtil
-                .convertAmount(213456.78)
-                .fromCurrency(currencyEUR)
-                .toCurrency(currencyEUR)
-                .forOfferSide(OfferSide.ASK);
-
+        final double convertedAmount = calculationUtil.convertAmount(213456.78,
+                                                                     currencyEUR,
+                                                                     currencyEUR,
+                                                                     OfferSide.ASK);
         assertThat(convertedAmount, equalTo(213456.78));
     }
 
     @Test
     public void testConvertAmountIsCorrectForTargetCurrencyIsBase() {
         final double amount = 2000.567;
-        final double convertedAmount = calculationUtil
-                .convertAmount(amount)
-                .fromCurrency(currencyUSD)
-                .toCurrency(currencyEUR)
-                .forOfferSide(OfferSide.BID);
-
+        final double convertedAmount = calculationUtil.convertAmount(amount,
+                                                                     currencyUSD,
+                                                                     currencyEUR,
+                                                                     OfferSide.BID);
         assertThat(convertedAmount,
                    equalTo(convertedAmountForInvertedQuote(amount, bidEURUSD)));
     }
@@ -85,12 +79,10 @@ public class CalculationUtilTest extends QuoteProviderForTest {
     @Test
     public void testConvertAmountIsCorrectForTargetCurrencyIsQuote() {
         final double amount = 45678.89;
-        final double convertedAmount = calculationUtil
-                .convertAmount(amount)
-                .fromCurrency(currencyUSD)
-                .toCurrency(currencyJPY)
-                .forOfferSide(OfferSide.BID);
-
+        final double convertedAmount = calculationUtil.convertAmount(amount,
+                                                                     currencyUSD,
+                                                                     currencyJPY,
+                                                                     OfferSide.BID);
         assertThat(convertedAmount,
                    equalTo(convertedAmountForQuote(amount, bidUSDJPY)));
     }
@@ -98,40 +90,34 @@ public class CalculationUtilTest extends QuoteProviderForTest {
     @Test
     public void testPipValueIsCorrectForEqualCurrencies() {
         final double amount = 456789.887;
-        final double pipValue = calculationUtil
-                .pipValueInCurrency(currencyUSD)
-                .ofInstrument(instrumentEURUSD)
-                .withAmount(amount)
-                .andOfferSide(OfferSide.ASK);
-
+        final double pipValue = calculationUtil.pipValueInCurrency(amount,
+                                                                   instrumentEURUSD,
+                                                                   currencyUSD,
+                                                                   OfferSide.ASK);
         assertThat(pipValue, equalTo(MathUtil
-                .roundAmount(amount * instrumentEURUSD.getPipValue())));
+            .roundAmount(amount * instrumentEURUSD.getPipValue())));
     }
 
     @Test
     public void testPipValueIsCorrectForTargetCurrencyIsBase() {
         final double amount = 5456789.887;
-        final double pipValue = calculationUtil
-                .pipValueInCurrency(currencyEUR)
-                .ofInstrument(instrumentEURUSD)
-                .withAmount(amount)
-                .andOfferSide(OfferSide.ASK);
-
+        final double pipValue = calculationUtil.pipValueInCurrency(amount,
+                                                                   instrumentEURUSD,
+                                                                   currencyEUR,
+                                                                   OfferSide.ASK);
         assertThat(pipValue, equalTo(MathUtil
-                .roundAmount(amount * instrumentEURUSD.getPipValue() / askEURUSD)));
+            .roundAmount(amount * instrumentEURUSD.getPipValue() / askEURUSD)));
     }
 
     @Test
     public void testPipValueIsCorrectForTargetCurrencyIsQuote() {
         final double amount = 456789.887;
-        final double pipValue = calculationUtil
-                .pipValueInCurrency(currencyJPY)
-                .ofInstrument(instrumentEURUSD)
-                .withAmount(amount)
-                .andOfferSide(OfferSide.BID);
-
+        final double pipValue = calculationUtil.pipValueInCurrency(amount,
+                                                                   instrumentEURUSD,
+                                                                   currencyJPY,
+                                                                   OfferSide.BID);
         assertThat(pipValue, equalTo(MathUtil
-                .roundAmount(amount * instrumentEURUSD.getPipValue() * bidUSDJPY)));
+            .roundAmount(amount * instrumentEURUSD.getPipValue() * bidUSDJPY)));
     }
 
     @Test
@@ -180,14 +166,14 @@ public class CalculationUtilTest extends QuoteProviderForTest {
 
     @Test
     public void testRoundedPriceIsPipDivisible() {
-        assertTrue(CalculationUtil.isPricePipDivisible(instrumentEURUSD, 1.12345));
-        assertTrue(CalculationUtil.isPricePipDivisible(instrumentUSDJPY, 133.243));
+        assertTrue(calculationUtil.isPricePipDivisible(instrumentEURUSD, 1.12345));
+        assertTrue(calculationUtil.isPricePipDivisible(instrumentUSDJPY, 133.243));
     }
 
     @Test
     public void testNonRoundedPriceIsNotPipDivisible() {
-        assertFalse(CalculationUtil.isPricePipDivisible(instrumentEURUSD, 1.123455));
-        assertFalse(CalculationUtil.isPricePipDivisible(instrumentUSDJPY, 133.2432));
+        assertFalse(calculationUtil.isPricePipDivisible(instrumentEURUSD, 1.123455));
+        assertFalse(calculationUtil.isPricePipDivisible(instrumentUSDJPY, 133.2432));
     }
 
     @Test

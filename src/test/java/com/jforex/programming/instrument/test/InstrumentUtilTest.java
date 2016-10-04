@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import com.dukascopy.api.ICurrency;
 import com.jforex.programming.currency.CurrencyCode;
@@ -25,13 +26,17 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
 
     private InstrumentUtil instrumentUtil;
 
+    @Mock
+    private CalculationUtil calculationUtilMock;
+
     @Before
     public void setUp() {
         setUpMocks();
 
         instrumentUtil = new InstrumentUtil(instrumentEURUSD,
                                             tickQuoteHandlerMock,
-                                            barQuoteHandlerMock);
+                                            barQuoteHandlerMock,
+                                            calculationUtilMock);
     }
 
     private void setUpMocks() {
@@ -62,10 +67,12 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
 
     @Test
     public void testSpreadCalculationIsCorrect() {
-        assertThat(instrumentUtil.spread(), equalTo(CalculationUtil
-                .pipDistanceFrom(askEURUSD)
-                .to(bidEURUSD)
-                .forInstrument(instrumentEURUSD)));
+        final double spreadOfCalculcationUtil = 12.3;
+
+        when(calculationUtilMock.pipDistance(instrumentEURUSD, askEURUSD, bidEURUSD))
+            .thenReturn(spreadOfCalculcationUtil);
+
+        assertThat(instrumentUtil.spread(), equalTo(spreadOfCalculcationUtil));
     }
 
     @Test
