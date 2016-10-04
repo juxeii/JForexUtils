@@ -14,6 +14,7 @@ import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
+import com.jforex.programming.misc.TaskExecutor;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -23,14 +24,17 @@ import javafx.scene.image.Image;
 public final class ClientUtil {
 
     private final IClient client;
+    private final TaskExecutor taskExecutor;
     private AuthentificationUtil authentificationUtil;
     private final JFSystemListener jfSystemListener = new JFSystemListener();
 
     private static final Logger logger = LogManager.getLogger(ClientUtil.class);
 
     public ClientUtil(final IClient client,
+                      final TaskExecutor taskExecutor,
                       final String cacheDirectory) {
         this.client = checkNotNull(client);
+        this.taskExecutor = taskExecutor;
         initCacheDirectory(checkNotNull(cacheDirectory));
         initSystemListener();
         initAuthentification();
@@ -48,7 +52,9 @@ public final class ClientUtil {
     }
 
     private final void initAuthentification() {
-        authentificationUtil = new AuthentificationUtil(client, observeConnectionState());
+        authentificationUtil = new AuthentificationUtil(client,
+                                                        taskExecutor,
+                                                        observeConnectionState());
     }
 
     private final void initConnectionKeeper() {

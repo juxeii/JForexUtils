@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 
 public final class StreamUtil {
@@ -31,15 +30,6 @@ public final class StreamUtil {
         return checkNotNull(optional).isPresent()
                 ? Stream.of(optional.get())
                 : Stream.empty();
-    }
-
-    public static final Completable observeJFRunnable(final JFRunnable jfRunnable) {
-        checkNotNull(jfRunnable);
-
-        return Completable.fromCallable(() -> {
-            jfRunnable.run();
-            return null;
-        });
     }
 
     public static final Observable<Long> evaluateRetryPair(final Pair<? extends Throwable, Integer> retryPair,

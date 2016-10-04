@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.JFRunnable;
 import com.jforex.programming.misc.StreamUtil;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
@@ -58,15 +57,6 @@ public class StreamUtilTest extends CommonUtilForTest {
         subscriber.assertNotComplete();
         RxTestUtil.advanceTimeBy(100L, TimeUnit.MILLISECONDS);
         subscriber.assertComplete();
-    }
-
-    @Test
-    public void completableFromJFRunnableIsCorrect() throws Exception {
-        final JFRunnable jfRunnableMock = mock(JFRunnable.class);
-
-        StreamUtil.observeJFRunnable(jfRunnableMock).subscribe();
-
-        verify(jfRunnableMock).run();
     }
 
     @Test
