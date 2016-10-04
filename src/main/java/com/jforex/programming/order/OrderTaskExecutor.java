@@ -3,8 +3,8 @@ package com.jforex.programming.order;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
+import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.misc.StrategyThreadTask;
 
 import io.reactivex.Completable;
@@ -14,23 +14,30 @@ import io.reactivex.functions.Action;
 public class OrderTaskExecutor {
 
     private final StrategyThreadTask strategyThreadTask;
-    private final IEngineUtil engineUtil;
+    private final IEngine engine;
 
     public OrderTaskExecutor(final StrategyThreadTask strategyThreadTask,
-                             final IEngineUtil engineUtil) {
+                             final IEngine engine) {
         this.strategyThreadTask = strategyThreadTask;
-        this.engineUtil = engineUtil;
+        this.engine = engine;
     }
 
     public Single<IOrder> submitOrder(final OrderParams orderParams) {
-        final Callable<IOrder> submitCallable = engineUtil.submitCallable(orderParams);
-        return single(submitCallable);
+        return single(() -> engine.submitOrder(orderParams.label(),
+                                               orderParams.instrument(),
+                                               orderParams.orderCommand(),
+                                               orderParams.amount(),
+                                               orderParams.price(),
+                                               orderParams.slippage(),
+                                               orderParams.stopLossPrice(),
+                                               orderParams.takeProfitPrice(),
+                                               orderParams.goodTillTime(),
+                                               orderParams.comment()));
     }
 
     public Single<IOrder> mergeOrders(final String mergeOrderLabel,
                                       final Collection<IOrder> toMergeOrders) {
-        final Callable<IOrder> mergeCallable = engineUtil.mergeCallable(mergeOrderLabel, toMergeOrders);
-        return single(mergeCallable);
+        return single(() -> engine.mergeOrders(mergeOrderLabel, toMergeOrders));
     }
 
     public Completable close(final IOrder order) {

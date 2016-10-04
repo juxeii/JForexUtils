@@ -54,7 +54,6 @@ public class JForexUtil {
     private IHistory history;
     private HistoryUtil historyUtil;
     private IDataService dataService;
-    private IEngineUtil engineUtil;
 
     private TickQuoteProvider tickQuoteProvider;
     private TickQuoteRepository tickQuoteRepository;
@@ -126,14 +125,13 @@ public class JForexUtil {
     }
 
     private void initOrderRelated() {
-        engineUtil = new IEngineUtil(engine);
         strategyThreadTask = new StrategyThreadTask(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
         positionUtil = new PositionUtil(positionFactory);
         orderUtilHandler = new OrderUtilHandler(orderEventGateway,
                                                 orderEventTypeDataFactory,
                                                 callRequestPublisher);
-        orderTaskExecutor = new OrderTaskExecutor(strategyThreadTask, engineUtil);
+        orderTaskExecutor = new OrderTaskExecutor(strategyThreadTask, engine);
         orderBasicTask = new OrderBasicTask(orderTaskExecutor, orderUtilHandler);
         orderChangeBatch = new OrderChangeBatch(orderBasicTask);
         orderCancelSL = new OrderCancelSL(orderChangeBatch);

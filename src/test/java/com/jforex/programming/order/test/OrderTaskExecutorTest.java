@@ -14,8 +14,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
-import com.jforex.programming.misc.IEngineUtil;
 import com.jforex.programming.misc.StrategyThreadTask;
 import com.jforex.programming.order.OrderTaskExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
@@ -30,40 +30,46 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
     private OrderTaskExecutor orderTaskExecutor;
 
     @Mock
-    private StrategyThreadTask taskExecutorMock;
-    @Mock
-    private IEngineUtil engineUtilMock;
+    private StrategyThreadTask strategyThreadTask;
     @Mock
     private Callable<IOrder> orderCallableMock;
+    @Captor
+    private ArgumentCaptor<Callable<IOrder>> callableCaptor;
     @Captor
     private ArgumentCaptor<Action> actionCaptor;
     private final IOrder orderForTest = buyOrderEURUSD;
     private final Single<IOrder> testOrderSingle = Single.just(orderForTest);
     private Single<IOrder> returnedOrderSingle;
 
+    @SuppressWarnings("unchecked")
     @Before
     public void setUp() throws Exception {
-        orderTaskExecutor = new OrderTaskExecutor(taskExecutorMock, engineUtilMock);
-    }
+        when(strategyThreadTask.execute(any(Callable.class)))
+            .thenReturn(testOrderSingle);
 
-    private void setUpTaskExecutorSingle(final Callable<IOrder> callable,
-                                         final Single<IOrder> single) {
-        when(taskExecutorMock.execute(callable))
-            .thenReturn(single);
+        orderTaskExecutor = new OrderTaskExecutor(strategyThreadTask, engineMock);
     }
 
     private void captureAndRunAction() throws Exception {
-        verify(taskExecutorMock).execute(actionCaptor.capture());
+        verify(strategyThreadTask).execute(actionCaptor.capture());
         actionCaptor.getValue().run();
     }
 
     public class SubmitOrderSetup {
 
         @Before
-        public void setUp() {
-            when(engineUtilMock.submitCallable(buyParamsEURUSD)).thenReturn(orderCallableMock);
-
-            setUpTaskExecutorSingle(orderCallableMock, testOrderSingle);
+        public void setUp() throws JFException {
+            when(engineMock.submitOrder(buyParamsEURUSD.label(),
+                                        buyParamsEURUSD.instrument(),
+                                        buyParamsEURUSD.orderCommand(),
+                                        buyParamsEURUSD.amount(),
+                                        buyParamsEURUSD.price(),
+                                        buyParamsEURUSD.slippage(),
+                                        buyParamsEURUSD.stopLossPrice(),
+                                        buyParamsEURUSD.takeProfitPrice(),
+                                        buyParamsEURUSD.goodTillTime(),
+                                        buyParamsEURUSD.comment()))
+                                            .thenReturn(buyOrderEURUSD);
 
             returnedOrderSingle = orderTaskExecutor.submitOrder(buyParamsEURUSD);
         }
@@ -74,8 +80,21 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void taskExecutorCallsOnStrategyThreadWithAction() {
-            verify(taskExecutorMock).execute(orderCallableMock);
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            verify(strategyThreadTask).execute(callableCaptor.capture());
+
+            callableCaptor.getValue().call();
+
+            verify(engineMock).submitOrder(buyParamsEURUSD.label(),
+                                           buyParamsEURUSD.instrument(),
+                                           buyParamsEURUSD.orderCommand(),
+                                           buyParamsEURUSD.amount(),
+                                           buyParamsEURUSD.price(),
+                                           buyParamsEURUSD.slippage(),
+                                           buyParamsEURUSD.stopLossPrice(),
+                                           buyParamsEURUSD.takeProfitPrice(),
+                                           buyParamsEURUSD.goodTillTime(),
+                                           buyParamsEURUSD.comment());
         }
 
         @Test
@@ -98,10 +117,8 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() throws Exception {
-            when(engineUtilMock.mergeCallable(mergeOrderLabel, toMergeOrders))
-                .thenReturn(orderCallableMock);
-
-            setUpTaskExecutorSingle(orderCallableMock, testOrderSingle);
+            when(engineMock.mergeOrders(mergeOrderLabel, toMergeOrders))
+                .thenReturn(orderForTest);
 
             returnedOrderSingle = orderTaskExecutor.mergeOrders(mergeOrderLabel, toMergeOrders);
         }
@@ -112,8 +129,12 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         }
 
         @Test
-        public void taskExecutorCallsOnStrategyThreadWithAction() {
-            verify(taskExecutorMock).execute(orderCallableMock);
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            verify(strategyThreadTask).execute(callableCaptor.capture());
+
+            callableCaptor.getValue().call();
+
+            verify(engineMock).mergeOrders(mergeOrderLabel, toMergeOrders);
         }
 
         @Test
