@@ -5,13 +5,13 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.JFHotObservable;
+import com.jforex.programming.misc.JFHotPublisher;
 
 import io.reactivex.Observable;
 
 public class OrderEventGateway {
 
-    private final JFHotObservable<OrderEvent> orderEventPublisher = new JFHotObservable<>();
+    private final JFHotPublisher<OrderEvent> orderEventPublisher = new JFHotPublisher<>();
     private final OrderEventFactory orderEventFactory;
 
     private static final Logger logger = LogManager.getLogger(OrderEventGateway.class);

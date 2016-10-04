@@ -1,7 +1,7 @@
 package com.jforex.programming.order;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.JFHotObservable;
+import com.jforex.programming.misc.JFHotPublisher;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
@@ -15,21 +15,21 @@ public class OrderUtilHandler {
 
     private final OrderEventGateway orderEventGateway;
     private final OrderEventTypeDataFactory orderEventTypeDataFactory;
-    private final JFHotObservable<OrderCallRequest> callRequestObservable;
+    private final JFHotPublisher<OrderCallRequest> callRequestPublisher;
 
     public OrderUtilHandler(final OrderEventGateway orderEventGateway,
                             final OrderEventTypeDataFactory orderEventTypeDataFactory,
-                            final JFHotObservable<OrderCallRequest> callRequestObservable) {
+                            final JFHotPublisher<OrderCallRequest> callRequestPublisher) {
         this.orderEventGateway = orderEventGateway;
         this.orderEventTypeDataFactory = orderEventTypeDataFactory;
-        this.callRequestObservable = callRequestObservable;
+        this.callRequestPublisher = callRequestPublisher;
     }
 
     public Observable<OrderEvent> callObservable(final IOrder orderOfCall,
                                                  final OrderCallReason callReason) {
         return Observable
             .just(orderOfCall)
-            .doOnSubscribe(d -> callRequestObservable.onNext(new OrderCallRequest(orderOfCall, callReason)))
+            .doOnSubscribe(d -> callRequestPublisher.onNext(new OrderCallRequest(orderOfCall, callReason)))
             .map(order -> orderEventTypeDataFactory.forCallReason(callReason))
             .flatMap(type -> gatewayObservable(orderOfCall, type));
     }

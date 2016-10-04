@@ -7,7 +7,7 @@ import java.util.Optional;
 import com.dukascopy.api.system.IClient;
 import com.github.oxo42.stateless4j.StateMachine;
 import com.github.oxo42.stateless4j.StateMachineConfig;
-import com.jforex.programming.misc.JFHotObservable;
+import com.jforex.programming.misc.JFHotPublisher;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -15,7 +15,7 @@ import io.reactivex.Observable;
 public class AuthentificationUtil {
 
     private final IClient client;
-    private final JFHotObservable<LoginState> loginStateSubject = new JFHotObservable<>();
+    private final JFHotPublisher<LoginState> loginStatePublisher = new JFHotPublisher<>();
     private final StateMachineConfig<LoginState, FSMTrigger> fsmConfig = new StateMachineConfig<>();
     private final StateMachine<LoginState, FSMTrigger> fsm = new StateMachine<>(LoginState.LOGGED_OUT, fsmConfig);
 
@@ -46,21 +46,21 @@ public class AuthentificationUtil {
     private final void configureFSM() {
         fsmConfig
             .configure(LoginState.LOGGED_OUT)
-            .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_OUT))
+            .onEntry(() -> loginStatePublisher.onNext(LoginState.LOGGED_OUT))
             .permit(FSMTrigger.CONNECT, LoginState.LOGGED_IN)
             .ignore(FSMTrigger.DISCONNECT)
             .ignore(FSMTrigger.LOGOUT);
 
         fsmConfig
             .configure(LoginState.LOGGED_IN)
-            .onEntry(() -> loginStateSubject.onNext(LoginState.LOGGED_IN))
+            .onEntry(() -> loginStatePublisher.onNext(LoginState.LOGGED_IN))
             .permit(FSMTrigger.LOGOUT, LoginState.LOGGED_OUT)
             .ignore(FSMTrigger.CONNECT)
             .ignore(FSMTrigger.DISCONNECT);
     }
 
     public final Observable<LoginState> observeLoginState() {
-        return loginStateSubject.observable();
+        return loginStatePublisher.observable();
     }
 
     public LoginState loginState() {

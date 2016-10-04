@@ -6,43 +6,43 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.jforex.programming.misc.JFHotObservable;
+import com.jforex.programming.misc.JFHotPublisher;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class JFHotObservableTest extends CommonUtilForTest {
+public class JFHotPublisherTest extends CommonUtilForTest {
 
-    private JFHotObservable<Integer> jfHotObservable;
+    private JFHotPublisher<Integer> jfHotPublisher;
 
     private TestObserver<Integer> testObserver;
 
     @Before
     public void setUp() throws Exception {
-        jfHotObservable = new JFHotObservable<>();
+        jfHotPublisher = new JFHotPublisher<>();
     }
 
     @Test
     public void observableIsValid() {
-        assertNotNull(jfHotObservable.observable());
+        assertNotNull(jfHotPublisher.observable());
     }
 
     public class ThreeItemsPublishedBeforeSubscribed {
 
         @Before
         public void setUp() {
-            jfHotObservable.onNext(1);
-            jfHotObservable.onNext(2);
-            jfHotObservable.onNext(3);
+            jfHotPublisher.onNext(1);
+            jfHotPublisher.onNext(2);
+            jfHotPublisher.onNext(3);
         }
 
         public class WhenSubscribed {
 
             @Before
             public void setUp() throws Exception {
-                testObserver = jfHotObservable
+                testObserver = jfHotPublisher
                     .observable()
                     .test();
             }
@@ -56,8 +56,8 @@ public class JFHotObservableTest extends CommonUtilForTest {
 
                 @Before
                 public void setUp() throws Exception {
-                    jfHotObservable.onNext(4);
-                    jfHotObservable.onNext(5);
+                    jfHotPublisher.onNext(4);
+                    jfHotPublisher.onNext(5);
                 }
 
                 @Test
@@ -68,9 +68,9 @@ public class JFHotObservableTest extends CommonUtilForTest {
 
                 @Test
                 public void afterUnsubscribeNoMoreItemsAreEmitted() {
-                    jfHotObservable.unsubscribe();
+                    jfHotPublisher.unsubscribe();
 
-                    jfHotObservable.onNext(6);
+                    jfHotPublisher.onNext(6);
 
                     testObserver.assertValueCount(2);
                     testObserver.assertValues(4, 5);

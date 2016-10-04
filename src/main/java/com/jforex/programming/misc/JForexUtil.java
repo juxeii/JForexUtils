@@ -80,10 +80,10 @@ public class JForexUtil {
     private final CalculationUtil calculationUtil;
     private final OrderEventTypeDataFactory orderEventTypeDataFactory = new OrderEventTypeDataFactory();
 
-    private final JFHotObservable<TickQuote> tickQuotePublisher = new JFHotObservable<>();
-    private final JFHotObservable<BarQuote> barQuotePublisher = new JFHotObservable<>();
-    private final JFHotObservable<IMessage> messagePublisher = new JFHotObservable<>();
-    private final JFHotObservable<OrderCallRequest> callRequestPublisher = new JFHotObservable<>();
+    private final JFHotPublisher<TickQuote> tickQuotePublisher = new JFHotPublisher<>();
+    private final JFHotPublisher<BarQuote> barQuotePublisher = new JFHotPublisher<>();
+    private final JFHotPublisher<IMessage> messagePublisher = new JFHotPublisher<>();
+    private final JFHotPublisher<OrderCallRequest> callRequestPublisher = new JFHotPublisher<>();
 
     public static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     public static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
@@ -200,6 +200,7 @@ public class JForexUtil {
         tickQuotePublisher.unsubscribe();
         barQuotePublisher.unsubscribe();
         messagePublisher.unsubscribe();
+        callRequestPublisher.unsubscribe();
     }
 
     public void onMessage(final IMessage message) {

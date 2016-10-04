@@ -2,40 +2,40 @@ package com.jforex.programming.client;
 
 import com.dukascopy.api.system.ISystemListener;
 import com.jforex.programming.connection.ConnectionState;
-import com.jforex.programming.misc.JFHotObservable;
+import com.jforex.programming.misc.JFHotPublisher;
 
 import io.reactivex.Observable;
 
 public final class JFSystemListener implements ISystemListener {
 
-    private final JFHotObservable<StrategyRunData> strategyRunDataObservable = new JFHotObservable<>();
-    private final JFHotObservable<ConnectionState> connectionStateObservable = new JFHotObservable<>();
+    private final JFHotPublisher<StrategyRunData> strategyRunDataPublisher = new JFHotPublisher<>();
+    private final JFHotPublisher<ConnectionState> connectionStatePublisher = new JFHotPublisher<>();
 
     public final Observable<StrategyRunData> observeStrategyRunData() {
-        return strategyRunDataObservable.observable();
+        return strategyRunDataPublisher.observable();
     }
 
     public final Observable<ConnectionState> observeConnectionState() {
-        return connectionStateObservable.observable();
+        return connectionStatePublisher.observable();
     }
 
     @Override
     public final void onStart(final long processId) {
-        strategyRunDataObservable.onNext(new StrategyRunData(processId, StrategyRunState.STARTED));
+        strategyRunDataPublisher.onNext(new StrategyRunData(processId, StrategyRunState.STARTED));
     }
 
     @Override
     public final void onStop(final long processId) {
-        strategyRunDataObservable.onNext(new StrategyRunData(processId, StrategyRunState.STOPPED));
+        strategyRunDataPublisher.onNext(new StrategyRunData(processId, StrategyRunState.STOPPED));
     }
 
     @Override
     public final void onConnect() {
-        connectionStateObservable.onNext(ConnectionState.CONNECTED);
+        connectionStatePublisher.onNext(ConnectionState.CONNECTED);
     }
 
     @Override
     public final void onDisconnect() {
-        connectionStateObservable.onNext(ConnectionState.DISCONNECTED);
+        connectionStatePublisher.onNext(ConnectionState.DISCONNECTED);
     }
 }
