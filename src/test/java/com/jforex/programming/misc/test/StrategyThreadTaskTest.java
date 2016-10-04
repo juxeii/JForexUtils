@@ -1,8 +1,5 @@
 package com.jforex.programming.misc.test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -13,8 +10,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.JFException;
-import com.jforex.programming.misc.TaskExecutor;
+import com.jforex.programming.misc.StrategyThreadTask;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -23,9 +19,9 @@ import io.reactivex.functions.Action;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class TaskExecutorTest extends CommonUtilForTest {
+public class StrategyThreadTaskTest extends CommonUtilForTest {
 
-    private TaskExecutor taskExecutor;
+    private StrategyThreadTask strategyThreadTask;
 
     @Mock
     private Action actionMock;
@@ -37,24 +33,18 @@ public class TaskExecutorTest extends CommonUtilForTest {
     private Future<Object> futureVoidMock;
     private TestObserver<Void> orderActionSubscriber;
     private TestObserver<IOrder> orderCallableSubscriber;
-    private final Runnable onStrategyThreadForActionCall = () -> orderActionSubscriber = taskExecutor
-        .onStrategyThread(actionMock)
+    private final Runnable executeActionCall = () -> orderActionSubscriber = strategyThreadTask
+        .execute(actionMock)
         .test();
-    private final Runnable onCurrentThreadForActionCall = () -> orderActionSubscriber = taskExecutor
-        .onCurrentThread(actionMock)
-        .test();
-    private final Runnable onStrategyThreadForCallableCall = () -> orderCallableSubscriber = taskExecutor
-        .onStrategyThread(callableMock)
-        .test();
-    private final Runnable onCurrentThreadForCallableCall = () -> orderCallableSubscriber = taskExecutor
-        .onCurrentThread(callableMock)
+    private final Runnable executeCallableCall = () -> orderCallableSubscriber = strategyThreadTask
+        .execute(callableMock)
         .test();
 
     @Before
     public void setUp() throws Exception {
         setUpMocks();
 
-        taskExecutor = new TaskExecutor(contextMock);
+        strategyThreadTask = new StrategyThreadTask(contextMock);
     }
 
     private void setUpMocks() throws Exception {
@@ -80,10 +70,8 @@ public class TaskExecutorTest extends CommonUtilForTest {
 
     @Test
     public void whenNotSubscribedNoExecutionHappens() {
-        taskExecutor.onStrategyThread(callableMock);
-        taskExecutor.onCurrentThread(callableMock);
-        taskExecutor.onStrategyThread(actionMock);
-        taskExecutor.onCurrentThread(actionMock);
+        strategyThreadTask.execute(callableMock);
+        strategyThreadTask.execute(actionMock);
 
         verifyNoExecutions();
     }
@@ -92,9 +80,10 @@ public class TaskExecutorTest extends CommonUtilForTest {
     public void executeOnContextForActionIsCorrect() throws Exception {
         when(contextMock.executeTask(any())).thenReturn(futureVoidMock);
 
-        final Future<Void> future = taskExecutor.executeOnContext(actionMock);
+        strategyThreadTask
+            .execute(actionMock)
+            .subscribe();
 
-        assertThat(future, equalTo(futureVoidMock));
         verify(contextMock).executeTask(argThat(callable -> {
             Observable
                 .fromCallable(callable)
@@ -106,9 +95,10 @@ public class TaskExecutorTest extends CommonUtilForTest {
 
     @Test
     public void executeOnContextForCallableIsCorrect() throws Exception {
-        final Future<IOrder> future = taskExecutor.executeOnContext(callableMock);
+        strategyThreadTask
+            .execute(callableMock)
+            .subscribe();
 
-        assertThat(future, equalTo(futureMock));
         verify(contextMock).executeTask(callableMock);
     }
 
@@ -125,32 +115,12 @@ public class TaskExecutorTest extends CommonUtilForTest {
 
                 @Before
                 public void setUp() {
-                    onStrategyThreadForActionCall.run();
+                    executeActionCall.run();
                 }
 
                 @Test
                 public void noExecutionWithContextHappensSinceAlreadyOnStrategyThread() throws InterruptedException,
                                                                                         ExecutionException {
-                    verify(contextMock, never()).executeTask(any());
-                    verify(futureMock, never()).get();
-                }
-
-                @Test
-                public void subscriberCompletes() {
-                    orderActionSubscriber.assertComplete();
-                }
-            }
-
-            public class WhenOnCurrentThreadSubscribe {
-
-                @Before
-                public void setUp() {
-                    onCurrentThreadForActionCall.run();
-                }
-
-                @Test
-                public void noExecutionWithContextHappens() throws InterruptedException,
-                                                            ExecutionException {
                     verify(contextMock, never()).executeTask(any());
                     verify(futureMock, never()).get();
                 }
@@ -168,32 +138,12 @@ public class TaskExecutorTest extends CommonUtilForTest {
 
                 @Before
                 public void setUp() {
-                    onStrategyThreadForCallableCall.run();
+                    executeCallableCall.run();
                 }
 
                 @Test
                 public void noExecutionWithContextHappensSinceAlreadyOnStrategyThread() throws InterruptedException,
                                                                                         ExecutionException {
-                    verify(contextMock, never()).executeTask(callableMock);
-                    verify(futureMock, never()).get();
-                }
-
-                @Test
-                public void correctOrderIsEmitted() {
-                    assertOrderEmissionAndCompletion();
-                }
-            }
-
-            public class WhenOnCurrentThreadSubscribe {
-
-                @Before
-                public void setUp() {
-                    onCurrentThreadForCallableCall.run();
-                }
-
-                @Test
-                public void noExecutionWithContextHappens() throws InterruptedException,
-                                                            ExecutionException {
                     verify(contextMock, never()).executeTask(callableMock);
                     verify(futureMock, never()).get();
                 }
@@ -221,7 +171,7 @@ public class TaskExecutorTest extends CommonUtilForTest {
                 public void onErrorExceptionIsEmitted() throws Exception {
                     when(contextMock.executeTask(any())).thenThrow(new RuntimeException());
 
-                    onStrategyThreadForActionCall.run();
+                    executeActionCall.run();
 
                     orderActionSubscriber.assertError(RuntimeException.class);
                 }
@@ -232,7 +182,7 @@ public class TaskExecutorTest extends CommonUtilForTest {
                     public void setUp() {
                         when(contextMock.executeTask(any())).thenReturn(futureVoidMock);
 
-                        onStrategyThreadForActionCall.run();
+                        executeActionCall.run();
                     }
 
                     @Test
@@ -240,38 +190,6 @@ public class TaskExecutorTest extends CommonUtilForTest {
                                                               ExecutionException {
                         verify(contextMock).executeTask(any());
                         verify(futureVoidMock).get();
-                    }
-
-                    @Test
-                    public void subscriberCompletes() {
-                        orderActionSubscriber.assertComplete();
-                    }
-                }
-            }
-
-            public class WhenCurrentThreadThreadCall {
-
-                @Test
-                public void onErrorExceptionIsEmitted() throws Exception {
-                    doThrow(jfException).when(actionMock).run();
-
-                    onCurrentThreadForActionCall.run();
-
-                    orderActionSubscriber.assertError(JFException.class);
-                }
-
-                public class WhenOnCurrentThreadSubscribe {
-
-                    @Before
-                    public void setUp() {
-                        onCurrentThreadForActionCall.run();
-                    }
-
-                    @Test
-                    public void noExecutionWithContextHappens() throws InterruptedException,
-                                                                ExecutionException {
-                        verify(contextMock, never()).executeTask(any());
-                        verify(futureMock, never()).get();
                     }
 
                     @Test
@@ -290,7 +208,7 @@ public class TaskExecutorTest extends CommonUtilForTest {
                 public void onErrorExceptionIsEmitted() throws Exception {
                     when(contextMock.executeTask(callableMock)).thenThrow(new RuntimeException());
 
-                    onStrategyThreadForCallableCall.run();
+                    executeCallableCall.run();
 
                     orderCallableSubscriber.assertError(RuntimeException.class);
                 }
@@ -299,7 +217,7 @@ public class TaskExecutorTest extends CommonUtilForTest {
 
                     @Before
                     public void setUp() {
-                        onStrategyThreadForCallableCall.run();
+                        executeCallableCall.run();
                     }
 
                     @Test
@@ -307,38 +225,6 @@ public class TaskExecutorTest extends CommonUtilForTest {
                                                               ExecutionException {
                         verify(contextMock).executeTask(callableMock);
                         verify(futureMock).get();
-                    }
-
-                    @Test
-                    public void correctOrderIsEmitted() {
-                        assertOrderEmissionAndCompletion();
-                    }
-                }
-            }
-
-            public class WhenCurrentThreadThreadCall {
-
-                @Test
-                public void onErrorExceptionIsEmitted() throws Exception {
-                    when(callableMock.call()).thenThrow(jfException);
-
-                    onCurrentThreadForCallableCall.run();
-
-                    orderCallableSubscriber.assertError(JFException.class);
-                }
-
-                public class WhenOnCurrentThreadSubscribe {
-
-                    @Before
-                    public void setUp() {
-                        onCurrentThreadForCallableCall.run();
-                    }
-
-                    @Test
-                    public void noExecutionWithContextHappens() throws InterruptedException,
-                                                                ExecutionException {
-                        verify(contextMock, never()).executeTask(callableMock);
-                        verify(futureMock, never()).get();
                     }
 
                     @Test

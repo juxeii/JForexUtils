@@ -16,7 +16,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.IEngineUtil;
-import com.jforex.programming.misc.TaskExecutor;
+import com.jforex.programming.misc.StrategyThreadTask;
 import com.jforex.programming.order.OrderTaskExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
@@ -30,7 +30,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
     private OrderTaskExecutor orderTaskExecutor;
 
     @Mock
-    private TaskExecutor taskExecutorMock;
+    private StrategyThreadTask taskExecutorMock;
     @Mock
     private IEngineUtil engineUtilMock;
     @Mock
@@ -48,12 +48,12 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
     private void setUpTaskExecutorSingle(final Callable<IOrder> callable,
                                          final Single<IOrder> single) {
-        when(taskExecutorMock.onStrategyThread(callable))
+        when(taskExecutorMock.execute(callable))
             .thenReturn(single);
     }
 
     private void captureAndRunAction() throws Exception {
-        verify(taskExecutorMock).onStrategyThread(actionCaptor.capture());
+        verify(taskExecutorMock).execute(actionCaptor.capture());
         actionCaptor.getValue().run();
     }
 
@@ -75,7 +75,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Test
         public void taskExecutorCallsOnStrategyThreadWithAction() {
-            verify(taskExecutorMock).onStrategyThread(orderCallableMock);
+            verify(taskExecutorMock).execute(orderCallableMock);
         }
 
         @Test
@@ -113,7 +113,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Test
         public void taskExecutorCallsOnStrategyThreadWithAction() {
-            verify(taskExecutorMock).onStrategyThread(orderCallableMock);
+            verify(taskExecutorMock).execute(orderCallableMock);
         }
 
         @Test

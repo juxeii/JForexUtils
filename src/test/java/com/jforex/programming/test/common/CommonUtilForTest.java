@@ -189,10 +189,6 @@ public class CommonUtilForTest extends BDDMockito {
         return Completable.complete();
     }
 
-    protected final Completable errorCompletable(final Throwable throwable) {
-        return Completable.error(throwable);
-    }
-
     protected final Observable<OrderEvent> emptyObservable() {
         return Observable.empty();
     }

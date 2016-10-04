@@ -8,9 +8,6 @@ import java.util.function.Supplier;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
 
 import com.dukascopy.api.system.JFAuthenticationException;
 import com.dukascopy.api.system.JFVersionException;
@@ -18,12 +15,10 @@ import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
-import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Completable;
-import io.reactivex.functions.Action;
 import io.reactivex.observers.TestObserver;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
@@ -33,18 +28,12 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     private AuthentificationUtil authentificationUtil;
 
-    @Mock
-    private TaskExecutor taskExecutorMock;
-    @Captor
-    private ArgumentCaptor<Action> loginActionCaptor;
     private final Subject<ConnectionState> connectionStateObs = PublishSubject.create();
     private final TestObserver<LoginState> loginStateSubscriber = TestObserver.create();
 
     @Before
     public void setUp() {
-        authentificationUtil = new AuthentificationUtil(clientMock,
-                                                        taskExecutorMock,
-                                                        connectionStateObs);
+        authentificationUtil = new AuthentificationUtil(clientMock, connectionStateObs);
 
         authentificationUtil
             .observeLoginState()
@@ -53,9 +42,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     private void verifyConnectCall(final LoginCredentials loginCredentials,
                                    final int times) throws Exception {
-        verify(taskExecutorMock).onCurrentThread(loginActionCaptor.capture());
-        loginActionCaptor.getValue().run();
-
         if (loginCredentials.maybePin().isPresent())
             verify(clientMock, times(times)).connect(loginCredentials.jnlpAddress(),
                                                      loginCredentials.username(),
@@ -116,16 +102,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
                    equalTo(loginState));
     }
 
-    private void setUpLoginError(final Exception error) {
-        when(taskExecutorMock.onCurrentThread(any(Action.class)))
-            .thenReturn(errorCompletable(error));
-    }
-
-    private void setUpLoginDone() {
-        when(taskExecutorMock.onCurrentThread(any(Action.class)))
-            .thenReturn(emptyCompletable());
-    }
-
     @Test
     public void testLoginStateAfterCreationIsLoggedOut() {
         assertThat(authentificationUtil.loginState(), equalTo(LoginState.LOGGED_OUT));
@@ -140,29 +116,21 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
     @Test
     public void testCorrectExceptionForInvalidCredentials() throws Exception {
-        setUpLoginError(new JFAuthenticationException(""));
-
         assertLoginException(JFAuthenticationException.class);
     }
 
     @Test
     public void testCorrectExceptionForInvalidVersion() throws Exception {
-        setUpLoginError(new JFVersionException(""));
-
         assertLoginException(JFVersionException.class);
     }
 
     @Test
     public void testCorrectExceptionForException() throws Exception {
-        setUpLoginError(new Exception(""));
-
         assertLoginException(Exception.class);
     }
 
     @Test
     public void testLoginWithPinCallsClientWithPin() throws Exception {
-        setUpLoginDone();
-
         loginWithPin().subscribe();
 
         verifyConnectCall(loginCredentialsWithPin, 1);
@@ -174,8 +142,6 @@ public class AuthentificationUtilTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            setUpLoginDone();
-
             loginCompletionSubscriber = login().test();
 
             loginCompletionSubscriber.assertNoErrors();

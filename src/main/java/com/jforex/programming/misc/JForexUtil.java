@@ -64,7 +64,7 @@ public class JForexUtil {
     private PositionFactory positionFactory;
     private PositionUtil positionUtil;
     private OrderEventGateway orderEventGateway;
-    private TaskExecutor taskExecutor;
+    private StrategyThreadTask taskExecutor;
     private OrderTaskExecutor orderTaskExecutor;
     private OrderUtilHandler orderUtilHandler;
     private final OrderEventTypeDataFactory orderEventTypeDataFactory = new OrderEventTypeDataFactory();
@@ -130,7 +130,7 @@ public class JForexUtil {
 
     private void initOrderRelated() {
         engineUtil = new IEngineUtil(engine);
-        taskExecutor = new TaskExecutor(context);
+        taskExecutor = new StrategyThreadTask(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
         positionUtil = new PositionUtil(positionFactory);
         orderUtilHandler = new OrderUtilHandler(orderEventGateway,

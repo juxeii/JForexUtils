@@ -5,7 +5,7 @@ import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.IEngineUtil;
-import com.jforex.programming.misc.TaskExecutor;
+import com.jforex.programming.misc.StrategyThreadTask;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
@@ -13,10 +13,10 @@ import io.reactivex.functions.Action;
 
 public class OrderTaskExecutor {
 
-    private final TaskExecutor taskExecutor;
+    private final StrategyThreadTask taskExecutor;
     private final IEngineUtil engineUtil;
 
-    public OrderTaskExecutor(final TaskExecutor taskExecutor,
+    public OrderTaskExecutor(final StrategyThreadTask taskExecutor,
                              final IEngineUtil engineUtil) {
         this.taskExecutor = taskExecutor;
         this.engineUtil = engineUtil;
@@ -68,10 +68,10 @@ public class OrderTaskExecutor {
     }
 
     private Single<IOrder> single(final Callable<IOrder> callable) {
-        return taskExecutor.onStrategyThread(callable);
+        return taskExecutor.execute(callable);
     }
 
     private Completable completable(final Action action) {
-        return taskExecutor.onStrategyThread(action);
+        return taskExecutor.execute(action);
     }
 }

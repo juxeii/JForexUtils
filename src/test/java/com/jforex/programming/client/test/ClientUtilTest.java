@@ -12,19 +12,16 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 
 import com.jforex.programming.client.ClientUtil;
 import com.jforex.programming.client.JFSystemListener;
 import com.jforex.programming.client.StrategyRunData;
 import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.connection.ConnectionState;
-import com.jforex.programming.misc.TaskExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Completable;
-import io.reactivex.functions.Action;
 import io.reactivex.observers.TestObserver;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
@@ -34,8 +31,6 @@ public class ClientUtilTest extends CommonUtilForTest {
 
     private ClientUtil clientUtil;
 
-    @Mock
-    private TaskExecutor taskExecutorMock;
     private JFSystemListener jfSystemListener;
     private final TestObserver<ConnectionState> connectionStateSubscriber = TestObserver.create();
     private final TestObserver<StrategyRunData> runDataSubscriber = TestObserver.create();
@@ -44,9 +39,7 @@ public class ClientUtilTest extends CommonUtilForTest {
 
     @Before
     public void setUp() {
-        clientUtil = new ClientUtil(clientMock,
-                                    taskExecutorMock,
-                                    cacheDirectory);
+        clientUtil = new ClientUtil(clientMock, cacheDirectory);
 
         jfSystemListener = clientUtil.jfSystemListener();
         jfSystemListener
@@ -75,9 +68,6 @@ public class ClientUtilTest extends CommonUtilForTest {
 
     @Test
     public void loginCompletableIsValid() {
-        when(taskExecutorMock.onCurrentThread(any(Action.class)))
-            .thenReturn(emptyCompletable());
-
         assertThat(clientUtil.observeLogin(loginCredentials), instanceOf(Completable.class));
     }
 
