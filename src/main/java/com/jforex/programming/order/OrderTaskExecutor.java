@@ -13,12 +13,12 @@ import io.reactivex.functions.Action;
 
 public class OrderTaskExecutor {
 
-    private final StrategyThreadTask taskExecutor;
+    private final StrategyThreadTask strategyThreadTask;
     private final IEngineUtil engineUtil;
 
-    public OrderTaskExecutor(final StrategyThreadTask taskExecutor,
+    public OrderTaskExecutor(final StrategyThreadTask strategyThreadTask,
                              final IEngineUtil engineUtil) {
-        this.taskExecutor = taskExecutor;
+        this.strategyThreadTask = strategyThreadTask;
         this.engineUtil = engineUtil;
     }
 
@@ -68,10 +68,10 @@ public class OrderTaskExecutor {
     }
 
     private Single<IOrder> single(final Callable<IOrder> callable) {
-        return taskExecutor.execute(callable);
+        return strategyThreadTask.execute(callable);
     }
 
     private Completable completable(final Action action) {
-        return taskExecutor.execute(action);
+        return strategyThreadTask.execute(action);
     }
 }

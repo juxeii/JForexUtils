@@ -64,10 +64,9 @@ public class JForexUtil {
     private PositionFactory positionFactory;
     private PositionUtil positionUtil;
     private OrderEventGateway orderEventGateway;
-    private StrategyThreadTask taskExecutor;
+    private StrategyThreadTask strategyThreadTask;
     private OrderTaskExecutor orderTaskExecutor;
     private OrderUtilHandler orderUtilHandler;
-    private final OrderEventTypeDataFactory orderEventTypeDataFactory = new OrderEventTypeDataFactory();
     private OrderBasicTask orderBasicTask;
     private OrderChangeBatch orderChangeBatch;
     private OrderMergeTask orderMergeTask;
@@ -79,13 +78,13 @@ public class JForexUtil {
     private OrderCancelTP orderCancelTP;
     private OrderUtil orderUtil;
     private OrderEventFactory orderEventFactory;
-
     private final CalculationUtil calculationUtil;
+    private final OrderEventTypeDataFactory orderEventTypeDataFactory = new OrderEventTypeDataFactory();
 
-    private final JFHotObservable<TickQuote> tickQuoteObservable = new JFHotObservable<>();
-    private final JFHotObservable<BarQuote> barQuoteObservable = new JFHotObservable<>();
-    private final JFHotObservable<IMessage> messageObservable = new JFHotObservable<>();
-    private final JFHotObservable<OrderCallRequest> callRequestObservable = new JFHotObservable<>();
+    private final JFHotObservable<TickQuote> tickQuotePublisher = new JFHotObservable<>();
+    private final JFHotObservable<BarQuote> barQuotePublisher = new JFHotObservable<>();
+    private final JFHotObservable<IMessage> messagePublisher = new JFHotObservable<>();
+    private final JFHotObservable<OrderCallRequest> callRequestPublisher = new JFHotObservable<>();
 
     public static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     public static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
@@ -111,32 +110,30 @@ public class JForexUtil {
     }
 
     private void initInfrastructure() {
-        orderEventFactory = new OrderEventFactory(callRequestObservable.observable());
-        orderEventGateway = new OrderEventGateway(messageObservable.observable(), orderEventFactory);
+        orderEventFactory = new OrderEventFactory(callRequestPublisher.observable());
+        orderEventGateway = new OrderEventGateway(messagePublisher.observable(), orderEventFactory);
     }
 
     private void initQuoteProvider() {
-        tickQuoteRepository = new TickQuoteRepository(tickQuoteObservable.observable(),
+        tickQuoteRepository = new TickQuoteRepository(tickQuotePublisher.observable(),
                                                       historyUtil,
                                                       context.getSubscribedInstruments());
-        tickQuoteProvider = new TickQuoteProvider(tickQuoteObservable.observable(),
-                                                  tickQuoteRepository);
-        barQuoteRepository = new BarQuoteRepository(barQuoteObservable.observable(),
-                                                    historyUtil);
+        tickQuoteProvider = new TickQuoteProvider(tickQuotePublisher.observable(), tickQuoteRepository);
+        barQuoteRepository = new BarQuoteRepository(barQuotePublisher.observable(), historyUtil);
         barQuoteProvider = new BarQuoteProvider(this,
-                                                barQuoteObservable.observable(),
+                                                barQuotePublisher.observable(),
                                                 barQuoteRepository);
     }
 
     private void initOrderRelated() {
         engineUtil = new IEngineUtil(engine);
-        taskExecutor = new StrategyThreadTask(context);
+        strategyThreadTask = new StrategyThreadTask(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
         positionUtil = new PositionUtil(positionFactory);
         orderUtilHandler = new OrderUtilHandler(orderEventGateway,
                                                 orderEventTypeDataFactory,
-                                                callRequestObservable);
-        orderTaskExecutor = new OrderTaskExecutor(taskExecutor, engineUtil);
+                                                callRequestPublisher);
+        orderTaskExecutor = new OrderTaskExecutor(strategyThreadTask, engineUtil);
         orderBasicTask = new OrderBasicTask(orderTaskExecutor, orderUtilHandler);
         orderChangeBatch = new OrderChangeBatch(orderBasicTask);
         orderCancelSL = new OrderCancelSL(orderChangeBatch);
@@ -202,13 +199,13 @@ public class JForexUtil {
     }
 
     public void onStop() {
-        tickQuoteObservable.unsubscribe();
-        barQuoteObservable.unsubscribe();
-        messageObservable.unsubscribe();
+        tickQuotePublisher.unsubscribe();
+        barQuotePublisher.unsubscribe();
+        messagePublisher.unsubscribe();
     }
 
     public void onMessage(final IMessage message) {
-        messageObservable.onNext(checkNotNull(message));
+        messagePublisher.onNext(checkNotNull(message));
     }
 
     public void onTick(final Instrument instrument,
@@ -218,7 +215,7 @@ public class JForexUtil {
 
         if (shouldForwardQuote(tick.getTime())) {
             final TickQuote tickQuote = new TickQuote(instrument, tick);
-            tickQuoteObservable.onNext(tickQuote);
+            tickQuotePublisher.onNext(tickQuote);
         }
     }
 
@@ -257,7 +254,7 @@ public class JForexUtil {
                 .period(period)
                 .offerSide(offerside);
             final BarQuote askBarQuote = new BarQuote(askBar, quoteParams);
-            barQuoteObservable.onNext(askBarQuote);
+            barQuotePublisher.onNext(askBarQuote);
         }
     }
 
