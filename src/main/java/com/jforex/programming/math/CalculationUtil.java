@@ -28,6 +28,10 @@ public class CalculationUtil {
                                 final ICurrency sourceCurrency,
                                 final ICurrency targetCurrency,
                                 final OfferSide offerSide) {
+        checkNotNull(sourceCurrency);
+        checkNotNull(targetCurrency);
+        checkNotNull(offerSide);
+
         return sourceCurrency.equals(targetCurrency)
                 ? amount
                 : roundAmount(amount * conversionQuote(sourceCurrency,
@@ -51,6 +55,11 @@ public class CalculationUtil {
                                      final Instrument instrument,
                                      final ICurrency targetCurrency,
                                      final OfferSide offerSide) {
+        checkNotNull(instrument);
+        checkNotNull(targetCurrency);
+        checkNotNull(targetCurrency);
+        checkNotNull(offerSide);
+
         double pipValueAmount = amount * instrument.getPipValue();
         if (!targetCurrency.equals(instrument.getSecondaryJFCurrency()))
             pipValueAmount = convertAmount(pipValueAmount,
@@ -66,9 +75,9 @@ public class CalculationUtil {
         return roundPrice(checkNotNull(instrument).getPipValue() * pips, instrument);
     }
 
-    public static final double addPips(final Instrument instrument,
-                                       final double price,
-                                       final double pipsToAdd) {
+    public static final double addPipsToPrice(final Instrument instrument,
+                                              final double price,
+                                              final double pipsToAdd) {
         final double scaledPips = scalePipsToInstrument(pipsToAdd, checkNotNull(instrument));
         return roundPrice(price + scaledPips, instrument);
     }
@@ -76,7 +85,7 @@ public class CalculationUtil {
     public static final double pipDistance(final Instrument instrument,
                                            final double priceA,
                                            final double priceB) {
-        final double pipDistance = (priceA - priceB) / instrument.getPipValue();
+        final double pipDistance = (priceA - priceB) / checkNotNull(instrument).getPipValue();
         return roundPips(pipDistance);
     }
 

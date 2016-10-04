@@ -139,17 +139,17 @@ public class CalculationUtilTest extends QuoteProviderForTest {
 
     @Test
     public void testAddPipsIsCorrectForNonJPYInstruments() {
-        assertThat(CalculationUtil.addPips(instrumentEURUSD, askEURUSD, 20.55),
+        assertThat(CalculationUtil.addPipsToPrice(instrumentEURUSD, askEURUSD, 20.55),
                    closeTo(askEURUSD + 0.00206, 0.001));
-        assertThat(CalculationUtil.addPips(instrumentGBPAUD, askGBPAUD, -7.41),
+        assertThat(CalculationUtil.addPipsToPrice(instrumentGBPAUD, askGBPAUD, -7.41),
                    closeTo(askGBPAUD - 0.00074, 0.001));
     }
 
     @Test
     public void testAddPipsIsCorrectForJPYInstruments() {
-        assertThat(CalculationUtil.addPips(instrumentEURJPY, askEURJPY, 13.25),
+        assertThat(CalculationUtil.addPipsToPrice(instrumentEURJPY, askEURJPY, 13.25),
                    equalTo(askEURJPY + 0.133));
-        assertThat(CalculationUtil.addPips(instrumentUSDJPY, askUSDJPY, -12.54),
+        assertThat(CalculationUtil.addPipsToPrice(instrumentUSDJPY, askUSDJPY, -12.54),
                    equalTo(askUSDJPY - 0.125));
     }
 

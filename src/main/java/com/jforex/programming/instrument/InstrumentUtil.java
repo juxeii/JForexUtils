@@ -106,7 +106,7 @@ public final class InstrumentUtil {
 
     public double addPipsToPrice(final double price,
                                  final double pipsToAdd) {
-        return CalculationUtil.addPips(instrument,
+        return CalculationUtil.addPipsToPrice(instrument,
                                        price,
                                        pipsToAdd);
     }

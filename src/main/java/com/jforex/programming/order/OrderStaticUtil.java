@@ -180,7 +180,7 @@ public final class OrderStaticUtil {
     public static final double slPriceWithPips(final IOrder order,
                                                final double price,
                                                final double pips) {
-        return CalculationUtil.addPips(checkNotNull(order).getInstrument(),
+        return CalculationUtil.addPipsToPrice(checkNotNull(order).getInstrument(),
                                        price,
                                        order.isLong() ? -pips : pips);
     }

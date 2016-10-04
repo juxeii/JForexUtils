@@ -80,7 +80,7 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     private void assertSLTPCalculation(final IOrder order,
                                        final double calculatedPrice,
                                        final int factor) {
-        final double expectedPrice = CalculationUtil.addPips(order.getInstrument(),
+        final double expectedPrice = CalculationUtil.addPipsToPrice(order.getInstrument(),
                                                              currentPriceForSLTP,
                                                              factor * pipsToSLTP);
         assertThat(calculatedPrice, equalTo(expectedPrice));
