@@ -34,7 +34,6 @@ import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderProcessState;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.command.CloseExecutionMode;
 import com.jforex.programming.order.command.MergeExecutionMode;
@@ -169,8 +168,6 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(ConnectionState.CONNECTED.toString());
         LoginState
             .valueOf(LoginState.LOGGED_IN.toString());
-        OrderProcessState
-            .valueOf(OrderProcessState.ACTIVE.toString());
         OrderEventType
             .valueOf(OrderEventType.SUBMIT_OK.toString());
         OrderDirection

@@ -14,7 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.dukascopy.api.IOrder;
-import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
@@ -128,13 +127,6 @@ public class PositionTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void testBuyOrderIsNotProcessing() {
-            final Set<IOrder> notProcessingOrders =
-                    position.notProcessingOrders(order -> true);
-            assertTrue(notProcessingOrders.contains(buyOrderEURUSD));
-        }
-
-        @Test
         public void testNoFilledOrders() {
             final Set<IOrder> filledOrders = position.filled();
             assertTrue(filledOrders.isEmpty());
@@ -227,14 +219,6 @@ public class PositionTest extends InstrumentUtilForTest {
                 }
 
                 @Test
-                public void testOrdersAreNotProcessing() {
-                    final Set<IOrder> notProcessingOrders =
-                            position.notProcessingOrders(order -> true);
-                    assertTrue(notProcessingOrders.contains(buyOrderEURUSD));
-                    assertTrue(notProcessingOrders.contains(sellOrderEURUSD));
-                }
-
-                @Test
                 public void testFilledOrdersHasBuyAndSellOrder() {
                     final Set<IOrder> filledOrders = position.filled();
                     assertTrue(filledOrders.contains(buyOrderEURUSD));
@@ -254,22 +238,7 @@ public class PositionTest extends InstrumentUtilForTest {
                     assertTrue(filledOrOpenedOrders.contains(sellOrderEURUSD));
                 }
 
-                @Test
-                public void testMarkingOrdersActiveOnlyAffectsPassedOrders() {
-                    position.markOrdersActive(Sets.newHashSet(buyOrderEURUSD, sellOrderAUDUSD));
-
-                    final Set<IOrder> notProcessingOrders =
-                            position.notProcessingOrders(order -> true);
-                    assertThat(notProcessingOrders.size(), equalTo(1));
-                    assertTrue(notProcessingOrders.contains(sellOrderEURUSD));
-                }
-
-                public class MarkingOrdersActive {
-
-                    @Before
-                    public void setUp() {
-                        position.markOrdersActive(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
-                    }
+                public class OrdersAreProcessing {
 
                     @Test
                     public void testPositionHasBuyAndSellOrder() {
@@ -302,25 +271,6 @@ public class PositionTest extends InstrumentUtilForTest {
                     }
 
                     @Test
-                    public void testOrdersAreProcessing() {
-                        final Set<IOrder> notProcessingOrders =
-                                position.notProcessingOrders(order -> true);
-                        assertTrue(notProcessingOrders.isEmpty());
-                    }
-
-                    @Test
-                    public void testFilledOrdersIsEmptySinceAllActive() {
-                        final Set<IOrder> filledOrders = position.filled();
-                        assertTrue(filledOrders.isEmpty());
-                    }
-
-                    @Test
-                    public void testFilledOrOpenedOrdersISEmptySinceAllActive() {
-                        final Set<IOrder> filledOrOpenedOrders = position.filledOrOpened();
-                        assertTrue(filledOrOpenedOrders.isEmpty());
-                    }
-
-                    @Test
                     public void testCloseOnTPRemovesOrderAlsoWhenMarkedActive() {
                         orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.CLOSED);
                         sendOrderEvent(sellOrderEURUSD, OrderEventType.CLOSED_BY_TP);
@@ -336,22 +286,7 @@ public class PositionTest extends InstrumentUtilForTest {
                         assertFalse(position.contains(sellOrderEURUSD));
                     }
 
-                    @Test
-                    public void testMarkingOrdersIdleOnlyAffectsPassedOrders() {
-                        position.markOrdersIdle(Sets.newHashSet(buyOrderEURUSD, sellOrderAUDUSD));
-
-                        final Set<IOrder> notProcessingOrders =
-                                position.notProcessingOrders(order -> true);
-                        assertThat(notProcessingOrders.size(), equalTo(1));
-                        assertTrue(notProcessingOrders.contains(buyOrderEURUSD));
-                    }
-
-                    public class MarkingOrdersIDLE {
-
-                        @Before
-                        public void setUp() {
-                            position.markOrdersIdle(Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD));
-                        }
+                    public class OrdersAreDone {
 
                         @Test
                         public void testPositionHasBuyAndSellOrder() {
@@ -381,14 +316,6 @@ public class PositionTest extends InstrumentUtilForTest {
                             final Set<IOrder> orders = position.all();
                             assertTrue(orders.contains(buyOrderEURUSD));
                             assertTrue(orders.contains(sellOrderEURUSD));
-                        }
-
-                        @Test
-                        public void testOrdersAreIDLE() {
-                            final Set<IOrder> notProcessingOrders =
-                                    position.notProcessingOrders(order -> true);
-                            assertTrue(notProcessingOrders.contains(buyOrderEURUSD));
-                            assertTrue(notProcessingOrders.contains(sellOrderEURUSD));
                         }
 
                         @Test
