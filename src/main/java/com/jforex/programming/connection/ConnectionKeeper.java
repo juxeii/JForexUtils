@@ -37,12 +37,17 @@ public class ConnectionKeeper {
     }
 
     private void handleConnectionState(final ConnectionState connectionState) {
-        logger.debug("Received connection state update " + connectionState);
-        if (connectionState == ConnectionState.DISCONNECTED
-                && currentLoginState == LoginState.LOGGED_IN) {
+        logger.debug("Received connection state update " + connectionState
+                + ". Current login state is " + currentLoginState);
+        if (isConnectionLostWhileLoggedIn(connectionState)) {
             logger.warn("Connection lost! Try to reconnect...");
             client.reconnect();
         }
+    }
+
+    private boolean isConnectionLostWhileLoggedIn(final ConnectionState connectionState) {
+        return connectionState == ConnectionState.DISCONNECTED
+                && currentLoginState == LoginState.LOGGED_IN;
     }
 
     private void handleLoginState(final LoginState loginState) {

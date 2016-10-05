@@ -101,6 +101,15 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
                 }
 
                 @Test
+                public void whenLoggedOutOnDisconnectNoReconnectCall() {
+                    loginStateSubject.onNext(LoginState.LOGGED_OUT);
+
+                    connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+
+                    verifyZeroInteractions(clientMock);
+                }
+
+                @Test
                 public void multipleStopCallsDoNothing() {
                     connectionKeeper.stop();
                     connectionKeeper.stop();
