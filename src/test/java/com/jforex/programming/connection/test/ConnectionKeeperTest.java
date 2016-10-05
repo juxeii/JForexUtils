@@ -28,33 +28,10 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
                                                 loginStateSubject);
     }
 
-    @Test
-    public void whenNotStartedNoReconnectOnDisconnectAndLoggedIn() {
-        loginStateSubject.onNext(LoginState.LOGGED_IN);
-        connectionStateSubject.onNext(ConnectionState.CONNECTED);
-
-        verifyZeroInteractions(clientMock);
-    }
-
-    @Test
-    public void callStopWithoutStartedDoesNothing() {
-        connectionKeeper.stop();
-    }
-
-    public class WhenStarted {
-
-        @Before
-        public void setUp() {
-            connectionKeeper.start();
-        }
+    public class NoReconnectComposer {
 
         @Test
-        public void secondStartCallDoesNothing() {
-            connectionKeeper.start();
-        }
-
-        @Test
-        public void whenLoggedOutNoClientInteraction() {
+        public void noClientReconnect() {
             verifyZeroInteractions(clientMock);
         }
 
@@ -66,10 +43,8 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
             }
 
             @Test
-            public void whenDisconnectedReconnectIsCalledOnClient() {
-                connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
-
-                verify(clientMock).reconnect();
+            public void noClientReconnect() {
+                verifyZeroInteractions(clientMock);
             }
 
             public class WhenConnected {
@@ -80,39 +55,180 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
                 }
 
                 @Test
-                public void noClientInteraction() {
+                public void noClientReconnect() {
                     verifyZeroInteractions(clientMock);
                 }
 
+                public class WhenLoggedOut {
+
+                    @Before
+                    public void setUp() {
+                        loginStateSubject.onNext(LoginState.LOGGED_OUT);
+                    }
+
+                    @Test
+                    public void noClientReconnect() {
+                        verifyZeroInteractions(clientMock);
+                    }
+
+                    public class WhenDisconnected {
+
+                        @Before
+                        public void setUp() {
+                            connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+                        }
+
+                        @Test
+                        public void noClientReconnect() {
+                            verifyZeroInteractions(clientMock);
+                        }
+                    }
+                }
+
+                public class WhenDisconnected {
+
+                    @Before
+                    public void setUp() {
+                        connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+                    }
+
+                    @Test
+                    public void noClientReconnect() {
+                        verifyZeroInteractions(clientMock);
+                    }
+                }
+            }
+        }
+    }
+
+    public class WithReconnectComposer {
+
+        @Before
+        public void setUp() {
+            connectionKeeper.setReconnectComposer(obs -> obs.retry(2));
+        }
+
+        public class WhenLoggedIn {
+
+            @Before
+            public void setUp() {
+                loginStateSubject.onNext(LoginState.LOGGED_IN);
+            }
+
+            @Test
+            public void noClientReconnect() {
+                verifyZeroInteractions(clientMock);
+            }
+
+            public class WhenConnected {
+
+                @Before
+                public void setUp() {
+                    connectionStateSubject.onNext(ConnectionState.CONNECTED);
+                }
+
                 @Test
-                public void whenStoppedNoReconnectOnClientOnDisconnect() {
-                    connectionKeeper.stop();
-
-                    connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
-
+                public void noClientReconnect() {
                     verifyZeroInteractions(clientMock);
                 }
 
-                @Test
-                public void whenDisconnectedReconnectIsCalledOnClient() {
-                    connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+                public class WhenLoggedOut {
 
-                    verify(clientMock).reconnect();
+                    @Before
+                    public void setUp() {
+                        loginStateSubject.onNext(LoginState.LOGGED_OUT);
+                    }
+
+                    @Test
+                    public void noClientReconnect() {
+                        verifyZeroInteractions(clientMock);
+                    }
+
+                    public class WhenDisconnected {
+
+                        @Before
+                        public void setUp() {
+                            connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+                        }
+
+                        @Test
+                        public void noClientReconnect() {
+                            verifyZeroInteractions(clientMock);
+                        }
+                    }
                 }
 
-                @Test
-                public void whenLoggedOutOnDisconnectNoReconnectCall() {
-                    loginStateSubject.onNext(LoginState.LOGGED_OUT);
+                public class WhenDisconnected {
 
-                    connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+                    @Before
+                    public void setUp() {
+                        connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+                    }
 
-                    verifyZeroInteractions(clientMock);
-                }
+                    @Test
+                    public void clientCallsReconnect() {
+                        verify(clientMock).reconnect();
+                    }
 
-                @Test
-                public void multipleStopCallsDoNothing() {
-                    connectionKeeper.stop();
-                    connectionKeeper.stop();
+                    public class FirstReconnectIsSuccessful {
+
+                        @Before
+                        public void setUp() {
+                            connectionStateSubject.onNext(ConnectionState.CONNECTED);
+                        }
+
+                        public class WhenAgainDisconnected {
+
+                            @Before
+                            public void setUp() {
+                                connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+                            }
+
+                            @Test
+                            public void clientCallsReconnect() {
+                                verify(clientMock, times(2)).reconnect();
+                            }
+                        }
+                    }
+
+                    public class SecondReconnectFail {
+
+                        @Before
+                        public void setUp() {
+                            connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+                        }
+
+                        @Test
+                        public void clientCallsReconnect() {
+                            verify(clientMock, times(2)).reconnect();
+                        }
+
+                        public class ThirdReconnectFail {
+
+                            @Before
+                            public void setUp() {
+                                connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+                            }
+
+                            @Test
+                            public void clientCallsReconnect() {
+                                verify(clientMock, times(3)).reconnect();
+                            }
+
+                            public class f4ReconnectFail {
+
+                                @Before
+                                public void setUp() {
+                                    connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+                                }
+
+                                @Test
+                                public void clientCallsReconnect() {
+                                    verify(clientMock, times(3)).reconnect();
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
