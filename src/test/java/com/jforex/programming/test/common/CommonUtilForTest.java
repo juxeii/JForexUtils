@@ -24,7 +24,6 @@ import com.dukascopy.api.JFException;
 import com.dukascopy.api.system.IClient;
 import com.dukascopy.api.system.ITesterClient;
 import com.jforex.programming.client.StrategyRunState;
-import com.jforex.programming.connection.AuthentificationUtil;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
@@ -172,8 +171,6 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(OrderEventType.SUBMIT_OK.toString());
         OrderDirection
             .valueOf(OrderDirection.FLAT.toString());
-        AuthentificationUtil.FSMTrigger
-            .valueOf(AuthentificationUtil.FSMTrigger.CONNECT.toString());
         MergeExecutionMode
             .valueOf(MergeExecutionMode.ConcatCancelSLAndTP.toString());
         CloseExecutionMode

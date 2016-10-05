@@ -3,7 +3,6 @@ package com.jforex.programming.client.test;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.awt.image.BufferedImage;
@@ -62,13 +61,13 @@ public class ClientUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void authentificationUtilIsValid() {
-        assertNotNull(clientUtil.authentificationUtil());
+    public void loginCompletableIsValid() {
+        assertThat(clientUtil.login(loginCredentials), instanceOf(Completable.class));
     }
 
     @Test
-    public void loginCompletableIsValid() {
-        assertThat(clientUtil.observeLogin(loginCredentials), instanceOf(Completable.class));
+    public void logoutCompletableIsValid() {
+        assertThat(clientUtil.logout(), instanceOf(Completable.class));
     }
 
     @Test
@@ -129,24 +128,13 @@ public class ClientUtilTest extends CommonUtilForTest {
             connectionStateSubscriber.assertValue(ConnectionState.CONNECTED);
         }
 
-        public class AfterDisConnectMessage {
+        @Test
+        public void disconnectMessageIsPublished() {
+            jfSystemListener.onDisconnect();
 
-            @Before
-            public void setUp() {
-                jfSystemListener.onDisconnect();
-            }
-
-            @Test
-            public void disConnectMessageIsPublished() {
-                connectionStateSubscriber.assertNoErrors();
-                connectionStateSubscriber.assertValues(ConnectionState.CONNECTED,
-                                                       ConnectionState.DISCONNECTED);
-            }
-
-            @Test
-            public void reconnectOnClientIsDone() {
-                verify(clientMock).reconnect();
-            }
+            connectionStateSubscriber
+                .assertNoErrors()
+                .assertValues(ConnectionState.CONNECTED, ConnectionState.DISCONNECTED);
         }
     }
 
