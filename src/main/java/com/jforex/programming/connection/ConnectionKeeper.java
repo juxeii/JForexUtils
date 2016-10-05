@@ -34,7 +34,10 @@ public class ConnectionKeeper {
             .doOnNext(cs -> logger.debug("Received connection state update " + cs
                     + ". Current login state is " + currentLoginState))
             .takeUntil(this::isConnectionLostWhileLoggedIn)
-            .doOnComplete(this::startRetryStrategy)
+            .doOnComplete(() -> {
+                if (reconnectComposer != null)
+                    startRetryStrategy();
+            })
             .subscribe();
     }
 
@@ -58,16 +61,13 @@ public class ConnectionKeeper {
     }
 
     private void startRetryStrategy() {
-        if (reconnectComposer != null)
-            reconnectStrategy
-                .doOnSubscribe(d -> logger.debug("Trying to reconnect..."))
-                .compose(reconnectComposer)
-                .take(1)
-                .doAfterTerminate(this::monitorConnection)
-                .subscribe(cs -> logger.debug("Connection successfully reestablished."),
-                           e -> logger.debug("Failed to reconnect! " + e.getMessage()));
-        else
-            monitorConnection();
+        reconnectStrategy
+            .doOnSubscribe(d -> logger.debug("Trying to reconnect..."))
+            .compose(reconnectComposer)
+            .take(1)
+            .doAfterTerminate(this::monitorConnection)
+            .subscribe(cs -> logger.debug("Connection successfully reestablished."),
+                       e -> logger.debug("Failed to reconnect! " + e.getMessage()));
     }
 
     private boolean isConnectionLostWhileLoggedIn(final ConnectionState connectionState) {
