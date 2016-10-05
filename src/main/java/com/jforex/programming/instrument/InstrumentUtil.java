@@ -107,8 +107,8 @@ public final class InstrumentUtil {
     public double addPipsToPrice(final double price,
                                  final double pipsToAdd) {
         return CalculationUtil.addPipsToPrice(instrument,
-                                       price,
-                                       pipsToAdd);
+                                              price,
+                                              pipsToAdd);
     }
 
     public double pipDistanceOfPrices(final double priceA,
@@ -169,6 +169,18 @@ public final class InstrumentUtil {
         return checkNotNull(instrument)
             .getSecondaryJFCurrency()
             .getJavaCurrency();
+    }
+
+    public static final String baseCurrencyName(final Instrument instrument) {
+        return checkNotNull(instrument)
+            .getPrimaryJFCurrency()
+            .getCurrencyCode();
+    }
+
+    public static final String quoteCurrencyName(final Instrument instrument) {
+        return checkNotNull(instrument)
+            .getSecondaryJFCurrency()
+            .getCurrencyCode();
     }
 
     public static final String nameFromCurrencies(final ICurrency baseCurrency,

@@ -1,8 +1,10 @@
 package com.jforex.programming.instrument.test;
 
+import static com.jforex.programming.instrument.InstrumentUtil.baseCurrencyName;
 import static com.jforex.programming.instrument.InstrumentUtil.baseJavaCurrency;
 import static com.jforex.programming.instrument.InstrumentUtil.nameFromCurrencies;
 import static com.jforex.programming.instrument.InstrumentUtil.numberOfDigits;
+import static com.jforex.programming.instrument.InstrumentUtil.quoteCurrencyName;
 import static com.jforex.programming.instrument.InstrumentUtil.quoteJavaCurrency;
 import static com.jforex.programming.instrument.InstrumentUtil.toStringNoSeparator;
 import static org.hamcrest.Matchers.closeTo;
@@ -259,6 +261,16 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
     @Test
     public void testQuoteJavaCurrency() {
         assertThat(quoteJavaCurrency(instrumentEURUSD), equalTo(currencyUSD.getJavaCurrency()));
+    }
+
+    @Test
+    public void baseCurrencyNameIsCorrect() {
+        assertThat(baseCurrencyName(instrumentEURUSD), equalTo("EUR"));
+    }
+
+    @Test
+    public void quoteCurrencyNameIsCorrect() {
+        assertThat(quoteCurrencyName(instrumentEURUSD), equalTo("USD"));
     }
 
     @Test
