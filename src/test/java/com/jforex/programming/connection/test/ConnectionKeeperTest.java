@@ -99,6 +99,12 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
 
                     verify(clientMock).reconnect();
                 }
+
+                @Test
+                public void multipleStopCallsDoNothing() {
+                    connectionKeeper.stop();
+                    connectionKeeper.stop();
+                }
             }
         }
     }

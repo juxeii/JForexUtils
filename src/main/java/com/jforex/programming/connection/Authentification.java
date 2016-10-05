@@ -15,7 +15,7 @@ public class Authentification {
     private final JFHotPublisher<LoginState> loginStatePublisher;
 
     public Authentification(final IClient client,
-                                final JFHotPublisher<LoginState> loginStatePublisher) {
+                            final JFHotPublisher<LoginState> loginStatePublisher) {
         this.client = client;
         this.loginStatePublisher = loginStatePublisher;
     }

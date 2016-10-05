@@ -16,6 +16,7 @@ public class ConnectionKeeper {
     private Disposable connectionStateSubscription;
     private Disposable loginStateSubscription;
     private LoginState currentLoginState = LoginState.LOGGED_OUT;
+    private boolean isStarted = false;
 
     private static final Logger logger = LogManager.getLogger(ConnectionKeeper.class);
 
@@ -27,10 +28,11 @@ public class ConnectionKeeper {
         this.loginStateObservable = loginStateObservable;
     }
 
-    public void start() {
-        if (connectionStateSubscription == null) {
+    public synchronized void start() {
+        if (!isStarted) {
             connectionStateSubscription = connectionStateObservable.subscribe(this::handleConnectionState);
             loginStateSubscription = loginStateObservable.subscribe(this::handleLoginState);
+            isStarted = true;
         }
     }
 
@@ -48,10 +50,11 @@ public class ConnectionKeeper {
         this.currentLoginState = loginState;
     }
 
-    public void stop() {
-        if (connectionStateSubscription != null && !connectionStateSubscription.isDisposed()) {
+    public synchronized void stop() {
+        if (isStarted) {
             connectionStateSubscription.dispose();
             loginStateSubscription.dispose();
+            isStarted = false;
         }
     }
 }
