@@ -56,7 +56,7 @@ public class ConnectionKeeper {
 
     private final Observable<ConnectionState> observeConnectionStateWithError() {
         return connectionStateObservable.flatMap(cs -> isConnectionLostWhileLoggedIn(cs)
-                ? Observable.error(new Exception("Connection to server lost after performing retries!"))
+                ? Observable.error(new Exception("Connection to server lost while logged in"))
                 : Observable.just(cs));
     }
 
