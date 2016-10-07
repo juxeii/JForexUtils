@@ -3,6 +3,8 @@ package com.jforex.programming.order.command.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.function.Function;
+
 import org.junit.Test;
 
 import com.dukascopy.api.IOrder;
@@ -14,7 +16,6 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
-import io.reactivex.functions.Function;
 import io.reactivex.observers.TestObserver;
 
 public class MergeCommandTest extends InstrumentUtilForTest {

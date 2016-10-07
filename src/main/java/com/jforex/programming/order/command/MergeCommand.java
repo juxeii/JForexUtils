@@ -2,12 +2,13 @@ package com.jforex.programming.order.command;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Function;
+
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.ObservableTransformer;
-import io.reactivex.functions.Function;
 
 public class MergeCommand {
 
@@ -86,19 +87,11 @@ public class MergeCommand {
     }
 
     public ObservableTransformer<OrderEvent, OrderEvent> orderCancelSLComposer(final IOrder order) {
-        try {
-            return orderCancelSLComposer.apply(order);
-        } catch (final Exception e) {
-            return null;
-        }
+        return orderCancelSLComposer.apply(order);
     }
 
     public ObservableTransformer<OrderEvent, OrderEvent> orderCancelTPComposer(final IOrder order) {
-        try {
-            return orderCancelTPComposer.apply(order);
-        } catch (final Exception e) {
-            return null;
-        }
+        return orderCancelTPComposer.apply(order);
     }
 
     public ObservableTransformer<OrderEvent, OrderEvent> mergeCompose() {

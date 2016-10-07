@@ -3,6 +3,7 @@ package com.jforex.programming.order.command;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -10,7 +11,6 @@ import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.ObservableTransformer;
-import io.reactivex.functions.Function;
 
 public class ClosePositionCommand {
 
@@ -88,11 +88,7 @@ public class ClosePositionCommand {
     }
 
     public ObservableTransformer<OrderEvent, OrderEvent> singleCloseComposer(final IOrder orderToClose) {
-        try {
-            return singleCloseComposer.apply(orderToClose);
-        } catch (final Exception e) {
-            return null;
-        }
+        return singleCloseComposer.apply(orderToClose);
     }
 
     public BatchMode closeBatchMode() {

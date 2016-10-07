@@ -5,6 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.function.Function;
+
 import org.junit.Test;
 import org.mockito.Mock;
 
@@ -18,7 +20,6 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
-import io.reactivex.functions.Function;
 import io.reactivex.observers.TestObserver;
 
 public class ClosePositionCommandTest extends InstrumentUtilForTest {
