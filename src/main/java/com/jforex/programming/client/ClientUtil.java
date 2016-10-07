@@ -19,7 +19,7 @@ import com.jforex.programming.misc.JFHotPublisher;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
+import io.reactivex.ObservableTransformer;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 
@@ -62,8 +62,7 @@ public final class ClientUtil {
                                                 loginStatePublisher.observable());
     }
 
-    public void setReconnectComposer(final Function<Observable<ConnectionState>,
-                                                    Observable<ConnectionState>> reconnectComposer) {
+    public void setReconnectComposer(final ObservableTransformer<ConnectionState, ConnectionState> reconnectComposer) {
         connectionKeeper.setReconnectComposer(reconnectComposer);
     }
 

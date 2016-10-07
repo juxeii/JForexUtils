@@ -18,7 +18,7 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -33,7 +33,7 @@ public class OrderCancelTPTest extends InstrumentUtilForTest {
     @Mock
     private MergeCommand mergeCommandMock;
     @Mock
-    private Function<Observable<OrderEvent>, Observable<OrderEvent>> orderCancelTPComposerMock;
+    private ObservableTransformer<OrderEvent, OrderEvent> orderCancelTPComposerMock;
 
     @Before
     public void setUp() {

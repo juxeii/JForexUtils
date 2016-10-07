@@ -9,6 +9,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.functions.Function;
 
 public class OrderChangeBatch {
@@ -24,8 +25,7 @@ public class OrderChangeBatch {
     public Observable<OrderEvent> close(final Collection<IOrder> orders,
                                         final BatchMode batchMode,
                                         final Function<IOrder,
-                                                       Function<Observable<OrderEvent>,
-                                                                Observable<OrderEvent>>> composer) {
+                                                       ObservableTransformer<OrderEvent, OrderEvent>> composer) {
         return forBasicTask(orders,
                             batchMode,
                             order -> orderBasicTask
@@ -36,8 +36,7 @@ public class OrderChangeBatch {
     public Observable<OrderEvent> cancelSL(final Collection<IOrder> orders,
                                            final BatchMode batchMode,
                                            final Function<IOrder,
-                                                          Function<Observable<OrderEvent>,
-                                                                   Observable<OrderEvent>>> composer) {
+                                                          ObservableTransformer<OrderEvent, OrderEvent>> composer) {
         return forBasicTask(orders,
                             batchMode,
                             order -> orderBasicTask
@@ -48,8 +47,7 @@ public class OrderChangeBatch {
     public Observable<OrderEvent> cancelTP(final Collection<IOrder> orders,
                                            final BatchMode batchMode,
                                            final Function<IOrder,
-                                                          Function<Observable<OrderEvent>,
-                                                                   Observable<OrderEvent>>> composer) {
+                                                          ObservableTransformer<OrderEvent, OrderEvent>> composer) {
         return forBasicTask(orders,
                             batchMode,
                             order -> orderBasicTask

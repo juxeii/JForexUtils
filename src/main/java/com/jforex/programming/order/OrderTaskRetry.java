@@ -14,7 +14,7 @@ import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
+import io.reactivex.ObservableTransformer;
 
 public class OrderTaskRetry {
 
@@ -29,8 +29,8 @@ public class OrderTaskRetry {
         this.delayInMillis = delayInMillis;
     }
 
-    public static Function<Observable<OrderEvent>, Observable<OrderEvent>> onRejectRetryWith(final int noOfRetries,
-                                                                                             final long delayInMillis) {
+    public static ObservableTransformer<OrderEvent, OrderEvent> onRejectRetryWith(final int noOfRetries,
+                                                                                  final long delayInMillis) {
         final OrderTaskRetry orderTaskRetry = new OrderTaskRetry(noOfRetries, delayInMillis);
         return orderTaskRetry::retryTransform;
     }

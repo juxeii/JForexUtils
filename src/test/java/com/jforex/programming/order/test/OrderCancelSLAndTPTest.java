@@ -19,7 +19,7 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -37,8 +37,8 @@ public class OrderCancelSLAndTPTest extends InstrumentUtilForTest {
     private final Set<IOrder> toCancelSLTPOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = mergeEvent;
     private final OrderEvent composerEvent = closeEvent;
-    private final Function<Observable<OrderEvent>, Observable<OrderEvent>> testComposer =
-            obs -> obs.flatMap(orderEvent -> Observable.just(composerEvent));
+    private final ObservableTransformer<OrderEvent, OrderEvent> testComposer =
+            upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
 
     @Before
     public void setUp() {

@@ -17,6 +17,7 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.functions.Function;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -29,11 +30,10 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
     private final List<IOrder> ordersForBatch = Lists.newArrayList(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = submitEvent;
     private final OrderEvent composerEvent = closeEvent;
-    private final Function<Observable<OrderEvent>, Observable<OrderEvent>> testComposer =
-            obs -> obs.flatMap(orderEvent -> Observable.just(composerEvent));
-    private final Function<IOrder,
-                           Function<Observable<OrderEvent>,
-                                    Observable<OrderEvent>>> testOrderComposer = order -> testComposer;
+    private final ObservableTransformer<OrderEvent, OrderEvent> testComposer =
+            upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
+    private final Function<IOrder, ObservableTransformer<OrderEvent, OrderEvent>> testOrderComposer =
+            order -> testComposer;
 
     @Before
     public void setUp() {

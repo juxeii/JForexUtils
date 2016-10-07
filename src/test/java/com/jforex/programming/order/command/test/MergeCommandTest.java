@@ -13,7 +13,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.BiFunction;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.functions.Function;
 import io.reactivex.observers.TestObserver;
 
@@ -25,7 +25,7 @@ public class MergeCommandTest extends InstrumentUtilForTest {
     private final OrderEvent testEvent = mergeEvent;
     private final OrderEvent composerEvent = changedLabelEvent;
 
-    private void assertComposerIsNeutral(final Function<Observable<OrderEvent>, Observable<OrderEvent>> composer) {
+    private void assertComposerIsNeutral(final ObservableTransformer<OrderEvent, OrderEvent> composer) {
         final TestObserver<OrderEvent> testObserver = Observable
             .just(testEvent)
             .compose(composer)
@@ -35,8 +35,7 @@ public class MergeCommandTest extends InstrumentUtilForTest {
         testObserver.assertValue(testEvent);
     }
 
-    private void assertComposerEmitsComposerEvent(final Function<Observable<OrderEvent>,
-                                                                 Observable<OrderEvent>> composer) {
+    private void assertComposerEmitsComposerEvent(final ObservableTransformer<OrderEvent, OrderEvent> composer) {
         final TestObserver<OrderEvent> testObserver = Observable
             .just(testEvent)
             .compose(composer)
@@ -66,10 +65,13 @@ public class MergeCommandTest extends InstrumentUtilForTest {
 
     @Test
     public void definedValuesAreCorrect() throws Exception {
-        final Function<Observable<OrderEvent>, Observable<OrderEvent>> testComposer =
-                obs -> obs.flatMap(orderEvent -> Observable.just(composerEvent));
-        final BiFunction<Observable<OrderEvent>, IOrder, Observable<OrderEvent>> testOrderComposer =
-                (obs, order) -> obs.flatMap(orderEvent -> Observable.just(composerEvent));
+        final ObservableTransformer<OrderEvent, OrderEvent> testComposer =
+                upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
+        final Function<IOrder,
+                       ObservableTransformer<OrderEvent,
+                                             OrderEvent>> testOrderComposer =
+                                                     order -> upstream -> upstream
+                                                         .flatMap(orderEvent -> Observable.just(composerEvent));
 
         mergeCommand = MergeCommand
             .newBuilder(mergeOrderLabel)

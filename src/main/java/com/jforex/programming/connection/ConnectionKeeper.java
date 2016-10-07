@@ -7,14 +7,13 @@ import com.dukascopy.api.system.IClient;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
+import io.reactivex.ObservableTransformer;
 
 public class ConnectionKeeper {
 
     private final Observable<ConnectionState> connectionStateObservable;
     private Observable<ConnectionState> reconnectStrategy;
-    private Function<Observable<ConnectionState>,
-                     Observable<ConnectionState>> reconnectComposer;
+    private ObservableTransformer<ConnectionState, ConnectionState> reconnectComposer;
     private LoginState currentLoginState = LoginState.LOGGED_OUT;
 
     private static final Logger logger = LogManager.getLogger(ConnectionKeeper.class);
@@ -79,8 +78,7 @@ public class ConnectionKeeper {
         return false;
     }
 
-    public void setReconnectComposer(final Function<Observable<ConnectionState>,
-                                                    Observable<ConnectionState>> reconnectComposer) {
+    public void setReconnectComposer(final ObservableTransformer<ConnectionState, ConnectionState> reconnectComposer) {
         this.reconnectComposer = reconnectComposer;
     }
 }
