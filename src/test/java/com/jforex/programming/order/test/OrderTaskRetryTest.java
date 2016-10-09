@@ -51,6 +51,11 @@ public class OrderTaskRetryTest extends CommonUtilForTest {
     }
 
     @Test
+    public void testConstructorIsPrivate() throws Exception {
+        assertPrivateConstructor(OrderTaskRetry.class);
+    }
+
+    @Test
     public void noRetryWhenNotARejectEvent() {
         eventForTest = sendEvent(OrderEventType.SUBMIT_OK);
 
