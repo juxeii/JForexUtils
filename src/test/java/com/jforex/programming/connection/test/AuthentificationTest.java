@@ -29,7 +29,8 @@ public class AuthentificationTest extends CommonUtilForTest {
     private void login(final LoginCredentials credentials) {
         authentification
             .login(credentials)
-            .subscribe();
+            .subscribe(() -> {},
+                       t -> {});
     }
 
     @Test
@@ -47,6 +48,23 @@ public class AuthentificationTest extends CommonUtilForTest {
                                    loginCredentialsWithPin.username(),
                                    loginCredentialsWithPin.password(),
                                    loginCredentialsWithPin.maybePin().get());
+    }
+
+    @Test
+    public void loginWithExecpetionDoesNotPublishLoginStatss() throws Exception {
+        doThrow(jfException)
+            .when(clientMock)
+            .connect(loginCredentialsWithPin.jnlpAddress(),
+                     loginCredentialsWithPin.username(),
+                     loginCredentialsWithPin.password(),
+                     loginCredentialsWithPin.maybePin().get());
+        loginStateSubscriber = loginStatePublisher
+            .observable()
+            .test();
+
+        login(loginCredentialsWithPin);
+
+        loginStateSubscriber.assertNoValues();
     }
 
     public class WhenLoggedIn {
