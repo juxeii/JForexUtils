@@ -24,22 +24,12 @@ public final class RxUtil {
 
     public static final Observable<Long> retryComposer(final Observable<? extends Throwable> errors,
                                                        final int noOfRetries,
-                                                       final long delayInMillis,
+                                                       final long delay,
                                                        final TimeUnit timeUnit) {
         return errors
             .zipWith(counterObservable(noOfRetries), Pair::of)
-            .flatMap(retryPair -> checkRetriesObservable(retryPair,
-                                                         delayInMillis,
-                                                         timeUnit,
-                                                         noOfRetries));
-    }
-
-    private static final Observable<Long> checkRetriesObservable(final Pair<? extends Throwable, Integer> retryPair,
-                                                                 final long delay,
-                                                                 final TimeUnit timeUnit,
-                                                                 final int maxRetries) {
-        return retryPair.getRight() > maxRetries
-                ? Observable.error(retryPair.getLeft())
-                : waitObservable(delay, timeUnit);
+            .flatMap(retryPair -> retryPair.getRight() > noOfRetries
+                    ? Observable.error(retryPair.getLeft())
+                    : waitObservable(delay, timeUnit));
     }
 }
