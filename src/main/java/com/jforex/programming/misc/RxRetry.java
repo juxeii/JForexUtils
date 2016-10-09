@@ -6,9 +6,9 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import io.reactivex.Observable;
 
-public final class RxRetryUtil {
+public final class RxRetry {
 
-    private RxRetryUtil() {
+    private RxRetry() {
     }
 
     public static final Observable<Integer> counterObservable(final int maxRetries) {

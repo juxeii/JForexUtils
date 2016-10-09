@@ -5,13 +5,13 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 
-import com.jforex.programming.misc.RxRetryUtil;
+import com.jforex.programming.misc.RxRetry;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
 import io.reactivex.observers.TestObserver;
 
-public class RxRetryUtilTest extends CommonUtilForTest {
+public class RxRetryTest extends CommonUtilForTest {
 
     private static final int maxRetries = 3;
     private static final long retryDelay = 1500L;
@@ -20,7 +20,7 @@ public class RxRetryUtilTest extends CommonUtilForTest {
     private TestObserver<Long> subscribeCheckRetries(final int currentRetryNumber) {
         final TestObserver<Long> subscriber = TestObserver.create();
 
-        RxRetryUtil
+        RxRetry
             .checkRetriesObservable(Pair.of(jfException, currentRetryNumber),
                                     retryDelay,
                                     timeUnit,
@@ -32,12 +32,12 @@ public class RxRetryUtilTest extends CommonUtilForTest {
 
     @Test
     public void testConstructorIsPrivate() throws Exception {
-        assertPrivateConstructor(RxRetryUtil.class);
+        assertPrivateConstructor(RxRetry.class);
     }
 
     @Test
     public void counterObservableCountsCorrect() {
-        RxRetryUtil
+        RxRetry
             .counterObservable(3)
             .test()
             .assertComplete()
@@ -49,7 +49,7 @@ public class RxRetryUtilTest extends CommonUtilForTest {
     public void waitObservableIsCorrect() {
         final TestObserver<Long> subscriber = TestObserver.create();
 
-        RxRetryUtil
+        RxRetry
             .waitObservable(1000L, timeUnit)
             .subscribe(subscriber);
 
