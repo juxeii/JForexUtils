@@ -22,17 +22,23 @@ public class TickQuoteProvider {
     }
 
     public ITick tick(final Instrument instrument) {
+        checkNotNull(instrument);
+
         return tickQuoteRepository
-            .get(checkNotNull(instrument))
+            .get(instrument)
             .tick();
     }
 
     public double ask(final Instrument instrument) {
-        return tick(checkNotNull(instrument)).getAsk();
+        checkNotNull(instrument);
+
+        return tick(instrument).getAsk();
     }
 
     public double bid(final Instrument instrument) {
-        return tick(checkNotNull(instrument)).getBid();
+        checkNotNull(instrument);
+
+        return tick(instrument).getBid();
     }
 
     public double forOfferSide(final Instrument instrument,

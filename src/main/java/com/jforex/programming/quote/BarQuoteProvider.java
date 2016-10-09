@@ -3,7 +3,6 @@ package com.jforex.programming.quote;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.dukascopy.api.IBar;
 import com.jforex.programming.misc.JForexUtil;
@@ -25,23 +24,28 @@ public class BarQuoteProvider {
     }
 
     public IBar bar(final BarParams barParams) {
+        checkNotNull(barParams);
+
         return barQuoteRepository
-            .get(checkNotNull(barParams))
+            .get(barParams)
             .bar();
     }
 
     public Observable<BarQuote> observableForParamsList(final List<BarParams> barParamsList) {
-        final List<Observable<BarQuote>> paramsObservables = checkNotNull(barParamsList)
-            .stream()
-            .map(barParams -> {
-                if (barParams.period().name() == null)
-                    jforexUtil.subscribeToBarsFeed(barParams);
-                return barQuoteObservable
-                    .filter(barQuote -> barQuote.barParams().equals(barParams));
-            })
-            .collect(Collectors.toList());
+        checkNotNull(barParamsList);
 
-        return Observable.merge(paramsObservables);
+        return Observable.merge(Observable
+            .fromIterable(barParamsList)
+            .map(this::observableForParams)
+            .toList()
+            .blockingGet());
+    }
+
+    private final Observable<BarQuote> observableForParams(final BarParams barParams) {
+        if (barParams.period().name() == null)
+            jforexUtil.subscribeToBarsFeed(barParams);
+        return barQuoteObservable
+            .filter(barQuote -> barQuote.barParams().equals(barParams));
     }
 
     public Observable<BarQuote> observable() {
