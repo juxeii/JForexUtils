@@ -86,11 +86,12 @@ public class HistoryUtil {
         return bar;
     }
 
+    @SuppressWarnings("unchecked")
     public final Observable<Long> retryOnHistoryFailObservable(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
-            .compose(obs -> RxUtil.retryComposer(obs,
-                                                 maxRetriesOnHistoryFail,
-                                                 delayOnHistoryFailRetry,
-                                                 TimeUnit.MILLISECONDS));
+            .flatMap(e -> (Observable<Throwable>) Observable.just(e))
+            .compose(RxUtil.retryComposer(maxRetriesOnHistoryFail,
+                                          delayOnHistoryFailRetry,
+                                          TimeUnit.MILLISECONDS));
     }
 }

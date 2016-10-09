@@ -5,6 +5,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.tuple.Pair;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
 
 public final class RxUtil {
 
@@ -22,11 +23,10 @@ public final class RxUtil {
             .take(1);
     }
 
-    public static final Observable<Long> retryComposer(final Observable<? extends Throwable> errors,
-                                                       final int noOfRetries,
-                                                       final long delay,
-                                                       final TimeUnit timeUnit) {
-        return errors
+    public static final ObservableTransformer<Throwable, Long> retryComposer(final int noOfRetries,
+                                                                             final long delay,
+                                                                             final TimeUnit timeUnit) {
+        return errors -> errors
             .zipWith(counterObservable(noOfRetries), Pair::of)
             .flatMap(retryPair -> retryPair.getRight() > noOfRetries
                     ? Observable.error(retryPair.getLeft())

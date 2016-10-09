@@ -49,13 +49,12 @@ public class OrderTaskRetry {
     private final Observable<Long> retryOnReject(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
             .flatMap(this::filterCallErrorType)
-            .compose(obs -> RxUtil.retryComposer(obs,
-                                                 noOfRetries,
-                                                 delayInMillis,
-                                                 TimeUnit.MILLISECONDS));
+            .compose(RxUtil.retryComposer(noOfRetries,
+                                          delayInMillis,
+                                          TimeUnit.MILLISECONDS));
     }
 
-    private final Observable<? extends Throwable> filterCallErrorType(final Throwable error) {
+    private final Observable<Throwable> filterCallErrorType(final Throwable error) {
         if (error instanceof OrderCallRejectException) {
             logPositionTaskRetry((OrderCallRejectException) error);
             return Observable.just(error);
