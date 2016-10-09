@@ -37,12 +37,12 @@ public class Authentification {
                     : () -> client.connect(jnlpAddress,
                                            username,
                                            password))
-            .doOnTerminate(() -> loginStatePublisher.onNext(LoginState.LOGGED_IN));
+            .doOnComplete(() -> loginStatePublisher.onNext(LoginState.LOGGED_IN));
     }
 
     public Completable logout() {
         return Completable
             .fromAction(client::disconnect)
-            .doOnTerminate(() -> loginStatePublisher.onNext(LoginState.LOGGED_OUT));
+            .doOnComplete(() -> loginStatePublisher.onNext(LoginState.LOGGED_OUT));
     }
 }
