@@ -23,8 +23,10 @@ public final class MathUtil {
 
     public static final <T> Set<Set<T>> kPowerSet(final Set<T> sourceSet,
                                                   final int setSize) {
+        checkNotNull(sourceSet);
+
         return Generator
-            .combination(checkNotNull(sourceSet))
+            .combination(sourceSet)
             .simple(setSize)
             .stream()
             .map(Sets::newHashSet)

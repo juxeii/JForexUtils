@@ -50,7 +50,7 @@ public class OrderTaskRetry {
     private final Observable<Long> retryOnReject(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
             .flatMap(this::filterCallErrorType)
-            .zipWith(StreamUtil.retryCounterObservable(noOfRetries), Pair::of)
+            .zipWith(Observable.range(1, noOfRetries + 1), Pair::of)
             .flatMap(retryPair -> StreamUtil.evaluateRetryPair(retryPair,
                                                                delayInMillis,
                                                                TimeUnit.MILLISECONDS,

@@ -15,10 +15,6 @@ public final class StreamUtil {
     private StreamUtil() {
     }
 
-    public static final Observable<Integer> retryCounterObservable(final int maxRetries) {
-        return Observable.range(1, maxRetries + 1);
-    }
-
     public static final Observable<Long> waitObservable(final long delay,
                                                         final TimeUnit timeUnit) {
         return Observable

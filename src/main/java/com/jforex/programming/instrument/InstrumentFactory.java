@@ -24,7 +24,9 @@ public final class InstrumentFactory {
     private static final Map<MultiKey<Object>, Instrument> instrumentByCurrencies = new ConcurrentHashMap<>();
 
     public static final Optional<Instrument> maybeFromName(final String instrumentName) {
-        final String upperCaseName = checkNotNull(instrumentName).toUpperCase();
+        checkNotNull(instrumentName);
+
+        final String upperCaseName = instrumentName.toUpperCase();
         return Instrument.isInverted(upperCaseName)
                 ? Optional.of(Instrument.fromInvertedString(upperCaseName))
                 : Optional.ofNullable(Instrument.fromString(upperCaseName));
@@ -32,7 +34,10 @@ public final class InstrumentFactory {
 
     public static final Optional<Instrument> maybeFromCurrencies(final ICurrency firstCurrency,
                                                                  final ICurrency secondCurrency) {
-        return checkNotNull(firstCurrency).equals(checkNotNull(secondCurrency))
+        checkNotNull(firstCurrency);
+        checkNotNull(secondCurrency);
+
+        return firstCurrency.equals(secondCurrency)
                 ? Optional.empty()
                 : Optional.of(createMapEntry(firstCurrency, secondCurrency));
     }
@@ -40,8 +45,8 @@ public final class InstrumentFactory {
     private static Instrument createMapEntry(final ICurrency firstCurrency,
                                              final ICurrency secondCurrency) {
         return instrumentByCurrencies
-                .computeIfAbsent(new MultiKey<>(firstCurrency, secondCurrency),
-                                 k -> fromCurrencies(firstCurrency, secondCurrency));
+            .computeIfAbsent(new MultiKey<>(firstCurrency, secondCurrency),
+                             k -> fromCurrencies(firstCurrency, secondCurrency));
     }
 
     private static Instrument fromCurrencies(final ICurrency firstCurrency,
@@ -51,13 +56,15 @@ public final class InstrumentFactory {
     }
 
     public static final Set<Instrument> combineAllFromCurrencySet(final Set<ICurrency> currencies) {
+        checkNotNull(currencies);
+
         return MathUtil
-                .kPowerSet(checkNotNull(currencies), 2)
-                .stream()
-                .map(ArrayList<ICurrency>::new)
-                .map(pair -> maybeFromCurrencies(pair.get(0), pair.get(1)))
-                .flatMap(StreamUtil::optionalStream)
-                .collect(toSet());
+            .kPowerSet(currencies, 2)
+            .stream()
+            .map(ArrayList<ICurrency>::new)
+            .map(pair -> maybeFromCurrencies(pair.get(0), pair.get(1)))
+            .flatMap(StreamUtil::optionalStream)
+            .collect(toSet());
     }
 
     public static final Set<Instrument> combineAllWithAnchorCurrency(final ICurrency anchorCurrency,
@@ -66,9 +73,9 @@ public final class InstrumentFactory {
         checkNotNull(partnerCurrencies);
 
         return partnerCurrencies
-                .stream()
-                .map(partnerCurrency -> maybeFromCurrencies(anchorCurrency, partnerCurrency))
-                .flatMap(StreamUtil::optionalStream)
-                .collect(toSet());
+            .stream()
+            .map(partnerCurrency -> maybeFromCurrencies(anchorCurrency, partnerCurrency))
+            .flatMap(StreamUtil::optionalStream)
+            .collect(toSet());
     }
 }

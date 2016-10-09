@@ -34,20 +34,6 @@ public class StreamUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void retryCounterObservableCountsCorrect() {
-        final int maxRetries = 3;
-        final TestObserver<Integer> subscriber = TestObserver.create();
-
-        StreamUtil
-            .retryCounterObservable(maxRetries)
-            .subscribe(subscriber);
-
-        subscriber.assertComplete();
-        subscriber.assertNoErrors();
-        subscriber.assertValues(1, 2, 3, 4);
-    }
-
-    @Test
     public void waitObservableIsCorrect() {
         final TestObserver<Long> subscriber = TestObserver.create();
 

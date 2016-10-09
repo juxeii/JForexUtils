@@ -14,9 +14,11 @@ public final class CurrencyUtil {
     }
 
     public static final boolean isNameValid(final String currencyName) {
+        checkNotNull(currencyName);
+
         return JFCurrency
-                .getInstance(currencyName.toUpperCase())
-                .getJavaCurrency() != null;
+            .getInstance(currencyName.toUpperCase())
+            .getJavaCurrency() != null;
     }
 
     public static final boolean isInInstrument(final ICurrency currency,
@@ -34,9 +36,9 @@ public final class CurrencyUtil {
         checkNotNull(instrument);
 
         return CurrencyFactory
-                .maybeFromName(currencyName)
-                .map(currency -> isInInstrument(currency, instrument))
-                .orElse(false);
+            .maybeFromName(currencyName)
+            .map(currency -> isInInstrument(currency, instrument))
+            .orElse(false);
     }
 
     public static final boolean equalsBaseCurrency(final ICurrency currency,
@@ -45,8 +47,8 @@ public final class CurrencyUtil {
         checkNotNull(instrument);
 
         return instrument
-                .getPrimaryJFCurrency()
-                .equals(currency);
+            .getPrimaryJFCurrency()
+            .equals(currency);
     }
 
     public static final boolean equalsQuoteCurrency(final ICurrency currency,
@@ -55,8 +57,8 @@ public final class CurrencyUtil {
         checkNotNull(instrument);
 
         return instrument
-                .getSecondaryJFCurrency()
-                .equals(currency);
+            .getSecondaryJFCurrency()
+            .equals(currency);
     }
 
     public static final boolean isInInstruments(final ICurrency currency,
@@ -65,7 +67,7 @@ public final class CurrencyUtil {
         checkNotNull(instruments);
 
         return instruments
-                .stream()
-                .anyMatch(instrument -> isInInstrument(currency, instrument));
+            .stream()
+            .anyMatch(instrument -> isInInstrument(currency, instrument));
     }
 }

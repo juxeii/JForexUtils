@@ -29,7 +29,9 @@ public final class DateTimeUtil {
     }
 
     public static final long localMillisFromDateTime(final LocalDateTime localDateTime) {
-        return checkNotNull(localDateTime)
+        checkNotNull(localDateTime);
+
+        return localDateTime
             .atZone(localZoneId)
             .toInstant()
             .toEpochMilli();
@@ -44,7 +46,9 @@ public final class DateTimeUtil {
     }
 
     public static final String format(final LocalDateTime localDateTime) {
-        return checkNotNull(localDateTime).format(defaultformatter);
+        checkNotNull(localDateTime);
+
+        return localDateTime.format(defaultformatter);
     }
 
     public static final String millisToString(final long millis) {

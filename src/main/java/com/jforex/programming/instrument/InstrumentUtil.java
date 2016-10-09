@@ -125,6 +125,9 @@ public final class InstrumentUtil {
     public double convertAmount(final double amount,
                                 final Instrument targetInstrument,
                                 final OfferSide offerSide) {
+        checkNotNull(targetInstrument);
+        checkNotNull(offerSide);
+
         return calculationUtil.convertAmount(amount,
                                              baseCurrency,
                                              targetInstrument.getPrimaryJFCurrency(),
@@ -134,6 +137,9 @@ public final class InstrumentUtil {
     public double pipValueInCurrency(final double amount,
                                      final ICurrency targetCurrency,
                                      final OfferSide offerSide) {
+        checkNotNull(targetCurrency);
+        checkNotNull(offerSide);
+
         return calculationUtil.pipValueInCurrency(amount,
                                                   instrument,
                                                   targetCurrency,
@@ -141,15 +147,21 @@ public final class InstrumentUtil {
     }
 
     public final boolean containsCurrency(final ICurrency currency) {
-        return CurrencyUtil.isInInstrument(checkNotNull(currency), instrument);
+        checkNotNull(currency);
+
+        return CurrencyUtil.isInInstrument(currency, instrument);
     }
 
     public final boolean containsCurrencyCode(final CurrencyCode currencyCode) {
-        return CurrencyUtil.isInInstrument(checkNotNull(currencyCode).toString(), instrument);
+        checkNotNull(currencyCode);
+
+        return CurrencyUtil.isInInstrument(currencyCode.toString(), instrument);
     }
 
     public static final int numberOfDigits(final Instrument instrument) {
-        return checkNotNull(instrument).getPipScale() + 1;
+        checkNotNull(instrument);
+
+        return instrument.getPipScale() + 1;
     }
 
     public static final String toStringNoSeparator(final Instrument instrument) {

@@ -89,7 +89,7 @@ public class HistoryUtil {
 
     public final Observable<Long> retryOnHistoryFailObservable(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
-            .zipWith(StreamUtil.retryCounterObservable(5), Pair::of)
+            .zipWith(Observable.range(1, 6), Pair::of)
             .flatMap(retryPair -> StreamUtil.evaluateRetryPair(retryPair,
                                                                delayOnHistoryFailRetry,
                                                                TimeUnit.MILLISECONDS,

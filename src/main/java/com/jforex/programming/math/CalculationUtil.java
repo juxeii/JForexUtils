@@ -72,26 +72,34 @@ public class CalculationUtil {
 
     public static final double scalePipsToInstrument(final double pips,
                                                      final Instrument instrument) {
-        return roundPrice(checkNotNull(instrument).getPipValue() * pips, instrument);
+        checkNotNull(instrument);
+
+        return roundPrice(instrument.getPipValue() * pips, instrument);
     }
 
     public static final double addPipsToPrice(final Instrument instrument,
                                               final double price,
                                               final double pipsToAdd) {
-        final double scaledPips = scalePipsToInstrument(pipsToAdd, checkNotNull(instrument));
+        checkNotNull(instrument);
+
+        final double scaledPips = scalePipsToInstrument(pipsToAdd, instrument);
         return roundPrice(price + scaledPips, instrument);
     }
 
     public static final double pipDistance(final Instrument instrument,
                                            final double priceA,
                                            final double priceB) {
-        final double pipDistance = (priceA - priceB) / checkNotNull(instrument).getPipValue();
+        checkNotNull(instrument);
+
+        final double pipDistance = (priceA - priceB) / instrument.getPipValue();
         return roundPips(pipDistance);
     }
 
     public static final boolean isPricePipDivisible(final Instrument instrument,
                                                     final double price) {
-        return isValueDivisibleByX(price, checkNotNull(instrument).getPipValue() / 10);
+        checkNotNull(instrument);
+
+        return isValueDivisibleByX(price, instrument.getPipValue() / 10);
     }
 
     public static final double scaleToPlatformAmount(final double amount) {
