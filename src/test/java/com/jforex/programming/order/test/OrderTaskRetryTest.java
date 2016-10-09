@@ -1,7 +1,6 @@
 package com.jforex.programming.order.test;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +47,7 @@ public class OrderTaskRetryTest extends CommonUtilForTest {
     }
 
     private void advanceRetryTime() {
-        RxTestUtil.advanceTimeBy(delayInMillis, TimeUnit.MILLISECONDS);
+        RxTestUtil.advanceTimeInMillisBy(delayInMillis);
     }
 
     @Test

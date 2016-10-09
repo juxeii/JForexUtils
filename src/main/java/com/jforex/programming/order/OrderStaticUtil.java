@@ -181,8 +181,8 @@ public final class OrderStaticUtil {
                                                final double price,
                                                final double pips) {
         return CalculationUtil.addPipsToPrice(checkNotNull(order).getInstrument(),
-                                       price,
-                                       order.isLong() ? -pips : pips);
+                                              price,
+                                              order.isLong() ? -pips : pips);
     }
 
     public static final double tpPriceWithPips(final IOrder order,
@@ -193,10 +193,10 @@ public final class OrderStaticUtil {
 
     public static final OrderParams adaptedOrderParamsForSignedAmount(final OrderParams orderParams,
                                                                       final double signedAmount) {
-        final OrderDirection direction = OrderStaticUtil.directionForSignedAmount(signedAmount);
+        final OrderDirection direction = directionForSignedAmount(signedAmount);
         return orderParams
             .clone()
-            .withOrderCommand(OrderStaticUtil.directionToCommand(direction))
+            .withOrderCommand(directionToCommand(direction))
             .withAmount(Math.abs(signedAmount))
             .build();
     }

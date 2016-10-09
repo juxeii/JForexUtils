@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -89,10 +88,9 @@ public class HistoryUtil {
 
     public final Observable<Long> retryOnHistoryFailObservable(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
-            .zipWith(RxRetry.counterObservable(5), Pair::of)
-            .flatMap(retryPair -> RxRetry.checkRetriesObservable(retryPair,
-                                                                     delayOnHistoryFailRetry,
-                                                                     TimeUnit.MILLISECONDS,
-                                                                     maxRetriesOnHistoryFail));
+            .compose(obs -> RxUtil.retryComposer(obs,
+                                                 maxRetriesOnHistoryFail,
+                                                 delayOnHistoryFailRetry,
+                                                 TimeUnit.MILLISECONDS));
     }
 }

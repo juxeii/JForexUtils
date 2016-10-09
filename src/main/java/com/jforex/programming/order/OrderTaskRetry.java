@@ -5,11 +5,10 @@ import static com.jforex.programming.order.event.OrderEventTypeSets.rejectEvents
 
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.misc.RxRetry;
+import com.jforex.programming.misc.RxUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 
@@ -50,11 +49,10 @@ public class OrderTaskRetry {
     private final Observable<Long> retryOnReject(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
             .flatMap(this::filterCallErrorType)
-            .zipWith(RxRetry.counterObservable(noOfRetries), Pair::of)
-            .flatMap(retryPair -> RxRetry.checkRetriesObservable(retryPair,
-                                                                     delayInMillis,
-                                                                     TimeUnit.MILLISECONDS,
-                                                                     noOfRetries));
+            .compose(obs -> RxUtil.retryComposer(obs,
+                                                 noOfRetries,
+                                                 delayInMillis,
+                                                 TimeUnit.MILLISECONDS));
     }
 
     private final Observable<? extends Throwable> filterCallErrorType(final Throwable error) {

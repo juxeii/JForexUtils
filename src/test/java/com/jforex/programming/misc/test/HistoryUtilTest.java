@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -74,7 +73,7 @@ public class HistoryUtilTest extends QuoteProviderForTest {
             .lastestTickObservable(instrumentEURUSD)
             .subscribe(tickSubscriber);
 
-        RxTestUtil.advanceTimeBy(5000L, TimeUnit.MILLISECONDS);
+        RxTestUtil.advanceTimeInMillisBy(5000L);
 
         verify(historyMock, times(4)).getLastTick(instrumentEURUSD);
         assertTickSubscriber();
@@ -124,7 +123,7 @@ public class HistoryUtilTest extends QuoteProviderForTest {
             .latestBarObservable(askBarEURUSDParams)
             .subscribe(barSubscriber);
 
-        RxTestUtil.advanceTimeBy(5000L, TimeUnit.MILLISECONDS);
+        RxTestUtil.advanceTimeInMillisBy(5000L);
 
         verify(historyMock, times(4)).getBar(instrumentEURUSD,
                                              barQuotePeriod,

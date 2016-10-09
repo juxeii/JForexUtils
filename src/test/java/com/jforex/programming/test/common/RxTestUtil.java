@@ -22,4 +22,8 @@ public final class RxTestUtil {
                                            final TimeUnit timeUnit) {
         testScheduler.advanceTimeBy(delayTime, timeUnit);
     }
+
+    public static final void advanceTimeInMillisBy(final long delayTime) {
+        advanceTimeBy(delayTime, TimeUnit.MILLISECONDS);
+    }
 }
