@@ -9,7 +9,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.misc.StreamUtil;
+import com.jforex.programming.misc.RxRetryUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 
@@ -50,11 +50,11 @@ public class OrderTaskRetry {
     private final Observable<Long> retryOnReject(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
             .flatMap(this::filterCallErrorType)
-            .zipWith(Observable.range(1, noOfRetries + 1), Pair::of)
-            .flatMap(retryPair -> StreamUtil.evaluateRetryPair(retryPair,
-                                                               delayInMillis,
-                                                               TimeUnit.MILLISECONDS,
-                                                               noOfRetries));
+            .zipWith(RxRetryUtil.counterObservable(noOfRetries), Pair::of)
+            .flatMap(retryPair -> RxRetryUtil.checkRetriesObservable(retryPair,
+                                                                     delayInMillis,
+                                                                     TimeUnit.MILLISECONDS,
+                                                                     noOfRetries));
     }
 
     private final Observable<? extends Throwable> filterCallErrorType(final Throwable error) {
