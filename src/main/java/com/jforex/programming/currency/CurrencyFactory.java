@@ -47,13 +47,17 @@ public final class CurrencyFactory {
     }
 
     public static final Optional<ICurrency> maybeFromName(final String currencyName) {
-        return CurrencyUtil.isNameValid(checkNotNull(currencyName))
+        checkNotNull(currencyName);
+
+        return CurrencyUtil.isNameValid(currencyName)
                 ? Optional.of(instanceFromName(currencyName))
                 : Optional.empty();
     }
 
     public static final Set<ICurrency> fromNames(final Collection<String> currencyNames) {
-        return checkNotNull(currencyNames)
+        checkNotNull(currencyNames);
+
+        return currencyNames
             .stream()
             .map(CurrencyFactory::maybeFromName)
             .filter(Optional::isPresent)
@@ -62,7 +66,9 @@ public final class CurrencyFactory {
     }
 
     public static final Set<ICurrency> fromNames(final String... currencyNames) {
-        return fromNames(asList(checkNotNull(currencyNames)));
+        checkNotNull(currencyNames);
+
+        return fromNames(asList(currencyNames));
     }
 
     public static final Set<ICurrency> fromInstrument(final Instrument instrument) {
@@ -73,7 +79,9 @@ public final class CurrencyFactory {
     }
 
     public static final Set<ICurrency> fromInstruments(final Collection<Instrument> instruments) {
-        return checkNotNull(instruments)
+        checkNotNull(instruments);
+
+        return instruments
             .stream()
             .map(CurrencyFactory::fromInstrument)
             .flatMap(Set::stream)
@@ -81,7 +89,9 @@ public final class CurrencyFactory {
     }
 
     public static final Set<ICurrency> fromInstruments(final Instrument... instruments) {
-        return fromInstruments(asList(checkNotNull(instruments)));
+        checkNotNull(instruments);
+
+        return fromInstruments(asList(instruments));
     }
 
     private static final ICurrency instanceFromName(final String currencyName) {

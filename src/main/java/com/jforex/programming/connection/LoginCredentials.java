@@ -18,15 +18,16 @@ public final class LoginCredentials {
         this.jnlpAddress = checkNotNull(jnlpAddress);
         this.username = checkNotNull(username);
         this.password = checkNotNull(password);
-        maybePin = checkNotNull(pin).isEmpty()
-                ? Optional.empty()
-                : Optional.of(pin);
+        maybePin = Optional.ofNullable(pin);
     }
 
     public LoginCredentials(final String jnlpAddress,
                             final String username,
                             final String password) {
-        this(jnlpAddress, username, password, "");
+        this(jnlpAddress,
+             username,
+             password,
+             null);
     }
 
     public final String jnlpAddress() {
