@@ -3,7 +3,6 @@ package com.jforex.programming.order.command;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -18,7 +17,7 @@ public class ClosePositionCommand {
     private final OrderEventTransformer closeFilledComposer;
     private final OrderEventTransformer closeOpenedComposer;
     private final OrderEventTransformer closeAllComposer;
-    private final Function<IOrder, OrderEventTransformer> singleCloseComposer;
+    private final OrderToEventTransformer singleCloseComposer;
     private final Optional<MergeCommand> maybeMergeCommand;
     private final BatchMode closeBatchMode;
 
@@ -106,7 +105,7 @@ public class ClosePositionCommand {
                 upstream -> upstream;
         private OrderEventTransformer closeAllComposer =
                 upstream -> upstream;
-        private Function<IOrder, OrderEventTransformer> singleCloseComposer =
+        private OrderToEventTransformer singleCloseComposer =
                 order -> upstream -> upstream;
         private Optional<MergeCommand> maybeMergeCommand = Optional.empty();
         private BatchMode closeBatchMode;
