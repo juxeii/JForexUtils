@@ -33,7 +33,7 @@ public class OrderCancelSLAndTP {
         final Observable<OrderEvent> cancelTP = orderCancelTP.observe(toCancelSLTPOrders, command);
 
         return arrangeObservables(cancelSL, cancelTP, command.executionMode())
-            .compose(command.cancelSLTPCompose());
+            .compose(command.cancelSLTPComposer());
     }
 
     private Observable<OrderEvent> arrangeObservables(final Observable<OrderEvent> cancelSL,

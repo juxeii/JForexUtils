@@ -40,12 +40,13 @@ public class OrderBasicTask {
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
-        return Observable.defer(() -> toMergeOrders.size() < 2
-                ? Observable.empty()
-                : orderTaskExecutor
-                    .mergeOrders(mergeOrderLabel, toMergeOrders)
-                    .toObservable()
-                    .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE)));
+        return Observable
+            .just(toMergeOrders)
+            .filter(orders -> orders.size() >= 2)
+            .flatMap(orders -> orderTaskExecutor
+                .mergeOrders(mergeOrderLabel, orders)
+                .toObservable()
+                .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE)));
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {

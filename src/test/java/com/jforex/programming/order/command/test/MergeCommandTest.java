@@ -55,12 +55,12 @@ public class MergeCommandTest extends InstrumentUtilForTest {
         assertThat(mergeCommand.executionMode(), equalTo(MergeExecutionMode.MergeCancelSLAndTP));
         assertThat(mergeCommand.orderCancelSLMode(), equalTo(BatchMode.MERGE));
         assertThat(mergeCommand.orderCancelTPMode(), equalTo(BatchMode.MERGE));
-        assertComposerIsNeutral(mergeCommand.cancelSLTPCompose());
-        assertComposerIsNeutral(mergeCommand.cancelSLCompose());
-        assertComposerIsNeutral(mergeCommand.cancelTPCompose());
+        assertComposerIsNeutral(mergeCommand.cancelSLTPComposer());
+        assertComposerIsNeutral(mergeCommand.cancelSLComposer());
+        assertComposerIsNeutral(mergeCommand.cancelTPComposer());
         assertComposerIsNeutral(mergeCommand.orderCancelSLComposer(buyOrderEURUSD));
         assertComposerIsNeutral(mergeCommand.orderCancelTPComposer(buyOrderEURUSD));
-        assertComposerIsNeutral(mergeCommand.mergeCompose());
+        assertComposerIsNeutral(mergeCommand.mergeComposer());
     }
 
     @Test
@@ -87,11 +87,11 @@ public class MergeCommandTest extends InstrumentUtilForTest {
         assertThat(mergeCommand.executionMode(), equalTo(MergeExecutionMode.ConcatCancelSLAndTP));
         assertThat(mergeCommand.orderCancelSLMode(), equalTo(BatchMode.MERGE));
         assertThat(mergeCommand.orderCancelTPMode(), equalTo(BatchMode.CONCAT));
-        assertComposerEmitsComposerEvent(mergeCommand.cancelSLTPCompose());
-        assertComposerEmitsComposerEvent(mergeCommand.cancelSLCompose());
-        assertComposerEmitsComposerEvent(mergeCommand.cancelTPCompose());
+        assertComposerEmitsComposerEvent(mergeCommand.cancelSLTPComposer());
+        assertComposerEmitsComposerEvent(mergeCommand.cancelSLComposer());
+        assertComposerEmitsComposerEvent(mergeCommand.cancelTPComposer());
         assertComposerEmitsComposerEvent(mergeCommand.orderCancelSLComposer(buyOrderEURUSD));
         assertComposerEmitsComposerEvent(mergeCommand.orderCancelTPComposer(buyOrderEURUSD));
-        assertComposerEmitsComposerEvent(mergeCommand.mergeCompose());
+        assertComposerEmitsComposerEvent(mergeCommand.mergeComposer());
     }
 }

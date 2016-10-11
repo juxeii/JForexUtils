@@ -85,7 +85,7 @@ public class OrderCancelSLAndTPTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(mergeCommandMock.cancelSLTPCompose())
+            when(mergeCommandMock.cancelSLTPComposer())
                 .thenReturn(testComposer);
         }
 

@@ -49,7 +49,7 @@ public class MergeCommandHandlerTest extends InstrumentUtilForTest {
 
     private void setUpMocks() {
         when(mergeCommandMock.mergeOrderLabel()).thenReturn(mergeOrderLabel);
-        when(mergeCommandMock.mergeCompose()).thenReturn(testComposer);
+        when(mergeCommandMock.mergeComposer()).thenReturn(testComposer);
 
         when(orderCancelSLAndTPMock.observe(toMergeOrders, mergeCommandMock))
             .thenReturn(eventObservable(testEvent));

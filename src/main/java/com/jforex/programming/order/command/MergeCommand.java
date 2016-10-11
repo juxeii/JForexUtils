@@ -22,20 +22,20 @@ public class MergeCommand {
 
     public interface MergeOption {
 
-        public CancelSLAndTPOption composeCancelSLAndTP(OrderEventTransformer cancelSLTPCompose);
+        public CancelSLAndTPOption composeCancelSLAndTP(OrderEventTransformer cancelSLTPComposer);
 
-        public MergeOption composeMerge(OrderEventTransformer mergeCompose);
+        public MergeOption composeMerge(OrderEventTransformer mergeComposer);
 
         public MergeCommand build();
     }
 
     public interface CancelSLAndTPOption {
 
-        public CancelSLAndTPOption composeCancelSL(OrderEventTransformer cancelSLCompose);
+        public CancelSLAndTPOption composeCancelSL(OrderEventTransformer cancelSLComposer);
 
-        public CancelSLAndTPOption composeCancelTP(OrderEventTransformer cancelTPCompose);
+        public CancelSLAndTPOption composeCancelTP(OrderEventTransformer cancelTPComposer);
 
-        public CancelSLAndTPOption composeOrderCancelSL(OrderToEventTransformer singleCancelSLCompose,
+        public CancelSLAndTPOption composeOrderCancelSL(OrderToEventTransformer singleCancelSLComposer,
                                                         BatchMode batchMode);
 
         public CancelSLAndTPOption composeOrderCancelTP(OrderToEventTransformer orderCancelTPComposer,
@@ -63,15 +63,15 @@ public class MergeCommand {
         return mergeOrderLabel;
     }
 
-    public OrderEventTransformer cancelSLTPCompose() {
+    public OrderEventTransformer cancelSLTPComposer() {
         return cancelSLTPComposer;
     }
 
-    public OrderEventTransformer cancelSLCompose() {
+    public OrderEventTransformer cancelSLComposer() {
         return cancelSLComposer;
     }
 
-    public OrderEventTransformer cancelTPCompose() {
+    public OrderEventTransformer cancelTPComposer() {
         return cancelTPComposer;
     }
 
@@ -83,7 +83,7 @@ public class MergeCommand {
         return orderCancelTPComposer.apply(order);
     }
 
-    public OrderEventTransformer mergeCompose() {
+    public OrderEventTransformer mergeComposer() {
         return mergeComposer;
     }
 
@@ -100,7 +100,9 @@ public class MergeCommand {
     }
 
     public static MergeOption newBuilder(final String mergeOrderLabel) {
-        return new Builder(checkNotNull(mergeOrderLabel));
+        checkNotNull(mergeOrderLabel);
+
+        return new Builder(mergeOrderLabel);
     }
 
     public static class Builder implements

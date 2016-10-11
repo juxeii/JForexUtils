@@ -29,6 +29,6 @@ public class MergeCommandHandler {
                                                final MergeCommand command) {
         return orderBasicTask
             .mergeOrders(command.mergeOrderLabel(), toMergeOrders)
-            .compose(command.mergeCompose());
+            .compose(command.mergeComposer());
     }
 }
