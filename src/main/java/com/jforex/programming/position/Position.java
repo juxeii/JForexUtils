@@ -2,8 +2,6 @@ package com.jforex.programming.position;
 
 import static com.jforex.programming.order.OrderStaticUtil.isCanceled;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
-import static com.jforex.programming.order.OrderStaticUtil.isFilled;
-import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.event.OrderEventTypeSets.createEvents;
 import static java.util.stream.Collectors.toSet;
 
@@ -18,8 +16,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
-import com.jforex.programming.order.OrderDirection;
-import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
@@ -87,19 +83,6 @@ public class Position implements PositionOrders {
     }
 
     @Override
-    public OrderDirection direction() {
-        return OrderStaticUtil.combinedDirection(filter(isFilled));
-    }
-
-    @Override
-    public double signedExposure() {
-        return filter(isFilled)
-            .stream()
-            .mapToDouble(OrderStaticUtil::signedAmount)
-            .sum();
-    }
-
-    @Override
     public Set<IOrder> all() {
         return ImmutableSet.copyOf(orderRepository.keySet());
     }
@@ -111,20 +94,5 @@ public class Position implements PositionOrders {
             .stream()
             .filter(orderPredicate)
             .collect(toSet());
-    }
-
-    @Override
-    public Set<IOrder> filled() {
-        return filter(isFilled);
-    }
-
-    @Override
-    public Set<IOrder> opened() {
-        return filter(isOpened);
-    }
-
-    @Override
-    public Set<IOrder> filledOrOpened() {
-        return filter(isFilled.or(isOpened));
     }
 }
