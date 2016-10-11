@@ -186,6 +186,8 @@ public class PositionTest extends InstrumentUtilForTest {
                     orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.FILLED);
 
                     sendOrderEvent(sellOrderEURUSD, OrderEventType.SUBMIT_OK);
+
+                    logger.info(position.toString());
                 }
 
                 @Test

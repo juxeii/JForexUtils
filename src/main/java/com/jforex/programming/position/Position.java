@@ -95,4 +95,12 @@ public class Position implements PositionOrders {
             .filter(orderPredicate)
             .collect(toSet());
     }
+
+    @Override
+    public String toString() {
+        return "Position for " + instrument + " contains " + size() + " orders: \r\n"
+                + "Filled orders: " + filled().toString() + "\r\n"
+                + "Opened orders: " + opened().toString() + "\r\n"
+                + "Signed exposure: " + signedExposure();
+    }
 }
