@@ -51,6 +51,7 @@ public class StrategyThreadTaskTest extends CommonUtilForTest {
         when(callableMock.call()).thenReturn(buyOrderEURUSD);
 
         when(futureMock.get()).thenReturn(buyOrderEURUSD);
+        when(futureVoidMock.get()).thenReturn(1L);
 
         when(contextMock.executeTask(callableMock)).thenReturn(futureMock);
     }

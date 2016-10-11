@@ -17,21 +17,15 @@ public class StrategyThreadTask {
     }
 
     public Completable execute(final Action action) {
-        return JForexUtil.isStrategyThread()
-                ? Completable.fromAction(action)
-                : Completable.defer(() -> Completable.fromFuture(context.executeTask(actionToCallable(action))));
+        return execute(() -> {
+            action.run();
+            return 1L;
+        }).toCompletable();
     }
 
     public <T> Single<T> execute(final Callable<T> callable) {
         return JForexUtil.isStrategyThread()
                 ? Single.fromCallable(callable)
                 : Single.defer(() -> Single.fromFuture(context.executeTask(callable)));
-    }
-
-    private final Callable<Void> actionToCallable(final Action action) {
-        return () -> {
-            action.run();
-            return null;
-        };
     }
 }
