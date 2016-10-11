@@ -13,6 +13,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.OrderChangeBatch;
+import com.jforex.programming.order.OrderEventTransformer;
 import com.jforex.programming.order.OrderMergeTask;
 import com.jforex.programming.order.command.CloseExecutionMode;
 import com.jforex.programming.order.command.ClosePositionCommand;
@@ -24,7 +25,6 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -48,7 +48,7 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
     private final Set<IOrder> allOrders = Sets.newHashSet(sellOrderEURUSD);
     private final OrderEvent testEvent = closeEvent;
     private final OrderEvent composerEvent = changedLabelEvent;
-    private final ObservableTransformer<OrderEvent, OrderEvent> testComposer =
+    private final OrderEventTransformer testComposer =
             upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
 
     @Before

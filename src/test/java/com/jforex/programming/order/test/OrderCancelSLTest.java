@@ -12,13 +12,13 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.OrderCancelSL;
 import com.jforex.programming.order.OrderChangeBatch;
+import com.jforex.programming.order.OrderEventTransformer;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -31,7 +31,7 @@ public class OrderCancelSLTest extends InstrumentUtilForTest {
     @Mock
     private MergeCommand mergeCommandMock;
     @Mock
-    private ObservableTransformer<OrderEvent, OrderEvent> orderCancelSLComposerMock;
+    private OrderEventTransformer orderCancelSLComposerMock;
     private final Set<IOrder> toCancelSLOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Before

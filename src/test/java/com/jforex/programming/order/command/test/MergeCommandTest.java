@@ -3,12 +3,11 @@ package com.jforex.programming.order.command.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.function.Function;
-
 import org.junit.Test;
 
-import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.BatchMode;
+import com.jforex.programming.order.OrderEventTransformer;
+import com.jforex.programming.order.OrderToEventTransformer;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
@@ -66,13 +65,11 @@ public class MergeCommandTest extends InstrumentUtilForTest {
 
     @Test
     public void definedValuesAreCorrect() throws Exception {
-        final ObservableTransformer<OrderEvent, OrderEvent> testComposer =
+        final OrderEventTransformer testComposer =
                 upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
-        final Function<IOrder,
-                       ObservableTransformer<OrderEvent,
-                                             OrderEvent>> testOrderComposer =
-                                                     order -> upstream -> upstream
-                                                         .flatMap(orderEvent -> Observable.just(composerEvent));
+        final OrderToEventTransformer testOrderComposer =
+                order -> upstream -> upstream
+                    .flatMap(orderEvent -> Observable.just(composerEvent));
 
         mergeCommand = MergeCommand
             .newBuilder(mergeOrderLabel)

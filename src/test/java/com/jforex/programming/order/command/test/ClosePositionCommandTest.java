@@ -5,13 +5,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import java.util.function.Function;
-
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.BatchMode;
+import com.jforex.programming.order.OrderEventTransformer;
+import com.jforex.programming.order.OrderToEventTransformer;
 import com.jforex.programming.order.command.CloseExecutionMode;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.MergeCommand;
@@ -30,13 +29,11 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
     private MergeCommand mergeCommandMock;
     private final OrderEvent testEvent = closeEvent;
     private final OrderEvent composerEvent = changedLabelEvent;
-    private final ObservableTransformer<OrderEvent, OrderEvent> testComposer =
+    private final OrderEventTransformer testComposer =
             upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
-    private final Function<IOrder,
-                           ObservableTransformer<OrderEvent,
-                                                 OrderEvent>> testOrderComposer =
-                                                         order -> upstream -> upstream
-                                                             .flatMap(orderEvent -> Observable.just(composerEvent));
+    private final OrderToEventTransformer testOrderComposer =
+            order -> upstream -> upstream
+                .flatMap(orderEvent -> Observable.just(composerEvent));
 
     private void assertComposerIsNeutral(final ObservableTransformer<OrderEvent,
                                                                      OrderEvent> composer) {

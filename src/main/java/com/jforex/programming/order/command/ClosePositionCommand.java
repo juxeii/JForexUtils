@@ -8,37 +8,31 @@ import java.util.function.Function;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.BatchMode;
-import com.jforex.programming.order.event.OrderEvent;
-
-import io.reactivex.ObservableTransformer;
+import com.jforex.programming.order.OrderEventTransformer;
+import com.jforex.programming.order.OrderToEventTransformer;
 
 public class ClosePositionCommand {
 
     private final Instrument instrument;
     private final CloseExecutionMode executionMode;
-    private final ObservableTransformer<OrderEvent, OrderEvent> closeFilledComposer;
-    private final ObservableTransformer<OrderEvent, OrderEvent> closeOpenedComposer;
-    private final ObservableTransformer<OrderEvent, OrderEvent> closeAllComposer;
-    private final Function<IOrder, ObservableTransformer<OrderEvent, OrderEvent>> singleCloseComposer;
+    private final OrderEventTransformer closeFilledComposer;
+    private final OrderEventTransformer closeOpenedComposer;
+    private final OrderEventTransformer closeAllComposer;
+    private final Function<IOrder, OrderEventTransformer> singleCloseComposer;
     private final Optional<MergeCommand> maybeMergeCommand;
     private final BatchMode closeBatchMode;
 
     public interface CloseOption {
 
-        public CloseOption singleCloseComposer(Function<IOrder,
-                                                        ObservableTransformer<OrderEvent,
-                                                                              OrderEvent>> singleCloseComposer);
+        public CloseOption singleCloseComposer(OrderToEventTransformer singleCloseComposer);
 
-        public MergeForCloseOption closeFilledComposer(ObservableTransformer<OrderEvent,
-                                                                             OrderEvent> closeFilledComposer,
+        public MergeForCloseOption closeFilledComposer(OrderEventTransformer closeFilledComposer,
                                                        BatchMode batchMode);
 
-        public BuildOption closeOpenedComposer(ObservableTransformer<OrderEvent,
-                                                                     OrderEvent> closeOpenedComposer,
+        public BuildOption closeOpenedComposer(OrderEventTransformer closeOpenedComposer,
                                                BatchMode batchMode);
 
-        public MergeForCloseOption closeAllComposer(ObservableTransformer<OrderEvent,
-                                                                          OrderEvent> closeAllComposer,
+        public MergeForCloseOption closeAllComposer(OrderEventTransformer closeAllComposer,
                                                     BatchMode batchMode);
     }
 
@@ -75,19 +69,19 @@ public class ClosePositionCommand {
         return executionMode;
     }
 
-    public ObservableTransformer<OrderEvent, OrderEvent> closeFilledComposer() {
+    public OrderEventTransformer closeFilledComposer() {
         return closeFilledComposer;
     }
 
-    public ObservableTransformer<OrderEvent, OrderEvent> closeOpenedComposer() {
+    public OrderEventTransformer closeOpenedComposer() {
         return closeOpenedComposer;
     }
 
-    public ObservableTransformer<OrderEvent, OrderEvent> closeAllComposer() {
+    public OrderEventTransformer closeAllComposer() {
         return closeAllComposer;
     }
 
-    public ObservableTransformer<OrderEvent, OrderEvent> singleCloseComposer(final IOrder orderToClose) {
+    public OrderEventTransformer singleCloseComposer(final IOrder orderToClose) {
         return singleCloseComposer.apply(orderToClose);
     }
 
@@ -106,13 +100,13 @@ public class ClosePositionCommand {
 
         private final Instrument instrument;
         private CloseExecutionMode executionMode;
-        private ObservableTransformer<OrderEvent, OrderEvent> closeFilledComposer =
+        private OrderEventTransformer closeFilledComposer =
                 upstream -> upstream;
-        private ObservableTransformer<OrderEvent, OrderEvent> closeOpenedComposer =
+        private OrderEventTransformer closeOpenedComposer =
                 upstream -> upstream;
-        private ObservableTransformer<OrderEvent, OrderEvent> closeAllComposer =
+        private OrderEventTransformer closeAllComposer =
                 upstream -> upstream;
-        private Function<IOrder, ObservableTransformer<OrderEvent, OrderEvent>> singleCloseComposer =
+        private Function<IOrder, OrderEventTransformer> singleCloseComposer =
                 order -> upstream -> upstream;
         private Optional<MergeCommand> maybeMergeCommand = Optional.empty();
         private BatchMode closeBatchMode;
@@ -122,16 +116,13 @@ public class ClosePositionCommand {
         }
 
         @Override
-        public CloseOption singleCloseComposer(final Function<IOrder,
-                                                              ObservableTransformer<OrderEvent,
-                                                                                    OrderEvent>> singleCloseComposer) {
+        public CloseOption singleCloseComposer(final OrderToEventTransformer singleCloseComposer) {
             this.singleCloseComposer = checkNotNull(singleCloseComposer);
             return this;
         }
 
         @Override
-        public MergeForCloseOption closeFilledComposer(final ObservableTransformer<OrderEvent,
-                                                                                   OrderEvent> closeFilledComposer,
+        public MergeForCloseOption closeFilledComposer(final OrderEventTransformer closeFilledComposer,
                                                        final BatchMode batchMode) {
             this.executionMode = CloseExecutionMode.CloseFilled;
             this.closeFilledComposer = checkNotNull(closeFilledComposer);
@@ -140,8 +131,7 @@ public class ClosePositionCommand {
         }
 
         @Override
-        public BuildOption closeOpenedComposer(final ObservableTransformer<OrderEvent,
-                                                                           OrderEvent> closeOpenedComposer,
+        public BuildOption closeOpenedComposer(final OrderEventTransformer closeOpenedComposer,
                                                final BatchMode batchMode) {
             this.executionMode = CloseExecutionMode.CloseOpened;
             this.closeOpenedComposer = checkNotNull(closeOpenedComposer);
@@ -150,8 +140,7 @@ public class ClosePositionCommand {
         }
 
         @Override
-        public MergeForCloseOption closeAllComposer(final ObservableTransformer<OrderEvent,
-                                                                                OrderEvent> closeAllComposer,
+        public MergeForCloseOption closeAllComposer(final OrderEventTransformer closeAllComposer,
                                                     final BatchMode batchMode) {
             this.executionMode = CloseExecutionMode.CloseAll;
             this.closeAllComposer = checkNotNull(closeAllComposer);

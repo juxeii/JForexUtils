@@ -12,6 +12,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderCancelSL;
 import com.jforex.programming.order.OrderCancelSLAndTP;
 import com.jforex.programming.order.OrderCancelTP;
+import com.jforex.programming.order.OrderEventTransformer;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
@@ -19,7 +20,6 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -37,7 +37,7 @@ public class OrderCancelSLAndTPTest extends InstrumentUtilForTest {
     private final Set<IOrder> toCancelSLTPOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = mergeEvent;
     private final OrderEvent composerEvent = closeEvent;
-    private final ObservableTransformer<OrderEvent, OrderEvent> testComposer =
+    private final OrderEventTransformer testComposer =
             upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
 
     @Before

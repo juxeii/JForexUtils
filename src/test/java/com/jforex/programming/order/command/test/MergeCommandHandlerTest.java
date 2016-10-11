@@ -11,6 +11,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderBasicTask;
 import com.jforex.programming.order.OrderCancelSLAndTP;
+import com.jforex.programming.order.OrderEventTransformer;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergeCommandHandler;
 import com.jforex.programming.order.event.OrderEvent;
@@ -18,7 +19,6 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -37,7 +37,7 @@ public class MergeCommandHandlerTest extends InstrumentUtilForTest {
     private final String mergeOrderLabel = "mergeOrderLabel";
     private final OrderEvent testEvent = closeEvent;
     private final OrderEvent composerEvent = changedLabelEvent;
-    private final ObservableTransformer<OrderEvent, OrderEvent> testComposer =
+    private final OrderEventTransformer testComposer =
             upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
 
     @Before
