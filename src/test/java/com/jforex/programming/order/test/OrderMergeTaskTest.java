@@ -14,8 +14,8 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderMergeTask;
+import com.jforex.programming.order.SplitCancelSLTPAndMerge;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.MergeCommandHandler;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -31,7 +31,7 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
     private OrderMergeTask orderMergeTask;
 
     @Mock
-    private MergeCommandHandler commandHandlerMock;
+    private SplitCancelSLTPAndMerge splitterMock;
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
@@ -47,7 +47,7 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        orderMergeTask = new OrderMergeTask(commandHandlerMock, positionUtilMock);
+        orderMergeTask = new OrderMergeTask(splitterMock, positionUtilMock);
     }
 
     private void setUpMocks() {
@@ -55,12 +55,9 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
             .thenReturn(toMergeOrders);
     }
 
-    private void setUpCommandObservables(final Observable<OrderEvent> cancelSLTPObservable,
-                                         final Observable<OrderEvent> mergeObservable) {
-        when(commandHandlerMock.observeCancelSLTP(toMergeOrders, mergeCommandMock))
-            .thenReturn(cancelSLTPObservable);
-        when(commandHandlerMock.observeMerge(toMergeOrders, mergeCommandMock))
-            .thenReturn(mergeObservable);
+    private void setUpSplitterObservable(final Observable<OrderEvent> splitterObservable) {
+        when(splitterMock.observe(toMergeOrders, mergeCommandMock))
+            .thenReturn(splitterObservable);
     }
 
     public class MergeCallSetup {
@@ -72,18 +69,19 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void callIsDeferred() {
-            verifyZeroInteractions(commandHandlerMock);
+            verifyZeroInteractions(splitterMock);
             verifyZeroInteractions(positionUtilMock);
         }
 
         @Test
-        public void cancelSLTPAndMergeAreConcatenated() {
-            setUpCommandObservables(neverObservable(), eventObservable(testEvent));
+        public void splitterMockIsCalledCorrect() {
+            setUpSplitterObservable(eventObservable(testEvent));
 
             testObservable
                 .test()
-                .assertNotComplete()
-                .assertNoValues();
+                .assertValue(testEvent);
+
+            verify(splitterMock).observe(toMergeOrders, mergeCommandMock);
         }
     }
 
@@ -96,18 +94,20 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void mergePositionCallIsDeferred() {
-            verifyZeroInteractions(commandHandlerMock);
+            verifyZeroInteractions(splitterMock);
             verifyZeroInteractions(positionUtilMock);
         }
 
         @Test
-        public void cancelSLTPAndMergeAreConcatenated() {
-            setUpCommandObservables(neverObservable(), eventObservable(testEvent));
+        public void splitterMockIsCalledCorrect() {
+            setUpSplitterObservable(eventObservable(testEvent));
 
             testObservable
                 .test()
-                .assertNotComplete()
-                .assertNoValues();
+                .assertValue(testEvent);
+
+            verify(splitterMock).observe(toMergeOrders, mergeCommandMock);
+            verify(positionUtilMock).filledOrders(instrumentEURUSD);
         }
     }
 
@@ -138,7 +138,7 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void mergePositionCallIsDeferred() {
-            verifyZeroInteractions(commandHandlerMock);
+            verifyZeroInteractions(splitterMock);
             verifyZeroInteractions(positionUtilMock);
         }
 
@@ -150,12 +150,11 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
                 .subscribe())
                     .when(positionUtilMock).observablesFromFactory(any());
 
-            setUpCommandObservables(emptyObservable(), emptyObservable());
+            setUpSplitterObservable(emptyObservable());
             mergeAllSubscribe();
 
             verify(commandFactoryMock).apply(instrumentEURUSD);
-            verify(commandHandlerMock).observeCancelSLTP(toMergeOrders, mergeCommandMock);
-            verify(commandHandlerMock).observeMerge(toMergeOrders, mergeCommandMock);
+            verify(splitterMock).observe(toMergeOrders, mergeCommandMock);
         }
 
         @Test

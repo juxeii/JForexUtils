@@ -27,7 +27,7 @@ public final class OrderEventTypeMapper {
                 .put(OrderCallReason.CHANGE_TP, OrderEventType.CHANGED_TP)
                 .build());
 
-    public static final Map<OrderCallReason, OrderEventType> changeRejectEventByReason =
+    public static final Map<OrderCallReason, OrderEventType> changeRejectEventByCallReason =
             Maps.immutableEnumMap(ImmutableMap.<OrderCallReason, OrderEventType> builder()
                 .put(OrderCallReason.CHANGE_AMOUNT, OrderEventType.CHANGE_AMOUNT_REJECTED)
                 .put(OrderCallReason.CHANGE_LABEL, OrderEventType.CHANGE_LABEL_REJECTED)
@@ -37,7 +37,7 @@ public final class OrderEventTypeMapper {
                 .put(OrderCallReason.CHANGE_TP, OrderEventType.CHANGE_TP_REJECTED)
                 .build());
 
-    private static final Map<IMessage.Reason, OrderEventType> orderEventByReason =
+    private static final Map<IMessage.Reason, OrderEventType> orderEventByMessageReason =
             Maps.immutableEnumMap(ImmutableMap.<IMessage.Reason, OrderEventType> builder()
                 .put(IMessage.Reason.ORDER_FULLY_FILLED, OrderEventType.FULLY_FILLED)
                 .put(IMessage.Reason.ORDER_CLOSED_BY_MERGE, OrderEventType.CLOSED_BY_MERGE)
@@ -66,7 +66,7 @@ public final class OrderEventTypeMapper {
                     ? OrderEventType.PARTIAL_FILL_OK
                     : OrderEventType.FULLY_FILLED;
 
-    private static final Map<IMessage.Type, Function<IOrder, OrderEventType>> orderEventByType =
+    private static final Map<IMessage.Type, Function<IOrder, OrderEventType>> orderEventByMessageType =
             Maps.immutableEnumMap(ImmutableMap.<IMessage.Type, Function<IOrder, OrderEventType>> builder()
                 .put(IMessage.Type.NOTIFICATION,
                      order -> OrderEventType.NOTIFICATION)
@@ -92,16 +92,18 @@ public final class OrderEventTypeMapper {
                      order -> OrderEventType.MERGE_REJECTED)
                 .build());
 
-    public static final OrderEventType byMessageType(final IMessage.Type type,
+    public static final OrderEventType byMessageType(final IMessage.Type messageType,
                                                      final IOrder order) {
-        return orderEventByType.get(type).apply(order);
+        return orderEventByMessageType
+            .get(messageType)
+            .apply(order);
     }
 
-    public static final OrderEventType byMessageReason(final IMessage.Reason reason) {
-        return orderEventByReason.get(reason);
+    public static final OrderEventType byMessageReason(final IMessage.Reason messageReason) {
+        return orderEventByMessageReason.get(messageReason);
     }
 
     public static final OrderEventType byChangeCallReason(final OrderCallReason orderCallReason) {
-        return changeRejectEventByReason.get(orderCallReason);
+        return changeRejectEventByCallReason.get(orderCallReason);
     }
 }

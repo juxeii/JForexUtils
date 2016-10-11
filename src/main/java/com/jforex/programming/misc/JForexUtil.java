@@ -28,6 +28,7 @@ import com.jforex.programming.order.OrderMergeTask;
 import com.jforex.programming.order.OrderTaskExecutor;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
+import com.jforex.programming.order.SplitCancelSLTPAndMerge;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.command.ClosePositionCommandHandler;
 import com.jforex.programming.order.command.MergeCommandHandler;
@@ -72,6 +73,7 @@ public class JForexUtil {
     private OrderCloseTask orderCloseTask;
     private MergeCommandHandler mergeCommandHandler;
     private ClosePositionCommandHandler closePositionCommandHandler;
+    private SplitCancelSLTPAndMerge cancelAndMergeSplitter;
     private OrderCancelSLAndTP orderCancelSLAndTP;
     private OrderCancelSL orderCancelSL;
     private OrderCancelTP orderCancelTP;
@@ -138,7 +140,8 @@ public class JForexUtil {
         orderCancelTP = new OrderCancelTP(orderChangeBatch);
         orderCancelSLAndTP = new OrderCancelSLAndTP(orderCancelSL, orderCancelTP);
         mergeCommandHandler = new MergeCommandHandler(orderCancelSLAndTP, orderBasicTask);
-        orderMergeTask = new OrderMergeTask(mergeCommandHandler, positionUtil);
+        cancelAndMergeSplitter = new SplitCancelSLTPAndMerge(mergeCommandHandler);
+        orderMergeTask = new OrderMergeTask(cancelAndMergeSplitter, positionUtil);
         closePositionCommandHandler = new ClosePositionCommandHandler(orderMergeTask,
                                                                       orderChangeBatch,
                                                                       positionUtil);
