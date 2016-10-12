@@ -67,7 +67,9 @@ public final class InstrumentUtil {
     }
 
     public final IBar barQuote(final BarParams barParams) {
-        return barQuoteProvider.bar(checkNotNull(barParams));
+        checkNotNull(barParams);
+
+        return barQuoteProvider.bar(barParams);
     }
 
     public final double spread() {
@@ -165,32 +167,42 @@ public final class InstrumentUtil {
     }
 
     public static final String toStringNoSeparator(final Instrument instrument) {
-        return checkNotNull(instrument)
+        checkNotNull(instrument);
+
+        return instrument
             .getPrimaryJFCurrency()
             .toString()
             .concat(instrument.getSecondaryJFCurrency().toString());
     }
 
     public static final Currency baseJavaCurrency(final Instrument instrument) {
-        return checkNotNull(instrument)
+        checkNotNull(instrument);
+
+        return instrument
             .getPrimaryJFCurrency()
             .getJavaCurrency();
     }
 
     public static final Currency quoteJavaCurrency(final Instrument instrument) {
-        return checkNotNull(instrument)
+        checkNotNull(instrument);
+
+        return instrument
             .getSecondaryJFCurrency()
             .getJavaCurrency();
     }
 
     public static final String baseCurrencyName(final Instrument instrument) {
-        return checkNotNull(instrument)
+        checkNotNull(instrument);
+
+        return instrument
             .getPrimaryJFCurrency()
             .getCurrencyCode();
     }
 
     public static final String quoteCurrencyName(final Instrument instrument) {
-        return checkNotNull(instrument)
+        checkNotNull(instrument);
+
+        return instrument
             .getSecondaryJFCurrency()
             .getCurrencyCode();
     }

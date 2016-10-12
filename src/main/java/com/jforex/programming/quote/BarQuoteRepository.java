@@ -22,12 +22,12 @@ public class BarQuoteRepository {
         barQuoteObservable.subscribe(this::onBarQuote);
     }
 
-    private void onBarQuote(final BarQuote barQuote) {
+    private final void onBarQuote(final BarQuote barQuote) {
         final MultiKey<Object> quoteKey = quoteKey(barQuote.barParams());
         barQuotes.put(quoteKey, barQuote);
     }
 
-    private MultiKey<Object> quoteKey(final BarParams barParams) {
+    private final MultiKey<Object> quoteKey(final BarParams barParams) {
         return new MultiKey<Object>(barParams.instrument(),
                                     barParams.period(),
                                     barParams.offerSide());
@@ -40,7 +40,7 @@ public class BarQuoteRepository {
                 : quoteFromHistory(barParams);
     }
 
-    private BarQuote quoteFromHistory(final BarParams barParams) {
+    private final BarQuote quoteFromHistory(final BarParams barParams) {
         final IBar historyBar = historyUtil
             .latestBarObservable(barParams)
             .blockingFirst();

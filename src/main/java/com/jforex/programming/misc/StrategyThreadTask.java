@@ -19,7 +19,7 @@ public class StrategyThreadTask {
     public Completable execute(final Action action) {
         return execute(() -> {
             action.run();
-            return 0;
+            return true;
         }).toCompletable();
     }
 

@@ -61,13 +61,17 @@ public final class BarParams {
 
         @Override
         public final AndOfferSide period(final Period period) {
-            this.period = checkNotNull(period);
+            checkNotNull(period);
+
+            this.period = period;
             return this;
         }
 
         @Override
         public final BarParams offerSide(final OfferSide offerSide) {
-            this.offerSide = checkNotNull(offerSide);
+            checkNotNull(offerSide);
+
+            this.offerSide = offerSide;
             return new BarParams(this);
         }
     }

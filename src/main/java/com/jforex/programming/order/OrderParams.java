@@ -137,7 +137,9 @@ public final class OrderParams implements Cloneable {
     }
 
     public static final WithOrderCommand forInstrument(final Instrument instrument) {
-        return new Builder(checkNotNull(instrument));
+        checkNotNull(instrument);
+
+        return new Builder(instrument);
     }
 
     private static class Builder implements
@@ -187,19 +189,25 @@ public final class OrderParams implements Cloneable {
 
         @Override
         public final Builder withLabel(final String label) {
-            this.label = checkNotNull(label);
+            checkNotNull(label);
+
+            this.label = label;
             return this;
         }
 
         @Override
         public final Builder forInstrument(final Instrument instrument) {
-            this.instrument = checkNotNull(instrument);
+            checkNotNull(instrument);
+
+            this.instrument = instrument;
             return this;
         }
 
         @Override
         public final Builder withOrderCommand(final OrderCommand orderCommand) {
-            this.orderCommand = checkNotNull(orderCommand);
+            checkNotNull(orderCommand);
+
+            this.orderCommand = orderCommand;
             return this;
         }
 
@@ -241,7 +249,9 @@ public final class OrderParams implements Cloneable {
 
         @Override
         public final Builder comment(final String comment) {
-            this.comment = checkNotNull(comment);
+            checkNotNull(comment);
+
+            this.comment = comment;
             return this;
         }
 
