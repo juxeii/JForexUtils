@@ -38,9 +38,12 @@ public class HistoryUtil {
     public Observable<TickQuote> tickQuotesObservable(final Set<Instrument> instruments) {
         return Observable
             .fromIterable(instruments)
-            .flatMap(this::lastestTickObservable)
-            .zipWith(instruments,
-                     (tick, instrument) -> new TickQuote(instrument, tick));
+            .flatMap(this::tickQuoteObservable);
+    }
+
+    private Observable<TickQuote> tickQuoteObservable(final Instrument instrument) {
+        return lastestTickObservable(instrument)
+            .flatMap(tick -> Observable.just(new TickQuote(instrument, tick)));
     }
 
     public Observable<ITick> lastestTickObservable(final Instrument instrument) {
@@ -48,8 +51,7 @@ public class HistoryUtil {
             .fromCallable(() -> latestHistoryTick(instrument))
             .doOnError(e -> logger.error(e.getMessage()
                     + "! Will retry latest tick from history now..."))
-            .retryWhen(this::retryOnHistoryFailObservable)
-            .take(1);
+            .retryWhen(this::retryOnHistoryFailObservable);
     }
 
     private ITick latestHistoryTick(final Instrument instrument) throws JFException {
@@ -69,8 +71,7 @@ public class HistoryUtil {
             .fromCallable(() -> latestHistoryBar(instrument, period, offerSide))
             .doOnError(e -> logger.error(e.getMessage()
                     + "! Will retry latest bar from history now..."))
-            .retryWhen(this::retryOnHistoryFailObservable)
-            .take(1);
+            .retryWhen(this::retryOnHistoryFailObservable);
     }
 
     private IBar latestHistoryBar(final Instrument instrument,

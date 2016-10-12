@@ -18,7 +18,7 @@ public class TickQuoteRepository {
                                final Set<Instrument> subscribedInstruments) {
         historyUtil
             .tickQuotesObservable(subscribedInstruments)
-            .subscribe(quote -> quotesByInstrument.put(quote.instrument(), quote));
+            .subscribe(this::onTickQuote);
 
         tickQuoteObservable.subscribe(this::onTickQuote);
     }
