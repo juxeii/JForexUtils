@@ -26,8 +26,8 @@ public final class CurrencyUtil {
         checkNotNull(currency);
         checkNotNull(instrument);
 
-        return equalsBaseCurrency(currency, instrument)
-                || equalsQuoteCurrency(currency, instrument);
+        return instrument.getPrimaryJFCurrency().equals(currency)
+                || instrument.getSecondaryJFCurrency().equals(currency);
     }
 
     public static final boolean isInInstrument(final String currencyName,
@@ -39,26 +39,6 @@ public final class CurrencyUtil {
             .maybeFromName(currencyName)
             .map(currency -> isInInstrument(currency, instrument))
             .orElse(false);
-    }
-
-    public static final boolean equalsBaseCurrency(final ICurrency currency,
-                                                   final Instrument instrument) {
-        checkNotNull(currency);
-        checkNotNull(instrument);
-
-        return instrument
-            .getPrimaryJFCurrency()
-            .equals(currency);
-    }
-
-    public static final boolean equalsQuoteCurrency(final ICurrency currency,
-                                                    final Instrument instrument) {
-        checkNotNull(currency);
-        checkNotNull(instrument);
-
-        return instrument
-            .getSecondaryJFCurrency()
-            .equals(currency);
     }
 
     public static final boolean isInInstruments(final ICurrency currency,

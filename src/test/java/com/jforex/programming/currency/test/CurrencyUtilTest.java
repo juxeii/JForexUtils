@@ -1,7 +1,5 @@
 package com.jforex.programming.currency.test;
 
-import static com.jforex.programming.currency.CurrencyUtil.equalsBaseCurrency;
-import static com.jforex.programming.currency.CurrencyUtil.equalsQuoteCurrency;
 import static com.jforex.programming.currency.CurrencyUtil.isInInstrument;
 import static com.jforex.programming.currency.CurrencyUtil.isInInstruments;
 import static com.jforex.programming.currency.CurrencyUtil.isNameValid;
@@ -45,28 +43,6 @@ public class CurrencyUtilTest extends CurrencyUtilForTest {
     @Test
     public void testUpperCaseCurrencyNameIsValid() {
         assertTrue(isNameValid(currencyNameEUR));
-    }
-
-    @Test
-    public void testEqualsBaseCurrencyIsTrue() {
-        assertTrue(equalsBaseCurrency(currencyEUR, instrumentEURAUD));
-    }
-
-    @Test
-    public void testEqualsBaseCurrencyIsFalse() {
-        assertFalse(equalsBaseCurrency(currencyGBP, instrumentEURAUD));
-        assertFalse(equalsBaseCurrency(currencyAUD, instrumentEURAUD));
-    }
-
-    @Test
-    public void testEqualsQuoteCurrencyIsTrue() {
-        assertTrue(equalsQuoteCurrency(currencyAUD, instrumentEURAUD));
-    }
-
-    @Test
-    public void testEqualsQuoteCurrencyIsFalse() {
-        assertFalse(equalsQuoteCurrency(currencyUSD, instrumentEURAUD));
-        assertFalse(equalsQuoteCurrency(currencyEUR, instrumentEURAUD));
     }
 
     @Test

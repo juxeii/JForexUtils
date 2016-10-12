@@ -15,9 +15,13 @@ public final class LoginCredentials {
                             final String username,
                             final String password,
                             final String pin) {
-        this.jnlpAddress = checkNotNull(jnlpAddress);
-        this.username = checkNotNull(username);
-        this.password = checkNotNull(password);
+        checkNotNull(jnlpAddress);
+        checkNotNull(username);
+        checkNotNull(password);
+
+        this.jnlpAddress = jnlpAddress;
+        this.username = username;
+        this.password = password;
         maybePin = Optional.ofNullable(pin);
     }
 
