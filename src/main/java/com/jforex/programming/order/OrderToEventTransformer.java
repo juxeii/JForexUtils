@@ -4,6 +4,6 @@ import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 
-public interface OrderToEventTransformer extends Function<IOrder,
-                                                          OrderEventTransformer> {
+public interface OrderToEventTransformer extends
+                                         Function<IOrder, OrderEventTransformer> {
 }

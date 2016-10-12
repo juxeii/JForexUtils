@@ -9,7 +9,6 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.settings.PlatformSettings;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
 import io.reactivex.functions.Function;
 
 public class OrderChangeBatch {
@@ -24,35 +23,35 @@ public class OrderChangeBatch {
 
     public Observable<OrderEvent> close(final Collection<IOrder> orders,
                                         final BatchMode batchMode,
-                                        final Function<IOrder,
-                                                       ObservableTransformer<OrderEvent, OrderEvent>> composer) {
+                                        final OrderToEventTransformer composer) {
+        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> orderBasicTask
+            .close(order)
+            .compose(composer.apply(order));
         return forBasicTask(orders,
                             batchMode,
-                            order -> orderBasicTask
-                                .close(order)
-                                .compose(composer.apply(order)));
+                            taskCall);
     }
 
     public Observable<OrderEvent> cancelSL(final Collection<IOrder> orders,
                                            final BatchMode batchMode,
-                                           final Function<IOrder,
-                                                          ObservableTransformer<OrderEvent, OrderEvent>> composer) {
+                                           final OrderToEventTransformer composer) {
+        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> orderBasicTask
+            .setStopLossPrice(order, platformSettings.noSLPrice())
+            .compose(composer.apply(order));
         return forBasicTask(orders,
                             batchMode,
-                            order -> orderBasicTask
-                                .setStopLossPrice(order, platformSettings.noSLPrice())
-                                .compose(composer.apply(order)));
+                            taskCall);
     }
 
     public Observable<OrderEvent> cancelTP(final Collection<IOrder> orders,
                                            final BatchMode batchMode,
-                                           final Function<IOrder,
-                                                          ObservableTransformer<OrderEvent, OrderEvent>> composer) {
+                                           final OrderToEventTransformer composer) {
+        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> orderBasicTask
+            .setTakeProfitPrice(order, platformSettings.noTPPrice())
+            .compose(composer.apply(order));
         return forBasicTask(orders,
                             batchMode,
-                            order -> orderBasicTask
-                                .setTakeProfitPrice(order, platformSettings.noTPPrice())
-                                .compose(composer.apply(order)));
+                            taskCall);
     }
 
     private Observable<OrderEvent> forBasicTask(final Collection<IOrder> orders,

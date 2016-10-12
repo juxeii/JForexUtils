@@ -12,13 +12,13 @@ import com.google.common.collect.Lists;
 import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.OrderBasicTask;
 import com.jforex.programming.order.OrderChangeBatch;
+import com.jforex.programming.order.OrderEventTransformer;
+import com.jforex.programming.order.OrderToEventTransformer;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
-import io.reactivex.functions.Function;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderChangeBatchTest extends InstrumentUtilForTest {
@@ -30,9 +30,9 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
     private final List<IOrder> ordersForBatch = Lists.newArrayList(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = submitEvent;
     private final OrderEvent composerEvent = closeEvent;
-    private final ObservableTransformer<OrderEvent, OrderEvent> testComposer =
+    private final OrderEventTransformer testComposer =
             upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
-    private final Function<IOrder, ObservableTransformer<OrderEvent, OrderEvent>> testOrderComposer =
+    private final OrderToEventTransformer testOrderComposer =
             order -> testComposer;
 
     @Before
