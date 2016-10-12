@@ -22,6 +22,7 @@ import com.dukascopy.api.IMessage.Reason;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.system.IClient;
+import com.dukascopy.api.system.ISystemListener;
 import com.dukascopy.api.system.ITesterClient;
 import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.connection.ConnectionState;
@@ -88,6 +89,7 @@ public class CommonUtilForTest extends BDDMockito {
                                                                                            pin);
 
     protected static final OrderUtilForTest orderUtilForTest = new OrderUtilForTest();
+    protected final ClientForTest clientForTest = new ClientForTest();
     protected final OrderParams buyParamsEURUSD = orderUtilForTest.buyParamsEURUSD();
     protected final OrderParams sellParamsEURUSD = orderUtilForTest.sellParamsEURUSD();
     protected final IOrder buyOrderEURUSD = orderUtilForTest.buyOrderEURUSD();
@@ -122,6 +124,12 @@ public class CommonUtilForTest extends BDDMockito {
         when(jforexUtilMock.account()).thenReturn(accountMock);
         when(jforexUtilMock.history()).thenReturn(historyMock);
         when(jforexUtilMock.historyUtil()).thenReturn(historyUtilMock);
+
+        doAnswer(invocation -> {
+            final ISystemListener listener = ((ISystemListener) invocation.getArgument(0));
+            clientForTest.setSystemListener(listener);
+            return listener;
+        }).when(clientMock).setSystemListener(any());
 
         coverageOnEnumsCorrection();
     }

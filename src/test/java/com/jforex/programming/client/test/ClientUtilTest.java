@@ -32,26 +32,37 @@ public class ClientUtilTest extends CommonUtilForTest {
 
     private ClientUtil clientUtil;
 
-    private JFSystemListener jfSystemListener;
-    private final TestObserver<ConnectionState> connectionStateSubscriber = TestObserver.create();
-    private final TestObserver<StrategyRunData> runDataSubscriber = TestObserver.create();
+    private TestObserver<ConnectionState> connectionStateSubscriber;
+    private TestObserver<StrategyRunData> runDataSubscriber;
     private final String cacheDirectory = "cacheDirectory";
     private final BufferedImage bufferedImage = new BufferedImage(2, 2, 2);
+    private final long processID = 42L;
     private final ObservableTransformer<ConnectionState, ConnectionState> reconnectComposer = upstream -> upstream;
 
     @Before
     public void setUp() throws Exception {
         clientUtil = new ClientUtil(clientMock, cacheDirectory);
 
-        jfSystemListener = clientUtil.jfSystemListener();
-        jfSystemListener
+        connectionStateSubscriber = clientUtil
             .observeConnectionState()
-            .subscribe(connectionStateSubscriber);
-        jfSystemListener
+            .test();
+        runDataSubscriber = clientUtil
             .observeStrategyRunData()
-            .subscribe(runDataSubscriber);
+            .test();
         clientUtil.setReconnectComposer(reconnectComposer);
         reconnectComposer.apply(Observable.empty());
+    }
+
+    private void assertConnectionState(final ConnectionState connectionState) {
+        connectionStateSubscriber
+            .assertNoErrors()
+            .assertValue(connectionState);
+    }
+
+    private void assertStrategyRunState(final StrategyRunState strategyRunState) {
+        runDataSubscriber
+            .assertNoErrors()
+            .assertValue(new StrategyRunData(processID, strategyRunState));
     }
 
     @Test
@@ -114,75 +125,30 @@ public class ClientUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void noReconnectIsDoneWhenNotLoggedIn() {
-        jfSystemListener.onDisconnect();
+    public void connectMessageIsPublished() {
+        clientForTest.publishConnected();
 
-        verify(clientMock, never()).reconnect();
+        assertConnectionState(ConnectionState.CONNECTED);
     }
 
-    public class AfterConnectMessage {
+    @Test
+    public void disconnectMessageIsPublished() {
+        clientForTest.publishDisconnected();
 
-        @Before
-        public void setUp() {
-            jfSystemListener.onConnect();
-        }
-
-        @Test
-        public void connectMessageIsPublished() {
-            connectionStateSubscriber.assertNoErrors();
-            connectionStateSubscriber.assertValue(ConnectionState.CONNECTED);
-        }
-
-        @Test
-        public void disconnectMessageIsPublished() {
-            jfSystemListener.onDisconnect();
-
-            connectionStateSubscriber
-                .assertNoErrors()
-                .assertValues(ConnectionState.CONNECTED, ConnectionState.DISCONNECTED);
-        }
+        assertConnectionState(ConnectionState.DISCONNECTED);
     }
 
-    public class AfterStrategyStart {
+    @Test
+    public void strategyStartIsPublished() {
+        clientForTest.publishStrategyStarted(processID);
 
-        private final long processID = 42L;
+        assertStrategyRunState(StrategyRunState.STARTED);
+    }
 
-        private void assertRunData(final StrategyRunState strategyRunState,
-                                   final int index) {
+    @Test
+    public void strategyStopIsPublished() {
+        clientForTest.publishStrategyStopped(processID);
 
-            assertThat(getOnNextEvent(runDataSubscriber, index).state(),
-                       equalTo(strategyRunState));
-            assertThat(getOnNextEvent(runDataSubscriber, index).processID(),
-                       equalTo(processID));
-        }
-
-        @Before
-        public void setUp() {
-            jfSystemListener.onStart(processID);
-        }
-
-        @Test
-        public void strategyStartIsPublished() {
-            runDataSubscriber.assertNoErrors();
-            runDataSubscriber.assertValueCount(1);
-
-            assertRunData(StrategyRunState.STARTED, 0);
-        }
-
-        public class AfterStrategyStop {
-
-            @Before
-            public void setUp() {
-                jfSystemListener.onStop(42L);
-            }
-
-            @Test
-            public void strategyStopIsPublished() {
-                runDataSubscriber.assertNoErrors();
-                runDataSubscriber.assertValueCount(2);
-
-                assertRunData(StrategyRunState.STOPPED, 1);
-            }
-        }
+        assertStrategyRunState(StrategyRunState.STOPPED);
     }
 }

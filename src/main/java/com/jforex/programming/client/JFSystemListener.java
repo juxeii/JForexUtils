@@ -21,21 +21,30 @@ public final class JFSystemListener implements ISystemListener {
 
     @Override
     public final void onStart(final long processId) {
-        strategyRunDataPublisher.onNext(new StrategyRunData(processId, StrategyRunState.STARTED));
+        publishStrategyRunData(StrategyRunState.STARTED, processId);
     }
 
     @Override
     public final void onStop(final long processId) {
-        strategyRunDataPublisher.onNext(new StrategyRunData(processId, StrategyRunState.STOPPED));
+        publishStrategyRunData(StrategyRunState.STOPPED, processId);
+    }
+
+    private final void publishStrategyRunData(final StrategyRunState strategyRunState,
+                                              final long processId) {
+        strategyRunDataPublisher.onNext(new StrategyRunData(processId, strategyRunState));
     }
 
     @Override
     public final void onConnect() {
-        connectionStatePublisher.onNext(ConnectionState.CONNECTED);
+        publishConnectionState(ConnectionState.CONNECTED);
     }
 
     @Override
     public final void onDisconnect() {
-        connectionStatePublisher.onNext(ConnectionState.DISCONNECTED);
+        publishConnectionState(ConnectionState.DISCONNECTED);
+    }
+
+    private final void publishConnectionState(final ConnectionState connectionState) {
+        connectionStatePublisher.onNext(connectionState);
     }
 }

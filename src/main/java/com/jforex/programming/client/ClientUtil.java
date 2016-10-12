@@ -35,17 +35,20 @@ public final class ClientUtil {
 
     public ClientUtil(final IClient client,
                       final String cacheDirectory) {
-        this.client = checkNotNull(client);
-        initCacheDirectory(checkNotNull(cacheDirectory));
+        checkNotNull(client);
+        checkNotNull(cacheDirectory);
+
+        this.client = client;
+        initCacheDirectory(cacheDirectory);
         initSystemListener();
         initAuthentification();
         initConnectionKeeper();
     }
 
-    private void initCacheDirectory(final String cacheDirectory) {
-        final File cacheDirectoryFile = new File(cacheDirectory);
+    private void initCacheDirectory(final String cacheDirectoryPath) {
+        final File cacheDirectoryFile = new File(cacheDirectoryPath);
         client.setCacheDirectory(cacheDirectoryFile);
-        logger.debug("Setting of cache directory " + cacheDirectory + " for client done.");
+        logger.debug("Setting of cache directory " + cacheDirectoryPath + " done.");
     }
 
     private final void initSystemListener() {
@@ -58,41 +61,47 @@ public final class ClientUtil {
 
     private final void initConnectionKeeper() {
         connectionKeeper = new ConnectionKeeper(client,
-                                                connectionStateObservable(),
+                                                observeConnectionState(),
                                                 loginStatePublisher.observable());
     }
 
-    public void setReconnectComposer(final ObservableTransformer<ConnectionState, ConnectionState> reconnectComposer) {
-        connectionKeeper.setReconnectComposer(reconnectComposer);
-    }
-
-    public final JFSystemListener jfSystemListener() {
-        return jfSystemListener;
-    }
-
-    private final Observable<ConnectionState> connectionStateObservable() {
+    public Observable<ConnectionState> observeConnectionState() {
         return jfSystemListener.observeConnectionState();
     }
 
+    public Observable<StrategyRunData> observeStrategyRunData() {
+        return jfSystemListener.observeStrategyRunData();
+    }
+
     public final Completable login(final LoginCredentials loginCredentials) {
-        return authentification.login(checkNotNull(loginCredentials));
+        checkNotNull(loginCredentials);
+
+        return authentification.login(loginCredentials);
     }
 
     public final Completable logout() {
         return authentification.logout();
     }
 
+    public void setReconnectComposer(final ObservableTransformer<ConnectionState, ConnectionState> reconnectComposer) {
+        connectionKeeper.setReconnectComposer(reconnectComposer);
+    }
+
     public final Optional<BufferedImage> pinCaptchaForAWT(final String jnlpAddress) {
+        checkNotNull(jnlpAddress);
+
         try {
-            return Optional.of(client.getCaptchaImage(checkNotNull(jnlpAddress)));
+            return Optional.of(client.getCaptchaImage(jnlpAddress));
         } catch (final Exception e) {
-            logger.error("Error while retreiving pin captcha! " + e.getMessage());
+            logger.error("Exception while retreiving pin captcha! " + e.getMessage());
             return Optional.empty();
         }
     }
 
     public final Optional<Image> pinCaptchaForJavaFX(final String jnlpAddress) {
-        final Optional<BufferedImage> captcha = pinCaptchaForAWT(checkNotNull(jnlpAddress));
+        checkNotNull(jnlpAddress);
+
+        final Optional<BufferedImage> captcha = pinCaptchaForAWT(jnlpAddress);
         return captcha.isPresent()
                 ? Optional.of(SwingFXUtils.toFXImage(captcha.get(), null))
                 : Optional.empty();

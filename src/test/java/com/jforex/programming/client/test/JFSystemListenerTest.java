@@ -1,8 +1,5 @@
 package com.jforex.programming.client.test;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,39 +18,27 @@ public class JFSystemListenerTest extends CommonUtilForTest {
 
     private JFSystemListener jfSystemListener;
 
-    private final TestObserver<StrategyRunData> runDataSubscriber = TestObserver.create();
-    private final TestObserver<ConnectionState> connectionStateSubscriber = TestObserver.create();
+    private TestObserver<StrategyRunData> runDataSubscriber;
+    private TestObserver<ConnectionState> connectionStateSubscriber;
 
     @Before
     public void setUp() {
         jfSystemListener = new JFSystemListener();
 
-        jfSystemListener
+        runDataSubscriber = jfSystemListener
             .observeStrategyRunData()
-            .subscribe(runDataSubscriber);
-        jfSystemListener
+            .test();
+        connectionStateSubscriber = jfSystemListener
             .observeConnectionState()
-            .subscribe(connectionStateSubscriber);
-    }
-
-    private void assertSubscriberCount(final TestObserver<?> subscriber,
-                                       final int itemIndex) {
-        subscriber.assertNoErrors();
-        subscriber.assertNotComplete();
-        subscriber.assertValueCount(itemIndex + 1);
+            .test();
     }
 
     public class WhenOnStart {
 
         private final long processID = 42;
 
-        private void assertRunData(final StrategyRunState runState,
-                                   final int itemIndex) {
-            assertSubscriberCount(runDataSubscriber, itemIndex);
-
-            final StrategyRunData runData = getOnNextEvent(runDataSubscriber, itemIndex);
-            assertThat(runData.processID(), equalTo(processID));
-            assertThat(runData.state(), equalTo(runState));
+        private StrategyRunData createRunData(final StrategyRunState state) {
+            return new StrategyRunData(processID, state);
         }
 
         @Before
@@ -63,26 +48,19 @@ public class JFSystemListenerTest extends CommonUtilForTest {
 
         @Test
         public void onStartRunDataIsPublishedCorrect() {
-            assertRunData(StrategyRunState.STARTED, 0);
+            runDataSubscriber.assertValue(createRunData(StrategyRunState.STARTED));
         }
 
         @Test
         public void onStopRunDataIsPublishedCorrect() {
             jfSystemListener.onStop(processID);
 
-            assertRunData(StrategyRunState.STOPPED, 1);
+            runDataSubscriber.assertValues(createRunData(StrategyRunState.STARTED),
+                                           createRunData(StrategyRunState.STOPPED));
         }
     }
 
     public class WhenOnConnect {
-
-        private void assertConnectionState(final ConnectionState connectionState,
-                                           final int itemIndex) {
-            assertSubscriberCount(connectionStateSubscriber, itemIndex);
-
-            assertThat(getOnNextEvent(connectionStateSubscriber, itemIndex),
-                       equalTo(connectionState));
-        }
 
         @Before
         public void setUp() {
@@ -91,14 +69,15 @@ public class JFSystemListenerTest extends CommonUtilForTest {
 
         @Test
         public void onConnectIsPublishedCorrect() {
-            assertConnectionState(ConnectionState.CONNECTED, 0);
+            connectionStateSubscriber.assertValue(ConnectionState.CONNECTED);
         }
 
         @Test
         public void onDisconnectIsPublishedCorrect() {
             jfSystemListener.onDisconnect();
 
-            assertConnectionState(ConnectionState.DISCONNECTED, 1);
+            connectionStateSubscriber.assertValues(ConnectionState.CONNECTED,
+                                                   ConnectionState.DISCONNECTED);
         }
     }
 }
