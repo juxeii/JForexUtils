@@ -1,4 +1,4 @@
-package com.jforex.programming.order;
+package com.jforex.programming.order.event;
 
 import java.util.function.Function;
 

@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IMessage;
-import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventFactory;
@@ -22,10 +21,9 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
 
     @Mock
     private OrderEventFactory orderEventMapperMock;
-    private final IOrder orderUnderTest = buyOrderEURUSD;
-    private final TestObserver<OrderEvent> subscriber = TestObserver.create();
+    private TestObserver<OrderEvent> subscriber;
     private final Subject<IMessage> messageSubject = PublishSubject.create();
-    private final IMessage message = mockForIMessage(orderUnderTest,
+    private final IMessage message = mockForIMessage(buyOrderEURUSD,
                                                      IMessage.Type.ORDER_CHANGED_REJECTED,
                                                      Sets.newHashSet());
 
@@ -40,13 +38,15 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
                                                          IMessage.Type.CALENDAR,
                                                          Sets.newHashSet());
 
-        orderEventGateway
+        subscriber = orderEventGateway
             .observable()
-            .subscribe(subscriber);
+            .test();
+
         messageSubject.onNext(calendarMessage);
 
-        subscriber.assertNoErrors();
-        subscriber.assertValueCount(0);
+        subscriber
+            .assertNoErrors()
+            .assertValueCount(0);
     }
 
     @Test
@@ -54,12 +54,14 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
         when(orderEventMapperMock.fromMessage(any()))
             .thenReturn(changedRejectEvent);
 
-        orderEventGateway
+        subscriber = orderEventGateway
             .observable()
-            .subscribe(subscriber);
+            .test();
+
         messageSubject.onNext(message);
 
-        subscriber.assertNoErrors();
-        subscriber.assertValue(changedRejectEvent);
+        subscriber
+            .assertNoErrors()
+            .assertValue(changedRejectEvent);
     }
 }

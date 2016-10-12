@@ -12,9 +12,9 @@ import com.google.common.collect.Lists;
 import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.OrderBasicTask;
 import com.jforex.programming.order.OrderChangeBatch;
-import com.jforex.programming.order.OrderEventTransformer;
-import com.jforex.programming.order.OrderToEventTransformer;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventTransformer;
+import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;

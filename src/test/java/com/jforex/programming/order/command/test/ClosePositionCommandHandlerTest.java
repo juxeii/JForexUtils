@@ -13,13 +13,13 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.OrderChangeBatch;
-import com.jforex.programming.order.OrderEventTransformer;
 import com.jforex.programming.order.OrderMergeTask;
 import com.jforex.programming.order.command.CloseExecutionMode;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.ClosePositionCommandHandler;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 

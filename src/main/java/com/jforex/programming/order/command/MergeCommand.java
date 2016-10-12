@@ -4,8 +4,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.BatchMode;
-import com.jforex.programming.order.OrderEventTransformer;
-import com.jforex.programming.order.OrderToEventTransformer;
+import com.jforex.programming.order.event.OrderEventTransformer;
+import com.jforex.programming.order.event.OrderToEventTransformer;
 
 public class MergeCommand {
 

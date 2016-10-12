@@ -1,6 +1,4 @@
-package com.jforex.programming.order;
-
-import com.jforex.programming.order.event.OrderEvent;
+package com.jforex.programming.order.event;
 
 import io.reactivex.ObservableTransformer;
 
