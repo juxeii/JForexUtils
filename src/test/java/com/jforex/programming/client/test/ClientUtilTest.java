@@ -1,33 +1,20 @@
 package com.jforex.programming.client.test;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-
-import java.awt.image.BufferedImage;
-import java.util.Optional;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import com.jforex.programming.client.ClientUtil;
-import com.jforex.programming.client.JFSystemListener;
 import com.jforex.programming.client.StrategyRunData;
 import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
-import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
 import io.reactivex.observers.TestObserver;
-import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
 
-@RunWith(HierarchicalContextRunner.class)
 public class ClientUtilTest extends CommonUtilForTest {
 
     private ClientUtil clientUtil;
@@ -35,7 +22,6 @@ public class ClientUtilTest extends CommonUtilForTest {
     private TestObserver<ConnectionState> connectionStateSubscriber;
     private TestObserver<StrategyRunData> runDataSubscriber;
     private final String cacheDirectory = "cacheDirectory";
-    private final BufferedImage bufferedImage = new BufferedImage(2, 2, 2);
     private final long processID = 42L;
     private final ObservableTransformer<ConnectionState, ConnectionState> reconnectComposer = upstream -> upstream;
 
@@ -72,56 +58,13 @@ public class ClientUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void systemListenerIsInitialized() {
-        verify(clientMock).setSystemListener(isA(JFSystemListener.class));
-    }
-
-    @Test
     public void loginCompletableIsValid() {
-        assertThat(clientUtil.login(loginCredentials), instanceOf(Completable.class));
+        assertNotNull(clientUtil.login(loginCredentials));
     }
 
     @Test
     public void logoutCompletableIsValid() {
-        assertThat(clientUtil.logout(), instanceOf(Completable.class));
-    }
-
-    @Test
-    public void pinCaptchaForAWTCallsOnClient() throws Exception {
-        when(clientMock.getCaptchaImage(jnlpAddress)).thenReturn(bufferedImage);
-
-        final Optional<BufferedImage> maybeImage = clientUtil.pinCaptchaForAWT(jnlpAddress);
-
-        assertThat(maybeImage.get(), equalTo(bufferedImage));
-        verify(clientMock).getCaptchaImage(jnlpAddress);
-    }
-
-    @Test
-    public void pinCaptchaForAWTReturnsEmptyOptionalWhenClientThrows() throws Exception {
-        when(clientMock.getCaptchaImage(jnlpAddress)).thenThrow(jfException);
-
-        final Optional<BufferedImage> maybeImage = clientUtil.pinCaptchaForAWT(jnlpAddress);
-
-        assertFalse(maybeImage.isPresent());
-    }
-
-    @Test
-    public void pinCaptchaForJavaFXCallsOnClient() throws Exception {
-        when(clientMock.getCaptchaImage(jnlpAddress)).thenReturn(bufferedImage);
-
-        final Optional<Image> maybeImage = clientUtil.pinCaptchaForJavaFX(jnlpAddress);
-
-        assertThat(maybeImage.get(), instanceOf(WritableImage.class));
-        verify(clientMock).getCaptchaImage(jnlpAddress);
-    }
-
-    @Test
-    public void pinCaptchaForJavaFXReturnsEmptyOptionalWhenClientThrows() throws Exception {
-        when(clientMock.getCaptchaImage(jnlpAddress)).thenThrow(jfException);
-
-        final Optional<Image> maybeImage = clientUtil.pinCaptchaForJavaFX(jnlpAddress);
-
-        assertFalse(maybeImage.isPresent());
+        assertNotNull(clientUtil.logout());
     }
 
     @Test
@@ -150,5 +93,10 @@ public class ClientUtilTest extends CommonUtilForTest {
         clientForTest.publishStrategyStopped(processID);
 
         assertStrategyRunState(StrategyRunState.STOPPED);
+    }
+
+    @Test
+    public void pinCaptchaIsValid() {
+        assertNotNull(clientUtil.pinCaptcha());
     }
 }
