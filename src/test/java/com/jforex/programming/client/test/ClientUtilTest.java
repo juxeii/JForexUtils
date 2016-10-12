@@ -11,8 +11,6 @@ import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
 import io.reactivex.observers.TestObserver;
 
 public class ClientUtilTest extends CommonUtilForTest {
@@ -23,7 +21,6 @@ public class ClientUtilTest extends CommonUtilForTest {
     private TestObserver<StrategyRunData> runDataSubscriber;
     private final String cacheDirectory = "cacheDirectory";
     private final long processID = 42L;
-    private final ObservableTransformer<ConnectionState, ConnectionState> reconnectComposer = upstream -> upstream;
 
     @Before
     public void setUp() throws Exception {
@@ -35,8 +32,6 @@ public class ClientUtilTest extends CommonUtilForTest {
         runDataSubscriber = clientUtil
             .observeStrategyRunData()
             .test();
-        clientUtil.setReconnectComposer(reconnectComposer);
-        reconnectComposer.apply(Observable.empty());
     }
 
     private void assertConnectionState(final ConnectionState connectionState) {
@@ -58,13 +53,13 @@ public class ClientUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void loginCompletableIsValid() {
-        assertNotNull(clientUtil.login(loginCredentials));
+    public void authentificationIsValid() {
+        assertNotNull(clientUtil.authentification());
     }
 
     @Test
-    public void logoutCompletableIsValid() {
-        assertNotNull(clientUtil.logout());
+    public void connectionKeeperIsValid() {
+        assertNotNull(clientUtil.connectionKeeper());
     }
 
     @Test

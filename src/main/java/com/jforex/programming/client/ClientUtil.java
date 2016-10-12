@@ -11,13 +11,10 @@ import com.dukascopy.api.system.IClient;
 import com.jforex.programming.connection.Authentification;
 import com.jforex.programming.connection.ConnectionKeeper;
 import com.jforex.programming.connection.ConnectionState;
-import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.misc.JFHotPublisher;
 
-import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
 
 public final class ClientUtil {
 
@@ -63,20 +60,12 @@ public final class ClientUtil {
         return jfSystemListener.observeStrategyRunData();
     }
 
-    public final Completable login(final LoginCredentials loginCredentials) {
-        checkNotNull(loginCredentials);
-
-        return authentification.login(loginCredentials);
+    public ConnectionKeeper connectionKeeper() {
+        return connectionKeeper;
     }
 
-    public final Completable logout() {
-        return authentification.logout();
-    }
-
-    public void setReconnectComposer(final ObservableTransformer<ConnectionState, ConnectionState> reconnectComposer) {
-        checkNotNull(reconnectComposer);
-
-        connectionKeeper.setReconnectComposer(reconnectComposer);
+    public final Authentification authentification() {
+        return authentification;
     }
 
     public final PinCaptcha pinCaptcha() {

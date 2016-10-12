@@ -1,5 +1,7 @@
 package com.jforex.programming.connection;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -79,6 +81,8 @@ public class ConnectionKeeper {
     }
 
     public void setReconnectComposer(final ObservableTransformer<ConnectionState, ConnectionState> reconnectComposer) {
+        checkNotNull(reconnectComposer);
+
         this.reconnectComposer = reconnectComposer;
     }
 }
