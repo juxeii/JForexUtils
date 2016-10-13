@@ -17,9 +17,9 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.OrderBasicTask;
-import com.jforex.programming.order.task.OrderCloseTask;
-import com.jforex.programming.order.task.OrderMergeTask;
+import com.jforex.programming.order.task.BasicTask;
+import com.jforex.programming.order.task.CloseTask;
+import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -34,11 +34,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderUtil orderUtil;
 
     @Mock
-    private OrderBasicTask orderBasicTaskMock;
+    private BasicTask orderBasicTaskMock;
     @Mock
-    private OrderMergeTask orderMergeTaskMock;
+    private MergeTask orderMergeTaskMock;
     @Mock
-    private OrderCloseTask orderCloseTaskMock;
+    private CloseTask orderCloseTaskMock;
     @Mock
     private PositionUtil positionUtilMock;
     @Mock

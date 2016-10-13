@@ -14,8 +14,8 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.OrderBasicTask;
-import com.jforex.programming.order.task.OrderTaskExecutor;
+import com.jforex.programming.order.task.BasicTask;
+import com.jforex.programming.order.task.TaskExecutor;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -25,12 +25,12 @@ import io.reactivex.Single;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderBasicTaskTest extends InstrumentUtilForTest {
+public class BasicTaskTest extends InstrumentUtilForTest {
 
-    private OrderBasicTask orderBasicTask;
+    private BasicTask basicTask;
 
     @Mock
-    private OrderTaskExecutor orderTaskExecutorMock;
+    private TaskExecutor orderTaskExecutorMock;
     @Mock
     private OrderUtilHandler orderUtilHandlerMock;
     @Mock
@@ -41,7 +41,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
-        orderBasicTask = new OrderBasicTask(orderTaskExecutorMock, orderUtilHandlerMock);
+        basicTask = new BasicTask(orderTaskExecutorMock, orderUtilHandlerMock);
     }
 
     private void setUpOrderUtilHandlerMock(final Observable<OrderEvent> observable,
@@ -69,7 +69,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
         public void setUp() {
             when(orderTaskExecutorMock.submitOrder(buyParamsEURUSD)).thenReturn(Single.just(orderForTest));
 
-            observable = orderBasicTask.submitOrder(buyParamsEURUSD);
+            observable = basicTask.submitOrder(buyParamsEURUSD);
         }
 
         @Test
@@ -110,7 +110,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
 
             when(orderTaskExecutorMock.submitOrder(conditionalParams)).thenReturn(Single.just(orderForTest));
 
-            observable = orderBasicTask.submitOrder(conditionalParams);
+            observable = basicTask.submitOrder(conditionalParams);
         }
 
         @Test
@@ -151,7 +151,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.mergeOrders(mergeOrderLabel, toMergeOrders))
                 .thenReturn(Single.just(orderForTest));
 
-            observable = orderBasicTask.mergeOrders(mergeOrderLabel, toMergeOrders);
+            observable = basicTask.mergeOrders(mergeOrderLabel, toMergeOrders);
         }
 
         @Test
@@ -162,7 +162,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void withNoOrdersToMergeNoCallToUtilHandler() {
-            orderBasicTask
+            basicTask
                 .mergeOrders(mergeOrderLabel, Sets.newHashSet())
                 .test()
                 .assertComplete()
@@ -173,7 +173,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void withOneOrderForMergeNoCallToUtilHandler() {
-            orderBasicTask
+            basicTask
                 .mergeOrders(mergeOrderLabel, Sets.newHashSet(buyOrderEURUSD))
                 .test()
                 .assertComplete()
@@ -210,7 +210,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.close(orderForTest))
                 .thenReturn(emptyCompletable());
 
-            observable = orderBasicTask.close(orderForTest);
+            observable = basicTask.close(orderForTest);
         }
 
         @Test
@@ -256,7 +256,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.setLabel(orderForTest, newLabel))
                 .thenReturn(emptyCompletable());
 
-            observable = orderBasicTask.setLabel(orderForTest, newLabel);
+            observable = basicTask.setLabel(orderForTest, newLabel);
         }
 
         @Test
@@ -302,7 +302,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.setGoodTillTime(orderForTest, newGTT))
                 .thenReturn(emptyCompletable());
 
-            observable = orderBasicTask.setGoodTillTime(orderForTest, newGTT);
+            observable = basicTask.setGoodTillTime(orderForTest, newGTT);
         }
 
         @Test
@@ -348,7 +348,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.setRequestedAmount(orderForTest, newRequestedAmount))
                 .thenReturn(emptyCompletable());
 
-            observable = orderBasicTask.setRequestedAmount(orderForTest, newRequestedAmount);
+            observable = basicTask.setRequestedAmount(orderForTest, newRequestedAmount);
         }
 
         @Test
@@ -394,7 +394,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.setOpenPrice(orderForTest, newOpenPrice))
                 .thenReturn(emptyCompletable());
 
-            observable = orderBasicTask.setOpenPrice(orderForTest, newOpenPrice);
+            observable = basicTask.setOpenPrice(orderForTest, newOpenPrice);
         }
 
         @Test
@@ -440,7 +440,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.setStopLossPrice(orderForTest, newSL))
                 .thenReturn(emptyCompletable());
 
-            observable = orderBasicTask.setStopLossPrice(orderForTest, newSL);
+            observable = basicTask.setStopLossPrice(orderForTest, newSL);
         }
 
         @Test
@@ -486,7 +486,7 @@ public class OrderBasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.setTakeProfitPrice(orderForTest, newTP))
                 .thenReturn(emptyCompletable());
 
-            observable = orderBasicTask.setTakeProfitPrice(orderForTest, newTP);
+            observable = basicTask.setTakeProfitPrice(orderForTest, newTP);
         }
 
         @Test

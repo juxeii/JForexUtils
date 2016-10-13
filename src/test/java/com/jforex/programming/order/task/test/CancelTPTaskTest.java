@@ -13,8 +13,8 @@ import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.task.BatchMode;
-import com.jforex.programming.order.task.OrderCancelTP;
-import com.jforex.programming.order.task.OrderChangeBatch;
+import com.jforex.programming.order.task.CancelTPTask;
+import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -22,14 +22,14 @@ import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderCancelTPTest extends InstrumentUtilForTest {
+public class CancelTPTaskTest extends InstrumentUtilForTest {
 
-    private OrderCancelTP orderCancelTP;
+    private CancelTPTask cancelTPTask;
 
     private final Set<IOrder> toCancelTPOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Mock
-    private OrderChangeBatch orderChangeBatchMock;
+    private BatchChangeTask orderChangeBatchMock;
     @Mock
     private MergeCommand mergeCommandMock;
     @Mock
@@ -40,12 +40,12 @@ public class OrderCancelTPTest extends InstrumentUtilForTest {
         when(mergeCommandMock.orderCancelTPComposer(any())).thenReturn(orderCancelTPComposerMock);
         when(mergeCommandMock.orderCancelTPMode()).thenReturn(BatchMode.MERGE);
 
-        orderCancelTP = new OrderCancelTP(orderChangeBatchMock);
+        cancelTPTask = new CancelTPTask(orderChangeBatchMock);
     }
 
     @Test
     public void observeIsDeferred() {
-        orderCancelTP.observe(toCancelTPOrders, mergeCommandMock);
+        cancelTPTask.observe(toCancelTPOrders, mergeCommandMock);
 
         verifyZeroInteractions(orderChangeBatchMock);
     }
@@ -62,7 +62,7 @@ public class OrderCancelTPTest extends InstrumentUtilForTest {
                                                any()))
                                                    .thenReturn(eventObservable(event));
 
-            testObserver = orderCancelTP
+            testObserver = cancelTPTask
                 .observe(toCancelTPOrders, mergeCommandMock)
                 .test();
         }

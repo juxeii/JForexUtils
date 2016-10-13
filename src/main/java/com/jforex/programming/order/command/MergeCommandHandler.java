@@ -4,18 +4,18 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.OrderBasicTask;
-import com.jforex.programming.order.task.OrderCancelSLAndTP;
+import com.jforex.programming.order.task.BasicTask;
+import com.jforex.programming.order.task.CancelSLTPTask;
 
 import io.reactivex.Observable;
 
 public class MergeCommandHandler {
 
-    private final OrderCancelSLAndTP orderCancelSLAndTP;
-    private final OrderBasicTask orderBasicTask;
+    private final CancelSLTPTask orderCancelSLAndTP;
+    private final BasicTask orderBasicTask;
 
-    public MergeCommandHandler(final OrderCancelSLAndTP orderCancelSLAndTP,
-                               final OrderBasicTask orderBasicTask) {
+    public MergeCommandHandler(final CancelSLTPTask orderCancelSLAndTP,
+                               final BasicTask orderBasicTask) {
         this.orderCancelSLAndTP = orderCancelSLAndTP;
         this.orderBasicTask = orderBasicTask;
     }

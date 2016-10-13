@@ -12,14 +12,14 @@ import com.jforex.programming.position.PositionUtil;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 
-public class OrderMergeTask {
+public class MergeTask {
 
-    private final SplitCancelSLTPAndMerge splitter;
+    private final CancelSLTPAndMergeTask cancelSLTPAndMergeTask;
     private final PositionUtil positionUtil;
 
-    public OrderMergeTask(final SplitCancelSLTPAndMerge splitter,
-                          final PositionUtil positionUtil) {
-        this.splitter = splitter;
+    public MergeTask(final CancelSLTPAndMergeTask cancelSLTPAndMergeTask,
+                     final PositionUtil positionUtil) {
+        this.cancelSLTPAndMergeTask = cancelSLTPAndMergeTask;
         this.positionUtil = positionUtil;
     }
 
@@ -35,7 +35,7 @@ public class OrderMergeTask {
 
     private final Observable<OrderEvent> observeSplit(final Supplier<Collection<IOrder>> toMergeOrders,
                                                       final MergeCommand command) {
-        return Observable.defer(() -> splitter.observe(toMergeOrders.get(), command));
+        return Observable.defer(() -> cancelSLTPAndMergeTask.observe(toMergeOrders.get(), command));
     }
 
     public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, MergeCommand> commandFactory) {

@@ -26,15 +26,15 @@ import com.jforex.programming.order.command.MergeCommandHandler;
 import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventTypeDataFactory;
-import com.jforex.programming.order.task.OrderBasicTask;
-import com.jforex.programming.order.task.OrderCancelSL;
-import com.jforex.programming.order.task.OrderCancelSLAndTP;
-import com.jforex.programming.order.task.OrderCancelTP;
-import com.jforex.programming.order.task.OrderChangeBatch;
-import com.jforex.programming.order.task.OrderCloseTask;
-import com.jforex.programming.order.task.OrderMergeTask;
-import com.jforex.programming.order.task.OrderTaskExecutor;
-import com.jforex.programming.order.task.SplitCancelSLTPAndMerge;
+import com.jforex.programming.order.task.BasicTask;
+import com.jforex.programming.order.task.CancelSLTask;
+import com.jforex.programming.order.task.CancelSLTPTask;
+import com.jforex.programming.order.task.CancelTPTask;
+import com.jforex.programming.order.task.BatchChangeTask;
+import com.jforex.programming.order.task.CloseTask;
+import com.jforex.programming.order.task.MergeTask;
+import com.jforex.programming.order.task.TaskExecutor;
+import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.quote.BarParams;
@@ -65,18 +65,18 @@ public class JForexUtil {
     private PositionUtil positionUtil;
     private OrderEventGateway orderEventGateway;
     private StrategyThreadTask strategyThreadTask;
-    private OrderTaskExecutor orderTaskExecutor;
+    private TaskExecutor orderTaskExecutor;
     private OrderUtilHandler orderUtilHandler;
-    private OrderBasicTask orderBasicTask;
-    private OrderChangeBatch orderChangeBatch;
-    private OrderMergeTask orderMergeTask;
-    private OrderCloseTask orderCloseTask;
+    private BasicTask orderBasicTask;
+    private BatchChangeTask orderChangeBatch;
+    private MergeTask orderMergeTask;
+    private CloseTask orderCloseTask;
     private MergeCommandHandler mergeCommandHandler;
     private ClosePositionCommandHandler closePositionCommandHandler;
-    private SplitCancelSLTPAndMerge cancelAndMergeSplitter;
-    private OrderCancelSLAndTP orderCancelSLAndTP;
-    private OrderCancelSL orderCancelSL;
-    private OrderCancelTP orderCancelTP;
+    private CancelSLTPAndMergeTask cancelAndMergeSplitter;
+    private CancelSLTPTask orderCancelSLAndTP;
+    private CancelSLTask orderCancelSL;
+    private CancelTPTask orderCancelTP;
     private OrderUtil orderUtil;
     private OrderEventFactory orderEventFactory;
     private final CalculationUtil calculationUtil;
@@ -133,19 +133,19 @@ public class JForexUtil {
         orderUtilHandler = new OrderUtilHandler(orderEventGateway,
                                                 orderEventTypeDataFactory,
                                                 callRequestPublisher);
-        orderTaskExecutor = new OrderTaskExecutor(strategyThreadTask, engine);
-        orderBasicTask = new OrderBasicTask(orderTaskExecutor, orderUtilHandler);
-        orderChangeBatch = new OrderChangeBatch(orderBasicTask);
-        orderCancelSL = new OrderCancelSL(orderChangeBatch);
-        orderCancelTP = new OrderCancelTP(orderChangeBatch);
-        orderCancelSLAndTP = new OrderCancelSLAndTP(orderCancelSL, orderCancelTP);
+        orderTaskExecutor = new TaskExecutor(strategyThreadTask, engine);
+        orderBasicTask = new BasicTask(orderTaskExecutor, orderUtilHandler);
+        orderChangeBatch = new BatchChangeTask(orderBasicTask);
+        orderCancelSL = new CancelSLTask(orderChangeBatch);
+        orderCancelTP = new CancelTPTask(orderChangeBatch);
+        orderCancelSLAndTP = new CancelSLTPTask(orderCancelSL, orderCancelTP);
         mergeCommandHandler = new MergeCommandHandler(orderCancelSLAndTP, orderBasicTask);
-        cancelAndMergeSplitter = new SplitCancelSLTPAndMerge(mergeCommandHandler);
-        orderMergeTask = new OrderMergeTask(cancelAndMergeSplitter, positionUtil);
+        cancelAndMergeSplitter = new CancelSLTPAndMergeTask(mergeCommandHandler);
+        orderMergeTask = new MergeTask(cancelAndMergeSplitter, positionUtil);
         closePositionCommandHandler = new ClosePositionCommandHandler(orderMergeTask,
                                                                       orderChangeBatch,
                                                                       positionUtil);
-        orderCloseTask = new OrderCloseTask(closePositionCommandHandler, positionUtil);
+        orderCloseTask = new CloseTask(closePositionCommandHandler, positionUtil);
         orderUtil = new OrderUtil(orderBasicTask,
                                   orderMergeTask,
                                   orderCloseTask,

@@ -5,20 +5,20 @@ import java.util.Collection;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.OrderChangeBatch;
-import com.jforex.programming.order.task.OrderMergeTask;
+import com.jforex.programming.order.task.BatchChangeTask;
+import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
 
 public class ClosePositionCommandHandler {
 
-    private final OrderMergeTask orderMergeTask;
-    private final OrderChangeBatch orderChangeBatch;
+    private final MergeTask orderMergeTask;
+    private final BatchChangeTask orderChangeBatch;
     private final PositionUtil positionUtil;
 
-    public ClosePositionCommandHandler(final OrderMergeTask orderMergeTask,
-                                       final OrderChangeBatch orderChangeBatch,
+    public ClosePositionCommandHandler(final MergeTask orderMergeTask,
+                                       final BatchChangeTask orderChangeBatch,
                                        final PositionUtil positionUtil) {
         this.orderMergeTask = orderMergeTask;
         this.orderChangeBatch = orderChangeBatch;

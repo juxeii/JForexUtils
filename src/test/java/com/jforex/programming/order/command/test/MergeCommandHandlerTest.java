@@ -13,8 +13,8 @@ import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergeCommandHandler;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
-import com.jforex.programming.order.task.OrderBasicTask;
-import com.jforex.programming.order.task.OrderCancelSLAndTP;
+import com.jforex.programming.order.task.BasicTask;
+import com.jforex.programming.order.task.CancelSLTPTask;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -27,9 +27,9 @@ public class MergeCommandHandlerTest extends InstrumentUtilForTest {
     private MergeCommandHandler commandHandler;
 
     @Mock
-    private OrderCancelSLAndTP orderCancelSLAndTPMock;
+    private CancelSLTPTask orderCancelSLAndTPMock;
     @Mock
-    private OrderBasicTask orderBasicTaskMock;
+    private BasicTask orderBasicTaskMock;
     @Mock
     private MergeCommand mergeCommandMock;
     private TestObserver<OrderEvent> testObserver;

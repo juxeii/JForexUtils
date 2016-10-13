@@ -12,13 +12,13 @@ import com.jforex.programming.settings.PlatformSettings;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 
-public class OrderChangeBatch {
+public class BatchChangeTask {
 
-    private final OrderBasicTask orderBasicTask;
+    private final BasicTask orderBasicTask;
 
     private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
 
-    public OrderChangeBatch(final OrderBasicTask orderBasicTask) {
+    public BatchChangeTask(final BasicTask orderBasicTask) {
         this.orderBasicTask = orderBasicTask;
     }
 

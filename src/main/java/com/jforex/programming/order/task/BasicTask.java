@@ -18,12 +18,12 @@ import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
 
-public class OrderBasicTask {
+public class BasicTask {
 
-    private final OrderTaskExecutor orderTaskExecutor;
+    private final TaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
 
-    public OrderBasicTask(final OrderTaskExecutor orderTaskExecutor,
+    public BasicTask(final TaskExecutor orderTaskExecutor,
                           final OrderUtilHandler orderUtilHandler) {
         this.orderTaskExecutor = orderTaskExecutor;
         this.orderUtilHandler = orderUtilHandler;

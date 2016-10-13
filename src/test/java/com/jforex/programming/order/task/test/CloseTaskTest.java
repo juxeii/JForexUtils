@@ -13,7 +13,7 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.ClosePositionCommandHandler;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.OrderCloseTask;
+import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -23,9 +23,9 @@ import io.reactivex.functions.Function;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderCloseTaskTest extends InstrumentUtilForTest {
+public class CloseTaskTest extends InstrumentUtilForTest {
 
-    private OrderCloseTask orderCloseTask;
+    private CloseTask closeTask;
 
     @Mock
     private ClosePositionCommandHandler commandHandlerMock;
@@ -40,7 +40,7 @@ public class OrderCloseTaskTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() throws Exception {
-        orderCloseTask = new OrderCloseTask(commandHandlerMock, positionUtilMock);
+        closeTask = new CloseTask(commandHandlerMock, positionUtilMock);
     }
 
     private void setUpCommandObservables(final Observable<OrderEvent> mergeObservable,
@@ -53,7 +53,7 @@ public class OrderCloseTaskTest extends InstrumentUtilForTest {
 
     @Test
     public void closeCallIsDeferred() {
-        orderCloseTask.close(closePositionCommandMock);
+        closeTask.close(closePositionCommandMock);
 
         verifyZeroInteractions(commandHandlerMock);
         verifyZeroInteractions(positionUtilMock);
@@ -61,7 +61,7 @@ public class OrderCloseTaskTest extends InstrumentUtilForTest {
 
     @Test
     public void closeAllCallIsDeferred() {
-        orderCloseTask.closeAllPositions(commandFactoryMock);
+        closeTask.closeAllPositions(commandFactoryMock);
 
         verifyZeroInteractions(commandHandlerMock);
         verifyZeroInteractions(positionUtilMock);
@@ -72,7 +72,7 @@ public class OrderCloseTaskTest extends InstrumentUtilForTest {
         private void setUpCommandObservablesAndSubscribe(final Observable<OrderEvent> mergeObservable,
                                                          final Observable<OrderEvent> closeObservable) {
             setUpCommandObservables(mergeObservable, closeObservable);
-            testObserver = orderCloseTask
+            testObserver = closeTask
                 .close(closePositionCommandMock)
                 .test();
         }
@@ -111,7 +111,7 @@ public class OrderCloseTaskTest extends InstrumentUtilForTest {
         }
 
         private void closeAllSubscribe() {
-            testObserver = orderCloseTask
+            testObserver = closeTask
                 .closeAllPositions(commandFactoryMock)
                 .test();
         }

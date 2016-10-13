@@ -12,12 +12,12 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.functions.Action;
 
-public class OrderTaskExecutor {
+public class TaskExecutor {
 
     private final StrategyThreadTask strategyThreadTask;
     private final IEngine engine;
 
-    public OrderTaskExecutor(final StrategyThreadTask strategyThreadTask,
+    public TaskExecutor(final StrategyThreadTask strategyThreadTask,
                              final IEngine engine) {
         this.strategyThreadTask = strategyThreadTask;
         this.engine = engine;

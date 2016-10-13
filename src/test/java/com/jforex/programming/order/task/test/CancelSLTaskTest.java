@@ -12,9 +12,9 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
+import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchMode;
-import com.jforex.programming.order.task.OrderCancelSL;
-import com.jforex.programming.order.task.OrderChangeBatch;
+import com.jforex.programming.order.task.CancelSLTask;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -22,12 +22,12 @@ import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderCancelSLTest extends InstrumentUtilForTest {
+public class CancelSLTaskTest extends InstrumentUtilForTest {
 
-    private OrderCancelSL orderCancelSL;
+    private CancelSLTask cancelSLTask;
 
     @Mock
-    private OrderChangeBatch orderChangeBatchMock;
+    private BatchChangeTask orderChangeBatchMock;
     @Mock
     private MergeCommand mergeCommandMock;
     @Mock
@@ -39,12 +39,12 @@ public class OrderCancelSLTest extends InstrumentUtilForTest {
         when(mergeCommandMock.orderCancelSLComposer(any())).thenReturn(orderCancelSLComposerMock);
         when(mergeCommandMock.orderCancelSLMode()).thenReturn(BatchMode.MERGE);
 
-        orderCancelSL = new OrderCancelSL(orderChangeBatchMock);
+        cancelSLTask = new CancelSLTask(orderChangeBatchMock);
     }
 
     @Test
     public void observeIsDeferred() {
-        orderCancelSL.observe(toCancelSLOrders, mergeCommandMock);
+        cancelSLTask.observe(toCancelSLOrders, mergeCommandMock);
 
         verifyZeroInteractions(orderChangeBatchMock);
     }
@@ -61,7 +61,7 @@ public class OrderCancelSLTest extends InstrumentUtilForTest {
                                                any()))
                                                    .thenReturn(eventObservable(event));
 
-            testObserver = orderCancelSL
+            testObserver = cancelSLTask
                 .observe(toCancelSLOrders, mergeCommandMock)
                 .test();
         }

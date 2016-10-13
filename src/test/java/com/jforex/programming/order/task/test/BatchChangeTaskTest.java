@@ -12,21 +12,21 @@ import com.google.common.collect.Lists;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.event.OrderToEventTransformer;
+import com.jforex.programming.order.task.BasicTask;
+import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchMode;
-import com.jforex.programming.order.task.OrderBasicTask;
-import com.jforex.programming.order.task.OrderChangeBatch;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderChangeBatchTest extends InstrumentUtilForTest {
+public class BatchChangeTaskTest extends InstrumentUtilForTest {
 
-    private OrderChangeBatch orderChangeBatch;
+    private BatchChangeTask batchChangeTask;
 
     @Mock
-    private OrderBasicTask orderBasicTaskMock;
+    private BasicTask orderBasicTaskMock;
     private final List<IOrder> ordersForBatch = Lists.newArrayList(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = submitEvent;
     private final OrderEvent composerEvent = closeEvent;
@@ -37,7 +37,7 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
-        orderChangeBatch = new OrderChangeBatch(orderBasicTaskMock);
+        batchChangeTask = new BatchChangeTask(orderBasicTaskMock);
     }
 
     public class CloseBatch {
@@ -52,7 +52,7 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
 
         @Test
         public void forMergeIsNotConcatenated() {
-            orderChangeBatch
+            batchChangeTask
                 .close(ordersForBatch,
                        BatchMode.MERGE,
                        testOrderComposer)
@@ -63,7 +63,7 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
 
         @Test
         public void forConcatIsNotMerged() {
-            orderChangeBatch
+            batchChangeTask
                 .close(ordersForBatch,
                        BatchMode.CONCAT,
                        testOrderComposer)
@@ -85,7 +85,7 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
 
         @Test
         public void forMergeIsNotConcatenated() {
-            orderChangeBatch
+            batchChangeTask
                 .cancelSL(ordersForBatch,
                           BatchMode.MERGE,
                           testOrderComposer)
@@ -96,7 +96,7 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
 
         @Test
         public void forConcatIsNotMerged() {
-            orderChangeBatch
+            batchChangeTask
                 .cancelSL(ordersForBatch,
                           BatchMode.CONCAT,
                           testOrderComposer)
@@ -118,7 +118,7 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
 
         @Test
         public void forMergeIsNotConcatenated() {
-            orderChangeBatch
+            batchChangeTask
                 .cancelTP(ordersForBatch,
                           BatchMode.MERGE,
                           testOrderComposer)
@@ -129,7 +129,7 @@ public class OrderChangeBatchTest extends InstrumentUtilForTest {
 
         @Test
         public void forConcatIsNotMerged() {
-            orderChangeBatch
+            batchChangeTask
                 .cancelTP(ordersForBatch,
                           BatchMode.CONCAT,
                           testOrderComposer)

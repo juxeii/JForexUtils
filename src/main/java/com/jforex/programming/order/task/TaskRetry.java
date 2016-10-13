@@ -15,17 +15,17 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
 import io.reactivex.functions.Function;
 
-public class OrderTaskRetry {
+public class TaskRetry {
 
-    private static final Logger logger = LogManager.getLogger(OrderTaskRetry.class);
+    private static final Logger logger = LogManager.getLogger(TaskRetry.class);
 
-    private OrderTaskRetry() {
+    private TaskRetry() {
     }
 
     public static ObservableTransformer<OrderEvent, OrderEvent> onRejectRetryWith(final int noOfRetries,
                                                                                   final long delayInMillis) {
         return sourceObservable -> sourceObservable
-            .flatMap(OrderTaskRetry::rejectAsError)
+            .flatMap(TaskRetry::rejectAsError)
             .retryWhen(retryOnReject(noOfRetries, delayInMillis));
     }
 

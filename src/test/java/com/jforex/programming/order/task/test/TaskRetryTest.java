@@ -11,7 +11,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.OrderTaskRetry;
+import com.jforex.programming.order.task.TaskRetry;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 
@@ -21,7 +21,7 @@ import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderTaskRetryTest extends CommonUtilForTest {
+public class TaskRetryTest extends CommonUtilForTest {
 
     @Mock
     private Callable<IOrder> callableMock;
@@ -34,7 +34,7 @@ public class OrderTaskRetryTest extends CommonUtilForTest {
     @Before
     public void setUp() {
         testObserver = subject
-            .compose(OrderTaskRetry.onRejectRetryWith(noOfRetries, delayInMillis))
+            .compose(TaskRetry.onRejectRetryWith(noOfRetries, delayInMillis))
             .test();
     }
 
@@ -52,7 +52,7 @@ public class OrderTaskRetryTest extends CommonUtilForTest {
 
     @Test
     public void testConstructorIsPrivate() throws Exception {
-        assertPrivateConstructor(OrderTaskRetry.class);
+        assertPrivateConstructor(TaskRetry.class);
     }
 
     @Test

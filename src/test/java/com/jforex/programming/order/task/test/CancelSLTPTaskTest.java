@@ -13,9 +13,9 @@ import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
-import com.jforex.programming.order.task.OrderCancelSL;
-import com.jforex.programming.order.task.OrderCancelSLAndTP;
-import com.jforex.programming.order.task.OrderCancelTP;
+import com.jforex.programming.order.task.CancelSLTPTask;
+import com.jforex.programming.order.task.CancelSLTask;
+import com.jforex.programming.order.task.CancelTPTask;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -23,14 +23,14 @@ import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderCancelSLAndTPTest extends InstrumentUtilForTest {
+public class CancelSLTPTaskTest extends InstrumentUtilForTest {
 
-    private OrderCancelSLAndTP orderCancelSLAndTP;
+    private CancelSLTPTask cancelSLTPTask;
 
     @Mock
-    private OrderCancelSL orderCancelSLMock;
+    private CancelSLTask orderCancelSLMock;
     @Mock
-    private OrderCancelTP orderCancelTPMock;
+    private CancelTPTask orderCancelTPMock;
     @Mock
     private MergeCommand mergeCommandMock;
     private TestObserver<OrderEvent> testObserver;
@@ -42,7 +42,7 @@ public class OrderCancelSLAndTPTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
-        orderCancelSLAndTP = new OrderCancelSLAndTP(orderCancelSLMock, orderCancelTPMock);
+        cancelSLTPTask = new CancelSLTPTask(orderCancelSLMock, orderCancelTPMock);
     }
 
     private void setUpCommandObservables(final Observable<OrderEvent> cancelSLObservable,
@@ -54,7 +54,7 @@ public class OrderCancelSLAndTPTest extends InstrumentUtilForTest {
     }
 
     private void subscribeWithOrders(final Set<IOrder> orders) {
-        testObserver = orderCancelSLAndTP
+        testObserver = cancelSLTPTask
             .observe(orders, mergeCommandMock)
             .test();
     }

@@ -18,8 +18,8 @@ import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.task.BatchMode;
-import com.jforex.programming.order.task.OrderChangeBatch;
-import com.jforex.programming.order.task.OrderMergeTask;
+import com.jforex.programming.order.task.BatchChangeTask;
+import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -33,9 +33,9 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
     private ClosePositionCommandHandler commandHandler;
 
     @Mock
-    private OrderMergeTask orderMergeTaskMock;
+    private MergeTask orderMergeTaskMock;
     @Mock
-    private OrderChangeBatch orderChangeBatchMock;
+    private BatchChangeTask orderChangeBatchMock;
     @Mock
     private PositionUtil positionUtilMock;
     @Mock

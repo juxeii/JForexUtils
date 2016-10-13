@@ -15,8 +15,8 @@ import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.OrderMergeTask;
-import com.jforex.programming.order.task.SplitCancelSLTPAndMerge;
+import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
+import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -26,12 +26,12 @@ import io.reactivex.functions.Function;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderMergeTaskTest extends InstrumentUtilForTest {
+public class MergeTaskTest extends InstrumentUtilForTest {
 
-    private OrderMergeTask orderMergeTask;
+    private MergeTask mergeTask;
 
     @Mock
-    private SplitCancelSLTPAndMerge splitterMock;
+    private CancelSLTPAndMergeTask splitterMock;
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
@@ -47,7 +47,7 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        orderMergeTask = new OrderMergeTask(splitterMock, positionUtilMock);
+        mergeTask = new MergeTask(splitterMock, positionUtilMock);
     }
 
     private void setUpMocks() {
@@ -64,7 +64,7 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            testObservable = orderMergeTask.merge(toMergeOrders, mergeCommandMock);
+            testObservable = mergeTask.merge(toMergeOrders, mergeCommandMock);
         }
 
         @Test
@@ -89,7 +89,7 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            testObservable = orderMergeTask.mergePosition(instrumentEURUSD, mergeCommandMock);
+            testObservable = mergeTask.mergePosition(instrumentEURUSD, mergeCommandMock);
         }
 
         @Test
@@ -121,7 +121,7 @@ public class OrderMergeTaskTest extends InstrumentUtilForTest {
         }
 
         private void mergeAllSubscribe() {
-            testObserver = orderMergeTask
+            testObserver = mergeTask
                 .mergeAllPositions(commandFactoryMock)
                 .test();
         }

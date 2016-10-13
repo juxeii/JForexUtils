@@ -9,18 +9,18 @@ import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
 
-public class SplitCancelSLTPAndMerge {
+public class CancelSLTPAndMergeTask {
 
-    private final MergeCommandHandler commandHandler;
+    private final MergeCommandHandler mergeCommandHandler;
 
-    public SplitCancelSLTPAndMerge(final MergeCommandHandler commandHandler) {
-        this.commandHandler = commandHandler;
+    public CancelSLTPAndMergeTask(final MergeCommandHandler mergeCommandHandler) {
+        this.mergeCommandHandler = mergeCommandHandler;
     }
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toMergeOrders,
                                           final MergeCommand command) {
-        final Observable<OrderEvent> cancelSLTP = commandHandler.observeCancelSLTP(toMergeOrders, command);
-        final Observable<OrderEvent> merge = commandHandler.observeMerge(toMergeOrders, command);
+        final Observable<OrderEvent> cancelSLTP = mergeCommandHandler.observeCancelSLTP(toMergeOrders, command);
+        final Observable<OrderEvent> merge = mergeCommandHandler.observeMerge(toMergeOrders, command);
 
         return cancelSLTP.concatWith(merge);
     }

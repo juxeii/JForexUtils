@@ -17,7 +17,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.StrategyThreadTask;
-import com.jforex.programming.order.task.OrderTaskExecutor;
+import com.jforex.programming.order.task.TaskExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -25,9 +25,9 @@ import io.reactivex.Single;
 import io.reactivex.functions.Action;
 
 @RunWith(HierarchicalContextRunner.class)
-public class OrderTaskExecutorTest extends CommonUtilForTest {
+public class TaskExecutorTest extends CommonUtilForTest {
 
-    private OrderTaskExecutor orderTaskExecutor;
+    private TaskExecutor taskExecutor;
 
     @Mock
     private StrategyThreadTask strategyThreadTask;
@@ -47,7 +47,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
         when(strategyThreadTask.execute(any(Callable.class)))
             .thenReturn(testOrderSingle);
 
-        orderTaskExecutor = new OrderTaskExecutor(strategyThreadTask, engineMock);
+        taskExecutor = new TaskExecutor(strategyThreadTask, engineMock);
     }
 
     private void captureAndRunAction() throws Exception {
@@ -71,7 +71,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
                                         buyParamsEURUSD.comment()))
                                             .thenReturn(buyOrderEURUSD);
 
-            returnedOrderSingle = orderTaskExecutor.submitOrder(buyParamsEURUSD);
+            returnedOrderSingle = taskExecutor.submitOrder(buyParamsEURUSD);
         }
 
         @Test
@@ -120,7 +120,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
             when(engineMock.mergeOrders(mergeOrderLabel, toMergeOrders))
                 .thenReturn(orderForTest);
 
-            returnedOrderSingle = orderTaskExecutor.mergeOrders(mergeOrderLabel, toMergeOrders);
+            returnedOrderSingle = taskExecutor.mergeOrders(mergeOrderLabel, toMergeOrders);
         }
 
         @Test
@@ -154,7 +154,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            orderTaskExecutor.close(orderForTest);
+            taskExecutor.close(orderForTest);
         }
 
         @Test
@@ -175,7 +175,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            orderTaskExecutor.setLabel(orderForTest, newLabel);
+            taskExecutor.setLabel(orderForTest, newLabel);
         }
 
         @Test
@@ -196,7 +196,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            orderTaskExecutor.setGoodTillTime(orderForTest, newGTT);
+            taskExecutor.setGoodTillTime(orderForTest, newGTT);
         }
 
         @Test
@@ -217,7 +217,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            orderTaskExecutor.setRequestedAmount(orderForTest, newRequestedAmount);
+            taskExecutor.setRequestedAmount(orderForTest, newRequestedAmount);
         }
 
         @Test
@@ -238,7 +238,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            orderTaskExecutor.setOpenPrice(orderForTest, newOpenPrice);
+            taskExecutor.setOpenPrice(orderForTest, newOpenPrice);
         }
 
         @Test
@@ -259,7 +259,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            orderTaskExecutor.setStopLossPrice(orderForTest, newSL);
+            taskExecutor.setStopLossPrice(orderForTest, newSL);
         }
 
         @Test
@@ -280,7 +280,7 @@ public class OrderTaskExecutorTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            orderTaskExecutor.setTakeProfitPrice(orderForTest, newTP);
+            taskExecutor.setTakeProfitPrice(orderForTest, newTP);
         }
 
         @Test

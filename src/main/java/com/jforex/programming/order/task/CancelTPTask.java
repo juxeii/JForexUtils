@@ -8,11 +8,11 @@ import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
 
-public class OrderCancelTP {
+public class CancelTPTask {
 
-    private final OrderChangeBatch orderChangeBatch;
+    private final BatchChangeTask orderChangeBatch;
 
-    public OrderCancelTP(final OrderChangeBatch orderChangeBatch) {
+    public CancelTPTask(final BatchChangeTask orderChangeBatch) {
         this.orderChangeBatch = orderChangeBatch;
     }
 

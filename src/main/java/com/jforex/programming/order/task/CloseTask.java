@@ -9,12 +9,12 @@ import com.jforex.programming.position.PositionUtil;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 
-public class OrderCloseTask {
+public class CloseTask {
 
     private final ClosePositionCommandHandler commandHandler;
     private final PositionUtil positionUtil;
 
-    public OrderCloseTask(final ClosePositionCommandHandler commandHandler,
+    public CloseTask(final ClosePositionCommandHandler commandHandler,
                           final PositionUtil positionUtil) {
         this.commandHandler = commandHandler;
         this.positionUtil = positionUtil;

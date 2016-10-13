@@ -9,13 +9,13 @@ import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
 
-public class OrderCancelSLAndTP {
+public class CancelSLTPTask {
 
-    private final OrderCancelSL orderCancelSL;
-    private final OrderCancelTP orderCancelTP;
+    private final CancelSLTask orderCancelSL;
+    private final CancelTPTask orderCancelTP;
 
-    public OrderCancelSLAndTP(final OrderCancelSL orderCancelSL,
-                              final OrderCancelTP orderCancelTP) {
+    public CancelSLTPTask(final CancelSLTask orderCancelSL,
+                              final CancelTPTask orderCancelTP) {
         this.orderCancelSL = orderCancelSL;
         this.orderCancelTP = orderCancelTP;
     }

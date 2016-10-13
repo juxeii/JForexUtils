@@ -12,16 +12,16 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergeCommandHandler;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.SplitCancelSLTPAndMerge;
+import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class SplitCancelSLTPAndMergeTest extends InstrumentUtilForTest {
+public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
 
-    private SplitCancelSLTPAndMerge splitter;
+    private CancelSLTPAndMergeTask cancelSLTPAndMergeTask;
 
     @Mock
     private MergeCommandHandler commandHandlerMock;
@@ -34,7 +34,7 @@ public class SplitCancelSLTPAndMergeTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        splitter = new SplitCancelSLTPAndMerge(commandHandlerMock);
+        cancelSLTPAndMergeTask = new CancelSLTPAndMergeTask(commandHandlerMock);
     }
 
     private void setUpMocks() {
@@ -45,7 +45,7 @@ public class SplitCancelSLTPAndMergeTest extends InstrumentUtilForTest {
     }
 
     private TestObserver<OrderEvent> testSubscribeSplitter() {
-        return splitter
+        return cancelSLTPAndMergeTask
             .observe(toMergeOrders, mergeCommandMock)
             .test();
     }

@@ -9,9 +9,9 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.OrderBasicTask;
-import com.jforex.programming.order.task.OrderCloseTask;
-import com.jforex.programming.order.task.OrderMergeTask;
+import com.jforex.programming.order.task.BasicTask;
+import com.jforex.programming.order.task.CloseTask;
+import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 
@@ -20,14 +20,14 @@ import io.reactivex.functions.Function;
 
 public class OrderUtil {
 
-    private final OrderBasicTask orderBasicTask;
-    private final OrderMergeTask orderMergeTask;
-    private final OrderCloseTask orderCloseTask;
+    private final BasicTask orderBasicTask;
+    private final MergeTask orderMergeTask;
+    private final CloseTask orderCloseTask;
     private final PositionUtil positionUtil;
 
-    public OrderUtil(final OrderBasicTask orderBasicTask,
-                     final OrderMergeTask orderMergeTask,
-                     final OrderCloseTask orderCloseTask,
+    public OrderUtil(final BasicTask orderBasicTask,
+                     final MergeTask orderMergeTask,
+                     final CloseTask orderCloseTask,
                      final PositionUtil positionUtil) {
         this.orderBasicTask = orderBasicTask;
         this.orderMergeTask = orderMergeTask;
