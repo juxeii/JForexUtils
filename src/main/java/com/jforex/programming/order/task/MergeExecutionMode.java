@@ -1,4 +1,4 @@
-package com.jforex.programming.order.command;
+package com.jforex.programming.order.task;
 
 public enum MergeExecutionMode {
 

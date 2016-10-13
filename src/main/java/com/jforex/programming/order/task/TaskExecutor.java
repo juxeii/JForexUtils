@@ -18,7 +18,7 @@ public class TaskExecutor {
     private final IEngine engine;
 
     public TaskExecutor(final StrategyThreadTask strategyThreadTask,
-                             final IEngine engine) {
+                        final IEngine engine) {
         this.strategyThreadTask = strategyThreadTask;
         this.engine = engine;
     }

@@ -20,25 +20,25 @@ import io.reactivex.functions.Function;
 
 public class OrderUtil {
 
-    private final BasicTask orderBasicTask;
-    private final MergeTask orderMergeTask;
-    private final CloseTask orderCloseTask;
+    private final BasicTask basicTask;
+    private final MergeTask mergeTask;
+    private final CloseTask closeTask;
     private final PositionUtil positionUtil;
 
-    public OrderUtil(final BasicTask orderBasicTask,
-                     final MergeTask orderMergeTask,
-                     final CloseTask orderCloseTask,
+    public OrderUtil(final BasicTask basicTask,
+                     final MergeTask mergeTask,
+                     final CloseTask closeTask,
                      final PositionUtil positionUtil) {
-        this.orderBasicTask = orderBasicTask;
-        this.orderMergeTask = orderMergeTask;
-        this.orderCloseTask = orderCloseTask;
+        this.basicTask = basicTask;
+        this.mergeTask = mergeTask;
+        this.closeTask = closeTask;
         this.positionUtil = positionUtil;
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
         checkNotNull(orderParams);
 
-        return orderBasicTask.submitOrder(orderParams);
+        return basicTask.submitOrder(orderParams);
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
@@ -46,7 +46,7 @@ public class OrderUtil {
         checkNotNull(mergeOrderLabel);
         checkNotNull(toMergeOrders);
 
-        return orderBasicTask.mergeOrders(mergeOrderLabel, toMergeOrders);
+        return basicTask.mergeOrders(mergeOrderLabel, toMergeOrders);
     }
 
     public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
@@ -54,13 +54,13 @@ public class OrderUtil {
         checkNotNull(toMergeOrders);
         checkNotNull(command);
 
-        return orderMergeTask.merge(toMergeOrders, command);
+        return mergeTask.merge(toMergeOrders, command);
     }
 
     public Observable<OrderEvent> close(final IOrder order) {
         checkNotNull(order);
 
-        return orderBasicTask.close(order);
+        return basicTask.close(order);
     }
 
     public Observable<OrderEvent> setLabel(final IOrder order,
@@ -68,42 +68,42 @@ public class OrderUtil {
         checkNotNull(order);
         checkNotNull(label);
 
-        return orderBasicTask.setLabel(order, label);
+        return basicTask.setLabel(order, label);
     }
 
     public Observable<OrderEvent> setGoodTillTime(final IOrder order,
                                                   final long newGTT) {
         checkNotNull(order);
 
-        return orderBasicTask.setGoodTillTime(order, newGTT);
+        return basicTask.setGoodTillTime(order, newGTT);
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder order,
                                                      final double newRequestedAmount) {
         checkNotNull(order);
 
-        return orderBasicTask.setRequestedAmount(order, newRequestedAmount);
+        return basicTask.setRequestedAmount(order, newRequestedAmount);
     }
 
     public Observable<OrderEvent> setOpenPrice(final IOrder order,
                                                final double newOpenPrice) {
         checkNotNull(order);
 
-        return orderBasicTask.setOpenPrice(order, newOpenPrice);
+        return basicTask.setOpenPrice(order, newOpenPrice);
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder order,
                                                    final double newSL) {
         checkNotNull(order);
 
-        return orderBasicTask.setStopLossPrice(order, newSL);
+        return basicTask.setStopLossPrice(order, newSL);
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder order,
                                                      final double newTP) {
         checkNotNull(order);
 
-        return orderBasicTask.setTakeProfitPrice(order, newTP);
+        return basicTask.setTakeProfitPrice(order, newTP);
     }
 
     public Observable<OrderEvent> mergePosition(final Instrument instrument,
@@ -111,25 +111,25 @@ public class OrderUtil {
         checkNotNull(instrument);
         checkNotNull(command);
 
-        return orderMergeTask.mergePosition(instrument, command);
+        return mergeTask.mergePosition(instrument, command);
     }
 
     public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, MergeCommand> commandFactory) {
         checkNotNull(commandFactory);
 
-        return orderMergeTask.mergeAllPositions(commandFactory);
+        return mergeTask.mergeAllPositions(commandFactory);
     }
 
     public Observable<OrderEvent> closePosition(final ClosePositionCommand command) {
         checkNotNull(command);
 
-        return orderCloseTask.close(command);
+        return closeTask.close(command);
     }
 
     public Observable<OrderEvent> closeAllPositions(final Function<Instrument, ClosePositionCommand> commandFactory) {
         checkNotNull(commandFactory);
 
-        return orderCloseTask.closeAllPositions(commandFactory);
+        return closeTask.closeAllPositions(commandFactory);
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {

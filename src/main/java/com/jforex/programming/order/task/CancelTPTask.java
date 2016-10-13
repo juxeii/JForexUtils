@@ -10,16 +10,16 @@ import io.reactivex.Observable;
 
 public class CancelTPTask {
 
-    private final BatchChangeTask orderChangeBatch;
+    private final BatchChangeTask batchChangeTask;
 
     public CancelTPTask(final BatchChangeTask orderChangeBatch) {
-        this.orderChangeBatch = orderChangeBatch;
+        this.batchChangeTask = orderChangeBatch;
     }
 
     public Observable<OrderEvent> observe(final Collection<IOrder> ordersForCancelTP,
                                           final MergeCommand mergeCommand) {
-        return Observable.defer(() -> orderChangeBatch.cancelTP(ordersForCancelTP,
-                                                                mergeCommand.orderCancelTPMode(),
-                                                                mergeCommand::orderCancelTPComposer));
+        return Observable.defer(() -> batchChangeTask.cancelTP(ordersForCancelTP,
+                                                               mergeCommand.orderCancelTPMode(),
+                                                               mergeCommand::orderCancelTPComposer));
     }
 }

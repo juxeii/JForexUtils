@@ -20,12 +20,12 @@ import io.reactivex.Observable;
 
 public class BasicTask {
 
-    private final TaskExecutor orderTaskExecutor;
+    private final TaskExecutor taskExecutor;
     private final OrderUtilHandler orderUtilHandler;
 
     public BasicTask(final TaskExecutor orderTaskExecutor,
-                          final OrderUtilHandler orderUtilHandler) {
-        this.orderTaskExecutor = orderTaskExecutor;
+                     final OrderUtilHandler orderUtilHandler) {
+        this.taskExecutor = orderTaskExecutor;
         this.orderUtilHandler = orderUtilHandler;
     }
 
@@ -34,7 +34,7 @@ public class BasicTask {
                 ? OrderCallReason.SUBMIT_CONDITIONAL
                 : OrderCallReason.SUBMIT;
 
-        return Observable.defer(() -> orderTaskExecutor
+        return Observable.defer(() -> taskExecutor
             .submitOrder(orderParams)
             .toObservable()
             .flatMap(order -> orderUtilObservable(order, callReason)));
@@ -45,7 +45,7 @@ public class BasicTask {
         return Observable
             .just(toMergeOrders)
             .filter(orders -> orders.size() >= 2)
-            .flatMap(orders -> orderTaskExecutor
+            .flatMap(orders -> taskExecutor
                 .mergeOrders(mergeOrderLabel, orders)
                 .toObservable()
                 .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE)));
@@ -55,7 +55,7 @@ public class BasicTask {
         return Observable
             .just(orderToClose)
             .filter(order -> !isClosed.test(order))
-            .flatMap(order -> orderTaskExecutor
+            .flatMap(order -> taskExecutor
                 .close(order)
                 .andThen(orderUtilObservable(order, OrderCallReason.CLOSE)));
     }
@@ -65,7 +65,7 @@ public class BasicTask {
         return Observable
             .just(orderToSetLabel)
             .filter(order -> !isLabelSetTo(label).test(order))
-            .flatMap(order -> orderTaskExecutor
+            .flatMap(order -> taskExecutor
                 .setLabel(order, label)
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_LABEL)));
     }
@@ -75,7 +75,7 @@ public class BasicTask {
         return Observable
             .just(orderToSetGTT)
             .filter(order -> !isGTTSetTo(newGTT).test(order))
-            .flatMap(order -> orderTaskExecutor
+            .flatMap(order -> taskExecutor
                 .setGoodTillTime(order, newGTT)
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_GTT)));
     }
@@ -85,7 +85,7 @@ public class BasicTask {
         return Observable
             .just(orderToSetAmount)
             .filter(order -> !isAmountSetTo(newRequestedAmount).test(order))
-            .flatMap(order -> orderTaskExecutor
+            .flatMap(order -> taskExecutor
                 .setRequestedAmount(order, newRequestedAmount)
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_AMOUNT)));
     }
@@ -95,7 +95,7 @@ public class BasicTask {
         return Observable
             .just(orderToSetOpenPrice)
             .filter(order -> !isOpenPriceSetTo(newOpenPrice).test(order))
-            .flatMap(order -> orderTaskExecutor
+            .flatMap(order -> taskExecutor
                 .setOpenPrice(order, newOpenPrice)
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_PRICE)));
     }
@@ -105,7 +105,7 @@ public class BasicTask {
         return Observable
             .just(orderToSetSL)
             .filter(order -> !isSLSetTo(newSL).test(order))
-            .flatMap(order -> orderTaskExecutor
+            .flatMap(order -> taskExecutor
                 .setStopLossPrice(order, newSL)
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL)));
     }
@@ -115,7 +115,7 @@ public class BasicTask {
         return Observable
             .just(orderToSetTP)
             .filter(order -> !isTPSetTo(newTP).test(order))
-            .flatMap(order -> orderTaskExecutor
+            .flatMap(order -> taskExecutor
                 .setTakeProfitPrice(order, newTP)
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_TP)));
     }

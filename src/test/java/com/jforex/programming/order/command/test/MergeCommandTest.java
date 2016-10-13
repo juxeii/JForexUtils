@@ -6,11 +6,11 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.BatchMode;
+import com.jforex.programming.order.task.MergeExecutionMode;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;

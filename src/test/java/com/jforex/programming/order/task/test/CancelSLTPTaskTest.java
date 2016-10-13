@@ -10,12 +10,12 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.task.CancelSLTPTask;
 import com.jforex.programming.order.task.CancelSLTask;
 import com.jforex.programming.order.task.CancelTPTask;
+import com.jforex.programming.order.task.MergeExecutionMode;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;

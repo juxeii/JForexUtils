@@ -6,6 +6,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BatchChangeTask;
+import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.position.PositionUtil;
 

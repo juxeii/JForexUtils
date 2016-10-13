@@ -14,18 +14,18 @@ import io.reactivex.functions.Function;
 
 public class BatchChangeTask {
 
-    private final BasicTask orderBasicTask;
+    private final BasicTask basicTask;
 
     private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
 
     public BatchChangeTask(final BasicTask orderBasicTask) {
-        this.orderBasicTask = orderBasicTask;
+        this.basicTask = orderBasicTask;
     }
 
     public Observable<OrderEvent> close(final Collection<IOrder> orders,
                                         final BatchMode batchMode,
                                         final OrderToEventTransformer composer) {
-        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> orderBasicTask
+        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> basicTask
             .close(order)
             .compose(composer.apply(order));
         return forBasicTask(orders,
@@ -36,7 +36,7 @@ public class BatchChangeTask {
     public Observable<OrderEvent> cancelSL(final Collection<IOrder> orders,
                                            final BatchMode batchMode,
                                            final OrderToEventTransformer composer) {
-        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> orderBasicTask
+        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> basicTask
             .setStopLossPrice(order, platformSettings.noSLPrice())
             .compose(composer.apply(order));
         return forBasicTask(orders,
@@ -47,7 +47,7 @@ public class BatchChangeTask {
     public Observable<OrderEvent> cancelTP(final Collection<IOrder> orders,
                                            final BatchMode batchMode,
                                            final OrderToEventTransformer composer) {
-        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> orderBasicTask
+        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> basicTask
             .setTakeProfitPrice(order, platformSettings.noTPPrice())
             .compose(composer.apply(order));
         return forBasicTask(orders,
