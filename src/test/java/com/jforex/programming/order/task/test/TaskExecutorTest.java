@@ -15,6 +15,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
+import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.StrategyThreadTask;
 import com.jforex.programming.order.task.TaskExecutor;
@@ -338,6 +339,56 @@ public class TaskExecutorTest extends CommonUtilForTest {
         public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
             captureAndRunAction();
             verify(orderForTest).setStopLossPrice(newSL);
+        }
+    }
+
+    public class SetStopLossWithOfferSideSetup {
+
+        private final double newSL = 1.1234;
+
+        @Before
+        public void setUp() {
+            taskExecutor.setStopLossPrice(orderForTest,
+                                          newSL,
+                                          OfferSide.ASK);
+        }
+
+        @Test
+        public void setStopLossNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
+            verify(orderForTest).setStopLossPrice(newSL, OfferSide.ASK);
+        }
+    }
+
+    public class SetStopLossWithOfferSideAndTrailingStepSetup {
+
+        private final double newSL = 1.1234;
+        private final double trailingStep = 11.3;
+
+        @Before
+        public void setUp() {
+            taskExecutor.setStopLossPrice(orderForTest,
+                                          newSL,
+                                          OfferSide.ASK,
+                                          trailingStep);
+        }
+
+        @Test
+        public void setStopLossNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
+            verify(orderForTest).setStopLossPrice(newSL,
+                                                  OfferSide.ASK,
+                                                  trailingStep);
         }
     }
 

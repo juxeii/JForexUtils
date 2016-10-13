@@ -5,6 +5,7 @@ import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.misc.StrategyThreadTask;
 import com.jforex.programming.order.OrderParams;
 
@@ -88,6 +89,21 @@ public class TaskExecutor {
     public Completable setStopLossPrice(final IOrder order,
                                         final double newSL) {
         return completable(() -> order.setStopLossPrice(newSL));
+    }
+
+    public Completable setStopLossPrice(final IOrder order,
+                                        final double newSL,
+                                        final OfferSide side) {
+        return completable(() -> order.setStopLossPrice(newSL, side));
+    }
+
+    public Completable setStopLossPrice(final IOrder order,
+                                        final double newSL,
+                                        final OfferSide side,
+                                        final double trailingStep) {
+        return completable(() -> order.setStopLossPrice(newSL,
+                                                        side,
+                                                        trailingStep));
     }
 
     public Completable setTakeProfitPrice(final IOrder order,
