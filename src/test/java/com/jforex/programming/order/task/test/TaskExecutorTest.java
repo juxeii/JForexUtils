@@ -40,6 +40,9 @@ public class TaskExecutorTest extends CommonUtilForTest {
     private final IOrder orderForTest = buyOrderEURUSD;
     private final Single<IOrder> testOrderSingle = Single.just(orderForTest);
     private Single<IOrder> returnedOrderSingle;
+    private final double closeAmount = 0.12;
+    private final double closePrice = 1.1234;
+    private final double closeSlippage = 5.5;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -166,6 +169,70 @@ public class TaskExecutorTest extends CommonUtilForTest {
         public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
             captureAndRunAction();
             verify(orderForTest).close();
+        }
+    }
+
+    public class CloseWithAmountSetup {
+
+        @Before
+        public void setUp() {
+            taskExecutor.close(orderForTest, closeAmount);
+        }
+
+        @Test
+        public void closeIsNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
+            verify(orderForTest).close(closeAmount);
+        }
+    }
+
+    public class CloseWithAmountAndPriceSetup {
+
+        @Before
+        public void setUp() {
+            taskExecutor.close(orderForTest,
+                               closeAmount,
+                               closePrice);
+        }
+
+        @Test
+        public void closeIsNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
+            verify(orderForTest).close(closeAmount, closePrice);
+        }
+    }
+
+    public class CloseWithAmountAndPriceAndSlippageSetup {
+
+        @Before
+        public void setUp() {
+            taskExecutor.close(orderForTest,
+                               closeAmount,
+                               closePrice,
+                               closeSlippage);
+        }
+
+        @Test
+        public void closeIsNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
+            verify(orderForTest).close(closeAmount,
+                                       closePrice,
+                                       closeSlippage);
         }
     }
 

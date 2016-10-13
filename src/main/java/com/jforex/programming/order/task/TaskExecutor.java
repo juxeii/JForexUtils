@@ -45,6 +45,26 @@ public class TaskExecutor {
         return completable(() -> order.close());
     }
 
+    public Completable close(final IOrder order,
+                             final double amount) {
+        return completable(() -> order.close(amount));
+    }
+
+    public Completable close(final IOrder order,
+                             final double amount,
+                             final double price) {
+        return completable(() -> order.close(amount, price));
+    }
+
+    public Completable close(final IOrder order,
+                             final double amount,
+                             final double price,
+                             final double slippage) {
+        return completable(() -> order.close(amount,
+                                             price,
+                                             slippage));
+    }
+
     public Completable setLabel(final IOrder order,
                                 final String label) {
         return completable(() -> order.setLabel(label));
