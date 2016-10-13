@@ -1,4 +1,4 @@
-package com.jforex.programming.order;
+package com.jforex.programming.order.task;
 
 import static com.jforex.programming.order.OrderStaticUtil.isAmountSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isClosed;
@@ -11,6 +11,8 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 

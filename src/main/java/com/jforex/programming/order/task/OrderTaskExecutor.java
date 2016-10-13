@@ -1,4 +1,4 @@
-package com.jforex.programming.order;
+package com.jforex.programming.order.task;
 
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.misc.StrategyThreadTask;
+import com.jforex.programming.order.OrderParams;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;

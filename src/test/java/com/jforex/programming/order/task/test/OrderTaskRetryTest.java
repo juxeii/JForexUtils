@@ -1,4 +1,4 @@
-package com.jforex.programming.order.test;
+package com.jforex.programming.order.task.test;
 
 import java.util.concurrent.Callable;
 
@@ -8,10 +8,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.OrderTaskRetry;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.OrderTaskRetry;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 

@@ -1,4 +1,4 @@
-package com.jforex.programming.order.test;
+package com.jforex.programming.order.task.test;
 
 import java.util.Collection;
 
@@ -10,12 +10,12 @@ import org.mockito.Mock;
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.OrderBasicTask;
 import com.jforex.programming.order.OrderParams;
-import com.jforex.programming.order.OrderTaskExecutor;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.task.OrderBasicTask;
+import com.jforex.programming.order.task.OrderTaskExecutor;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 

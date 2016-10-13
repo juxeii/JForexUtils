@@ -1,4 +1,4 @@
-package com.jforex.programming.order;
+package com.jforex.programming.order.task;
 
 import static com.jforex.programming.order.event.OrderEventTypeSets.rejectEvents;
 

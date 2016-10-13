@@ -9,6 +9,9 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.task.OrderBasicTask;
+import com.jforex.programming.order.task.OrderCloseTask;
+import com.jforex.programming.order.task.OrderMergeTask;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 

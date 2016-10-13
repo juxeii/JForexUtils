@@ -1,4 +1,4 @@
-package com.jforex.programming.order;
+package com.jforex.programming.order.task;
 
 import java.util.Collection;
 

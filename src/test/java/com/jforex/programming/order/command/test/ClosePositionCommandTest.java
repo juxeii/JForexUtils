@@ -8,13 +8,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.command.CloseExecutionMode;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.event.OrderToEventTransformer;
+import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;

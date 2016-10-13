@@ -1,4 +1,4 @@
-package com.jforex.programming.order;
+package com.jforex.programming.order.task;
 
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.command.ClosePositionCommand;

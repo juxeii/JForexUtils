@@ -4,9 +4,9 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.OrderChangeBatch;
-import com.jforex.programming.order.OrderMergeTask;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.task.OrderChangeBatch;
+import com.jforex.programming.order.task.OrderMergeTask;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;

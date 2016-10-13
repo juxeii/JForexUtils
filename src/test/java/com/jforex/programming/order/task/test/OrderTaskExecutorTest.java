@@ -1,4 +1,4 @@
-package com.jforex.programming.order.test;
+package com.jforex.programming.order.task.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -17,7 +17,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.google.common.collect.Sets;
 import com.jforex.programming.misc.StrategyThreadTask;
-import com.jforex.programming.order.OrderTaskExecutor;
+import com.jforex.programming.order.task.OrderTaskExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;

@@ -6,9 +6,9 @@ import java.util.Optional;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.BatchMode;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.event.OrderToEventTransformer;
+import com.jforex.programming.order.task.BatchMode;
 
 public class ClosePositionCommand {
 

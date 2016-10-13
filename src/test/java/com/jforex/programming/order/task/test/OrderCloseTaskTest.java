@@ -1,4 +1,4 @@
-package com.jforex.programming.order.test;
+package com.jforex.programming.order.task.test;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,10 +10,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.OrderCloseTask;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.ClosePositionCommandHandler;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.task.OrderCloseTask;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 

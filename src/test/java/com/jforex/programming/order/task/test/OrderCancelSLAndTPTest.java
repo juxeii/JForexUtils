@@ -1,4 +1,4 @@
-package com.jforex.programming.order.test;
+package com.jforex.programming.order.task.test;
 
 import java.util.Set;
 
@@ -9,13 +9,13 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.OrderCancelSL;
-import com.jforex.programming.order.OrderCancelSLAndTP;
-import com.jforex.programming.order.OrderCancelTP;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.command.MergeExecutionMode;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
+import com.jforex.programming.order.task.OrderCancelSL;
+import com.jforex.programming.order.task.OrderCancelSLAndTP;
+import com.jforex.programming.order.task.OrderCancelTP;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
