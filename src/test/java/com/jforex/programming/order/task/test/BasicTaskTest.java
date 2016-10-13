@@ -9,6 +9,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
+import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -600,6 +601,126 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void completesImmediatelyWhenSLAlreadyClosed() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+            orderUtilForTest.setSL(orderForTest, newSL);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        @Test
+        public void orderInClosedStateIsIgnored() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_SL);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_SL);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class SetSLWithOfferSideSetup {
+
+        private final double newSL = 1.1234;
+
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.setStopLossPrice(orderForTest,
+                                                        newSL,
+                                                        OfferSide.ASK))
+                                                            .thenReturn(emptyCompletable());
+
+            observable = basicTask.setStopLossPrice(orderForTest,
+                                                    newSL,
+                                                    OfferSide.ASK);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenSLAlreadyClosed() {
+            orderUtilForTest.setSL(orderForTest, newSL);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        @Test
+        public void orderInClosedStateIsIgnored() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_SL);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_SL);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class SetSLWithOfferSideAndTrailingStepSetup {
+
+        private final double newSL = 1.1234;
+        private final double trailingStep = 11.3;
+
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.setStopLossPrice(orderForTest,
+                                                        newSL,
+                                                        OfferSide.ASK,
+                                                        trailingStep))
+                                                            .thenReturn(emptyCompletable());
+
+            observable = basicTask.setStopLossPrice(orderForTest,
+                                                    newSL,
+                                                    OfferSide.ASK,
+                                                    trailingStep);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenSLAlreadyClosed() {
             orderUtilForTest.setSL(orderForTest, newSL);
 
             assertTaskFilterCausesNoAction();
@@ -654,7 +775,15 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void completesImmediatelyWhenTPAlreadyClosed() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
             orderUtilForTest.setTP(orderForTest, newTP);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        @Test
+        public void orderInClosedStateIsIgnored() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
 
             assertTaskFilterCausesNoAction();
         }

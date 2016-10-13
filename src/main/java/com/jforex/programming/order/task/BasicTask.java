@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 import com.dukascopy.api.IOrder;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -81,8 +82,8 @@ public class BasicTask {
                                                                    slippage));
     }
 
-    private Observable<OrderEvent> genericClose(final IOrder orderToClose,
-                                                final Supplier<Completable> closeCompletable) {
+    private final Observable<OrderEvent> genericClose(final IOrder orderToClose,
+                                                      final Supplier<Completable> closeCompletable) {
         return Observable
             .just(orderToClose)
             .filter(isFilled.or(isOpened)::test)
@@ -132,12 +133,41 @@ public class BasicTask {
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToSetSL,
                                                    final double newSL) {
+        return genericSetStopLossPrice(orderToSetSL,
+                                       newSL,
+                                       () -> taskExecutor.setStopLossPrice(orderToSetSL, newSL));
+    }
+
+    public Observable<OrderEvent> setStopLossPrice(final IOrder orderToSetSL,
+                                                   final double newSL,
+                                                   final OfferSide offerSide) {
+        return genericSetStopLossPrice(orderToSetSL,
+                                       newSL,
+                                       () -> taskExecutor.setStopLossPrice(orderToSetSL,
+                                                                           newSL,
+                                                                           offerSide));
+    }
+
+    public Observable<OrderEvent> setStopLossPrice(final IOrder orderToSetSL,
+                                                   final double newSL,
+                                                   final OfferSide offerSide,
+                                                   final double trailingStep) {
+        return genericSetStopLossPrice(orderToSetSL,
+                                       newSL,
+                                       () -> taskExecutor.setStopLossPrice(orderToSetSL,
+                                                                           newSL,
+                                                                           offerSide,
+                                                                           trailingStep));
+    }
+
+    private final Observable<OrderEvent> genericSetStopLossPrice(final IOrder orderToSetSL,
+                                                                 final double newSL,
+                                                                 final Supplier<Completable> setStopLossPriceCompletable) {
         return Observable
             .just(orderToSetSL)
             .filter(isFilled.or(isOpened)::test)
             .filter(order -> !isSLSetTo(newSL).test(order))
-            .flatMap(order -> taskExecutor
-                .setStopLossPrice(order, newSL)
+            .flatMap(order -> setStopLossPriceCompletable.get()
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL)));
     }
 
