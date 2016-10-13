@@ -1,11 +1,9 @@
 package com.jforex.programming.order.task;
 
 import static com.jforex.programming.order.OrderStaticUtil.isAmountSetTo;
-import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isGTTSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isLabelSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isOpenPriceSetTo;
-import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
@@ -15,6 +13,7 @@ import java.util.function.Supplier;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.order.OrderParams;
+import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
@@ -86,7 +85,7 @@ public class BasicTask {
                                                       final Supplier<Completable> closeCompletable) {
         return Observable
             .just(orderToClose)
-            .filter(isFilled.or(isOpened)::test)
+            .filter(order -> !OrderStaticUtil.isClosed.test(orderToClose))
             .flatMap(order -> closeCompletable.get()
                 .andThen(orderUtilObservable(order, OrderCallReason.CLOSE)));
     }
@@ -165,7 +164,6 @@ public class BasicTask {
                                                                  final Supplier<Completable> setStopLossPriceCompletable) {
         return Observable
             .just(orderToSetSL)
-            .filter(isFilled.or(isOpened)::test)
             .filter(order -> !isSLSetTo(newSL).test(order))
             .flatMap(order -> setStopLossPriceCompletable.get()
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL)));
@@ -175,7 +173,6 @@ public class BasicTask {
                                                      final double newTP) {
         return Observable
             .just(orderToSetTP)
-            .filter(isFilled.or(isOpened)::test)
             .filter(order -> !isTPSetTo(newTP).test(order))
             .flatMap(order -> taskExecutor
                 .setTakeProfitPrice(order, newTP)

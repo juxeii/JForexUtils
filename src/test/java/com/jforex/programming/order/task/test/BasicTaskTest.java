@@ -601,15 +601,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void completesImmediatelyWhenSLAlreadyClosed() {
-            orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
             orderUtilForTest.setSL(orderForTest, newSL);
-
-            assertTaskFilterCausesNoAction();
-        }
-
-        @Test
-        public void orderInClosedStateIsIgnored() {
-            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
 
             assertTaskFilterCausesNoAction();
         }
@@ -661,13 +653,6 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         @Test
         public void completesImmediatelyWhenSLAlreadyClosed() {
             orderUtilForTest.setSL(orderForTest, newSL);
-
-            assertTaskFilterCausesNoAction();
-        }
-
-        @Test
-        public void orderInClosedStateIsIgnored() {
-            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
 
             assertTaskFilterCausesNoAction();
         }
@@ -726,13 +711,6 @@ public class BasicTaskTest extends InstrumentUtilForTest {
             assertTaskFilterCausesNoAction();
         }
 
-        @Test
-        public void orderInClosedStateIsIgnored() {
-            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
-
-            assertTaskFilterCausesNoAction();
-        }
-
         public class OnSubscribe {
 
             @Before
@@ -775,15 +753,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void completesImmediatelyWhenTPAlreadyClosed() {
-            orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
             orderUtilForTest.setTP(orderForTest, newTP);
-
-            assertTaskFilterCausesNoAction();
-        }
-
-        @Test
-        public void orderInClosedStateIsIgnored() {
-            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
 
             assertTaskFilterCausesNoAction();
         }
