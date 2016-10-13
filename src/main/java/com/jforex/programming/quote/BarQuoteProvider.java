@@ -44,8 +44,7 @@ public class BarQuoteProvider {
     private final Observable<BarQuote> observableForParams(final BarParams barParams) {
         if (barParams.period().name() == null)
             jforexUtil.subscribeToBarsFeed(barParams);
-        return barQuoteObservable
-            .filter(barQuote -> barQuote.barParams().equals(barParams));
+        return barQuoteObservable.filter(barQuote -> barQuote.barParams().equals(barParams));
     }
 
     public Observable<BarQuote> observable() {

@@ -230,6 +230,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
                 setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CLOSE);
 
                 testObserver = observable.test();

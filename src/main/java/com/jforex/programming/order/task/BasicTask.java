@@ -1,10 +1,11 @@
 package com.jforex.programming.order.task;
 
 import static com.jforex.programming.order.OrderStaticUtil.isAmountSetTo;
-import static com.jforex.programming.order.OrderStaticUtil.isClosed;
+import static com.jforex.programming.order.OrderStaticUtil.isFilled;
 import static com.jforex.programming.order.OrderStaticUtil.isGTTSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isLabelSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isOpenPriceSetTo;
+import static com.jforex.programming.order.OrderStaticUtil.isOpened;
 import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
@@ -54,7 +55,7 @@ public class BasicTask {
     public Observable<OrderEvent> close(final IOrder orderToClose) {
         return Observable
             .just(orderToClose)
-            .filter(order -> !isClosed.test(order))
+            .filter(isFilled.or(isOpened)::test)
             .flatMap(order -> taskExecutor
                 .close(order)
                 .andThen(orderUtilObservable(order, OrderCallReason.CLOSE)));
