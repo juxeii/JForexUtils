@@ -57,7 +57,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         verify(orderUtilHandlerMock).callObservable(orderForTest, callReason);
     }
 
-    private void assertValueAlreadySet() {
+    private void assertTaskFilterCausesNoAction() {
         observable
             .test()
             .assertComplete();
@@ -226,7 +226,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void completesImmediatelyWhenOrderAlreadyClosed() {
             orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
 
-            assertValueAlreadySet();
+            assertTaskFilterCausesNoAction();
         }
 
         public class OnSubscribe {
@@ -271,7 +271,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void completesImmediatelyWhenOrderAlreadyClosed() {
             orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
 
-            assertValueAlreadySet();
+            assertTaskFilterCausesNoAction();
         }
 
         public class OnSubscribe {
@@ -320,7 +320,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void completesImmediatelyWhenOrderAlreadyClosed() {
             orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
 
-            assertValueAlreadySet();
+            assertTaskFilterCausesNoAction();
         }
 
         public class OnSubscribe {
@@ -371,7 +371,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void completesImmediatelyWhenOrderAlreadyClosed() {
             orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
 
-            assertValueAlreadySet();
+            assertTaskFilterCausesNoAction();
         }
 
         public class OnSubscribe {
@@ -418,7 +418,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void completesImmediatelyWhenLabelAlreadyClosed() {
             orderUtilForTest.setLabel(orderForTest, newLabel);
 
-            assertValueAlreadySet();
+            assertTaskFilterCausesNoAction();
         }
 
         public class OnSubscribe {
@@ -464,7 +464,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void completesImmediatelyWhenGTTAlreadyClosed() {
             orderUtilForTest.setGTT(orderForTest, newGTT);
 
-            assertValueAlreadySet();
+            assertTaskFilterCausesNoAction();
         }
 
         public class OnSubscribe {
@@ -510,7 +510,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void completesImmediatelyWhenAmountAlreadyClosed() {
             orderUtilForTest.setRequestedAmount(orderForTest, newRequestedAmount);
 
-            assertValueAlreadySet();
+            assertTaskFilterCausesNoAction();
         }
 
         public class OnSubscribe {
@@ -556,7 +556,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void completesImmediatelyWhenOpenPriceAlreadyClosed() {
             orderUtilForTest.setOpenPrice(orderForTest, newOpenPrice);
 
-            assertValueAlreadySet();
+            assertTaskFilterCausesNoAction();
         }
 
         public class OnSubscribe {
@@ -602,13 +602,21 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void completesImmediatelyWhenSLAlreadyClosed() {
             orderUtilForTest.setSL(orderForTest, newSL);
 
-            assertValueAlreadySet();
+            assertTaskFilterCausesNoAction();
+        }
+
+        @Test
+        public void orderInClosedStateIsIgnored() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+            assertTaskFilterCausesNoAction();
         }
 
         public class OnSubscribe {
 
             @Before
             public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
                 setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_SL);
 
                 testObserver = observable.test();
@@ -648,13 +656,14 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void completesImmediatelyWhenTPAlreadyClosed() {
             orderUtilForTest.setTP(orderForTest, newTP);
 
-            assertValueAlreadySet();
+            assertTaskFilterCausesNoAction();
         }
 
         public class OnSubscribe {
 
             @Before
             public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
                 setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_TP);
 
                 testObserver = observable.test();

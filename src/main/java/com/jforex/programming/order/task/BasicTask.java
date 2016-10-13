@@ -134,6 +134,7 @@ public class BasicTask {
                                                    final double newSL) {
         return Observable
             .just(orderToSetSL)
+            .filter(isFilled.or(isOpened)::test)
             .filter(order -> !isSLSetTo(newSL).test(order))
             .flatMap(order -> taskExecutor
                 .setStopLossPrice(order, newSL)
@@ -144,6 +145,7 @@ public class BasicTask {
                                                      final double newTP) {
         return Observable
             .just(orderToSetTP)
+            .filter(isFilled.or(isOpened)::test)
             .filter(order -> !isTPSetTo(newTP).test(order))
             .flatMap(order -> taskExecutor
                 .setTakeProfitPrice(order, newTP)
