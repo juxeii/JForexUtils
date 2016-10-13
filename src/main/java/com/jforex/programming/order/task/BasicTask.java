@@ -10,6 +10,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isSLSetTo;
 import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.OrderParams;
@@ -17,6 +18,7 @@ import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 
 public class BasicTask {
@@ -53,11 +55,38 @@ public class BasicTask {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
+        return genericClose(orderToClose, () -> taskExecutor.close(orderToClose));
+    }
+
+    public Observable<OrderEvent> close(final IOrder orderToClose,
+                                        final double amount) {
+        return genericClose(orderToClose, () -> taskExecutor.close(orderToClose, amount));
+    }
+
+    public Observable<OrderEvent> close(final IOrder orderToClose,
+                                        final double amount,
+                                        final double price) {
+        return genericClose(orderToClose, () -> taskExecutor.close(orderToClose,
+                                                                   amount,
+                                                                   price));
+    }
+
+    public Observable<OrderEvent> close(final IOrder orderToClose,
+                                        final double amount,
+                                        final double price,
+                                        final double slippage) {
+        return genericClose(orderToClose, () -> taskExecutor.close(orderToClose,
+                                                                   amount,
+                                                                   price,
+                                                                   slippage));
+    }
+
+    private Observable<OrderEvent> genericClose(final IOrder orderToClose,
+                                                final Supplier<Completable> closeCompletable) {
         return Observable
             .just(orderToClose)
             .filter(isFilled.or(isOpened)::test)
-            .flatMap(order -> taskExecutor
-                .close(order)
+            .flatMap(order -> closeCompletable.get()
                 .andThen(orderUtilObservable(order, OrderCallReason.CLOSE)));
     }
 

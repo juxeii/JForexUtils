@@ -38,6 +38,9 @@ public class BasicTaskTest extends InstrumentUtilForTest {
     private final IOrder orderForTest = buyOrderEURUSD;
     private Observable<OrderEvent> observable;
     private TestObserver<OrderEvent> testObserver;
+    private final double closeAmount = 0.12;
+    private final double closePrice = 1.1234;
+    private final double closeSlippage = 5.5;
 
     @Before
     public void setUp() {
@@ -231,6 +234,151 @@ public class BasicTaskTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CLOSE);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CLOSE);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class CloseWithAmountSetup {
+
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.close(orderForTest, closeAmount))
+                .thenReturn(emptyCompletable());
+
+            observable = basicTask.close(orderForTest, closeAmount);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenOrderAlreadyClosed() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+            assertValueAlreadySet();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.OPENED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CLOSE);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CLOSE);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class CloseWithAmountAndPriceSetup {
+
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.close(orderForTest,
+                                             closeAmount,
+                                             closePrice))
+                                                 .thenReturn(emptyCompletable());
+
+            observable = basicTask.close(orderForTest,
+                                         closeAmount,
+                                         closePrice);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenOrderAlreadyClosed() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+            assertValueAlreadySet();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.OPENED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CLOSE);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CLOSE);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class CloseWithAmountAndPriceAndSlippageSetup {
+
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.close(orderForTest,
+                                             closeAmount,
+                                             closePrice,
+                                             closeSlippage))
+                                                 .thenReturn(emptyCompletable());
+
+            observable = basicTask.close(orderForTest,
+                                         closeAmount,
+                                         closePrice,
+                                         closeSlippage);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenOrderAlreadyClosed() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+            assertValueAlreadySet();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.OPENED);
                 setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CLOSE);
 
                 testObserver = observable.test();
