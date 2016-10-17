@@ -1,4 +1,4 @@
-package com.jforex.programming.object;
+package com.jforex.programming.init;
 
 import com.dukascopy.api.IContext;
 import com.dukascopy.api.IMessage;
@@ -24,7 +24,9 @@ import com.jforex.programming.order.task.TaskExecutor;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionUtil;
 
-public class OrderObjects {
+import io.reactivex.Observable;
+
+public class OrderInitUtil {
 
     private final PositionFactory positionFactory;
     private final PositionUtil positionUtil;
@@ -45,12 +47,12 @@ public class OrderObjects {
     private final OrderUtil orderUtil;
     private final OrderEventFactory orderEventFactory;
     private final OrderEventTypeDataFactory orderEventTypeDataFactory = new OrderEventTypeDataFactory();
+    private final JFHotPublisher<OrderCallRequest> callRequestPublisher = new JFHotPublisher<>();
 
-    public OrderObjects(final IContext context,
-                        final JFHotPublisher<IMessage> messagePublisher,
-                        final JFHotPublisher<OrderCallRequest> callRequestPublisher) {
+    public OrderInitUtil(final IContext context,
+                         final Observable<IMessage> messageObservable) {
         orderEventFactory = new OrderEventFactory(callRequestPublisher.observable());
-        orderEventGateway = new OrderEventGateway(messagePublisher.observable(), orderEventFactory);
+        orderEventGateway = new OrderEventGateway(messageObservable, orderEventFactory);
         strategyThreadTask = new StrategyThreadTask(context);
         positionFactory = new PositionFactory(orderEventGateway.observable());
         positionUtil = new PositionUtil(positionFactory);
@@ -82,5 +84,9 @@ public class OrderObjects {
 
     public PositionUtil positionUtil() {
         return positionUtil;
+    }
+
+    public void onStop() {
+        callRequestPublisher.unsubscribe();
     }
 }

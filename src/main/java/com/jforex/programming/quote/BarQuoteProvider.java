@@ -5,20 +5,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 
 import com.dukascopy.api.IBar;
-import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.init.QuoteUtil;
 
 import io.reactivex.Observable;
 
 public class BarQuoteProvider {
 
-    private final JForexUtil jforexUtil;
+    private final QuoteUtil quoteUtil;
     private final Observable<BarQuote> barQuoteObservable;
     private final BarQuoteRepository barQuoteRepository;
 
-    public BarQuoteProvider(final JForexUtil jforexUtil,
+    public BarQuoteProvider(final QuoteUtil quoteUtil,
                             final Observable<BarQuote> barQuoteObservable,
                             final BarQuoteRepository barQuoteRepository) {
-        this.jforexUtil = jforexUtil;
+        this.quoteUtil = quoteUtil;
         this.barQuoteObservable = barQuoteObservable;
         this.barQuoteRepository = barQuoteRepository;
     }
@@ -43,7 +43,7 @@ public class BarQuoteProvider {
 
     private final Observable<BarQuote> observableForParams(final BarParams barParams) {
         if (barParams.period().name() == null)
-            jforexUtil.subscribeToBarsFeed(barParams);
+            quoteUtil.subscribeToBarsFeed(barParams);
         return barQuoteObservable.filter(barQuote -> barQuote.barParams().equals(barParams));
     }
 

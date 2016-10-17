@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.init.QuoteUtil;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -25,6 +26,8 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     private BarQuoteProvider barQuoteHandler;
 
     @Mock
+    private QuoteUtil quoteUtilMock;
+    @Mock
     private BarQuoteRepository barQuoteRepositoryMock;
     private final TestObserver<BarQuote> filteredQuoteSubscriber = TestObserver.create();
     private final TestObserver<BarQuote> unFilteredQuoteSubscriber = TestObserver.create();
@@ -37,9 +40,9 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     @Before
     public void setUp() {
-        barQuoteHandler = new BarQuoteProvider(jforexUtilMock,
-                                              quoteObservable,
-                                              barQuoteRepositoryMock);
+        barQuoteHandler = new BarQuoteProvider(quoteUtilMock,
+                                               quoteObservable,
+                                               barQuoteRepositoryMock);
 
         quoteFilters.add(askBarEURUSDParams);
         quoteFilters.add(askBarAUDUSDParams);
@@ -106,7 +109,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
     }
 
     @Test
-    public void onCustomPeriodSubscriptionJForexUtilIsCalled() {
+    public void onCustomPeriodSubscriptionQuoteUtilIsCalled() {
         quoteFilters.add(askBarEURUSDParams);
         quoteFilters.add(askBarAUDUSDParams);
         quoteFilters.add(askBarEURUSDCustomPeriodParams);
@@ -115,6 +118,6 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
             .observableForParamsList(quoteFilters)
             .subscribe(filteredQuoteSubscriber);
 
-        verify(jforexUtilMock).subscribeToBarsFeed(askBarEURUSDCustomPeriodParams);
+        verify(quoteUtilMock).subscribeToBarsFeed(askBarEURUSDCustomPeriodParams);
     }
 }

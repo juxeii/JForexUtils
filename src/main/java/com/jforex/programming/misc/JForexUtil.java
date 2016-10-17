@@ -8,95 +8,83 @@ import org.apache.commons.lang3.StringUtils;
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IContext;
-import com.dukascopy.api.IDataService;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
-import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.jforex.programming.init.ContextUtil;
+import com.jforex.programming.init.OrderInitUtil;
+import com.jforex.programming.init.QuoteUtil;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.object.OrderObjects;
-import com.jforex.programming.object.QuoteObjects;
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.quote.BarParams;
-import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
-import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
 public class JForexUtil {
 
-    private final IContext context;
-    private final IEngine engine;
-    private final IAccount account;
-    private final IHistory history;
-    private final HistoryUtil historyUtil;
-    private final IDataService dataService;
-
-    private final QuoteObjects quoteObjects;
-    private final OrderObjects orderObject;
+    private final ContextUtil contextUtil;
+    private final QuoteUtil quoteUtil;
+    private final OrderInitUtil orderInitUtil;
     private final CalculationUtil calculationUtil;
-
-    private final JFHotPublisher<TickQuote> tickQuotePublisher = new JFHotPublisher<>();
-    private final JFHotPublisher<BarQuote> barQuotePublisher = new JFHotPublisher<>();
     private final JFHotPublisher<IMessage> messagePublisher = new JFHotPublisher<>();
-    private final JFHotPublisher<OrderCallRequest> callRequestPublisher = new JFHotPublisher<>();
 
     public static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     public static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
     public JForexUtil(final IContext context) {
-        this.context = checkNotNull(context);
+        checkNotNull(context);
 
-        engine = context.getEngine();
-        account = context.getAccount();
-        history = context.getHistory();
-        dataService = context.getDataService();
-        historyUtil = new HistoryUtil(history);
-        quoteObjects = new QuoteObjects(this,
-                                        historyUtil,
-                                        tickQuotePublisher,
-                                        barQuotePublisher);
-        orderObject = new OrderObjects(context,
-                                       messagePublisher,
-                                       callRequestPublisher);
-
-        calculationUtil = new CalculationUtil(quoteObjects.tickQuoteProvider());
+        contextUtil = new ContextUtil(context);
+        quoteUtil = new QuoteUtil(contextUtil, userSettings.enableWeekendQuoteFilter());
+        orderInitUtil = new OrderInitUtil(context, messagePublisher.observable());
+        calculationUtil = new CalculationUtil(tickQuoteProvider());
     }
 
     public IContext context() {
-        return context;
+        return contextUtil.context();
     }
 
     public IEngine engine() {
-        return engine;
+        return contextUtil.engine();
     }
 
     public IAccount account() {
-        return account;
+        return contextUtil.account();
     }
 
     public IHistory history() {
-        return history;
+        return contextUtil.history();
     }
 
     public HistoryUtil historyUtil() {
-        return historyUtil;
+        return contextUtil.historyUtil();
     }
 
     public TickQuoteProvider tickQuoteProvider() {
-        return quoteObjects.tickQuoteProvider();
+        return quoteUtil.tickQuoteProvider();
     }
 
     public BarQuoteProvider barQuoteProvider() {
-        return quoteObjects.barQuoteProvider();
+        return quoteUtil.barQuoteProvider();
+    }
+
+    public CalculationUtil calculationUtil() {
+        return calculationUtil;
+    }
+
+    public OrderUtil orderUtil() {
+        return orderInitUtil.orderUtil();
+    }
+
+    public PositionUtil positionUtil() {
+        return orderInitUtil.positionUtil();
     }
 
     public InstrumentUtil instrumentUtil(final Instrument instrument) {
@@ -106,25 +94,6 @@ public class JForexUtil {
                                   tickQuoteProvider(),
                                   barQuoteProvider(),
                                   calculationUtil);
-    }
-
-    public CalculationUtil calculationUtil() {
-        return calculationUtil;
-    }
-
-    public OrderUtil orderUtil() {
-        return orderObject.orderUtil();
-    }
-
-    public PositionUtil positionUtil() {
-        return orderObject.positionUtil();
-    }
-
-    public void onStop() {
-        tickQuotePublisher.unsubscribe();
-        barQuotePublisher.unsubscribe();
-        messagePublisher.unsubscribe();
-        callRequestPublisher.unsubscribe();
     }
 
     public void onMessage(final IMessage message) {
@@ -138,23 +107,7 @@ public class JForexUtil {
         checkNotNull(instrument);
         checkNotNull(tick);
 
-        if (shouldForwardQuote(tick.getTime())) {
-            final TickQuote tickQuote = new TickQuote(instrument, tick);
-            tickQuotePublisher.onNext(tickQuote);
-        }
-    }
-
-    private boolean shouldForwardQuote(final long time) {
-        return !userSettings.enableWeekendQuoteFilter()
-                || !isMarketClosed(time);
-    }
-
-    public boolean isMarketClosed() {
-        return isMarketClosed(DateTimeUtil.localMillisNow());
-    }
-
-    public boolean isMarketClosed(final long time) {
-        return dataService.isOfflineTime(time);
+        quoteUtil.onTick(instrument, tick);
     }
 
     public void onBar(final Instrument instrument,
@@ -166,37 +119,30 @@ public class JForexUtil {
         checkNotNull(askBar);
         checkNotNull(bidBar);
 
-        onOfferSidedBar(instrument,
+        quoteUtil.onBar(instrument,
                         period,
-                        OfferSide.ASK,
-                        askBar);
-        onOfferSidedBar(instrument,
-                        period,
-                        OfferSide.BID,
+                        askBar,
                         bidBar);
     }
 
-    private final void onOfferSidedBar(final Instrument instrument,
-                                       final Period period,
-                                       final OfferSide offerside,
-                                       final IBar bar) {
-        if (shouldForwardQuote(bar.getTime())) {
-            final BarParams quoteParams = BarParams
-                .forInstrument(instrument)
-                .period(period)
-                .offerSide(offerside);
-            final BarQuote barQuote = new BarQuote(bar, quoteParams);
-            barQuotePublisher.onNext(barQuote);
-        }
+    public void onStop() {
+        quoteUtil.onStop();
+        orderInitUtil.onStop();
+        messagePublisher.unsubscribe();
+    }
+
+    public boolean isMarketClosed() {
+        return contextUtil.isMarketClosed();
+    }
+
+    public boolean isMarketClosed(final long time) {
+        return contextUtil.isMarketClosed(time);
     }
 
     public void subscribeToBarsFeed(final BarParams barParams) {
         checkNotNull(barParams);
 
-        context.subscribeToBarsFeed(barParams.instrument(),
-                                    barParams.period(),
-                                    barParams.offerSide(),
-                                    this::onOfferSidedBar);
+        quoteUtil.subscribeToBarsFeed(barParams);
     }
 
     public static final boolean isStrategyThread() {
