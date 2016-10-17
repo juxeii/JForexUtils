@@ -17,10 +17,7 @@ public class StrategyThreadTask {
     }
 
     public Completable execute(final Action action) {
-        return execute(() -> {
-            action.run();
-            return true;
-        }).toCompletable();
+        return execute(RxUtil.actionToCallable(action)).toCompletable();
     }
 
     public <T> Single<T> execute(final Callable<T> callable) {

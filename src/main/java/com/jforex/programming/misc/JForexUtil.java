@@ -27,14 +27,14 @@ import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventTypeDataFactory;
 import com.jforex.programming.order.task.BasicTask;
-import com.jforex.programming.order.task.CancelSLTask;
-import com.jforex.programming.order.task.CancelSLTPTask;
-import com.jforex.programming.order.task.CancelTPTask;
 import com.jforex.programming.order.task.BatchChangeTask;
+import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
+import com.jforex.programming.order.task.CancelSLTPTask;
+import com.jforex.programming.order.task.CancelSLTask;
+import com.jforex.programming.order.task.CancelTPTask;
 import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.order.task.TaskExecutor;
-import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.quote.BarParams;
@@ -249,14 +249,14 @@ public class JForexUtil {
     private final void onOfferSidedBar(final Instrument instrument,
                                        final Period period,
                                        final OfferSide offerside,
-                                       final IBar askBar) {
-        if (shouldForwardQuote(askBar.getTime())) {
+                                       final IBar bar) {
+        if (shouldForwardQuote(bar.getTime())) {
             final BarParams quoteParams = BarParams
                 .forInstrument(instrument)
                 .period(period)
                 .offerSide(offerside);
-            final BarQuote askBarQuote = new BarQuote(askBar, quoteParams);
-            barQuotePublisher.onNext(askBarQuote);
+            final BarQuote barQuote = new BarQuote(bar, quoteParams);
+            barQuotePublisher.onNext(barQuote);
         }
     }
 

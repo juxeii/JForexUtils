@@ -1,11 +1,13 @@
 package com.jforex.programming.misc;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
+import io.reactivex.functions.Action;
 
 public final class RxUtil {
 
@@ -31,5 +33,12 @@ public final class RxUtil {
         return Observable
             .interval(delay, timeUnit)
             .take(1);
+    }
+
+    public static final Callable<Boolean> actionToCallable(final Action action) {
+        return () -> {
+            action.run();
+            return true;
+        };
     }
 }

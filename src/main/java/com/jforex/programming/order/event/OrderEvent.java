@@ -29,7 +29,7 @@ public final class OrderEvent {
         return type;
     }
 
-    public boolean isInternal() {
+    public final boolean isInternal() {
         return isInternal;
     }
 
