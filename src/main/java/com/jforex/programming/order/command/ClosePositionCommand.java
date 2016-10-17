@@ -90,7 +90,9 @@ public class ClosePositionCommand {
     }
 
     public static CloseOption newBuilder(final Instrument instrument) {
-        return new Builder(checkNotNull(instrument));
+        checkNotNull(instrument);
+
+        return new Builder(instrument);
     }
 
     public static class Builder implements

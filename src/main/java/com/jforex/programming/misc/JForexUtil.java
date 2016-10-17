@@ -181,7 +181,9 @@ public class JForexUtil {
     }
 
     public InstrumentUtil instrumentUtil(final Instrument instrument) {
-        return new InstrumentUtil(checkNotNull(instrument),
+        checkNotNull(instrument);
+
+        return new InstrumentUtil(instrument,
                                   tickQuoteProvider,
                                   barQuoteProvider,
                                   calculationUtil);
@@ -207,7 +209,9 @@ public class JForexUtil {
     }
 
     public void onMessage(final IMessage message) {
-        messagePublisher.onNext(checkNotNull(message));
+        checkNotNull(message);
+
+        messagePublisher.onNext(message);
     }
 
     public void onTick(final Instrument instrument,
@@ -222,7 +226,8 @@ public class JForexUtil {
     }
 
     private boolean shouldForwardQuote(final long time) {
-        return !userSettings.enableWeekendQuoteFilter() || !isMarketClosed(time);
+        return !userSettings.enableWeekendQuoteFilter()
+                || !isMarketClosed(time);
     }
 
     public boolean isMarketClosed() {
@@ -274,6 +279,8 @@ public class JForexUtil {
     }
 
     public static final String threadName() {
-        return Thread.currentThread().getName();
+        return Thread
+            .currentThread()
+            .getName();
     }
 }

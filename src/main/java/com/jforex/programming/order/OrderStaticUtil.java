@@ -52,7 +52,9 @@ public final class OrderStaticUtil {
             instrument -> order -> order.getInstrument() == instrument;
 
     public static final Predicate<IOrder> ofInstrument(final Instrument instrument) {
-        return instrumentPredicate.apply(checkNotNull(instrument));
+        checkNotNull(instrument);
+
+        return instrumentPredicate.apply(instrument);
     }
 
     public static final Function<String, Predicate<IOrder>> labelPredicate =

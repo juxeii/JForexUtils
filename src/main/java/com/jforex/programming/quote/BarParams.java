@@ -32,7 +32,9 @@ public final class BarParams {
     }
 
     public static final AndPeriod forInstrument(final Instrument instrument) {
-        return new Builder(checkNotNull(instrument));
+        checkNotNull(instrument);
+
+        return new Builder(instrument);
     }
 
     public final Instrument instrument() {
