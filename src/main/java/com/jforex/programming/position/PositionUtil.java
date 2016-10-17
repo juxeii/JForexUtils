@@ -19,7 +19,7 @@ public class PositionUtil {
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
-        return positionFactory.forInstrument(instrument);
+        return positionFactory.createForInstrument(instrument);
     }
 
     public Collection<IOrder> filledOrders(final Instrument instrument) {

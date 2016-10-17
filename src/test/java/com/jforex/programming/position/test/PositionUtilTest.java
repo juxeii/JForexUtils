@@ -49,7 +49,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(positionFactoryMock.forInstrument(instrumentEURUSD))
+        when(positionFactoryMock.createForInstrument(instrumentEURUSD))
             .thenReturn(positionEURUSDMock);
 
         when(positionEURUSDMock.instrument()).thenReturn(instrumentEURUSD);

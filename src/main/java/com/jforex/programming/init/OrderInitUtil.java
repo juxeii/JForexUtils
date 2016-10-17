@@ -97,8 +97,10 @@ public class OrderInitUtil {
         return Observable
             .fromCallable(() -> engine.getOrders())
             .flatMap(Observable::fromIterable)
-            .doOnNext(order -> positionFactory.forInstrument(order.getInstrument()))
-            .doOnNext(orderEventGateway::importOrder)
+            .doOnNext(order -> {
+                positionFactory.createForInstrument(order.getInstrument());
+                orderEventGateway.importOrder(order);
+            })
             .ignoreElements();
     }
 }

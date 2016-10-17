@@ -360,11 +360,9 @@ public class OrderEventFactoryTest extends CommonUtilForTest {
 
             @Test
             public void nextEventForNotQueuedAUDUSDOrderIsInternal() {
-                logger.info("STAAAAART");
                 submitEvent = orderEventFactory.fromMessage(message);
 
                 assertTrue(submitEvent.isInternal());
-                logger.info("EEEEEEEEEEEEEEND");
             }
 
             public class OnSubmitOK {

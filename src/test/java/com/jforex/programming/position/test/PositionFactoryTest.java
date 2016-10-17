@@ -43,7 +43,7 @@ public class PositionFactoryTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            positionEURUSD = positionFactory.forInstrument(instrumentEURUSD);
+            positionEURUSD = positionFactory.createForInstrument(instrumentEURUSD);
         }
 
         @Test
@@ -63,7 +63,7 @@ public class PositionFactoryTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                positionFactory.forInstrument(instrumentEURUSD);
+                positionFactory.createForInstrument(instrumentEURUSD);
             }
 
             @Test
@@ -86,7 +86,7 @@ public class PositionFactoryTest extends InstrumentUtilForTest {
 
             @Before
             public void setUp() {
-                positionAUDUSD = positionFactory.forInstrument(instrumentAUDUSD);
+                positionAUDUSD = positionFactory.createForInstrument(instrumentAUDUSD);
             }
 
             @Test
