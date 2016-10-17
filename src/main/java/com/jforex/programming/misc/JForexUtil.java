@@ -34,14 +34,14 @@ import com.jforex.programming.settings.UserSettings;
 public class JForexUtil {
 
     private final IContext context;
-    private IEngine engine;
-    private IAccount account;
-    private IHistory history;
-    private HistoryUtil historyUtil;
-    private IDataService dataService;
+    private final IEngine engine;
+    private final IAccount account;
+    private final IHistory history;
+    private final HistoryUtil historyUtil;
+    private final IDataService dataService;
 
-    private QuoteObjects quoteObjects;
-    private OrderObjects orderObject;
+    private final QuoteObjects quoteObjects;
+    private final OrderObjects orderObject;
     private final CalculationUtil calculationUtil;
 
     private final JFHotPublisher<TickQuote> tickQuotePublisher = new JFHotPublisher<>();
@@ -55,33 +55,20 @@ public class JForexUtil {
     public JForexUtil(final IContext context) {
         this.context = checkNotNull(context);
 
-        initContextRelated();
-        initQuoteProvider();
-        initOrderRelated();
-
-        calculationUtil = new CalculationUtil(quoteObjects.tickQuoteProvider());
-    }
-
-    private void initContextRelated() {
         engine = context.getEngine();
         account = context.getAccount();
         history = context.getHistory();
         dataService = context.getDataService();
-
         historyUtil = new HistoryUtil(history);
-    }
-
-    private void initQuoteProvider() {
         quoteObjects = new QuoteObjects(this,
                                         historyUtil,
                                         tickQuotePublisher,
                                         barQuotePublisher);
-    }
-
-    private void initOrderRelated() {
         orderObject = new OrderObjects(context,
                                        messagePublisher,
                                        callRequestPublisher);
+
+        calculationUtil = new CalculationUtil(quoteObjects.tickQuoteProvider());
     }
 
     public IContext context() {
@@ -116,8 +103,8 @@ public class JForexUtil {
         checkNotNull(instrument);
 
         return new InstrumentUtil(instrument,
-                                  quoteObjects.tickQuoteProvider(),
-                                  quoteObjects.barQuoteProvider(),
+                                  tickQuoteProvider(),
+                                  barQuoteProvider(),
                                   calculationUtil);
     }
 
@@ -179,8 +166,14 @@ public class JForexUtil {
         checkNotNull(askBar);
         checkNotNull(bidBar);
 
-        onOfferSidedBar(instrument, period, OfferSide.ASK, askBar);
-        onOfferSidedBar(instrument, period, OfferSide.BID, bidBar);
+        onOfferSidedBar(instrument,
+                        period,
+                        OfferSide.ASK,
+                        askBar);
+        onOfferSidedBar(instrument,
+                        period,
+                        OfferSide.BID,
+                        bidBar);
     }
 
     private final void onOfferSidedBar(final Instrument instrument,
