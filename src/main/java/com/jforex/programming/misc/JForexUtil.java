@@ -19,16 +19,15 @@ import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.object.OrderObjects;
+import com.jforex.programming.object.QuoteObjects;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
-import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
-import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
@@ -41,11 +40,7 @@ public class JForexUtil {
     private HistoryUtil historyUtil;
     private IDataService dataService;
 
-    private TickQuoteProvider tickQuoteProvider;
-    private TickQuoteRepository tickQuoteRepository;
-    private BarQuoteProvider barQuoteProvider;
-    private BarQuoteRepository barQuoteRepository;
-
+    private QuoteObjects quoteObjects;
     private OrderObjects orderObject;
     private final CalculationUtil calculationUtil;
 
@@ -64,7 +59,7 @@ public class JForexUtil {
         initQuoteProvider();
         initOrderRelated();
 
-        calculationUtil = new CalculationUtil(tickQuoteProvider);
+        calculationUtil = new CalculationUtil(quoteObjects.tickQuoteProvider());
     }
 
     private void initContextRelated() {
@@ -77,20 +72,16 @@ public class JForexUtil {
     }
 
     private void initQuoteProvider() {
-        tickQuoteRepository = new TickQuoteRepository(tickQuotePublisher.observable(),
-                                                      historyUtil,
-                                                      context.getSubscribedInstruments());
-        tickQuoteProvider = new TickQuoteProvider(tickQuotePublisher.observable(), tickQuoteRepository);
-        barQuoteRepository = new BarQuoteRepository(barQuotePublisher.observable(), historyUtil);
-        barQuoteProvider = new BarQuoteProvider(this,
-                                                barQuotePublisher.observable(),
-                                                barQuoteRepository);
+        quoteObjects = new QuoteObjects(this,
+                                        historyUtil,
+                                        tickQuotePublisher,
+                                        barQuotePublisher);
     }
 
     private void initOrderRelated() {
         orderObject = new OrderObjects(context,
-                                      messagePublisher,
-                                      callRequestPublisher);
+                                       messagePublisher,
+                                       callRequestPublisher);
     }
 
     public IContext context() {
@@ -114,19 +105,19 @@ public class JForexUtil {
     }
 
     public TickQuoteProvider tickQuoteProvider() {
-        return tickQuoteProvider;
+        return quoteObjects.tickQuoteProvider();
     }
 
     public BarQuoteProvider barQuoteProvider() {
-        return barQuoteProvider;
+        return quoteObjects.barQuoteProvider();
     }
 
     public InstrumentUtil instrumentUtil(final Instrument instrument) {
         checkNotNull(instrument);
 
         return new InstrumentUtil(instrument,
-                                  tickQuoteProvider,
-                                  barQuoteProvider,
+                                  quoteObjects.tickQuoteProvider(),
+                                  quoteObjects.barQuoteProvider(),
                                   calculationUtil);
     }
 
