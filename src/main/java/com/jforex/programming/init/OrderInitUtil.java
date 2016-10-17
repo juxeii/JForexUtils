@@ -1,6 +1,6 @@
 package com.jforex.programming.init;
 
-import com.dukascopy.api.IContext;
+import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IMessage;
 import com.jforex.programming.misc.JFHotPublisher;
 import com.jforex.programming.misc.StrategyThreadTask;
@@ -24,10 +24,12 @@ import com.jforex.programming.order.task.TaskExecutor;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionUtil;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 
 public class OrderInitUtil {
 
+    private final IEngine engine;
     private final PositionFactory positionFactory;
     private final PositionUtil positionUtil;
     private final OrderEventGateway orderEventGateway;
@@ -49,17 +51,18 @@ public class OrderInitUtil {
     private final OrderEventTypeDataFactory orderEventTypeDataFactory = new OrderEventTypeDataFactory();
     private final JFHotPublisher<OrderCallRequest> callRequestPublisher = new JFHotPublisher<>();
 
-    public OrderInitUtil(final IContext context,
+    public OrderInitUtil(final ContextUtil contextUtil,
                          final Observable<IMessage> messageObservable) {
+        engine = contextUtil.engine();
         orderEventFactory = new OrderEventFactory(callRequestPublisher.observable());
         orderEventGateway = new OrderEventGateway(messageObservable, orderEventFactory);
-        strategyThreadTask = new StrategyThreadTask(context);
+        strategyThreadTask = new StrategyThreadTask(contextUtil.context());
         positionFactory = new PositionFactory(orderEventGateway.observable());
         positionUtil = new PositionUtil(positionFactory);
         orderUtilHandler = new OrderUtilHandler(orderEventGateway,
                                                 orderEventTypeDataFactory,
                                                 callRequestPublisher);
-        orderTaskExecutor = new TaskExecutor(strategyThreadTask, context.getEngine());
+        orderTaskExecutor = new TaskExecutor(strategyThreadTask, engine);
         orderBasicTask = new BasicTask(orderTaskExecutor, orderUtilHandler);
         orderChangeBatch = new BatchChangeTask(orderBasicTask);
         orderCancelSL = new CancelSLTask(orderChangeBatch);
@@ -88,5 +91,14 @@ public class OrderInitUtil {
 
     public void onStop() {
         callRequestPublisher.unsubscribe();
+    }
+
+    public Completable importOrders() {
+        return Observable
+            .fromCallable(() -> engine.getOrders())
+            .flatMap(Observable::fromIterable)
+            .doOnNext(order -> positionFactory.forInstrument(order.getInstrument()))
+            .doOnNext(orderEventGateway::importOrder)
+            .ignoreElements();
     }
 }

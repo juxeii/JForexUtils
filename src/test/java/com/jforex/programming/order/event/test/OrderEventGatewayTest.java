@@ -64,4 +64,17 @@ public class OrderEventGatewayTest extends CommonUtilForTest {
             .assertNoErrors()
             .assertValue(changedRejectEvent);
     }
+
+    @Test
+    public void importOrderEmitsCorrectOrderEvent() {
+        subscriber = orderEventGateway
+            .observable()
+            .test();
+
+        orderEventGateway.importOrder(buyOrderEURUSD);
+
+        subscriber
+            .assertNoErrors()
+            .assertValue(submitEvent);
+    }
 }

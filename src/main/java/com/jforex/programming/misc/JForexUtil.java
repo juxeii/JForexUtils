@@ -27,6 +27,8 @@ import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 
+import io.reactivex.Completable;
+
 public class JForexUtil {
 
     private final ContextUtil contextUtil;
@@ -43,7 +45,7 @@ public class JForexUtil {
 
         contextUtil = new ContextUtil(context);
         quoteUtil = new QuoteUtil(contextUtil, userSettings.enableWeekendQuoteFilter());
-        orderInitUtil = new OrderInitUtil(context, messagePublisher.observable());
+        orderInitUtil = new OrderInitUtil(contextUtil, messagePublisher.observable());
         calculationUtil = new CalculationUtil(tickQuoteProvider());
     }
 
@@ -129,6 +131,10 @@ public class JForexUtil {
         quoteUtil.onStop();
         orderInitUtil.onStop();
         messagePublisher.unsubscribe();
+    }
+
+    public Completable importOrders() {
+        return orderInitUtil.importOrders();
     }
 
     public boolean isMarketClosed() {

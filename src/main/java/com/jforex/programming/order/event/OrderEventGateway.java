@@ -25,15 +25,23 @@ public class OrderEventGateway {
             .subscribe(this::onOrderMessage);
     }
 
-    public Observable<OrderEvent> observable() {
-        return orderEventPublisher.observable();
-    }
-
     private void onOrderMessage(final IMessage message) {
         final OrderEvent orderEvent = orderEventFactory.fromMessage(message);
         final IOrder order = orderEvent.order();
         logger.debug("Received order event with label " + order.getLabel()
                 + " for " + order.getInstrument() + " " + orderEvent);
+        orderEventPublisher.onNext(orderEvent);
+    }
+
+    public Observable<OrderEvent> observable() {
+        return orderEventPublisher.observable();
+    }
+
+    public void importOrder(final IOrder order) {
+        final OrderEvent orderEvent = new OrderEvent(order,
+                                                     OrderEventType.SUBMIT_OK,
+                                                     true);
+        logger.debug("Importing order " + order.getLabel() + " for " + order.getInstrument());
         orderEventPublisher.onNext(orderEvent);
     }
 }

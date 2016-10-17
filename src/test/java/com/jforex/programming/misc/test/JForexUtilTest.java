@@ -12,9 +12,12 @@ import org.junit.runner.RunWith;
 
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IMessage;
+import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
+import com.google.common.collect.Lists;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
@@ -133,6 +136,32 @@ public class JForexUtilTest extends QuoteProviderForTest {
                                                 eq(custom3MinutePeriod),
                                                 eq(OfferSide.ASK),
                                                 any());
+    }
+
+    @Test
+    public void importOrdersDistributesOrdersCorrect() throws JFException {
+        when(engineMock.getOrders()).thenReturn(Lists.newArrayList(buyOrderEURUSD,
+                                                                   sellOrderEURUSD,
+                                                                   sellOrderAUDUSD));
+
+        jForexUtil
+            .importOrders()
+            .test()
+            .assertComplete();
+
+        final PositionOrders ordersForEURUSD = jForexUtil
+            .orderUtil()
+            .positionOrders(instrumentEURUSD);
+        final PositionOrders ordersForAUDUSD = jForexUtil
+            .orderUtil()
+            .positionOrders(instrumentAUDUSD);
+
+        assertThat(ordersForEURUSD.size(), equalTo(2));
+        assertTrue(ordersForEURUSD.contains(buyOrderEURUSD));
+        assertTrue(ordersForEURUSD.contains(sellOrderEURUSD));
+
+        assertThat(ordersForAUDUSD.size(), equalTo(1));
+        assertTrue(ordersForAUDUSD.contains(sellOrderAUDUSD));
     }
 
     public class AfterBarPushed {
