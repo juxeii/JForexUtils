@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.OrderDirection;
+import com.jforex.programming.order.PositionDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 
 public interface PositionOrders {
@@ -23,8 +23,8 @@ public interface PositionOrders {
 
     public Set<IOrder> filter(Predicate<IOrder> orderPredicate);
 
-    default OrderDirection direction() {
-        return OrderStaticUtil.combinedDirection(filter(isFilled));
+    default PositionDirection direction() {
+        return OrderStaticUtil.positionDirection(filter(isFilled));
     }
 
     default double signedExposure() {

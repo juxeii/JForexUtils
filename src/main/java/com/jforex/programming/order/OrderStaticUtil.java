@@ -102,42 +102,52 @@ public final class OrderStaticUtil {
     public static final Predicate<IOrder> isNoSLSet = isSLSetTo(platformSettings.noSLPrice());
     public static final Predicate<IOrder> isNoTPSet = isTPSetTo(platformSettings.noTPPrice());
 
-    public static final OrderDirection direction(final IOrder order) {
-        if (order != null && isFilled.test(order))
+    public static final PositionDirection direction(final IOrder order) {
+        checkNotNull(order);
+
+        if (isFilled.test(order))
             return order.isLong()
-                    ? OrderDirection.LONG
-                    : OrderDirection.SHORT;
-        return OrderDirection.FLAT;
+                    ? PositionDirection.LONG
+                    : PositionDirection.SHORT;
+        return PositionDirection.FLAT;
     }
 
-    public static final OrderDirection combinedDirection(final Collection<IOrder> orders) {
-        final double signedAmount = combinedSignedAmount(checkNotNull(orders));
+    public static final PositionDirection positionDirection(final Collection<IOrder> positionOrders) {
+        checkNotNull(positionOrders);
+
+        final double signedAmount = combinedSignedAmount(positionOrders);
         if (signedAmount > 0)
-            return OrderDirection.LONG;
+            return PositionDirection.LONG;
         return signedAmount < 0
-                ? OrderDirection.SHORT
-                : OrderDirection.FLAT;
+                ? PositionDirection.SHORT
+                : PositionDirection.FLAT;
     }
 
     public static final double signedAmount(final double amount,
                                             final OrderCommand orderCommand) {
-        return buyOrderCommands.contains(checkNotNull(orderCommand))
+        return buyOrderCommands.contains(orderCommand)
                 ? amount
                 : -amount;
     }
 
     public static final double signedAmount(final IOrder order) {
-        return signedAmount(checkNotNull(order).getAmount(),
+        checkNotNull(order);
+
+        return signedAmount(order.getAmount(),
                             order.getOrderCommand());
     }
 
     public static final double signedAmount(final OrderParams orderParams) {
-        return signedAmount(checkNotNull(orderParams).amount(),
+        checkNotNull(orderParams);
+
+        return signedAmount(orderParams.amount(),
                             orderParams.orderCommand());
     }
 
     public static final double combinedSignedAmount(final Collection<IOrder> orders) {
-        return checkNotNull(orders).isEmpty()
+        checkNotNull(orders);
+
+        return orders.isEmpty()
                 ? 0
                 : orders
                     .stream()
@@ -146,43 +156,45 @@ public final class OrderStaticUtil {
     }
 
     public static final OfferSide offerSideForOrderCommand(final OrderCommand orderCommand) {
-        return buyOrderCommands.contains(checkNotNull(orderCommand))
+        return buyOrderCommands.contains(orderCommand)
                 ? OfferSide.ASK
                 : OfferSide.BID;
     }
 
-    public static final OrderCommand directionToCommand(final OrderDirection orderDirection) {
-        return checkNotNull(orderDirection) == OrderDirection.LONG
+    public static final OrderCommand directionToCommand(final PositionDirection positionDirection) {
+        return positionDirection == PositionDirection.LONG
                 ? OrderCommand.BUY
                 : OrderCommand.SELL;
     }
 
     public static final OrderCommand switchCommand(final OrderCommand orderCommand) {
-        return orderCommands.containsKey(checkNotNull(orderCommand))
+        return orderCommands.containsKey(orderCommand)
                 ? orderCommands.get(orderCommand)
                 : orderCommands.inverse().get(orderCommand);
     }
 
-    public static final OrderDirection switchDirection(final OrderDirection orderDirection) {
-        if (checkNotNull(orderDirection) == OrderDirection.FLAT)
-            return orderDirection;
-        return orderDirection == OrderDirection.LONG
-                ? OrderDirection.SHORT
-                : OrderDirection.LONG;
+    public static final PositionDirection switchDirection(final PositionDirection positionDirection) {
+        if (positionDirection == PositionDirection.FLAT)
+            return positionDirection;
+        return positionDirection == PositionDirection.LONG
+                ? PositionDirection.SHORT
+                : PositionDirection.LONG;
     }
 
-    public static final OrderDirection directionForSignedAmount(final double signedAmount) {
+    public static final PositionDirection directionForSignedAmount(final double signedAmount) {
         if (signedAmount > 0)
-            return OrderDirection.LONG;
+            return PositionDirection.LONG;
         return signedAmount < 0
-                ? OrderDirection.SHORT
-                : OrderDirection.FLAT;
+                ? PositionDirection.SHORT
+                : PositionDirection.FLAT;
     }
 
     public static final double slPriceWithPips(final IOrder order,
                                                final double price,
                                                final double pips) {
-        return CalculationUtil.addPipsToPrice(checkNotNull(order).getInstrument(),
+        checkNotNull(order);
+
+        return CalculationUtil.addPipsToPrice(order.getInstrument(),
                                               price,
                                               order.isLong() ? -pips : pips);
     }
@@ -190,12 +202,18 @@ public final class OrderStaticUtil {
     public static final double tpPriceWithPips(final IOrder order,
                                                final double price,
                                                final double pips) {
-        return slPriceWithPips(checkNotNull(order), price, -pips);
+        checkNotNull(order);
+
+        return slPriceWithPips(order,
+                               price,
+                               -pips);
     }
 
     public static final OrderParams adaptedOrderParamsForSignedAmount(final OrderParams orderParams,
                                                                       final double signedAmount) {
-        final OrderDirection direction = directionForSignedAmount(signedAmount);
+        checkNotNull(orderParams);
+
+        final PositionDirection direction = directionForSignedAmount(signedAmount);
         return orderParams
             .clone()
             .withOrderCommand(directionToCommand(direction))

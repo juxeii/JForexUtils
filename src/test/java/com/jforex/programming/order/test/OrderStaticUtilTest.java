@@ -3,7 +3,6 @@ package com.jforex.programming.order.test;
 import static com.jforex.programming.order.OrderStaticUtil.adaptedOrderParamsForSignedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.amountPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.buyOrderCommands;
-import static com.jforex.programming.order.OrderStaticUtil.combinedDirection;
 import static com.jforex.programming.order.OrderStaticUtil.combinedSignedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.direction;
 import static com.jforex.programming.order.OrderStaticUtil.directionForSignedAmount;
@@ -27,6 +26,7 @@ import static com.jforex.programming.order.OrderStaticUtil.labelPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.ofInstrument;
 import static com.jforex.programming.order.OrderStaticUtil.offerSideForOrderCommand;
 import static com.jforex.programming.order.OrderStaticUtil.openPricePredicate;
+import static com.jforex.programming.order.OrderStaticUtil.positionDirection;
 import static com.jforex.programming.order.OrderStaticUtil.sellOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.signedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.slPredicate;
@@ -56,9 +56,9 @@ import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
+import com.jforex.programming.order.PositionDirection;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -81,8 +81,8 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
                                        final double calculatedPrice,
                                        final int factor) {
         final double expectedPrice = CalculationUtil.addPipsToPrice(order.getInstrument(),
-                                                             currentPriceForSLTP,
-                                                             factor * pipsToSLTP);
+                                                                    currentPriceForSLTP,
+                                                                    factor * pipsToSLTP);
         assertThat(calculatedPrice, equalTo(expectedPrice));
     }
 
@@ -343,29 +343,24 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void testOrderDirectionIsFlatWhenOrderIsNull() {
-        assertThat(direction(null), equalTo(OrderDirection.FLAT));
-    }
-
-    @Test
     public void testOrderDirectionIsFlatWhenOrderIsNotFilled() {
         orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.CREATED);
 
-        assertThat(direction(buyOrderEURUSD), equalTo(OrderDirection.FLAT));
+        assertThat(direction(buyOrderEURUSD), equalTo(PositionDirection.FLAT));
     }
 
     @Test
     public void testOrderDirectionIsLongForBuyCommand() {
         orderUtilForTest.setOrderCommand(buyOrderEURUSD, OrderCommand.BUY);
 
-        assertThat(direction(buyOrderEURUSD), equalTo(OrderDirection.LONG));
+        assertThat(direction(buyOrderEURUSD), equalTo(PositionDirection.LONG));
     }
 
     @Test
     public void testOrderDirectionIsShortForSellCommand() {
         orderUtilForTest.setOrderCommand(buyOrderEURUSD, OrderCommand.SELL);
 
-        assertThat(direction(buyOrderEURUSD), equalTo(OrderDirection.SHORT));
+        assertThat(direction(buyOrderEURUSD), equalTo(PositionDirection.SHORT));
     }
 
     @Test
@@ -373,7 +368,7 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         orderUtilForTest.setOrderCommand(buyOrderEURUSD, OrderCommand.BUY);
         orderUtilForTest.setOrderCommand(sellOrderEURUSD, OrderCommand.BUY);
 
-        assertThat(combinedDirection(orders), equalTo(OrderDirection.LONG));
+        assertThat(positionDirection(orders), equalTo(PositionDirection.LONG));
     }
 
     @Test
@@ -381,7 +376,7 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         orderUtilForTest.setOrderCommand(buyOrderEURUSD, OrderCommand.SELL);
         orderUtilForTest.setOrderCommand(sellOrderEURUSD, OrderCommand.SELL);
 
-        assertThat(combinedDirection(orders), equalTo(OrderDirection.SHORT));
+        assertThat(positionDirection(orders), equalTo(PositionDirection.SHORT));
     }
 
     @Test
@@ -392,7 +387,7 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         orderUtilForTest.setAmount(buyOrderEURUSD, amount);
         orderUtilForTest.setAmount(sellOrderEURUSD, amount);
 
-        assertThat(combinedDirection(orders), equalTo(OrderDirection.FLAT));
+        assertThat(positionDirection(orders), equalTo(PositionDirection.FLAT));
     }
 
     @Test
@@ -404,7 +399,7 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         orderUtilForTest.setAmount(buyOrderEURUSD, buyAmount);
         orderUtilForTest.setAmount(sellOrderEURUSD, sellAmount);
 
-        assertThat(combinedDirection(orders), equalTo(OrderDirection.LONG));
+        assertThat(positionDirection(orders), equalTo(PositionDirection.LONG));
     }
 
     @Test
@@ -416,7 +411,7 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         orderUtilForTest.setAmount(buyOrderEURUSD, buyAmount);
         orderUtilForTest.setAmount(sellOrderEURUSD, sellAmount);
 
-        assertThat(combinedDirection(orders), equalTo(OrderDirection.SHORT));
+        assertThat(positionDirection(orders), equalTo(PositionDirection.SHORT));
     }
 
     @Test
@@ -517,8 +512,8 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void testDirectionToCommand() {
-        assertThat(directionToCommand(OrderDirection.LONG), equalTo(OrderCommand.BUY));
-        assertThat(directionToCommand(OrderDirection.SHORT), equalTo(OrderCommand.SELL));
+        assertThat(directionToCommand(PositionDirection.LONG), equalTo(OrderCommand.BUY));
+        assertThat(directionToCommand(PositionDirection.SHORT), equalTo(OrderCommand.SELL));
     }
 
     @Test
@@ -541,24 +536,24 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void testSwitchOrderDirectionIsCorrect() {
-        assertThat(switchDirection(OrderDirection.FLAT), equalTo(OrderDirection.FLAT));
-        assertThat(switchDirection(OrderDirection.LONG), equalTo(OrderDirection.SHORT));
-        assertThat(switchDirection(OrderDirection.SHORT), equalTo(OrderDirection.LONG));
+        assertThat(switchDirection(PositionDirection.FLAT), equalTo(PositionDirection.FLAT));
+        assertThat(switchDirection(PositionDirection.LONG), equalTo(PositionDirection.SHORT));
+        assertThat(switchDirection(PositionDirection.SHORT), equalTo(PositionDirection.LONG));
     }
 
     @Test
     public void directionForSignedAmountIsLONGForPositiveAmount() {
-        assertThat(directionForSignedAmount(0.12), equalTo(OrderDirection.LONG));
+        assertThat(directionForSignedAmount(0.12), equalTo(PositionDirection.LONG));
     }
 
     @Test
     public void directionForSignedAmountIsSHORTForNegativeAmount() {
-        assertThat(directionForSignedAmount(-0.12), equalTo(OrderDirection.SHORT));
+        assertThat(directionForSignedAmount(-0.12), equalTo(PositionDirection.SHORT));
     }
 
     @Test
     public void directionForSignedAmountIsFLATForZeroAmount() {
-        assertThat(directionForSignedAmount(0.0), equalTo(OrderDirection.FLAT));
+        assertThat(directionForSignedAmount(0.0), equalTo(PositionDirection.FLAT));
     }
 
     @Test

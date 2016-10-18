@@ -31,7 +31,7 @@ import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.currency.CurrencyCode;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JForexUtil;
-import com.jforex.programming.order.OrderDirection;
+import com.jforex.programming.order.PositionDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
@@ -177,8 +177,8 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(LoginState.LOGGED_IN.toString());
         OrderEventType
             .valueOf(OrderEventType.SUBMIT_OK.toString());
-        OrderDirection
-            .valueOf(OrderDirection.FLAT.toString());
+        PositionDirection
+            .valueOf(PositionDirection.FLAT.toString());
         MergeExecutionMode
             .valueOf(MergeExecutionMode.ConcatCancelSLAndTP.toString());
         CloseExecutionMode

@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.OrderDirection;
+import com.jforex.programming.order.PositionDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
@@ -105,7 +105,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
         @Test
         public void testDirectionIsFLAT() {
-            assertThat(position.direction(), equalTo(OrderDirection.FLAT));
+            assertThat(position.direction(), equalTo(PositionDirection.FLAT));
         }
 
         @Test
@@ -153,7 +153,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
             @Test
             public void testDirectionIsLONG() {
-                assertThat(position.direction(), equalTo(OrderDirection.LONG));
+                assertThat(position.direction(), equalTo(PositionDirection.LONG));
             }
 
             @Test
@@ -203,7 +203,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                 @Test
                 public void testDirectionIsShortSinceSellAmountIsBigger() {
-                    assertThat(position.direction(), equalTo(OrderDirection.SHORT));
+                    assertThat(position.direction(), equalTo(PositionDirection.SHORT));
                 }
 
                 @Test
@@ -255,7 +255,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     @Test
                     public void testDirectionIsShortSinceSellAmountIsBigger() {
-                        assertThat(position.direction(), equalTo(OrderDirection.SHORT));
+                        assertThat(position.direction(), equalTo(PositionDirection.SHORT));
                     }
 
                     @Test
@@ -303,7 +303,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                         @Test
                         public void testDirectionIsShortSinceSellAmountIsBigger() {
-                            assertThat(position.direction(), equalTo(OrderDirection.SHORT));
+                            assertThat(position.direction(), equalTo(PositionDirection.SHORT));
                         }
 
                         @Test
@@ -357,7 +357,7 @@ public class PositionTest extends InstrumentUtilForTest {
 
                     assertFalse(position.contains(buyOrderEURUSD));
                     assertThat(position.size(), equalTo(1));
-                    assertThat(position.direction(), equalTo(OrderDirection.SHORT));
+                    assertThat(position.direction(), equalTo(PositionDirection.SHORT));
 
                     final double sellAmount = OrderStaticUtil.signedAmount(sellOrderEURUSD);
                     assertThat(position.signedExposure(), equalTo(sellAmount));
