@@ -14,11 +14,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.PositionDirection;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionDirection;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;

@@ -17,6 +17,7 @@ import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.position.Position;
+import com.jforex.programming.position.PositionDirection;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -80,6 +81,21 @@ public class PositionUtilTest extends InstrumentUtilForTest {
         when(positionEURUSDMock.opened()).thenReturn(testOrders);
 
         assertThat(positionUtil.openedOrders(instrumentEURUSD), equalTo(testOrders));
+    }
+
+    @Test
+    public void directionForSignedAmountIsLONGForPositiveAmount() {
+        assertThat(PositionUtil.directionForSignedAmount(0.12), equalTo(PositionDirection.LONG));
+    }
+
+    @Test
+    public void directionForSignedAmountIsSHORTForNegativeAmount() {
+        assertThat(PositionUtil.directionForSignedAmount(-0.12), equalTo(PositionDirection.SHORT));
+    }
+
+    @Test
+    public void directionForSignedAmountIsFLATForZeroAmount() {
+        assertThat(PositionUtil.directionForSignedAmount(0.0), equalTo(PositionDirection.FLAT));
     }
 
     public class ObservablesFromFactoryTests {

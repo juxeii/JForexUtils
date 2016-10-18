@@ -1,8 +1,7 @@
 package com.jforex.programming.order;
 
-public enum PositionDirection {
+public enum OrderDirection {
 
-    FLAT,
     LONG,
     SHORT
 }
