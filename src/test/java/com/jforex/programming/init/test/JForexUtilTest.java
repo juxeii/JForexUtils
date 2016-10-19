@@ -1,4 +1,4 @@
-package com.jforex.programming.misc.test;
+package com.jforex.programming.init.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -74,6 +74,11 @@ public class JForexUtilTest extends QuoteProviderForTest {
     @Test
     public void returnedPositionUtilIsValid() {
         assertNotNull(jForexUtil.positionUtil());
+    }
+
+    @Test
+    public void returnedStrategyThreadRunnerIsValid() {
+        assertNotNull(jForexUtil.strategyThreadRunner());
     }
 
     @Test

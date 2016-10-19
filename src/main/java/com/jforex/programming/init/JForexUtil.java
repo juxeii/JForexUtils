@@ -18,6 +18,7 @@ import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.misc.JFHotPublisher;
+import com.jforex.programming.misc.StrategyThreadRunner;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -85,6 +86,10 @@ public class JForexUtil {
 
     public PositionUtil positionUtil() {
         return orderInitUtil.positionUtil();
+    }
+
+    public StrategyThreadRunner strategyThreadRunner() {
+        return orderInitUtil.strategyThreadRunner();
     }
 
     public InstrumentUtil instrumentUtil(final Instrument instrument) {

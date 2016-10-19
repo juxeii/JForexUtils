@@ -33,7 +33,7 @@ public class OrderInitUtil {
     private final PositionFactory positionFactory;
     private final PositionUtil positionUtil;
     private final OrderEventGateway orderEventGateway;
-    private final StrategyThreadRunner strategyThreadTask;
+    private final StrategyThreadRunner strategyThreadRunner;
     private final TaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
     private final BasicTask orderBasicTask;
@@ -56,13 +56,13 @@ public class OrderInitUtil {
         engine = contextUtil.engine();
         orderEventFactory = new OrderEventFactory(callRequestPublisher.observable());
         orderEventGateway = new OrderEventGateway(messageObservable, orderEventFactory);
-        strategyThreadTask = new StrategyThreadRunner(contextUtil.context());
+        strategyThreadRunner = new StrategyThreadRunner(contextUtil.context());
         positionFactory = new PositionFactory(orderEventGateway.observable());
         positionUtil = new PositionUtil(positionFactory);
         orderUtilHandler = new OrderUtilHandler(orderEventGateway,
                                                 orderEventTypeDataFactory,
                                                 callRequestPublisher);
-        orderTaskExecutor = new TaskExecutor(strategyThreadTask, engine);
+        orderTaskExecutor = new TaskExecutor(strategyThreadRunner, engine);
         orderBasicTask = new BasicTask(orderTaskExecutor, orderUtilHandler);
         orderChangeBatch = new BatchChangeTask(orderBasicTask);
         orderCancelSL = new CancelSLTask(orderChangeBatch);
@@ -87,6 +87,10 @@ public class OrderInitUtil {
 
     public PositionUtil positionUtil() {
         return positionUtil;
+    }
+
+    public StrategyThreadRunner strategyThreadRunner() {
+        return strategyThreadRunner;
     }
 
     public void onStop() {
