@@ -17,7 +17,7 @@ import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
 import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.quote.BarParams;
-import com.jforex.programming.quote.QuoteProviderException;
+import com.jforex.programming.quote.QuoteException;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.settings.UserSettings;
 
@@ -58,7 +58,7 @@ public class HistoryUtil {
     private ITick latestHistoryTick(final Instrument instrument) throws JFException {
         final ITick tick = history.getLastTick(instrument);
         if (tick == null)
-            throw new QuoteProviderException("Latest tick from history for " + instrument
+            throw new QuoteException("Latest tick from history for " + instrument
                     + " returned null!");
         return tick;
     }
@@ -83,7 +83,7 @@ public class HistoryUtil {
                                         offerSide,
                                         1);
         if (bar == null)
-            throw new QuoteProviderException("Latest bar from history for " + instrument
+            throw new QuoteException("Latest bar from history for " + instrument
                     + " " + period + " " + offerSide + " returned null!");
         return bar;
     }

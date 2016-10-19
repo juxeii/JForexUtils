@@ -6,7 +6,7 @@ import org.aeonbits.owner.Config.Sources;
 @Sources({ "file:UserSettings.properties" })
 public interface UserSettings extends Config {
 
-    @Key("order.defaultsplippage")
+    @Key("order.defaultslippage")
     @DefaultValue("2.0")
     public double defaultSlippage();
 
@@ -26,14 +26,6 @@ public interface UserSettings extends Config {
     @DefaultValue("M_")
     public String defaultMergePrefix();
 
-    @Key("order.maxretriesonorderfail")
-    @DefaultValue("3")
-    public int maxRetriesOnOrderFail();
-
-    @Key("order.retrydelayonorderfail")
-    @DefaultValue("1500")
-    public long delayOnOrderFailRetry();
-
     @Key("history.maxretriesonhistoryfail")
     @DefaultValue("5")
     public int maxRetriesOnHistoryFail();
@@ -45,8 +37,4 @@ public interface UserSettings extends Config {
     @Key("env.enableweekendquotefilter")
     @DefaultValue("true")
     public boolean enableWeekendQuoteFilter();
-
-    @Key("env.logintimeoutseconds")
-    @DefaultValue("20")
-    public int logintimeoutseconds();
 }
