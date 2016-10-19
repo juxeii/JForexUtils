@@ -7,6 +7,12 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.dukascopy.api.IOrder;
 
+/**
+ * This class holds data of an order event.
+ *
+ * An order event occurs when the state of an existing order has changed or when
+ * an order has been created.
+ */
 public final class OrderEvent {
 
     private final IOrder order;
@@ -21,14 +27,32 @@ public final class OrderEvent {
         this.isInternal = isInternal;
     }
 
+    /**
+     * Returns the order of this event.
+     *
+     * @return the order
+     */
     public final IOrder order() {
         return order;
     }
 
+    /**
+     * Returns the type of this event.
+     *
+     * @see com.jforex.programming.order.event.OrderEventType OrderEventType
+     *
+     * @return the type
+     */
     public final OrderEventType type() {
         return type;
     }
 
+    /**
+     * Returns true if this event was triggered by the current strategy, false
+     * otherwise.
+     *
+     * @return true, if triggered by current strategy
+     */
     public final boolean isInternal() {
         return isInternal;
     }
