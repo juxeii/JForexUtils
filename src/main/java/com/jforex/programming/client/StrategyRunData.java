@@ -1,12 +1,13 @@
 package com.jforex.programming.client;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+/**
+ * Provides access to the strategy running data.
+ */
 public final class StrategyRunData {
 
     private final long processID;
@@ -15,13 +16,23 @@ public final class StrategyRunData {
     public StrategyRunData(final long processID,
                            final StrategyRunState state) {
         this.processID = processID;
-        this.state = checkNotNull(state);
+        this.state = state;
     }
 
+    /**
+     * Returns the process id of the mapped strategy.
+     *
+     * @return the process id
+     */
     public final long processID() {
         return processID;
     }
 
+    /**
+     * Returns the running state of the mapped strategy.
+     *
+     * @return the strategy run state
+     */
     public final StrategyRunState state() {
         return state;
     }

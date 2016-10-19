@@ -1,5 +1,8 @@
 package com.jforex.programming.currency;
 
+/**
+ * A collection of currency codes.
+ */
 public enum CurrencyCode {
 
     /** Currency code for the Australian Dollar. */
