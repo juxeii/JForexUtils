@@ -9,7 +9,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 

@@ -10,7 +10,7 @@ public final class StreamUtil {
     private StreamUtil() {
     }
 
-    public static final <T> Stream<T> optionalStream(final Optional<T> optional) {
+    public static final <T> Stream<T> optionalToStream(final Optional<T> optional) {
         checkNotNull(optional);
 
         return optional.isPresent()

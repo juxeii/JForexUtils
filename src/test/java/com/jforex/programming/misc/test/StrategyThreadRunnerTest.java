@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.StrategyThreadTask;
+import com.jforex.programming.misc.StrategyThreadRunner;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -19,9 +19,9 @@ import io.reactivex.functions.Action;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class StrategyThreadTaskTest extends CommonUtilForTest {
+public class StrategyThreadRunnerTest extends CommonUtilForTest {
 
-    private StrategyThreadTask strategyThreadTask;
+    private StrategyThreadRunner strategyThreadRunner;
 
     @Mock
     private Action actionMock;
@@ -33,10 +33,10 @@ public class StrategyThreadTaskTest extends CommonUtilForTest {
     private Future<Object> futureVoidMock;
     private TestObserver<Void> orderActionSubscriber;
     private TestObserver<IOrder> orderCallableSubscriber;
-    private final Runnable executeActionCall = () -> orderActionSubscriber = strategyThreadTask
+    private final Runnable executeActionCall = () -> orderActionSubscriber = strategyThreadRunner
         .execute(actionMock)
         .test();
-    private final Runnable executeCallableCall = () -> orderCallableSubscriber = strategyThreadTask
+    private final Runnable executeCallableCall = () -> orderCallableSubscriber = strategyThreadRunner
         .execute(callableMock)
         .test();
 
@@ -44,7 +44,7 @@ public class StrategyThreadTaskTest extends CommonUtilForTest {
     public void setUp() throws Exception {
         setUpMocks();
 
-        strategyThreadTask = new StrategyThreadTask(contextMock);
+        strategyThreadRunner = new StrategyThreadRunner(contextMock);
     }
 
     private void setUpMocks() throws Exception {
@@ -71,8 +71,8 @@ public class StrategyThreadTaskTest extends CommonUtilForTest {
 
     @Test
     public void whenNotSubscribedNoExecutionHappens() {
-        strategyThreadTask.execute(callableMock);
-        strategyThreadTask.execute(actionMock);
+        strategyThreadRunner.execute(callableMock);
+        strategyThreadRunner.execute(actionMock);
 
         verifyNoExecutions();
     }
@@ -81,7 +81,7 @@ public class StrategyThreadTaskTest extends CommonUtilForTest {
     public void executeOnContextForActionIsCorrect() throws Exception {
         when(contextMock.executeTask(any())).thenReturn(futureVoidMock);
 
-        strategyThreadTask
+        strategyThreadRunner
             .execute(actionMock)
             .subscribe();
 
@@ -96,7 +96,7 @@ public class StrategyThreadTaskTest extends CommonUtilForTest {
 
     @Test
     public void executeOnContextForCallableIsCorrect() throws Exception {
-        strategyThreadTask
+        strategyThreadRunner
             .execute(callableMock)
             .subscribe();
 

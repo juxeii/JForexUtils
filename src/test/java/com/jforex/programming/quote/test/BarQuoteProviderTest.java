@@ -21,9 +21,9 @@ import com.jforex.programming.test.common.QuoteProviderForTest;
 import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
-public class BarQuoteHandlerTest extends QuoteProviderForTest {
+public class BarQuoteProviderTest extends QuoteProviderForTest {
 
-    private BarQuoteProvider barQuoteHandler;
+    private BarQuoteProvider barQuoteProvider;
 
     @Mock
     private QuoteUtil quoteUtilMock;
@@ -40,18 +40,18 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
 
     @Before
     public void setUp() {
-        barQuoteHandler = new BarQuoteProvider(quoteUtilMock,
-                                               quoteObservable,
-                                               barQuoteRepositoryMock);
+        barQuoteProvider = new BarQuoteProvider(quoteUtilMock,
+                                                quoteObservable,
+                                                barQuoteRepositoryMock);
 
         quoteFilters.add(askBarEURUSDParams);
         quoteFilters.add(askBarAUDUSDParams);
 
-        barQuoteHandler
+        barQuoteProvider
             .observableForParamsList(quoteFilters)
             .subscribe(filteredQuoteSubscriber);
 
-        barQuoteHandler
+        barQuoteProvider
             .observable()
             .subscribe(unFilteredQuoteSubscriber);
     }
@@ -77,7 +77,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         when(barQuoteRepositoryMock.get(askBarEURUSDParams))
             .thenReturn(askBarQuoteEURUSD);
 
-        assertThat(barQuoteHandler.bar(askBarEURUSDParams),
+        assertThat(barQuoteProvider.bar(askBarEURUSDParams),
                    equalTo(askBarEURUSD));
     }
 
@@ -86,7 +86,7 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         when(barQuoteRepositoryMock.get(askBarAUDUSDParams))
             .thenReturn(askBarQuoteAUDUSD);
 
-        assertThat(barQuoteHandler.bar(askBarAUDUSDParams),
+        assertThat(barQuoteProvider.bar(askBarAUDUSDParams),
                    equalTo(askBarAUDUSD));
     }
 
@@ -114,10 +114,10 @@ public class BarQuoteHandlerTest extends QuoteProviderForTest {
         quoteFilters.add(askBarAUDUSDParams);
         quoteFilters.add(askBarEURUSDCustomPeriodParams);
 
-        barQuoteHandler
+        barQuoteProvider
             .observableForParamsList(quoteFilters)
             .subscribe(filteredQuoteSubscriber);
 
-        verify(quoteUtilMock).subscribeToBarsFeed(askBarEURUSDCustomPeriodParams);
+        verify(quoteUtilMock).initBarsFeed(askBarEURUSDCustomPeriodParams);
     }
 }

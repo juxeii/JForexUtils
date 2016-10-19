@@ -10,8 +10,8 @@ import org.paukov.combinatorics3.Generator;
 
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
+import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.instrument.InstrumentUtil;
-import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
 
 public final class MathUtil {

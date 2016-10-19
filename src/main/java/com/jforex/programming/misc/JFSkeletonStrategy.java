@@ -9,6 +9,7 @@ import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.Period;
+import com.jforex.programming.init.JForexUtil;
 
 public class JFSkeletonStrategy implements IStrategy {
 

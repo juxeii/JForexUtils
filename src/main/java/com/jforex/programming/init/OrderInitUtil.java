@@ -3,7 +3,7 @@ package com.jforex.programming.init;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IMessage;
 import com.jforex.programming.misc.JFHotPublisher;
-import com.jforex.programming.misc.StrategyThreadTask;
+import com.jforex.programming.misc.StrategyThreadRunner;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -33,7 +33,7 @@ public class OrderInitUtil {
     private final PositionFactory positionFactory;
     private final PositionUtil positionUtil;
     private final OrderEventGateway orderEventGateway;
-    private final StrategyThreadTask strategyThreadTask;
+    private final StrategyThreadRunner strategyThreadTask;
     private final TaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
     private final BasicTask orderBasicTask;
@@ -56,7 +56,7 @@ public class OrderInitUtil {
         engine = contextUtil.engine();
         orderEventFactory = new OrderEventFactory(callRequestPublisher.observable());
         orderEventGateway = new OrderEventGateway(messageObservable, orderEventFactory);
-        strategyThreadTask = new StrategyThreadTask(contextUtil.context());
+        strategyThreadTask = new StrategyThreadRunner(contextUtil.context());
         positionFactory = new PositionFactory(orderEventGateway.observable());
         positionUtil = new PositionUtil(positionFactory);
         orderUtilHandler = new OrderUtilHandler(orderEventGateway,

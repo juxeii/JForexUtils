@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.JForexUtil;
+import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.settings.PlatformSettings;

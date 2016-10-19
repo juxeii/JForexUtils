@@ -59,7 +59,7 @@ public class QuoteUtil {
 
     private boolean shouldForwardQuote(final long time) {
         return !isWeekendQuoteFilter
-                || !contextUtil.isMarketClosed(time);
+                || !contextUtil.isMarketClosedAtTime(time);
     }
 
     public void onBar(final Instrument instrument,
@@ -95,9 +95,7 @@ public class QuoteUtil {
         }
     }
 
-    public void subscribeToBarsFeed(final BarParams barParams) {
-        checkNotNull(barParams);
-
+    public void initBarsFeed(final BarParams barParams) {
         contextUtil
             .context()
             .subscribeToBarsFeed(barParams.instrument(),

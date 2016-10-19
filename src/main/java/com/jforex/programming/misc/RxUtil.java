@@ -18,18 +18,18 @@ public final class RxUtil {
                                                                              final long delay,
                                                                              final TimeUnit timeUnit) {
         return errors -> errors
-            .zipWith(counterObservable(noOfRetries), Pair::of)
+            .zipWith(retryCounter(noOfRetries), Pair::of)
             .flatMap(retryPair -> retryPair.getRight() > noOfRetries
                     ? Observable.error(retryPair.getLeft())
-                    : waitObservable(delay, timeUnit));
+                    : wait(delay, timeUnit));
     }
 
-    public static final Observable<Integer> counterObservable(final int maxRetries) {
+    public static final Observable<Integer> retryCounter(final int maxRetries) {
         return Observable.range(1, maxRetries + 1);
     }
 
-    public static final Observable<Long> waitObservable(final long delay,
-                                                        final TimeUnit timeUnit) {
+    public static final Observable<Long> wait(final long delay,
+                                              final TimeUnit timeUnit) {
         return Observable
             .interval(delay, timeUnit)
             .take(1);

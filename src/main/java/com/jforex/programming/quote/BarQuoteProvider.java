@@ -42,8 +42,10 @@ public class BarQuoteProvider {
     }
 
     private final Observable<BarQuote> observableForParams(final BarParams barParams) {
+        checkNotNull(barParams);
+
         if (barParams.period().name() == null)
-            quoteUtil.subscribeToBarsFeed(barParams);
+            quoteUtil.initBarsFeed(barParams);
         return barQuoteObservable.filter(barQuote -> barQuote.barParams().equals(barParams));
     }
 

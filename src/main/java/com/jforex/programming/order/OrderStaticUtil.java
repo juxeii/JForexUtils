@@ -13,8 +13,8 @@ import com.dukascopy.api.OfferSide;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
 
 public final class OrderStaticUtil {

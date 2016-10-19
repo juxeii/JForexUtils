@@ -13,10 +13,9 @@ import org.junit.runner.RunWith;
 import com.dukascopy.api.IBar;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.JFException;
-import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Lists;
+import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.instrument.InstrumentUtil;
-import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -126,16 +125,6 @@ public class JForexUtilTest extends QuoteProviderForTest {
     @Test
     public void coverIsMarketNowClosed() {
         jForexUtil.isMarketClosed();
-    }
-
-    @Test
-    public void subscriptionToBarsFeedCallContext() {
-        jForexUtil.subscribeToBarsFeed(askBarEURUSDCustomPeriodParams);
-
-        verify(contextMock).subscribeToBarsFeed(eq(instrumentEURUSD),
-                                                eq(custom3MinutePeriod),
-                                                eq(OfferSide.ASK),
-                                                any());
     }
 
     @Test

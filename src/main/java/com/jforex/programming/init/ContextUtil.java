@@ -8,7 +8,7 @@ import com.dukascopy.api.IHistory;
 import com.jforex.programming.misc.DateTimeUtil;
 import com.jforex.programming.misc.HistoryUtil;
 
-public class ContextUtil {
+public final class ContextUtil {
 
     private final IContext context;
     private final IEngine engine;
@@ -26,31 +26,31 @@ public class ContextUtil {
         historyUtil = new HistoryUtil(history);
     }
 
-    public IContext context() {
+    public final IContext context() {
         return context;
     }
 
-    public IEngine engine() {
+    public final IEngine engine() {
         return engine;
     }
 
-    public IAccount account() {
+    public final IAccount account() {
         return account;
     }
 
-    public IHistory history() {
+    public final IHistory history() {
         return history;
     }
 
-    public HistoryUtil historyUtil() {
+    public final HistoryUtil historyUtil() {
         return historyUtil;
     }
 
-    public boolean isMarketClosed() {
-        return isMarketClosed(DateTimeUtil.localMillisNow());
+    public final boolean isMarketNowClosed() {
+        return isMarketClosedAtTime(DateTimeUtil.localMillisNow());
     }
 
-    public boolean isMarketClosed(final long time) {
+    public final boolean isMarketClosedAtTime(final long time) {
         return dataService.isOfflineTime(time);
     }
 }

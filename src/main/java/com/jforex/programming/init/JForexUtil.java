@@ -1,4 +1,4 @@
-package com.jforex.programming.misc;
+package com.jforex.programming.init;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -14,14 +14,12 @@ import com.dukascopy.api.IMessage;
 import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.Period;
-import com.jforex.programming.init.ContextUtil;
-import com.jforex.programming.init.OrderInitUtil;
-import com.jforex.programming.init.QuoteUtil;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.misc.HistoryUtil;
+import com.jforex.programming.misc.JFHotPublisher;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.position.PositionUtil;
-import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
@@ -138,17 +136,11 @@ public class JForexUtil {
     }
 
     public boolean isMarketClosed() {
-        return contextUtil.isMarketClosed();
+        return contextUtil.isMarketNowClosed();
     }
 
     public boolean isMarketClosed(final long time) {
-        return contextUtil.isMarketClosed(time);
-    }
-
-    public void subscribeToBarsFeed(final BarParams barParams) {
-        checkNotNull(barParams);
-
-        quoteUtil.subscribeToBarsFeed(barParams);
+        return contextUtil.isMarketClosedAtTime(time);
     }
 
     public static final boolean isStrategyThread() {

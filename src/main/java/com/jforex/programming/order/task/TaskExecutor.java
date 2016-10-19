@@ -6,7 +6,7 @@ import java.util.concurrent.Callable;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.misc.StrategyThreadTask;
+import com.jforex.programming.misc.StrategyThreadRunner;
 import com.jforex.programming.order.OrderParams;
 
 import io.reactivex.Completable;
@@ -15,10 +15,10 @@ import io.reactivex.functions.Action;
 
 public class TaskExecutor {
 
-    private final StrategyThreadTask strategyThreadTask;
+    private final StrategyThreadRunner strategyThreadTask;
     private final IEngine engine;
 
-    public TaskExecutor(final StrategyThreadTask strategyThreadTask,
+    public TaskExecutor(final StrategyThreadRunner strategyThreadTask,
                         final IEngine engine) {
         this.strategyThreadTask = strategyThreadTask;
         this.engine = engine;

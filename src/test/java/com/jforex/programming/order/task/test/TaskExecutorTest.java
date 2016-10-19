@@ -17,7 +17,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
-import com.jforex.programming.misc.StrategyThreadTask;
+import com.jforex.programming.misc.StrategyThreadRunner;
 import com.jforex.programming.order.task.TaskExecutor;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
@@ -31,7 +31,7 @@ public class TaskExecutorTest extends CommonUtilForTest {
     private TaskExecutor taskExecutor;
 
     @Mock
-    private StrategyThreadTask strategyThreadTask;
+    private StrategyThreadRunner strategyThreadTask;
     @Mock
     private Callable<IOrder> orderCallableMock;
     @Captor

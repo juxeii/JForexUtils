@@ -9,8 +9,8 @@ import static com.jforex.programming.math.MathUtil.roundPrice;
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
+import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.instrument.InstrumentFactory;
-import com.jforex.programming.misc.JForexUtil;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
 

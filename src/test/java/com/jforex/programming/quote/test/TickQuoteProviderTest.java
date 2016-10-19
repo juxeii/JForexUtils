@@ -17,9 +17,9 @@ import com.jforex.programming.test.common.QuoteProviderForTest;
 import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
-public class TickQuoteHandlerTest extends QuoteProviderForTest {
+public class TickQuoteProviderTest extends QuoteProviderForTest {
 
-    private TickQuoteProvider tickQuoteHandler;
+    private TickQuoteProvider tickQuoteProvider;
 
     @Mock
     private TickQuoteRepository tickQuoteRepositoryMock;
@@ -32,17 +32,17 @@ public class TickQuoteHandlerTest extends QuoteProviderForTest {
     public void setUp() {
         setUpMocks();
 
-        tickQuoteHandler = new TickQuoteProvider(quoteObservable, tickQuoteRepositoryMock);
+        tickQuoteProvider = new TickQuoteProvider(quoteObservable, tickQuoteRepositoryMock);
 
-        tickQuoteHandler
+        tickQuoteProvider
             .observable()
             .subscribe(unfilteredQuoteSubscriber);
 
-        tickQuoteHandler
+        tickQuoteProvider
             .observableForInstruments(Sets.newHashSet(instrumentEURUSD, instrumentAUDUSD))
             .subscribe(quoteEURUSDAndAUDUSDSubscriber);
 
-        tickQuoteHandler
+        tickQuoteProvider
             .observableForInstruments(Sets.newHashSet(instrumentGBPAUD))
             .subscribe(quoteGBPAUDSubscriber);
     }
@@ -66,31 +66,31 @@ public class TickQuoteHandlerTest extends QuoteProviderForTest {
 
     @Test
     public void returnedTickIsCorrect() {
-        assertThat(tickQuoteHandler.tick(instrumentEURUSD),
+        assertThat(tickQuoteProvider.tick(instrumentEURUSD),
                    equalTo(tickEURUSD));
     }
 
     @Test
     public void returnedAskIsCorrect() {
-        assertThat(tickQuoteHandler.ask(instrumentEURUSD),
+        assertThat(tickQuoteProvider.ask(instrumentEURUSD),
                    equalTo(tickEURUSD.getAsk()));
     }
 
     @Test
     public void returnedBidIsCorrect() {
-        assertThat(tickQuoteHandler.bid(instrumentEURUSD),
+        assertThat(tickQuoteProvider.bid(instrumentEURUSD),
                    equalTo(tickEURUSD.getBid()));
     }
 
     @Test
     public void returnedAskForOfferSideIsCorrect() {
-        assertThat(tickQuoteHandler.forOfferSide(instrumentEURUSD, OfferSide.ASK),
+        assertThat(tickQuoteProvider.forOfferSide(instrumentEURUSD, OfferSide.ASK),
                    equalTo(tickEURUSD.getAsk()));
     }
 
     @Test
     public void returnedBidForOfferSideIsCorrect() {
-        assertThat(tickQuoteHandler.forOfferSide(instrumentEURUSD, OfferSide.BID),
+        assertThat(tickQuoteProvider.forOfferSide(instrumentEURUSD, OfferSide.BID),
                    equalTo(tickEURUSD.getBid()));
     }
 

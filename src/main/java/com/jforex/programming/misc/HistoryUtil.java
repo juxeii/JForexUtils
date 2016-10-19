@@ -15,6 +15,7 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.QuoteProviderException;
 import com.jforex.programming.quote.TickQuote;

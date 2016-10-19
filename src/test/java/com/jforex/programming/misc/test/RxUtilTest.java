@@ -59,7 +59,7 @@ public class RxUtilTest extends CommonUtilForTest {
     @Test
     public void counterObservableCountsCorrect() {
         RxUtil
-            .counterObservable(3)
+            .retryCounter(3)
             .test()
             .assertComplete()
             .assertNoErrors()
@@ -69,7 +69,7 @@ public class RxUtilTest extends CommonUtilForTest {
     @Test
     public void waitObservableIsCorrect() {
         final TestObserver<Long> subscriber = RxUtil
-            .waitObservable(delay, timeUnit)
+            .wait(delay, timeUnit)
             .test();
 
         advanceTime(1300L);
