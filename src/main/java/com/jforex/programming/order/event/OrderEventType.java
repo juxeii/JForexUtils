@@ -1,5 +1,8 @@
 package com.jforex.programming.order.event;
 
+/**
+ * All order related event types.
+ */
 public enum OrderEventType {
 
     /** Indicates a notification event. */
