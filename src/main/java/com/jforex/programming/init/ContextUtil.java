@@ -5,8 +5,10 @@ import com.dukascopy.api.IContext;
 import com.dukascopy.api.IDataService;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IHistory;
+import com.dukascopy.api.feed.IBarFeedListener;
 import com.jforex.programming.misc.DateTimeUtil;
 import com.jforex.programming.misc.HistoryUtil;
+import com.jforex.programming.quote.BarParams;
 
 public final class ContextUtil {
 
@@ -52,5 +54,13 @@ public final class ContextUtil {
 
     public final boolean isMarketClosedAtTime(final long time) {
         return dataService.isOfflineTime(time);
+    }
+
+    public final void initBarsFeed(final BarParams barParams,
+                                   final IBarFeedListener barFeedListener) {
+        context.subscribeToBarsFeed(barParams.instrument(),
+                                    barParams.period(),
+                                    barParams.offerSide(),
+                                    barFeedListener);
     }
 }

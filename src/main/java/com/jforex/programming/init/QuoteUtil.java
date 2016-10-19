@@ -96,12 +96,7 @@ public class QuoteUtil {
     }
 
     public void initBarsFeed(final BarParams barParams) {
-        contextUtil
-            .context()
-            .subscribeToBarsFeed(barParams.instrument(),
-                                 barParams.period(),
-                                 barParams.offerSide(),
-                                 this::onOfferSidedBar);
+        contextUtil.initBarsFeed(barParams, this::onOfferSidedBar);
     }
 
     public void onStop() {
