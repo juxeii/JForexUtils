@@ -14,6 +14,7 @@ import com.jforex.programming.currency.CurrencyCode;
 import com.jforex.programming.currency.CurrencyFactory;
 import com.jforex.programming.currency.CurrencyUtil;
 import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.math.MathUtil;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuoteProvider;
@@ -164,6 +165,12 @@ public final class InstrumentUtil {
         checkNotNull(instrument);
 
         return instrument.getPipScale() + 1;
+    }
+
+    public static final double scalePriceToPips(final Instrument instrument,
+                                                final double price) {
+        final double pips = price * (1.0 / instrument.getPipValue());
+        return MathUtil.roundPips(pips);
     }
 
     public static final String toStringNoSeparator(final Instrument instrument) {

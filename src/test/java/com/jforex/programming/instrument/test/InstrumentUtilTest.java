@@ -6,6 +6,7 @@ import static com.jforex.programming.instrument.InstrumentUtil.nameFromCurrencie
 import static com.jforex.programming.instrument.InstrumentUtil.numberOfDigits;
 import static com.jforex.programming.instrument.InstrumentUtil.quoteCurrencyName;
 import static com.jforex.programming.instrument.InstrumentUtil.quoteJavaCurrency;
+import static com.jforex.programming.instrument.InstrumentUtil.scalePriceToPips;
 import static com.jforex.programming.instrument.InstrumentUtil.toStringNoSeparator;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
@@ -240,6 +241,22 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
     public void testNumberOfDigitsIsFiveForNonJPYInstruments() {
         assertThat(numberOfDigits(instrumentEURUSD),
                    equalTo(noOfDigitsNonJPYInstrument));
+    }
+
+    @Test
+    public void scalePriceToPipsIsCorrect() {
+        final double price = 0.00125;
+
+        assertThat(scalePriceToPips(instrumentEURUSD, price),
+                   equalTo(12.5));
+    }
+
+    @Test
+    public void scalePriceToPipsForJPYIsCorrect() {
+        final double price = 0.031;
+
+        assertThat(scalePriceToPips(instrumentEURJPY, price),
+                   equalTo(3.1));
     }
 
     @Test
