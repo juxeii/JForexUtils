@@ -98,9 +98,8 @@ public class OrderInitUtil {
     }
 
     public Completable importOrders() {
-        return strategyThreadRunner
-            .execute(() -> engine.getOrders())
-            .toObservable()
+        return Observable
+            .fromCallable(() -> engine.getOrders())
             .flatMap(Observable::fromIterable)
             .doOnNext(order -> {
                 positionFactory.createForInstrument(order.getInstrument());
