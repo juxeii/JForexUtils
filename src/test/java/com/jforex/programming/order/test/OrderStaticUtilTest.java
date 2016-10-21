@@ -53,7 +53,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
-import com.jforex.programming.math.CalculationUtil;
+import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
@@ -80,9 +80,9 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
     private void assertSLTPCalculation(final IOrder order,
                                        final double calculatedPrice,
                                        final int factor) {
-        final double expectedPrice = CalculationUtil.addPipsToPrice(order.getInstrument(),
-                                                                    currentPriceForSLTP,
-                                                                    factor * pipsToSLTP);
+        final double expectedPrice = InstrumentUtil.addPipsToPrice(order.getInstrument(),
+                                                                   currentPriceForSLTP,
+                                                                   factor * pipsToSLTP);
         assertThat(calculatedPrice, equalTo(expectedPrice));
     }
 

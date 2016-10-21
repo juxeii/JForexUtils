@@ -2,6 +2,7 @@ package com.jforex.programming.instrument.test;
 
 import static com.jforex.programming.instrument.InstrumentUtil.baseCurrencyName;
 import static com.jforex.programming.instrument.InstrumentUtil.baseJavaCurrency;
+import static com.jforex.programming.instrument.InstrumentUtil.isPricePipDivisible;
 import static com.jforex.programming.instrument.InstrumentUtil.nameFromCurrencies;
 import static com.jforex.programming.instrument.InstrumentUtil.numberOfDigits;
 import static com.jforex.programming.instrument.InstrumentUtil.quoteCurrencyName;
@@ -245,19 +246,19 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
     }
 
     @Test
-    public void scalePipsToPriceIsCorrect() {
-        final double pips = 12.5;
-
-        assertThat(scalePipsToPrice(instrumentEURUSD, pips),
-                   equalTo(0.00125));
+    public void scalePipsToPriceIsCorrectForNonJPYInstruments() {
+        assertThat(scalePipsToPrice(instrumentEURUSD, 20.5),
+                   equalTo(0.00205));
+        assertThat(scalePipsToPrice(instrumentGBPAUD, 7.9),
+                   equalTo(0.00079));
     }
 
     @Test
-    public void scalePipsToPriceForJPYIsCorrect() {
-        final double pips = 3.1;
-
-        assertThat(scalePipsToPrice(instrumentEURJPY, pips),
-                   equalTo(0.031));
+    public void scalePipsToPriceIsCorrectForJPYInstruments() {
+        assertThat(scalePipsToPrice(instrumentEURJPY, 13.45),
+                   equalTo(0.135));
+        assertThat(scalePipsToPrice(instrumentUSDJPY, 4.78),
+                   equalTo(0.048));
     }
 
     @Test
@@ -274,6 +275,18 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
 
         assertThat(scalePriceToPips(instrumentEURJPY, price),
                    equalTo(3.1));
+    }
+
+    @Test
+    public void testRoundedPriceIsPipDivisible() {
+        assertTrue(isPricePipDivisible(instrumentEURUSD, 1.12345));
+        assertTrue(isPricePipDivisible(instrumentUSDJPY, 133.243));
+    }
+
+    @Test
+    public void testNonRoundedPriceIsNotPipDivisible() {
+        assertFalse(isPricePipDivisible(instrumentEURUSD, 1.123455));
+        assertFalse(isPricePipDivisible(instrumentUSDJPY, 133.2432));
     }
 
     @Test

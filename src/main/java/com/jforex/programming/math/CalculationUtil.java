@@ -1,10 +1,7 @@
 package com.jforex.programming.math;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.jforex.programming.math.MathUtil.isValueDivisibleByX;
 import static com.jforex.programming.math.MathUtil.roundAmount;
-import static com.jforex.programming.math.MathUtil.roundPips;
-import static com.jforex.programming.math.MathUtil.roundPrice;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
@@ -68,38 +65,6 @@ public class CalculationUtil {
                                            offerSide);
 
         return roundAmount(pipValueAmount);
-    }
-
-    public static final double scalePipsToInstrument(final double pips,
-                                                     final Instrument instrument) {
-        checkNotNull(instrument);
-
-        return roundPrice(instrument.getPipValue() * pips, instrument);
-    }
-
-    public static final double addPipsToPrice(final Instrument instrument,
-                                              final double price,
-                                              final double pipsToAdd) {
-        checkNotNull(instrument);
-
-        final double scaledPips = scalePipsToInstrument(pipsToAdd, instrument);
-        return roundPrice(price + scaledPips, instrument);
-    }
-
-    public static final double pipDistance(final Instrument instrument,
-                                           final double priceA,
-                                           final double priceB) {
-        checkNotNull(instrument);
-
-        final double pipDistance = (priceA - priceB) / instrument.getPipValue();
-        return roundPips(pipDistance);
-    }
-
-    public static final boolean isPricePipDivisible(final Instrument instrument,
-                                                    final double price) {
-        checkNotNull(instrument);
-
-        return isValueDivisibleByX(price, instrument.getPipValue() / 10);
     }
 
     public static final double scaleToPlatformAmount(final double amount) {
