@@ -6,6 +6,7 @@ import static com.jforex.programming.instrument.InstrumentUtil.nameFromCurrencie
 import static com.jforex.programming.instrument.InstrumentUtil.numberOfDigits;
 import static com.jforex.programming.instrument.InstrumentUtil.quoteCurrencyName;
 import static com.jforex.programming.instrument.InstrumentUtil.quoteJavaCurrency;
+import static com.jforex.programming.instrument.InstrumentUtil.scalePipsToPrice;
 import static com.jforex.programming.instrument.InstrumentUtil.scalePriceToPips;
 import static com.jforex.programming.instrument.InstrumentUtil.toStringNoSeparator;
 import static org.hamcrest.Matchers.closeTo;
@@ -81,8 +82,8 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
 
     @Test
     public void scalePipsIsCorrect() {
-        assertThat(instrumentUtil.scalePips(20.5), equalTo(0.00205));
-        assertThat(instrumentUtil.scalePips(7.9), equalTo(0.00079));
+        assertThat(instrumentUtil.scalePipsToPrice(20.5), equalTo(0.00205));
+        assertThat(instrumentUtil.scalePipsToPrice(7.9), equalTo(0.00079));
     }
 
     @Test
@@ -241,6 +242,22 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
     public void testNumberOfDigitsIsFiveForNonJPYInstruments() {
         assertThat(numberOfDigits(instrumentEURUSD),
                    equalTo(noOfDigitsNonJPYInstrument));
+    }
+
+    @Test
+    public void scalePipsToPriceIsCorrect() {
+        final double pips = 12.5;
+
+        assertThat(scalePipsToPrice(instrumentEURUSD, pips),
+                   equalTo(0.00125));
+    }
+
+    @Test
+    public void scalePipsToPriceForJPYIsCorrect() {
+        final double pips = 3.1;
+
+        assertThat(scalePipsToPrice(instrumentEURJPY, pips),
+                   equalTo(0.031));
     }
 
     @Test

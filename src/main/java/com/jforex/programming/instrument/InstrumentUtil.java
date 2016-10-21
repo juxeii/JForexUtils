@@ -103,8 +103,8 @@ public final class InstrumentUtil {
         return currencies;
     }
 
-    public double scalePips(final double pips) {
-        return CalculationUtil.scalePipsToInstrument(pips, instrument);
+    public double scalePipsToPrice(final double pips) {
+        return scalePipsToPrice(instrument, pips);
     }
 
     public double addPipsToPrice(final double price,
@@ -167,9 +167,18 @@ public final class InstrumentUtil {
         return instrument.getPipScale() + 1;
     }
 
+    public static final double scalePipsToPrice(final Instrument instrument,
+                                                final double pips) {
+        checkNotNull(instrument);
+
+        return CalculationUtil.scalePipsToInstrument(pips, instrument);
+    }
+
     public static final double scalePriceToPips(final Instrument instrument,
                                                 final double price) {
-        final double pips = price * (1.0 / instrument.getPipValue());
+        checkNotNull(instrument);
+
+        final double pips = price * (1 / instrument.getPipValue());
         return MathUtil.roundPips(pips);
     }
 
