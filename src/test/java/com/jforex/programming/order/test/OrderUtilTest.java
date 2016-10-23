@@ -12,6 +12,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.command.ClosePositionCommand;
@@ -105,6 +106,58 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
+    public void closeWithAmountDelegatesToOrderTask() {
+        final double amount = 0.12;
+
+        when(orderBasicTaskMock.close(orderForTest, amount))
+            .thenReturn(orderEventObservable);
+
+        final Observable<OrderEvent> actualObservable = orderUtil.close(orderForTest, amount);
+
+        verify(orderBasicTaskMock).close(orderForTest, amount);
+        assertThat(actualObservable, equalTo(orderEventObservable));
+    }
+
+    @Test
+    public void closeWithAmountAndPriceDelegatesToOrderTask() {
+        final double amount = 0.12;
+        final double price = 1.1234;
+
+        when(orderBasicTaskMock.close(orderForTest, amount, price))
+            .thenReturn(orderEventObservable);
+
+        final Observable<OrderEvent> actualObservable = orderUtil.close(orderForTest,
+                                                                        amount,
+                                                                        price);
+
+        verify(orderBasicTaskMock).close(orderForTest,
+                                         amount,
+                                         price);
+        assertThat(actualObservable, equalTo(orderEventObservable));
+    }
+
+    @Test
+    public void closeWithAmountAndPriceAndSlippageDelegatesToOrderTask() {
+        final double amount = 0.12;
+        final double price = 1.1234;
+        final double slippage = 2.2;
+
+        when(orderBasicTaskMock.close(orderForTest, amount, price, slippage))
+            .thenReturn(orderEventObservable);
+
+        final Observable<OrderEvent> actualObservable = orderUtil.close(orderForTest,
+                                                                        amount,
+                                                                        price,
+                                                                        slippage);
+
+        verify(orderBasicTaskMock).close(orderForTest,
+                                         amount,
+                                         price,
+                                         slippage);
+        assertThat(actualObservable, equalTo(orderEventObservable));
+    }
+
+    @Test
     public void setLabelDelegatesToOrderTask() {
         final String newLabel = "newLabel";
         when(orderBasicTaskMock.setLabel(orderForTest, newLabel))
@@ -161,6 +214,43 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final Observable<OrderEvent> actualObservable = orderUtil.setStopLossPrice(orderForTest, newSL);
 
         verify(orderBasicTaskMock).setStopLossPrice(orderForTest, newSL);
+        assertThat(actualObservable, equalTo(orderEventObservable));
+    }
+
+    @Test
+    public void setSLWithOfferSideDelegatesToOrderTask() {
+        final double newSL = 1.1234;
+        final OfferSide offerSide = OfferSide.ASK;
+        when(orderBasicTaskMock.setStopLossPrice(orderForTest, newSL, offerSide))
+            .thenReturn(orderEventObservable);
+
+        final Observable<OrderEvent> actualObservable = orderUtil.setStopLossPrice(orderForTest,
+                                                                                   newSL,
+                                                                                   offerSide);
+
+        verify(orderBasicTaskMock).setStopLossPrice(orderForTest,
+                                                    newSL,
+                                                    offerSide);
+        assertThat(actualObservable, equalTo(orderEventObservable));
+    }
+
+    @Test
+    public void setSLWithOfferSideAndTrailingStepDelegatesToOrderTask() {
+        final double newSL = 1.1234;
+        final OfferSide offerSide = OfferSide.ASK;
+        final double step = 10.0;
+        when(orderBasicTaskMock.setStopLossPrice(orderForTest, newSL, offerSide, step))
+            .thenReturn(orderEventObservable);
+
+        final Observable<OrderEvent> actualObservable = orderUtil.setStopLossPrice(orderForTest,
+                                                                                   newSL,
+                                                                                   offerSide,
+                                                                                   step);
+
+        verify(orderBasicTaskMock).setStopLossPrice(orderForTest,
+                                                    newSL,
+                                                    offerSide,
+                                                    step);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 

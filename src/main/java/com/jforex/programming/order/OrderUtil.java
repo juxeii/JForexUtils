@@ -6,6 +6,7 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
+import com.dukascopy.api.OfferSide;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
@@ -63,6 +64,35 @@ public class OrderUtil {
         return basicTask.close(order);
     }
 
+    public Observable<OrderEvent> close(final IOrder order,
+                                        final double amount) {
+        checkNotNull(order);
+
+        return basicTask.close(order, amount);
+    }
+
+    public Observable<OrderEvent> close(final IOrder order,
+                                        final double amount,
+                                        final double price) {
+        checkNotNull(order);
+
+        return basicTask.close(order,
+                               amount,
+                               price);
+    }
+
+    public Observable<OrderEvent> close(final IOrder order,
+                                        final double amount,
+                                        final double price,
+                                        final double slippage) {
+        checkNotNull(order);
+
+        return basicTask.close(order,
+                               amount,
+                               price,
+                               slippage);
+    }
+
     public Observable<OrderEvent> setLabel(final IOrder order,
                                            final String label) {
         checkNotNull(order);
@@ -90,6 +120,28 @@ public class OrderUtil {
         checkNotNull(order);
 
         return basicTask.setOpenPrice(order, newOpenPrice);
+    }
+
+    public Observable<OrderEvent> setStopLossPrice(final IOrder order,
+                                                   final double newSL,
+                                                   final OfferSide offerSide) {
+        checkNotNull(order);
+
+        return basicTask.setStopLossPrice(order,
+                                          newSL,
+                                          offerSide);
+    }
+
+    public Observable<OrderEvent> setStopLossPrice(final IOrder order,
+                                                   final double newSL,
+                                                   final OfferSide offerSide,
+                                                   final double trailingStep) {
+        checkNotNull(order);
+
+        return basicTask.setStopLossPrice(order,
+                                          newSL,
+                                          offerSide,
+                                          trailingStep);
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder order,
