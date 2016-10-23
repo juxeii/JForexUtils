@@ -30,6 +30,10 @@ public interface PlatformSettings extends Config {
     @DefaultValue("1.0")
     public double maxAmount();
 
+    @Key("order.defaultcloseslippage")
+    @DefaultValue("5.0")
+    public double defaultCloseSlippage();
+
     @Key("env.baseamount")
     @DefaultValue("1000000.0")
     public double baseAmount();

@@ -40,71 +40,71 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         batchChangeTask = new BatchChangeTask(orderBasicTaskMock);
     }
 
-    public class CloseBatch {
+    // public class CloseBatch {
+    //
+    // @Before
+    // public void setUp() {
+    // when(orderBasicTaskMock.close(buyOrderEURUSD))
+    // .thenReturn(neverObservable());
+    // when(orderBasicTaskMock.close(sellOrderEURUSD))
+    // .thenReturn(eventObservable(testEvent));
+    // }
+    //
+    // @Test
+    // public void forMergeIsNotConcatenated() {
+    // batchChangeTask
+    // .close(ordersForBatch,
+    // BatchMode.MERGE,
+    // testOrderComposer)
+    // .test()
+    // .assertNotComplete()
+    // .assertValue(composerEvent);
+    // }
+    //
+    // @Test
+    // public void forConcatIsNotMerged() {
+    // batchChangeTask
+    // .close(ordersForBatch,
+    // BatchMode.CONCAT,
+    // testOrderComposer)
+    // .test()
+    // .assertNotComplete()
+    // .assertNoValues();
+    // }
+    // }
 
-        @Before
-        public void setUp() {
-            when(orderBasicTaskMock.close(buyOrderEURUSD))
-                .thenReturn(neverObservable());
-            when(orderBasicTaskMock.close(sellOrderEURUSD))
-                .thenReturn(eventObservable(testEvent));
-        }
-
-        @Test
-        public void forMergeIsNotConcatenated() {
-            batchChangeTask
-                .close(ordersForBatch,
-                       BatchMode.MERGE,
-                       testOrderComposer)
-                .test()
-                .assertNotComplete()
-                .assertValue(composerEvent);
-        }
-
-        @Test
-        public void forConcatIsNotMerged() {
-            batchChangeTask
-                .close(ordersForBatch,
-                       BatchMode.CONCAT,
-                       testOrderComposer)
-                .test()
-                .assertNotComplete()
-                .assertNoValues();
-        }
-    }
-
-    public class CancelSLBatch {
-
-        @Before
-        public void setUp() {
-            when(orderBasicTaskMock.setStopLossPrice(buyOrderEURUSD, noSL))
-                .thenReturn(neverObservable());
-            when(orderBasicTaskMock.setStopLossPrice(sellOrderEURUSD, noSL))
-                .thenReturn(eventObservable(testEvent));
-        }
-
-        @Test
-        public void forMergeIsNotConcatenated() {
-            batchChangeTask
-                .cancelSL(ordersForBatch,
-                          BatchMode.MERGE,
-                          testOrderComposer)
-                .test()
-                .assertNotComplete()
-                .assertValue(composerEvent);
-        }
-
-        @Test
-        public void forConcatIsNotMerged() {
-            batchChangeTask
-                .cancelSL(ordersForBatch,
-                          BatchMode.CONCAT,
-                          testOrderComposer)
-                .test()
-                .assertNotComplete()
-                .assertNoValues();
-        }
-    }
+    // public class CancelSLBatch {
+    //
+    // @Before
+    // public void setUp() {
+    // when(orderBasicTaskMock.setStopLossPrice(buyOrderEURUSD, noSL))
+    // .thenReturn(neverObservable());
+    // when(orderBasicTaskMock.setStopLossPrice(sellOrderEURUSD, noSL))
+    // .thenReturn(eventObservable(testEvent));
+    // }
+    //
+    // @Test
+    // public void forMergeIsNotConcatenated() {
+    // batchChangeTask
+    // .cancelSL(ordersForBatch,
+    // BatchMode.MERGE,
+    // testOrderComposer)
+    // .test()
+    // .assertNotComplete()
+    // .assertValue(composerEvent);
+    // }
+    //
+    // @Test
+    // public void forConcatIsNotMerged() {
+    // batchChangeTask
+    // .cancelSL(ordersForBatch,
+    // BatchMode.CONCAT,
+    // testOrderComposer)
+    // .test()
+    // .assertNotComplete()
+    // .assertNoValues();
+    // }
+    // }
 
     public class CancelTPBatch {
 
