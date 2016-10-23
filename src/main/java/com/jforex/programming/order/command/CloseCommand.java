@@ -1,12 +1,7 @@
 package com.jforex.programming.order.command;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.dukascopy.api.IOrder;
-
 public class CloseCommand {
 
-    private final IOrder order;
     private final double amount;
     private final double price;
     private final double slippage;
@@ -23,14 +18,9 @@ public class CloseCommand {
     }
 
     private CloseCommand(final Builder builder) {
-        order = builder.order;
         amount = builder.amount;
         price = builder.price;
         slippage = builder.slippage;
-    }
-
-    public final IOrder order() {
-        return order;
     }
 
     public double amount() {
@@ -45,21 +35,17 @@ public class CloseCommand {
         return slippage;
     }
 
-    public static CloseOption newBuilder(final IOrder order) {
-        checkNotNull(order);
-
-        return new Builder(order);
+    public static CloseOption newBuilder() {
+        return new Builder();
     }
 
     public static class Builder implements CloseOption {
 
-        private final IOrder order;
         private double amount;
         private double price;
         private double slippage;
 
-        public Builder(final IOrder order) {
-            this.order = order;
+        public Builder() {
         }
 
         @Override

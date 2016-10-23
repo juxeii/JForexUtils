@@ -16,6 +16,8 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.SetSLCommand;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Completable;
@@ -54,6 +56,14 @@ public class BasicTask {
                 .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE)));
     }
 
+    public Observable<OrderEvent> close(final IOrder orderToClose,
+                                        final CloseCommand closeCommand) {
+        return genericClose(orderToClose, () -> taskExecutor.close(orderToClose,
+                                                                   closeCommand.amount(),
+                                                                   closeCommand.price(),
+                                                                   closeCommand.slippage()));
+    }
+
     public Observable<OrderEvent> close(final IOrder orderToClose) {
         return genericClose(orderToClose, () -> taskExecutor.close(orderToClose));
     }
@@ -86,7 +96,8 @@ public class BasicTask {
         return Observable
             .just(orderToClose)
             .filter(order -> !OrderStaticUtil.isClosed.test(orderToClose))
-            .flatMap(order -> closeCompletable.get()
+            .flatMap(order -> closeCompletable
+                .get()
                 .andThen(orderUtilObservable(order, OrderCallReason.CLOSE)));
     }
 
@@ -131,6 +142,16 @@ public class BasicTask {
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToSetSL,
+                                                   final SetSLCommand setSLCommand) {
+        return genericSetStopLossPrice(orderToSetSL,
+                                       setSLCommand.newSL(),
+                                       () -> taskExecutor.setStopLossPrice(orderToSetSL,
+                                                                           setSLCommand.newSL(),
+                                                                           setSLCommand.offerSide(),
+                                                                           setSLCommand.trailingStep()));
+    }
+
+    public Observable<OrderEvent> setStopLossPrice(final IOrder orderToSetSL,
                                                    final double newSL) {
         return genericSetStopLossPrice(orderToSetSL,
                                        newSL,
@@ -165,7 +186,8 @@ public class BasicTask {
         return Observable
             .just(orderToSetSL)
             .filter(order -> !isSLSetTo(newSL).test(order))
-            .flatMap(order -> setStopLossPriceCompletable.get()
+            .flatMap(order -> setStopLossPriceCompletable
+                .get()
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL)));
     }
 
