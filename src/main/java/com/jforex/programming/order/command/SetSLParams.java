@@ -7,11 +7,11 @@ import java.util.Optional;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.OfferSide;
 
-public class SetSLCommand {
+public class SetSLParams {
 
     private final IOrder order;
     private final double newSL;
-    private final Optional<OfferSide> maybeOfferSide;
+    private final OfferSide offerSide;
     private final double trailingStep;
 
     public interface SLOption {
@@ -20,14 +20,20 @@ public class SetSLCommand {
 
         public SLOption withTrailingStep(double trailingStep);
 
-        public SetSLCommand build();
+        public SetSLParams build();
     }
 
-    private SetSLCommand(final Builder builder) {
+    private SetSLParams(final Builder builder) {
         order = builder.order;
         newSL = builder.newSL;
-        maybeOfferSide = builder.maybeOfferSide;
+        offerSide = evalOfferSide(builder.maybeOfferSide);
         trailingStep = builder.trailingStep;
+    }
+
+    private OfferSide evalOfferSide(final Optional<OfferSide> maybeOfferSide) {
+        return maybeOfferSide.orElse(order.isLong()
+                ? OfferSide.BID
+                : OfferSide.ASK);
     }
 
     public final IOrder order() {
@@ -38,8 +44,8 @@ public class SetSLCommand {
         return newSL;
     }
 
-    public Optional<OfferSide> maybeOfferSide() {
-        return maybeOfferSide;
+    public OfferSide offerSide() {
+        return offerSide;
     }
 
     public double trailingStep() {
@@ -81,8 +87,8 @@ public class SetSLCommand {
         }
 
         @Override
-        public SetSLCommand build() {
-            return new SetSLCommand(this);
+        public SetSLParams build() {
+            return new SetSLParams(this);
         }
     }
 }

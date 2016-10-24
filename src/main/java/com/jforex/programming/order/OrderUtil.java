@@ -6,10 +6,10 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.command.CloseCommand;
+import com.jforex.programming.order.command.CloseParams;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.SetSLCommand;
+import com.jforex.programming.order.command.SetSLParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CloseTask;
@@ -59,10 +59,10 @@ public class OrderUtil {
         return mergeTask.merge(toMergeOrders, command);
     }
 
-    public Observable<OrderEvent> close(final CloseCommand closeCommand) {
-        checkNotNull(closeCommand);
+    public Observable<OrderEvent> close(final CloseParams closeParams) {
+        checkNotNull(closeParams);
 
-        return basicTask.close(closeCommand);
+        return basicTask.close(closeParams);
     }
 
     public Observable<OrderEvent> setLabel(final IOrder order,
@@ -94,10 +94,10 @@ public class OrderUtil {
         return basicTask.setOpenPrice(order, newOpenPrice);
     }
 
-    public Observable<OrderEvent> setStopLossPrice(final SetSLCommand setSLCommand) {
-        checkNotNull(setSLCommand);
+    public Observable<OrderEvent> setStopLossPrice(final SetSLParams setSLParams) {
+        checkNotNull(setSLParams);
 
-        return basicTask.setStopLossPrice(setSLCommand);
+        return basicTask.setStopLossPrice(setSLParams);
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder order,

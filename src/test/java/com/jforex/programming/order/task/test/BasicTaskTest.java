@@ -9,10 +9,13 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
+import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
+import com.jforex.programming.order.command.CloseParams;
+import com.jforex.programming.order.command.SetSLParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.TaskExecutor;
@@ -38,9 +41,6 @@ public class BasicTaskTest extends InstrumentUtilForTest {
     private final IOrder orderForTest = buyOrderEURUSD;
     private Observable<OrderEvent> observable;
     private TestObserver<OrderEvent> testObserver;
-    private final double closeAmount = 0.12;
-    private final double closePrice = 1.1234;
-    private final double closeSlippage = 5.5;
 
     @Before
     public void setUp() {
@@ -70,7 +70,8 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(orderTaskExecutorMock.submitOrder(buyParamsEURUSD)).thenReturn(Single.just(orderForTest));
+            when(orderTaskExecutorMock.submitOrder(buyParamsEURUSD))
+                .thenReturn(Single.just(orderForTest));
 
             observable = basicTask.submitOrder(buyParamsEURUSD);
         }
@@ -206,50 +207,125 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         }
     }
 
-    // public class CloseSetup {
-    //
-    // @Before
-    // public void setUp() {
-    // when(orderTaskExecutorMock.close(orderForTest))
-    // .thenReturn(emptyCompletable());
-    //
-    // observable = basicTask.close(orderForTest);
-    // }
-    //
-    // @Test
-    // public void callIsDeferred() {
-    // verifyZeroInteractions(orderTaskExecutorMock);
-    // verifyZeroInteractions(orderUtilHandlerMock);
-    // }
-    //
-    // @Test
-    // public void completesImmediatelyWhenOrderAlreadyClosed() {
-    // orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
-    //
-    // assertTaskFilterCausesNoAction();
-    // }
-    //
-    // public class OnSubscribe {
-    //
-    // @Before
-    // public void setUp() {
-    // orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
-    // setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CLOSE);
-    //
-    // testObserver = observable.test();
-    // }
-    //
-    // @Test
-    // public void orderUtilHandlerIsCalled() {
-    // verifyOrderUtilHandlerMockCall(OrderCallReason.CLOSE);
-    // }
-    //
-    // @Test
-    // public void subscriberCompletes() {
-    // testObserver.assertComplete();
-    // }
-    // }
-    // }
+    public class CloseSetup {
+
+        private final CloseParams emptyCloseParams = CloseParams
+            .newBuilder(orderForTest)
+            .build();
+
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.close(eq(orderForTest), anyDouble()))
+                .thenReturn(emptyCompletable());
+
+            observable = basicTask.close(emptyCloseParams);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenOrderAlreadyClosed() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CLOSE);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CLOSE);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+
+            @Test
+            public void verifyTaskExecutorCall() {
+                verify(orderTaskExecutorMock).close(eq(orderForTest), eq(0.0));
+            }
+        }
+    }
+
+    public class CloseWithPriceAndSlippageSetup {
+
+        private final double closeAmount = 0.12;
+        private final double closePrice = 1.1234;
+        private final double closeSlippage = 5.5;
+        private final CloseParams closeParams = CloseParams
+            .newBuilder(orderForTest)
+            .withAmount(closeAmount)
+            .withPrice(closePrice)
+            .withSlippage(closeSlippage)
+            .build();
+
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.close(orderForTest,
+                                             closeAmount,
+                                             closePrice,
+                                             closeSlippage))
+                                                 .thenReturn(emptyCompletable());
+
+            observable = basicTask.close(closeParams);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenOrderAlreadyClosed() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CLOSE);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CLOSE);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+
+            @Test
+            public void verifyTaskExecutorCall() {
+                verify(orderTaskExecutorMock).close(orderForTest,
+                                                    closeAmount,
+                                                    closePrice,
+                                                    closeSlippage);
+            }
+        }
+    }
 
     public class SetLabelSetup {
 
@@ -435,52 +511,69 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         }
     }
 
-    // public class SetSLSetup {
-    //
-    // private final double newSL = 1.1234;
-    //
-    // @Before
-    // public void setUp() {
-    // when(orderTaskExecutorMock.setStopLossPrice(orderForTest, newSL))
-    // .thenReturn(emptyCompletable());
-    //
-    // observable = basicTask.setStopLossPrice(orderForTest, newSL);
-    // }
-    //
-    // @Test
-    // public void callIsDeferred() {
-    // verifyZeroInteractions(orderTaskExecutorMock);
-    // verifyZeroInteractions(orderUtilHandlerMock);
-    // }
-    //
-    // @Test
-    // public void completesImmediatelyWhenSLAlreadyClosed() {
-    // orderUtilForTest.setSL(orderForTest, newSL);
-    //
-    // assertTaskFilterCausesNoAction();
-    // }
-    //
-    // public class OnSubscribe {
-    //
-    // @Before
-    // public void setUp() {
-    // orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
-    // setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_SL);
-    //
-    // testObserver = observable.test();
-    // }
-    //
-    // @Test
-    // public void orderUtilHandlerIsCalled() {
-    // verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_SL);
-    // }
-    //
-    // @Test
-    // public void subscriberCompletes() {
-    // testObserver.assertComplete();
-    // }
-    // }
-    // }
+    public class SetSLSetup {
+
+        private final double newSL = 1.1234;
+        private final double trailingStep = 1.1234;
+        private final SetSLParams setSLParams = SetSLParams
+            .newBuilder(orderForTest, newSL)
+            .withOfferSide(OfferSide.ASK)
+            .withTrailingStep(trailingStep)
+            .build();
+
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.setStopLossPrice(orderForTest,
+                                                        newSL,
+                                                        OfferSide.ASK,
+                                                        trailingStep))
+                                                            .thenReturn(emptyCompletable());
+
+            observable = basicTask.setStopLossPrice(setSLParams);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenSLAlreadyClosed() {
+            orderUtilForTest.setSL(orderForTest, newSL);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_SL);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_SL);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+
+            @Test
+            public void verifyTaskExecutorCall() {
+                verify(orderTaskExecutorMock).setStopLossPrice(orderForTest,
+                                                               newSL,
+                                                               OfferSide.ASK,
+                                                               trailingStep);
+            }
+        }
+    }
 
     public class SetTPSetup {
 

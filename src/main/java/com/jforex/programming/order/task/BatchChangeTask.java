@@ -5,8 +5,8 @@ import java.util.List;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.init.JForexUtil;
-import com.jforex.programming.order.command.CloseCommand;
-import com.jforex.programming.order.command.SetSLCommand;
+import com.jforex.programming.order.command.CloseParams;
+import com.jforex.programming.order.command.SetSLParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.settings.PlatformSettings;
@@ -28,7 +28,7 @@ public class BatchChangeTask {
                                         final BatchMode batchMode,
                                         final OrderToEventTransformer composer) {
         final Function<IOrder, Observable<OrderEvent>> taskCall = order -> basicTask
-            .close(CloseCommand
+            .close(CloseParams
                 .newBuilder(order)
                 .build())
             .compose(composer.apply(order));
@@ -41,7 +41,7 @@ public class BatchChangeTask {
                                            final BatchMode batchMode,
                                            final OrderToEventTransformer composer) {
         final Function<IOrder, Observable<OrderEvent>> taskCall = order -> basicTask
-            .setStopLossPrice(SetSLCommand
+            .setStopLossPrice(SetSLParams
                 .newBuilder(order, platformSettings.noSLPrice())
                 .build())
             .compose(composer.apply(order));

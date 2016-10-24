@@ -10,13 +10,12 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.OfferSide;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.command.CloseCommand;
-import com.jforex.programming.order.command.SetSLCommand;
+import com.jforex.programming.order.command.CloseParams;
+import com.jforex.programming.order.command.SetSLParams;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Completable;
@@ -55,27 +54,27 @@ public class BasicTask {
                 .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE)));
     }
 
-    public Observable<OrderEvent> close(final CloseCommand closeCommand) {
+    public Observable<OrderEvent> close(final CloseParams closeParams) {
 
         return Observable
-            .just(closeCommand.order())
+            .just(closeParams.order())
             .filter(order -> !OrderStaticUtil.isClosed.test(order))
-            .flatMap(order -> evalCloseParmas(order, closeCommand)
+            .flatMap(order -> evalCloseParmas(order, closeParams)
                 .andThen(orderUtilObservable(order, OrderCallReason.CLOSE)));
     }
 
     private Completable evalCloseParmas(final IOrder orderToClose,
-                                        final CloseCommand closeCommand) {
-        if (closeCommand.price() == 0.0)
+                                        final CloseParams closeParams) {
+        if (closeParams.maybePrice().isPresent())
             return taskExecutor
                 .close(orderToClose,
-                       closeCommand.amount());
+                       closeParams.amount(),
+                       closeParams.maybePrice().get(),
+                       closeParams.slippage());
         else
             return taskExecutor
                 .close(orderToClose,
-                       closeCommand.amount(),
-                       closeCommand.price(),
-                       closeCommand.slippage());
+                       closeParams.amount());
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToSetLabel,
@@ -118,25 +117,16 @@ public class BasicTask {
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_PRICE)));
     }
 
-    public Observable<OrderEvent> setStopLossPrice(final SetSLCommand setSLCommand) {
+    public Observable<OrderEvent> setStopLossPrice(final SetSLParams setSLParams) {
         return Observable
-            .just(setSLCommand.order())
-            .filter(order -> !isSLSetTo(setSLCommand.newSL()).test(order))
+            .just(setSLParams.order())
+            .filter(order -> !isSLSetTo(setSLParams.newSL()).test(order))
             .flatMap(order -> taskExecutor
                 .setStopLossPrice(order,
-                                  setSLCommand.newSL(),
-                                  offerSideForSLCommand(order, setSLCommand),
-                                  setSLCommand.trailingStep())
+                                  setSLParams.newSL(),
+                                  setSLParams.offerSide(),
+                                  setSLParams.trailingStep())
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL)));
-    }
-
-    private OfferSide offerSideForSLCommand(final IOrder orderToSetSL,
-                                            final SetSLCommand setSLCommand) {
-        return setSLCommand
-            .maybeOfferSide()
-            .orElse(orderToSetSL.isLong()
-                    ? OfferSide.BID
-                    : OfferSide.ASK);
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToSetTP,

@@ -26,7 +26,7 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
     private BatchChangeTask batchChangeTask;
 
     @Mock
-    private BasicTask orderBasicTaskMock;
+    private BasicTask basicTaskMock;
     private final List<IOrder> ordersForBatch = Lists.newArrayList(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = submitEvent;
     private final OrderEvent composerEvent = closeEvent;
@@ -37,82 +37,80 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
-        batchChangeTask = new BatchChangeTask(orderBasicTaskMock);
+        batchChangeTask = new BatchChangeTask(basicTaskMock);
     }
 
-    // public class CloseBatch {
-    //
-    // @Before
-    // public void setUp() {
-    // when(orderBasicTaskMock.close(buyOrderEURUSD))
-    // .thenReturn(neverObservable());
-    // when(orderBasicTaskMock.close(sellOrderEURUSD))
-    // .thenReturn(eventObservable(testEvent));
-    // }
-    //
-    // @Test
-    // public void forMergeIsNotConcatenated() {
-    // batchChangeTask
-    // .close(ordersForBatch,
-    // BatchMode.MERGE,
-    // testOrderComposer)
-    // .test()
-    // .assertNotComplete()
-    // .assertValue(composerEvent);
-    // }
-    //
-    // @Test
-    // public void forConcatIsNotMerged() {
-    // batchChangeTask
-    // .close(ordersForBatch,
-    // BatchMode.CONCAT,
-    // testOrderComposer)
-    // .test()
-    // .assertNotComplete()
-    // .assertNoValues();
-    // }
-    // }
+    public class CloseBatch {
 
-    // public class CancelSLBatch {
-    //
-    // @Before
-    // public void setUp() {
-    // when(orderBasicTaskMock.setStopLossPrice(buyOrderEURUSD, noSL))
-    // .thenReturn(neverObservable());
-    // when(orderBasicTaskMock.setStopLossPrice(sellOrderEURUSD, noSL))
-    // .thenReturn(eventObservable(testEvent));
-    // }
-    //
-    // @Test
-    // public void forMergeIsNotConcatenated() {
-    // batchChangeTask
-    // .cancelSL(ordersForBatch,
-    // BatchMode.MERGE,
-    // testOrderComposer)
-    // .test()
-    // .assertNotComplete()
-    // .assertValue(composerEvent);
-    // }
-    //
-    // @Test
-    // public void forConcatIsNotMerged() {
-    // batchChangeTask
-    // .cancelSL(ordersForBatch,
-    // BatchMode.CONCAT,
-    // testOrderComposer)
-    // .test()
-    // .assertNotComplete()
-    // .assertNoValues();
-    // }
-    // }
+        @Before
+        public void setUp() {
+            when(basicTaskMock.close(any()))
+                .thenReturn(neverObservable())
+                .thenReturn(eventObservable(testEvent));
+        }
+
+        @Test
+        public void forMergeIsNotConcatenated() {
+            batchChangeTask
+                .close(ordersForBatch,
+                       BatchMode.MERGE,
+                       testOrderComposer)
+                .test()
+                .assertNotComplete()
+                .assertValue(composerEvent);
+        }
+
+        @Test
+        public void forConcatIsNotMerged() {
+            batchChangeTask
+                .close(ordersForBatch,
+                       BatchMode.CONCAT,
+                       testOrderComposer)
+                .test()
+                .assertNotComplete()
+                .assertNoValues();
+        }
+    }
+
+    public class CancelSLBatch {
+
+        @Before
+        public void setUp() {
+            when(basicTaskMock.setStopLossPrice(any()))
+                .thenReturn(neverObservable())
+                .thenReturn(eventObservable(testEvent));
+        }
+
+        @Test
+        public void forMergeIsNotConcatenated() {
+            batchChangeTask
+                .cancelSL(ordersForBatch,
+                          BatchMode.MERGE,
+                          testOrderComposer)
+                .test()
+                .assertNotComplete()
+                .assertValue(composerEvent);
+        }
+
+        @Test
+        public void forConcatIsNotMerged() {
+            batchChangeTask
+                .cancelSL(ordersForBatch,
+                          BatchMode.CONCAT,
+                          testOrderComposer)
+                .test()
+                .assertNotComplete()
+                .assertNoValues();
+        }
+    }
 
     public class CancelTPBatch {
 
         @Before
         public void setUp() {
-            when(orderBasicTaskMock.setTakeProfitPrice(buyOrderEURUSD, noTP))
+            when(basicTaskMock.setTakeProfitPrice(buyOrderEURUSD, noTP))
                 .thenReturn(neverObservable());
-            when(orderBasicTaskMock.setTakeProfitPrice(sellOrderEURUSD, noTP))
+            when(basicTaskMock.setTakeProfitPrice(sellOrderEURUSD, noTP))
                 .thenReturn(eventObservable(testEvent));
         }
 
