@@ -59,6 +59,13 @@ public class SetSLParams {
         return new Builder(order, newSL);
     }
 
+    public static SetSLParams simple(final IOrder order,
+                                     final double newSL) {
+        checkNotNull(order);
+
+        return new Builder(order, newSL).build();
+    }
+
     public static class Builder implements SLOption {
 
         private final IOrder order;

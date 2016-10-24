@@ -44,8 +44,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private CloseParams closeParamsMock;
-    @Mock
     private MergeCommand mergeCommandMock;
     @Mock
     private Function<Instrument, MergeCommand> mergeCommandFactory;
@@ -99,13 +97,16 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void closeDelegatesToBasicTask() {
-        when(basicTaskMock.close(closeParamsMock))
+        final CloseParams closeParams = CloseParams
+            .marketClose(orderForTest);
+
+        when(basicTaskMock.close(closeParams))
             .thenReturn(orderEventObservable);
 
         final Observable<OrderEvent> actualObservable =
-                orderUtil.close(closeParamsMock);
+                orderUtil.close(closeParams);
 
-        verify(basicTaskMock).close(closeParamsMock);
+        verify(basicTaskMock).close(closeParams);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 

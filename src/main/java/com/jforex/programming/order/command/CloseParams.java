@@ -70,6 +70,12 @@ public class CloseParams {
         return new Builder(order);
     }
 
+    public static CloseParams marketClose(final IOrder order) {
+        checkNotNull(order);
+
+        return new Builder(order).build();
+    }
+
     public static class Builder implements
                                 CloseOption,
                                 SlippageOption {

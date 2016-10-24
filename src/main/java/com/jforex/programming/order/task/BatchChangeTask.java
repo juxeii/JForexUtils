@@ -28,9 +28,7 @@ public class BatchChangeTask {
                                         final BatchMode batchMode,
                                         final OrderToEventTransformer composer) {
         final Function<IOrder, Observable<OrderEvent>> taskCall = order -> basicTask
-            .close(CloseParams
-                .newBuilder(order)
-                .build())
+            .close(CloseParams.marketClose(order))
             .compose(composer.apply(order));
         return forBasicTask(orders,
                             batchMode,
@@ -41,9 +39,7 @@ public class BatchChangeTask {
                                            final BatchMode batchMode,
                                            final OrderToEventTransformer composer) {
         final Function<IOrder, Observable<OrderEvent>> taskCall = order -> basicTask
-            .setStopLossPrice(SetSLParams
-                .newBuilder(order, platformSettings.noSLPrice())
-                .build())
+            .setStopLossPrice(SetSLParams.simple(order, platformSettings.noSLPrice()))
             .compose(composer.apply(order));
         return forBasicTask(orders,
                             batchMode,
