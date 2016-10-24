@@ -209,6 +209,51 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
     public class CloseSetup {
 
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.close(orderForTest))
+                .thenReturn(emptyCompletable());
+
+            observable = basicTask.close(orderForTest);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenOrderAlreadyClosed() {
+            orderUtilForTest.setState(orderForTest, IOrder.State.CLOSED);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CLOSE);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CLOSE);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class CloseWithParamsAmountSetup {
+
         private final CloseParams emptyCloseParams = CloseParams
             .newBuilder(orderForTest)
             .build();
@@ -261,7 +306,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         }
     }
 
-    public class CloseWithPriceAndSlippageSetup {
+    public class CloseWithParamsSetup {
 
         private final double closeAmount = 0.12;
         private final double closePrice = 1.1234;
@@ -512,6 +557,53 @@ public class BasicTaskTest extends InstrumentUtilForTest {
     }
 
     public class SetSLSetup {
+
+        private final double newSL = 1.1234;
+
+        @Before
+        public void setUp() {
+            when(orderTaskExecutorMock.setStopLossPrice(orderForTest, newSL))
+                .thenReturn(emptyCompletable());
+
+            observable = basicTask.setStopLossPrice(orderForTest, newSL);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenSLAlreadyClosed() {
+            orderUtilForTest.setSL(orderForTest, newSL);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_SL);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_SL);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class SetSLWithParamsSetup {
 
         private final double newSL = 1.1234;
         private final double trailingStep = 1.1234;

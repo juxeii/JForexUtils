@@ -54,6 +54,15 @@ public class BasicTask {
                 .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE)));
     }
 
+    public Observable<OrderEvent> close(final IOrder orderToClose) {
+
+        return Observable
+            .just(orderToClose)
+            .filter(order -> !OrderStaticUtil.isClosed.test(order))
+            .flatMap(order -> taskExecutor.close(order)
+                .andThen(orderUtilObservable(order, OrderCallReason.CLOSE)));
+    }
+
     public Observable<OrderEvent> close(final CloseParams closeParams) {
 
         return Observable
@@ -115,6 +124,16 @@ public class BasicTask {
             .flatMap(order -> taskExecutor
                 .setOpenPrice(order, newOpenPrice)
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_PRICE)));
+    }
+
+    public Observable<OrderEvent> setStopLossPrice(final IOrder orderToSetSL,
+                                                   final double newSL) {
+        return Observable
+            .just(orderToSetSL)
+            .filter(order -> !isSLSetTo(newSL).test(order))
+            .flatMap(order -> taskExecutor
+                .setStopLossPrice(order, newSL)
+                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL)));
     }
 
     public Observable<OrderEvent> setStopLossPrice(final SetSLParams setSLParams) {

@@ -44,8 +44,9 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(basicTaskMock.close(any()))
-                .thenReturn(neverObservable())
+            when(basicTaskMock.close(buyOrderEURUSD))
+                .thenReturn(neverObservable());
+            when(basicTaskMock.close(sellOrderEURUSD))
                 .thenReturn(eventObservable(testEvent));
         }
 
@@ -76,8 +77,9 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(basicTaskMock.setStopLossPrice(any()))
-                .thenReturn(neverObservable())
+            when(basicTaskMock.setStopLossPrice(buyOrderEURUSD, noSL))
+                .thenReturn(neverObservable());
+            when(basicTaskMock.setStopLossPrice(sellOrderEURUSD, noSL))
                 .thenReturn(eventObservable(testEvent));
         }
 

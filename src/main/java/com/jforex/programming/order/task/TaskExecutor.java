@@ -42,6 +42,10 @@ public class TaskExecutor {
         return single(() -> engine.mergeOrders(mergeOrderLabel, toMergeOrders));
     }
 
+    public Completable close(final IOrder order) {
+        return completable(() -> order.close());
+    }
+
     public Completable close(final IOrder order,
                              final double amount) {
         return completable(() -> order.close(amount));
@@ -74,6 +78,11 @@ public class TaskExecutor {
     public Completable setOpenPrice(final IOrder order,
                                     final double newOpenPrice) {
         return completable(() -> order.setOpenPrice(newOpenPrice));
+    }
+
+    public Completable setStopLossPrice(final IOrder order,
+                                        final double newSL) {
+        return completable(() -> order.setStopLossPrice(newSL));
     }
 
     public Completable setStopLossPrice(final IOrder order,

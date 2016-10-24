@@ -154,6 +154,25 @@ public class TaskExecutorTest extends CommonUtilForTest {
         }
     }
 
+    public class CloseSetup {
+
+        @Before
+        public void setUp() {
+            taskExecutor.close(orderForTest);
+        }
+
+        @Test
+        public void closeIsNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
+            verify(orderForTest).close();
+        }
+    }
+
     public class CloseWithAmountSetup {
 
         @Before
@@ -278,6 +297,27 @@ public class TaskExecutorTest extends CommonUtilForTest {
         public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
             captureAndRunAction();
             verify(orderForTest).setOpenPrice(newOpenPrice);
+        }
+    }
+
+    public class SetStopLossSetup {
+
+        private final double newSL = 1.1234;
+
+        @Before
+        public void setUp() {
+            taskExecutor.setStopLossPrice(orderForTest, newSL);
+        }
+
+        @Test
+        public void setStopLossNotCalled() {
+            verifyZeroInteractions(orderForTest);
+        }
+
+        @Test
+        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
+            captureAndRunAction();
+            verify(orderForTest).setStopLossPrice(newSL);
         }
     }
 

@@ -96,9 +96,21 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void closeDelegatesToBasicTask() {
+    public void closeDelegatesToOrderTask() {
+        when(basicTaskMock.close(orderForTest))
+            .thenReturn(orderEventObservable);
+
+        final Observable<OrderEvent> actualObservable = orderUtil.close(orderForTest);
+
+        verify(basicTaskMock).close(orderForTest);
+        assertThat(actualObservable, equalTo(orderEventObservable));
+    }
+
+    @Test
+    public void closeWithParamsDelegatesToBasicTask() {
         final CloseParams closeParams = CloseParams
-            .marketClose(orderForTest);
+            .newBuilder(orderForTest)
+            .build();
 
         when(basicTaskMock.close(closeParams))
             .thenReturn(orderEventObservable);
@@ -159,7 +171,19 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void setSLDelegatesToBasicTask() {
+    public void setSLDelegatesToOrderTask() {
+        final double newSL = 1.1234;
+        when(basicTaskMock.setStopLossPrice(orderForTest, newSL))
+            .thenReturn(orderEventObservable);
+
+        final Observable<OrderEvent> actualObservable = orderUtil.setStopLossPrice(orderForTest, newSL);
+
+        verify(basicTaskMock).setStopLossPrice(orderForTest, newSL);
+        assertThat(actualObservable, equalTo(orderEventObservable));
+    }
+
+    @Test
+    public void setSLWithParamsDelegatesToBasicTask() {
         final double newSL = 1.1234;
         final SetSLParams setSLParams = SetSLParams
             .newBuilder(orderForTest, newSL)

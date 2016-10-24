@@ -15,7 +15,7 @@ public class CloseParams {
     private final double slippage;
 
     private static final double defaultCloseSlippage = JForexUtil.platformSettings.defaultCloseSlippage();
-    private static final double noSlippageValue = Double.NaN;
+    private static final double noCloseSlippageValue = Double.NaN;
 
     public interface CloseOption {
 
@@ -42,7 +42,7 @@ public class CloseParams {
 
     private double evalSlippage(final double builderSlippage) {
         if (builderSlippage == 0.0)
-            return noSlippageValue;
+            return noCloseSlippageValue;
         return builderSlippage < 0
                 ? defaultCloseSlippage
                 : builderSlippage;
@@ -68,12 +68,6 @@ public class CloseParams {
         checkNotNull(order);
 
         return new Builder(order);
-    }
-
-    public static CloseParams marketClose(final IOrder order) {
-        checkNotNull(order);
-
-        return new Builder(order).build();
     }
 
     public static class Builder implements

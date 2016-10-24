@@ -59,6 +59,12 @@ public class OrderUtil {
         return mergeTask.merge(toMergeOrders, command);
     }
 
+    public Observable<OrderEvent> close(final IOrder order) {
+        checkNotNull(order);
+
+        return basicTask.close(order);
+    }
+
     public Observable<OrderEvent> close(final CloseParams closeParams) {
         checkNotNull(closeParams);
 
@@ -92,6 +98,13 @@ public class OrderUtil {
         checkNotNull(order);
 
         return basicTask.setOpenPrice(order, newOpenPrice);
+    }
+
+    public Observable<OrderEvent> setStopLossPrice(final IOrder order,
+                                                   final double newSL) {
+        checkNotNull(order);
+
+        return basicTask.setStopLossPrice(order, newSL);
     }
 
     public Observable<OrderEvent> setStopLossPrice(final SetSLParams setSLParams) {
