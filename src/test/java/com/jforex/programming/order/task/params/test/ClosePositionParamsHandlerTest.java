@@ -41,11 +41,11 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private ClosePositionParams closeCommandMock;
+    private ClosePositionParams closeParamsMock;
     @Mock
     private Function<IOrder, CloseParams> closeParamsProviderMock;
     @Mock
-    private MergeParams mergeCommandMock;
+    private MergeParams mergeParamsMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> filledOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final Set<IOrder> openOrders = Sets.newHashSet(buyOrderEURUSD);
@@ -65,8 +65,8 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(closeCommandMock.instrument()).thenReturn(instrumentEURUSD);
-        when(closeCommandMock.closeBatchMode()).thenReturn(BatchMode.MERGE);
+        when(closeParamsMock.instrument()).thenReturn(instrumentEURUSD);
+        when(closeParamsMock.closeBatchMode()).thenReturn(BatchMode.MERGE);
 
         when(positionUtilMock.filledOrders(instrumentEURUSD)).thenReturn(filledOrders);
         when(positionUtilMock.filledOrOpenedOrders(instrumentEURUSD)).thenReturn(allOrders);
@@ -74,15 +74,15 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     }
 
     private void setExecutionMode(final CloseExecutionMode mode) {
-        when(closeCommandMock.executionMode()).thenReturn(mode);
+        when(closeParamsMock.executionMode()).thenReturn(mode);
     }
 
     public class ObserveMerge {
 
         @Before
         public void setUp() {
-            when(closeCommandMock.maybeMergeParams()).thenReturn(Optional.of(mergeCommandMock));
-            when(orderMergeTaskMock.merge(filledOrders, mergeCommandMock))
+            when(closeParamsMock.maybeMergeParams()).thenReturn(Optional.of(mergeParamsMock));
+            when(orderMergeTaskMock.merge(filledOrders, mergeParamsMock))
                 .thenReturn(eventObservable(testEvent));
         }
 
@@ -90,13 +90,13 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
             setExecutionMode(mode);
 
             testObserver = paramsHandler
-                .observeMerge(closeCommandMock)
+                .observeMerge(closeParamsMock)
                 .test();
         }
 
         @Test
         public void observeMergeIsDeferred() {
-            paramsHandler.observeMerge(closeCommandMock);
+            paramsHandler.observeMerge(closeParamsMock);
 
             verifyZeroInteractions(orderMergeTaskMock);
             verifyZeroInteractions(orderChangeBatchMock);
@@ -115,7 +115,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
         public void observeMergeForFilledOrdersReturnsObservableFromOrderMergeTask() {
             setExecutionModeAndSubscribe(CloseExecutionMode.CloseFilled);
 
-            verify(orderMergeTaskMock).merge(filledOrders, mergeCommandMock);
+            verify(orderMergeTaskMock).merge(filledOrders, mergeParamsMock);
             testObserver.assertComplete();
             testObserver.assertValue(testEvent);
         }
@@ -124,7 +124,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
         public void observeMergeForFilledOrOpenedOrdersReturnsObservableFromOrderMergeTask() {
             setExecutionModeAndSubscribe(CloseExecutionMode.CloseAll);
 
-            verify(orderMergeTaskMock).merge(filledOrders, mergeCommandMock);
+            verify(orderMergeTaskMock).merge(filledOrders, mergeParamsMock);
             testObserver.assertComplete();
             testObserver.assertValue(testEvent);
         }
@@ -134,11 +134,11 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(closeCommandMock.closeParamsProvider()).thenReturn(closeParamsProviderMock);
-            when(closeCommandMock.singleCloseComposer(any())).thenReturn(testComposer);
-            when(closeCommandMock.closeAllComposer()).thenReturn(testComposer);
-            when(closeCommandMock.closeFilledComposer()).thenReturn(testComposer);
-            when(closeCommandMock.closeOpenedComposer()).thenReturn(testComposer);
+            when(closeParamsMock.closeParamsProvider()).thenReturn(closeParamsProviderMock);
+            when(closeParamsMock.singleCloseComposer(any())).thenReturn(testComposer);
+            when(closeParamsMock.closeAllComposer()).thenReturn(testComposer);
+            when(closeParamsMock.closeFilledComposer()).thenReturn(testComposer);
+            when(closeParamsMock.closeOpenedComposer()).thenReturn(testComposer);
         }
 
         public void setChangeBatchMock(final Collection<IOrder> orders) {
@@ -153,13 +153,13 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
             setExecutionMode(mode);
 
             testObserver = paramsHandler
-                .observeClose(closeCommandMock)
+                .observeClose(closeParamsMock)
                 .test();
         }
 
         @Test
         public void observeCloseIsDeferred() {
-            paramsHandler.observeClose(closeCommandMock);
+            paramsHandler.observeClose(closeParamsMock);
 
             verifyZeroInteractions(orderMergeTaskMock);
             verifyZeroInteractions(orderChangeBatchMock);

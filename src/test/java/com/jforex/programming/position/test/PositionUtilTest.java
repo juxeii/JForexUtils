@@ -103,7 +103,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
         private final Observable<OrderEvent> observableForEURUSD = emptyObservable();
         private final Observable<OrderEvent> observableForAUDUSD = neverObservable();
 
-        private final Function<Instrument, Observable<OrderEvent>> commandFactory =
+        private final Function<Instrument, Observable<OrderEvent>> paramsFactory =
                 instrument -> instrument == instrumentEURUSD
                         ? observableForEURUSD
                         : observableForAUDUSD;
@@ -112,7 +112,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
         public void returnsEmptyListForNoPositions() {
             when(positionFactoryMock.all()).thenReturn(Sets.newHashSet());
 
-            final List<Observable<OrderEvent>> observables = positionUtil.observablesFromFactory(commandFactory);
+            final List<Observable<OrderEvent>> observables = positionUtil.observablesFromFactory(paramsFactory);
 
             assertTrue(observables.isEmpty());
         }
@@ -121,7 +121,7 @@ public class PositionUtilTest extends InstrumentUtilForTest {
         public void returnsCorrectObservablesList() {
             when(positionFactoryMock.all()).thenReturn(Sets.newHashSet(positionEURUSDMock, positionAUDUSDMock));
 
-            final List<Observable<OrderEvent>> observables = positionUtil.observablesFromFactory(commandFactory);
+            final List<Observable<OrderEvent>> observables = positionUtil.observablesFromFactory(paramsFactory);
 
             assertThat(observables.size(), equalTo(2));
             assertTrue(observables.contains(observableForEURUSD));

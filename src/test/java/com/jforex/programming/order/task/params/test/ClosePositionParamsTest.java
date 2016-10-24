@@ -29,7 +29,7 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
     private ClosePositionParams positionParams;
 
     @Mock
-    private MergeParams mergeCommandMock;
+    private MergeParams mergeParamsMock;
     @Mock
     private Function<IOrder, CloseParams> closeParamsPriovderMock;
     private final OrderEvent testEvent = closeEvent;
@@ -63,7 +63,7 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void defaultCommandValuesAreCorrect() {
+    public void defaultParamsValuesAreCorrect() {
         positionParams = ClosePositionParams
             .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .closeOpenedComposer(testComposer, BatchMode.MERGE)
@@ -85,7 +85,7 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
             .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .singleCloseComposer(testOrderComposer)
             .closeFilledComposer(testComposer, BatchMode.CONCAT)
-            .withMergeCommand(mergeCommandMock)
+            .withMergeParams(mergeParamsMock)
             .build();
 
         assertThat(positionParams.instrument(), equalTo(instrumentEURUSD));
@@ -105,7 +105,7 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
             .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .singleCloseComposer(testOrderComposer)
             .closeAllComposer(testComposer, BatchMode.MERGE)
-            .withMergeCommand(mergeCommandMock)
+            .withMergeParams(mergeParamsMock)
             .build();
 
         assertThat(positionParams.instrument(), equalTo(instrumentEURUSD));

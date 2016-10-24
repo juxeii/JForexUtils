@@ -41,7 +41,7 @@ public class ClosePositionParams {
 
     public interface MergeForCloseOption {
 
-        BuildOption withMergeCommand(MergeParams maybeMergeParams);
+        BuildOption withMergeParams(MergeParams maybeMergeParams);
     }
 
     public interface BuildOption {
@@ -172,7 +172,7 @@ public class ClosePositionParams {
         }
 
         @Override
-        public BuildOption withMergeCommand(final MergeParams maybeMergeParams) {
+        public BuildOption withMergeParams(final MergeParams maybeMergeParams) {
             this.maybeMergeParams = Optional.ofNullable(maybeMergeParams);
             return this;
         }

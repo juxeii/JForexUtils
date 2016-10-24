@@ -31,21 +31,21 @@ public class CancelTPTaskTest extends InstrumentUtilForTest {
     @Mock
     private BatchChangeTask orderChangeBatchMock;
     @Mock
-    private MergeParams mergeCommandMock;
+    private MergeParams mergeParamsMock;
     @Mock
     private OrderEventTransformer orderCancelTPComposerMock;
 
     @Before
     public void setUp() {
-        when(mergeCommandMock.orderCancelTPComposer(any())).thenReturn(orderCancelTPComposerMock);
-        when(mergeCommandMock.orderCancelTPMode()).thenReturn(BatchMode.MERGE);
+        when(mergeParamsMock.orderCancelTPComposer(any())).thenReturn(orderCancelTPComposerMock);
+        when(mergeParamsMock.orderCancelTPMode()).thenReturn(BatchMode.MERGE);
 
         cancelTPTask = new CancelTPTask(orderChangeBatchMock);
     }
 
     @Test
     public void observeIsDeferred() {
-        cancelTPTask.observe(toCancelTPOrders, mergeCommandMock);
+        cancelTPTask.observe(toCancelTPOrders, mergeParamsMock);
 
         verifyZeroInteractions(orderChangeBatchMock);
     }
@@ -63,7 +63,7 @@ public class CancelTPTaskTest extends InstrumentUtilForTest {
                                                    .thenReturn(eventObservable(event));
 
             testObserver = cancelTPTask
-                .observe(toCancelTPOrders, mergeCommandMock)
+                .observe(toCancelTPOrders, mergeParamsMock)
                 .test();
         }
 

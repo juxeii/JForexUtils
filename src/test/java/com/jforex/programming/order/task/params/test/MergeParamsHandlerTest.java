@@ -31,7 +31,7 @@ public class MergeParamsHandlerTest extends InstrumentUtilForTest {
     @Mock
     private BasicTask orderBasicTaskMock;
     @Mock
-    private MergeParams mergeCommandMock;
+    private MergeParams mergeParamsMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final String mergeOrderLabel = "mergeOrderLabel";
@@ -48,17 +48,17 @@ public class MergeParamsHandlerTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(mergeCommandMock.mergeOrderLabel()).thenReturn(mergeOrderLabel);
-        when(mergeCommandMock.mergeComposer()).thenReturn(testComposer);
+        when(mergeParamsMock.mergeOrderLabel()).thenReturn(mergeOrderLabel);
+        when(mergeParamsMock.mergeComposer()).thenReturn(testComposer);
 
-        when(orderCancelSLAndTPMock.observe(toMergeOrders, mergeCommandMock))
+        when(orderCancelSLAndTPMock.observe(toMergeOrders, mergeParamsMock))
             .thenReturn(eventObservable(testEvent));
     }
 
     @Test
     public void observeCancelSLTPDelegatesToCancelSLTPMock() {
         testObserver = paramsHandler
-            .observeCancelSLTP(toMergeOrders, mergeCommandMock)
+            .observeCancelSLTP(toMergeOrders, mergeParamsMock)
             .test();
 
         testObserver.assertComplete();
@@ -73,7 +73,7 @@ public class MergeParamsHandlerTest extends InstrumentUtilForTest {
                 .thenReturn(eventObservable(testEvent));
 
             testObserver = paramsHandler
-                .observeMerge(toMergeOrders, mergeCommandMock)
+                .observeMerge(toMergeOrders, mergeParamsMock)
                 .test();
         }
 

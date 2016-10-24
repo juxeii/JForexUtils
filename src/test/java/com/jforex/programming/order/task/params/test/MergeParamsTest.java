@@ -46,7 +46,7 @@ public class MergeParamsTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void defaultCommandValuesAreCorrect() throws Exception {
+    public void defaultParamsValuesAreCorrect() throws Exception {
         mergeParams = MergeParams
             .newBuilder(mergeOrderLabel)
             .build();

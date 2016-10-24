@@ -38,11 +38,11 @@ public class PositionUtil {
     }
 
     public List<Observable<OrderEvent>> observablesFromFactory(final Function<Instrument,
-                                                                              Observable<OrderEvent>> commandFactory) {
+                                                                              Observable<OrderEvent>> paramsFactory) {
         return Observable
             .fromIterable(positionFactory.all())
             .map(Position::instrument)
-            .map(commandFactory::apply)
+            .map(paramsFactory::apply)
             .toList()
             .blockingGet();
     }

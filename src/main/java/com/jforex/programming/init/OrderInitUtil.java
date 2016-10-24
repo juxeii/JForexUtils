@@ -40,8 +40,8 @@ public class OrderInitUtil {
     private final BatchChangeTask orderChangeBatch;
     private final MergeTask orderMergeTask;
     private final CloseTask orderCloseTask;
-    private final MergeParamsHandler mergeCommandHandler;
-    private final ClosePositionParamsHandler closePositionCommandHandler;
+    private final MergeParamsHandler mergeParamsHandler;
+    private final ClosePositionParamsHandler closePositionParamsHandler;
     private final CancelSLTPAndMergeTask cancelSLTPAndMergeTask;
     private final CancelSLTPTask orderCancelSLAndTP;
     private final CancelSLTask orderCancelSL;
@@ -68,13 +68,13 @@ public class OrderInitUtil {
         orderCancelSL = new CancelSLTask(orderChangeBatch);
         orderCancelTP = new CancelTPTask(orderChangeBatch);
         orderCancelSLAndTP = new CancelSLTPTask(orderCancelSL, orderCancelTP);
-        mergeCommandHandler = new MergeParamsHandler(orderCancelSLAndTP, orderBasicTask);
-        cancelSLTPAndMergeTask = new CancelSLTPAndMergeTask(mergeCommandHandler);
+        mergeParamsHandler = new MergeParamsHandler(orderCancelSLAndTP, orderBasicTask);
+        cancelSLTPAndMergeTask = new CancelSLTPAndMergeTask(mergeParamsHandler);
         orderMergeTask = new MergeTask(cancelSLTPAndMergeTask, positionUtil);
-        closePositionCommandHandler = new ClosePositionParamsHandler(orderMergeTask,
-                                                                      orderChangeBatch,
-                                                                      positionUtil);
-        orderCloseTask = new CloseTask(closePositionCommandHandler, positionUtil);
+        closePositionParamsHandler = new ClosePositionParamsHandler(orderMergeTask,
+                                                                    orderChangeBatch,
+                                                                    positionUtil);
+        orderCloseTask = new CloseTask(closePositionParamsHandler, positionUtil);
         orderUtil = new OrderUtil(orderBasicTask,
                                   orderMergeTask,
                                   orderCloseTask,

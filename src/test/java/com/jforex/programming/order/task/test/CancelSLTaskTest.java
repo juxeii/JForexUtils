@@ -29,22 +29,22 @@ public class CancelSLTaskTest extends InstrumentUtilForTest {
     @Mock
     private BatchChangeTask orderChangeBatchMock;
     @Mock
-    private MergeParams mergeCommandMock;
+    private MergeParams mergeParamsMock;
     @Mock
     private OrderEventTransformer orderCancelSLComposerMock;
     private final Set<IOrder> toCancelSLOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Before
     public void setUp() {
-        when(mergeCommandMock.orderCancelSLComposer(any())).thenReturn(orderCancelSLComposerMock);
-        when(mergeCommandMock.orderCancelSLMode()).thenReturn(BatchMode.MERGE);
+        when(mergeParamsMock.orderCancelSLComposer(any())).thenReturn(orderCancelSLComposerMock);
+        when(mergeParamsMock.orderCancelSLMode()).thenReturn(BatchMode.MERGE);
 
         cancelSLTask = new CancelSLTask(orderChangeBatchMock);
     }
 
     @Test
     public void observeIsDeferred() {
-        cancelSLTask.observe(toCancelSLOrders, mergeCommandMock);
+        cancelSLTask.observe(toCancelSLOrders, mergeParamsMock);
 
         verifyZeroInteractions(orderChangeBatchMock);
     }
@@ -62,7 +62,7 @@ public class CancelSLTaskTest extends InstrumentUtilForTest {
                                                    .thenReturn(eventObservable(event));
 
             testObserver = cancelSLTask
-                .observe(toCancelSLOrders, mergeCommandMock)
+                .observe(toCancelSLOrders, mergeParamsMock)
                 .test();
         }
 

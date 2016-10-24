@@ -24,9 +24,9 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     private CancelSLTPAndMergeTask cancelSLTPAndMergeTask;
 
     @Mock
-    private MergeParamsHandler commandHandlerMock;
+    private MergeParamsHandler paramsHandlerMock;
     @Mock
-    private MergeParams mergeCommandMock;
+    private MergeParams mergeParamsMock;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = mergeEvent;
 
@@ -34,19 +34,19 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        cancelSLTPAndMergeTask = new CancelSLTPAndMergeTask(commandHandlerMock);
+        cancelSLTPAndMergeTask = new CancelSLTPAndMergeTask(paramsHandlerMock);
     }
 
     private void setUpMocks() {
-        when(commandHandlerMock.observeCancelSLTP(toMergeOrders, mergeCommandMock))
+        when(paramsHandlerMock.observeCancelSLTP(toMergeOrders, mergeParamsMock))
             .thenReturn(neverObservable());
-        when(commandHandlerMock.observeMerge(toMergeOrders, mergeCommandMock))
+        when(paramsHandlerMock.observeMerge(toMergeOrders, mergeParamsMock))
             .thenReturn(eventObservable(testEvent));
     }
 
     private TestObserver<OrderEvent> testSubscribeSplitter() {
         return cancelSLTPAndMergeTask
-            .observe(toMergeOrders, mergeCommandMock)
+            .observe(toMergeOrders, mergeParamsMock)
             .test();
     }
 
@@ -61,13 +61,13 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     public void cancelSLTPIsCalledOnHandler() {
         testSubscribeSplitter();
 
-        verify(commandHandlerMock).observeCancelSLTP(toMergeOrders, mergeCommandMock);
+        verify(paramsHandlerMock).observeCancelSLTP(toMergeOrders, mergeParamsMock);
     }
 
     @Test
     public void mergeIsCalledOnHandler() {
         testSubscribeSplitter();
 
-        verify(commandHandlerMock).observeMerge(toMergeOrders, mergeCommandMock);
+        verify(paramsHandlerMock).observeMerge(toMergeOrders, mergeParamsMock);
     }
 }

@@ -28,42 +28,42 @@ public class CloseTaskTest extends InstrumentUtilForTest {
     private CloseTask closeTask;
 
     @Mock
-    private ClosePositionParamsHandler commandHandlerMock;
+    private ClosePositionParamsHandler paramsHandlerMock;
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private ClosePositionParams closePositionCommandMock;
+    private ClosePositionParams closePositionParamsMock;
     @Mock
-    private Function<Instrument, ClosePositionParams> commandFactoryMock;
+    private Function<Instrument, ClosePositionParams> paramsFactoryMock;
     private final OrderEvent event = closeEvent;
     private TestObserver<OrderEvent> testObserver;
 
     @Before
     public void setUp() throws Exception {
-        closeTask = new CloseTask(commandHandlerMock, positionUtilMock);
+        closeTask = new CloseTask(paramsHandlerMock, positionUtilMock);
     }
 
     private void setUpCommandObservables(final Observable<OrderEvent> mergeObservable,
                                          final Observable<OrderEvent> closeObservable) {
-        when(commandHandlerMock.observeMerge(closePositionCommandMock))
+        when(paramsHandlerMock.observeMerge(closePositionParamsMock))
             .thenReturn(mergeObservable);
-        when(commandHandlerMock.observeClose(closePositionCommandMock))
+        when(paramsHandlerMock.observeClose(closePositionParamsMock))
             .thenReturn(closeObservable);
     }
 
     @Test
     public void closeCallIsDeferred() {
-        closeTask.close(closePositionCommandMock);
+        closeTask.close(closePositionParamsMock);
 
-        verifyZeroInteractions(commandHandlerMock);
+        verifyZeroInteractions(paramsHandlerMock);
         verifyZeroInteractions(positionUtilMock);
     }
 
     @Test
     public void closeAllCallIsDeferred() {
-        closeTask.closeAllPositions(commandFactoryMock);
+        closeTask.closeAllPositions(paramsFactoryMock);
 
-        verifyZeroInteractions(commandHandlerMock);
+        verifyZeroInteractions(paramsHandlerMock);
         verifyZeroInteractions(positionUtilMock);
     }
 
@@ -73,7 +73,7 @@ public class CloseTaskTest extends InstrumentUtilForTest {
                                                          final Observable<OrderEvent> closeObservable) {
             setUpCommandObservables(mergeObservable, closeObservable);
             testObserver = closeTask
-                .close(closePositionCommandMock)
+                .close(closePositionParamsMock)
                 .test();
         }
 
@@ -81,8 +81,8 @@ public class CloseTaskTest extends InstrumentUtilForTest {
         public void verifyThatCommandHandlerMethodsAreCalled() {
             setUpCommandObservablesAndSubscribe(neverObservable(), neverObservable());
 
-            verify(commandHandlerMock).observeMerge(closePositionCommandMock);
-            verify(commandHandlerMock).observeClose(closePositionCommandMock);
+            verify(paramsHandlerMock).observeMerge(closePositionParamsMock);
+            verify(paramsHandlerMock).observeClose(closePositionParamsMock);
         }
 
         @Test
@@ -107,12 +107,12 @@ public class CloseTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() throws Exception {
-            when(commandFactoryMock.apply(instrumentEURUSD)).thenReturn(closePositionCommandMock);
+            when(paramsFactoryMock.apply(instrumentEURUSD)).thenReturn(closePositionParamsMock);
         }
 
         private void closeAllSubscribe() {
             testObserver = closeTask
-                .closeAllPositions(commandFactoryMock)
+                .closeAllPositions(paramsFactoryMock)
                 .test();
         }
 
@@ -137,9 +137,9 @@ public class CloseTaskTest extends InstrumentUtilForTest {
             setUpCommandObservables(emptyObservable(), emptyObservable());
             closeAllSubscribe();
 
-            verify(commandFactoryMock).apply(instrumentEURUSD);
-            verify(commandHandlerMock).observeMerge(closePositionCommandMock);
-            verify(commandHandlerMock).observeClose(closePositionCommandMock);
+            verify(paramsFactoryMock).apply(instrumentEURUSD);
+            verify(paramsHandlerMock).observeMerge(closePositionParamsMock);
+            verify(paramsHandlerMock).observeClose(closePositionParamsMock);
         }
 
         @Test
