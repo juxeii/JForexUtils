@@ -69,6 +69,11 @@ public class OrderUtilForTest {
         when(orderMock.getProfitLossInAccountCurrency()).thenReturn(pl);
     }
 
+    public final void setPLInPips(final IOrder orderMock,
+                                  final double pips) {
+        when(orderMock.getProfitLossInPips()).thenReturn(pips);
+    }
+
     public final IOrder spyFromParams(final OrderParams orderParams) {
         final IOrder orderMock = spy(IOrder.class);
 

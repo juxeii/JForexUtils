@@ -40,6 +40,13 @@ public interface PositionOrders {
             .sum();
     }
 
+    default double plInPips() {
+        return filter(isFilled)
+            .stream()
+            .mapToDouble(IOrder::getProfitLossInPips)
+            .sum();
+    }
+
     default Set<IOrder> filled() {
         return filter(isFilled);
     }

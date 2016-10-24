@@ -248,6 +248,14 @@ public class PositionTest extends InstrumentUtilForTest {
                     assertThat(position.plInAccountCurrency(), equalTo(-2055.8));
                 }
 
+                @Test
+                public void plInPipsIsCorrect() {
+                    orderUtilForTest.setPLInPips(buyOrderEURUSD, 12.3);
+                    orderUtilForTest.setPLInPips(sellOrderEURUSD, -3.0);
+
+                    assertThat(position.plInPips(), equalTo(9.3));
+                }
+
                 public class OrdersAreProcessing {
 
                     @Test
