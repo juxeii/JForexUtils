@@ -262,6 +262,12 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
     }
 
     @Test
+    public void staticPipDistanceOfPricesIsCorrect() {
+        assertThat(InstrumentUtil.pipDistanceOfPrices(instrumentEURUSD, askEURUSD, bidEURUSD),
+                   equalTo(MathUtil.roundPips((askEURUSD - bidEURUSD) / instrumentEURUSD.getPipValue())));
+    }
+
+    @Test
     public void scalePriceToPipsIsCorrect() {
         final double price = 0.00125;
 

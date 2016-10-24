@@ -117,8 +117,9 @@ public final class InstrumentUtil {
 
     public double pipDistanceOfPrices(final double priceA,
                                       final double priceB) {
-        final double pipDistance = (priceA - priceB) / instrument.getPipValue();
-        return roundPips(pipDistance);
+        return pipDistanceOfPrices(instrument,
+                                   priceA,
+                                   priceB);
     }
 
     public boolean isPricePipDivisible(final double price) {
@@ -165,6 +166,13 @@ public final class InstrumentUtil {
         checkNotNull(instrument);
 
         return instrument.getPipScale() + 1;
+    }
+
+    public static final double pipDistanceOfPrices(final Instrument instrument,
+                                                   final double priceA,
+                                                   final double priceB) {
+        final double pipDistance = (priceA - priceB) / instrument.getPipValue();
+        return roundPips(pipDistance);
     }
 
     public static final double addPipsToPrice(final Instrument instrument,
