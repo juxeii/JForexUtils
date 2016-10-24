@@ -33,6 +33,13 @@ public interface PositionOrders {
             .sum();
     }
 
+    default double plInAccountCurrency() {
+        return filter(isFilled)
+            .stream()
+            .mapToDouble(IOrder::getProfitLossInAccountCurrency)
+            .sum();
+    }
+
     default Set<IOrder> filled() {
         return filter(isFilled);
     }

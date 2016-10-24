@@ -240,6 +240,14 @@ public class PositionTest extends InstrumentUtilForTest {
                     assertTrue(filledOrOpenedOrders.contains(sellOrderEURUSD));
                 }
 
+                @Test
+                public void plInAccountCurrencyIsCorrect() {
+                    orderUtilForTest.setPLInAccountCurrency(buyOrderEURUSD, 1233.5);
+                    orderUtilForTest.setPLInAccountCurrency(sellOrderEURUSD, -3289.3);
+
+                    assertThat(position.plInAccountCurrency(), equalTo(-2055.8));
+                }
+
                 public class OrdersAreProcessing {
 
                     @Test

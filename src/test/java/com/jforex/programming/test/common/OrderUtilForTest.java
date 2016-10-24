@@ -64,6 +64,11 @@ public class OrderUtilForTest {
         adaptIsLong(orderMock, orderCommand);
     }
 
+    public final void setPLInAccountCurrency(final IOrder orderMock,
+                                             final double pl) {
+        when(orderMock.getProfitLossInAccountCurrency()).thenReturn(pl);
+    }
+
     public final IOrder spyFromParams(final OrderParams orderParams) {
         final IOrder orderMock = spy(IOrder.class);
 
