@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.init.JForexUtil;
+import com.jforex.programming.order.command.CloseParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.settings.PlatformSettings;
@@ -23,10 +24,11 @@ public class BatchChangeTask {
     }
 
     public Observable<OrderEvent> close(final Collection<IOrder> orders,
+                                        final Function<IOrder, CloseParams> closeParamsProvider,
                                         final BatchMode batchMode,
                                         final OrderToEventTransformer composer) {
         final Function<IOrder, Observable<OrderEvent>> taskCall = order -> basicTask
-            .close(order)
+            .close(closeParamsProvider.apply(order))
             .compose(composer.apply(order));
         return forBasicTask(orders,
                             batchMode,

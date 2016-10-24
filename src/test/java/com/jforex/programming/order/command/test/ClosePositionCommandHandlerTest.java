@@ -11,20 +11,22 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
+import com.jforex.programming.order.command.CloseParams;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.ClosePositionCommandHandler;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
+import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
-import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -40,6 +42,8 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
     private PositionUtil positionUtilMock;
     @Mock
     private ClosePositionCommand closeCommandMock;
+    @Mock
+    private Function<IOrder, CloseParams> closeParamsProviderMock;
     @Mock
     private MergeCommand mergeCommandMock;
     private TestObserver<OrderEvent> testObserver;
@@ -130,6 +134,7 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
+            when(closeCommandMock.closeParamsProvider()).thenReturn(closeParamsProviderMock);
             when(closeCommandMock.singleCloseComposer(any())).thenReturn(testComposer);
             when(closeCommandMock.closeAllComposer()).thenReturn(testComposer);
             when(closeCommandMock.closeFilledComposer()).thenReturn(testComposer);
@@ -138,6 +143,7 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
 
         public void setChangeBatchMock(final Collection<IOrder> orders) {
             when(orderChangeBatchMock.close(eq(orders),
+                                            eq(closeParamsProviderMock),
                                             eq(BatchMode.MERGE),
                                             any()))
                                                 .thenReturn(eventObservable(testEvent));
@@ -171,6 +177,7 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
             @Test
             public void orderChangeBatchIsCalledCorrect() {
                 verify(orderChangeBatchMock).close(eq(allOrders),
+                                                   eq(closeParamsProviderMock),
                                                    eq(BatchMode.MERGE),
                                                    any());
             }
@@ -193,6 +200,7 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
             @Test
             public void orderChangeBatchIsCalledCorrect() {
                 verify(orderChangeBatchMock).close(eq(filledOrders),
+                                                   eq(closeParamsProviderMock),
                                                    eq(BatchMode.MERGE),
                                                    any());
             }
@@ -215,6 +223,7 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
             @Test
             public void orderChangeBatchIsCalledCorrect() {
                 verify(orderChangeBatchMock).close(eq(openOrders),
+                                                   eq(closeParamsProviderMock),
                                                    eq(BatchMode.MERGE),
                                                    any());
             }

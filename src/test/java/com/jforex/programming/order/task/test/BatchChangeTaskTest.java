@@ -9,6 +9,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Lists;
+import com.jforex.programming.order.command.CloseParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.event.OrderToEventTransformer;
@@ -19,6 +20,7 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 @RunWith(HierarchicalContextRunner.class)
 public class BatchChangeTaskTest extends InstrumentUtilForTest {
@@ -27,6 +29,11 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
 
     @Mock
     private BasicTask basicTaskMock;
+    @Mock
+    private Function<IOrder, CloseParams> closeParamsPriovderMock;
+    private final CloseParams closeParams = CloseParams
+        .newBuilder(buyOrderEURUSD)
+        .build();
     private final List<IOrder> ordersForBatch = Lists.newArrayList(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = submitEvent;
     private final OrderEvent composerEvent = closeEvent;
@@ -36,17 +43,19 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
             order -> testComposer;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         batchChangeTask = new BatchChangeTask(basicTaskMock);
+
+        when(closeParamsPriovderMock.apply(any()))
+            .thenReturn(closeParams);
     }
 
     public class CloseBatch {
 
         @Before
         public void setUp() {
-            when(basicTaskMock.close(buyOrderEURUSD))
-                .thenReturn(neverObservable());
-            when(basicTaskMock.close(sellOrderEURUSD))
+            when(basicTaskMock.close(closeParams))
+                .thenReturn(neverObservable())
                 .thenReturn(eventObservable(testEvent));
         }
 
@@ -54,6 +63,7 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         public void forMergeIsNotConcatenated() {
             batchChangeTask
                 .close(ordersForBatch,
+                       closeParamsPriovderMock,
                        BatchMode.MERGE,
                        testOrderComposer)
                 .test()
@@ -65,6 +75,7 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         public void forConcatIsNotMerged() {
             batchChangeTask
                 .close(ordersForBatch,
+                       closeParamsPriovderMock,
                        BatchMode.CONCAT,
                        testOrderComposer)
                 .test()

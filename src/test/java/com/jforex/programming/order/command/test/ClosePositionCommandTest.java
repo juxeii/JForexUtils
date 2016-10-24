@@ -8,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.command.CloseParams;
 import com.jforex.programming.order.command.ClosePositionCommand;
 import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
@@ -19,6 +21,7 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
+import io.reactivex.functions.Function;
 import io.reactivex.observers.TestObserver;
 
 public class ClosePositionCommandTest extends InstrumentUtilForTest {
@@ -27,6 +30,8 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
 
     @Mock
     private MergeCommand mergeCommandMock;
+    @Mock
+    private Function<IOrder, CloseParams> closeParamsPriovderMock;
     private final OrderEvent testEvent = closeEvent;
     private final OrderEvent composerEvent = changedLabelEvent;
     private final OrderEventTransformer testComposer =
@@ -60,11 +65,12 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
     @Test
     public void defaultCommandValuesAreCorrect() {
         command = ClosePositionCommand
-            .newBuilder(instrumentEURUSD)
+            .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .closeOpenedComposer(testComposer, BatchMode.MERGE)
             .build();
 
         assertThat(command.instrument(), equalTo(instrumentEURUSD));
+        assertThat(command.closeParamsProvider(), equalTo(closeParamsPriovderMock));
         assertFalse(command.maybeMergeCommand().isPresent());
         assertThat(command.closeBatchMode(), equalTo(BatchMode.MERGE));
         assertComposerIsNeutral(command.singleCloseComposer(buyOrderEURUSD));
@@ -76,13 +82,14 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
     @Test
     public void definedValuesForCloseFilledAreCorrect() {
         command = ClosePositionCommand
-            .newBuilder(instrumentEURUSD)
+            .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .singleCloseComposer(testOrderComposer)
             .closeFilledComposer(testComposer, BatchMode.CONCAT)
             .withMergeCommand(mergeCommandMock)
             .build();
 
         assertThat(command.instrument(), equalTo(instrumentEURUSD));
+        assertThat(command.closeParamsProvider(), equalTo(closeParamsPriovderMock));
         assertTrue(command.maybeMergeCommand().isPresent());
         assertThat(command.closeBatchMode(), equalTo(BatchMode.CONCAT));
         assertThat(command.executionMode(), equalTo(CloseExecutionMode.CloseFilled));
@@ -95,13 +102,14 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
     @Test
     public void definedValuesForCloseFilledOrOpenedAreCorrect() {
         command = ClosePositionCommand
-            .newBuilder(instrumentEURUSD)
+            .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .singleCloseComposer(testOrderComposer)
             .closeAllComposer(testComposer, BatchMode.MERGE)
             .withMergeCommand(mergeCommandMock)
             .build();
 
         assertThat(command.instrument(), equalTo(instrumentEURUSD));
+        assertThat(command.closeParamsProvider(), equalTo(closeParamsPriovderMock));
         assertTrue(command.maybeMergeCommand().isPresent());
         assertThat(command.executionMode(), equalTo(CloseExecutionMode.CloseAll));
         assertComposerIsNeutral(command.closeFilledComposer());
@@ -112,12 +120,13 @@ public class ClosePositionCommandTest extends InstrumentUtilForTest {
     @Test
     public void definedValuesForCloseOpenedAreCorrect() {
         command = ClosePositionCommand
-            .newBuilder(instrumentEURUSD)
+            .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .singleCloseComposer(testOrderComposer)
             .closeOpenedComposer(testComposer, BatchMode.MERGE)
             .build();
 
         assertThat(command.instrument(), equalTo(instrumentEURUSD));
+        assertThat(command.closeParamsProvider(), equalTo(closeParamsPriovderMock));
         assertFalse(command.maybeMergeCommand().isPresent());
         assertThat(command.executionMode(), equalTo(CloseExecutionMode.CloseOpened));
         assertComposerIsNeutral(command.closeFilledComposer());

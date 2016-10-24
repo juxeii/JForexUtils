@@ -11,9 +11,12 @@ import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 
+import io.reactivex.functions.Function;
+
 public class ClosePositionCommand {
 
     private final Instrument instrument;
+    private final Function<IOrder, CloseParams> closeParamsProvider;
     private final CloseExecutionMode executionMode;
     private final OrderEventTransformer closeFilledComposer;
     private final OrderEventTransformer closeOpenedComposer;
@@ -48,6 +51,7 @@ public class ClosePositionCommand {
 
     private ClosePositionCommand(final Builder builder) {
         instrument = builder.instrument;
+        closeParamsProvider = builder.closeParamsProvider;
         executionMode = builder.executionMode;
         closeFilledComposer = builder.closeFilledComposer;
         closeOpenedComposer = builder.closeOpenedComposer;
@@ -59,6 +63,10 @@ public class ClosePositionCommand {
 
     public Instrument instrument() {
         return instrument;
+    }
+
+    public Function<IOrder, CloseParams> closeParamsProvider() {
+        return closeParamsProvider;
     }
 
     public Optional<MergeCommand> maybeMergeCommand() {
@@ -89,10 +97,12 @@ public class ClosePositionCommand {
         return closeBatchMode;
     }
 
-    public static CloseOption newBuilder(final Instrument instrument) {
+    public static CloseOption newBuilder(final Instrument instrument,
+                                         final Function<IOrder, CloseParams> closeParamsProvider) {
         checkNotNull(instrument);
+        checkNotNull(closeParamsProvider);
 
-        return new Builder(instrument);
+        return new Builder(instrument, closeParamsProvider);
     }
 
     public static class Builder implements
@@ -101,6 +111,7 @@ public class ClosePositionCommand {
                                 BuildOption {
 
         private final Instrument instrument;
+        private final Function<IOrder, CloseParams> closeParamsProvider;
         private CloseExecutionMode executionMode;
         private OrderEventTransformer closeFilledComposer =
                 upstream -> upstream;
@@ -113,21 +124,27 @@ public class ClosePositionCommand {
         private Optional<MergeCommand> maybeMergeCommand = Optional.empty();
         private BatchMode closeBatchMode;
 
-        private Builder(final Instrument instrument) {
+        private Builder(final Instrument instrument,
+                        final Function<IOrder, CloseParams> closeParamsProvider) {
             this.instrument = instrument;
+            this.closeParamsProvider = closeParamsProvider;
         }
 
         @Override
         public CloseOption singleCloseComposer(final OrderToEventTransformer singleCloseComposer) {
-            this.singleCloseComposer = checkNotNull(singleCloseComposer);
+            checkNotNull(singleCloseComposer);
+
+            this.singleCloseComposer = singleCloseComposer;
             return this;
         }
 
         @Override
         public MergeForCloseOption closeFilledComposer(final OrderEventTransformer closeFilledComposer,
                                                        final BatchMode batchMode) {
+            checkNotNull(closeFilledComposer);
+
             this.executionMode = CloseExecutionMode.CloseFilled;
-            this.closeFilledComposer = checkNotNull(closeFilledComposer);
+            this.closeFilledComposer = closeFilledComposer;
             this.closeBatchMode = batchMode;
             return this;
         }
@@ -135,8 +152,10 @@ public class ClosePositionCommand {
         @Override
         public BuildOption closeOpenedComposer(final OrderEventTransformer closeOpenedComposer,
                                                final BatchMode batchMode) {
+            checkNotNull(closeOpenedComposer);
+
             this.executionMode = CloseExecutionMode.CloseOpened;
-            this.closeOpenedComposer = checkNotNull(closeOpenedComposer);
+            this.closeOpenedComposer = closeOpenedComposer;
             this.closeBatchMode = batchMode;
             return this;
         }
@@ -144,8 +163,10 @@ public class ClosePositionCommand {
         @Override
         public MergeForCloseOption closeAllComposer(final OrderEventTransformer closeAllComposer,
                                                     final BatchMode batchMode) {
+            checkNotNull(closeFilledComposer);
+
             this.executionMode = CloseExecutionMode.CloseAll;
-            this.closeAllComposer = checkNotNull(closeAllComposer);
+            this.closeAllComposer = closeAllComposer;
             this.closeBatchMode = batchMode;
             return this;
         }

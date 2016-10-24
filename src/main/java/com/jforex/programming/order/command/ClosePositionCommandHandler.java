@@ -15,14 +15,14 @@ import io.reactivex.Observable;
 public class ClosePositionCommandHandler {
 
     private final MergeTask orderMergeTask;
-    private final BatchChangeTask orderChangeBatch;
+    private final BatchChangeTask batchChangeTask;
     private final PositionUtil positionUtil;
 
     public ClosePositionCommandHandler(final MergeTask orderMergeTask,
                                        final BatchChangeTask orderChangeBatch,
                                        final PositionUtil positionUtil) {
         this.orderMergeTask = orderMergeTask;
-        this.orderChangeBatch = orderChangeBatch;
+        this.batchChangeTask = orderChangeBatch;
         this.positionUtil = positionUtil;
     }
 
@@ -46,9 +46,10 @@ public class ClosePositionCommandHandler {
         return Observable.defer(() -> {
             final Collection<IOrder> ordersToClose = ordersToClose(command);
             final Observable<OrderEvent> batchClose =
-                    orderChangeBatch.close(ordersToClose,
-                                           command.closeBatchMode(),
-                                           command::singleCloseComposer);
+                    batchChangeTask.close(ordersToClose,
+                                          command.closeParamsProvider(),
+                                          command.closeBatchMode(),
+                                          command::singleCloseComposer);
             return composeBatchClose(batchClose, command);
         });
     }
