@@ -1,4 +1,4 @@
-package com.jforex.programming.order.command.test;
+package com.jforex.programming.order.task.params.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -6,7 +6,7 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.order.command.SetSLParams;
+import com.jforex.programming.order.task.params.SetSLParams;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 public class SetSLParamsTest extends QuoteProviderForTest {

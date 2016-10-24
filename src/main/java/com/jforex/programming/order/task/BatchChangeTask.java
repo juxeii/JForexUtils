@@ -5,9 +5,9 @@ import java.util.List;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.init.JForexUtil;
-import com.jforex.programming.order.command.CloseParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderToEventTransformer;
+import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.settings.PlatformSettings;
 
 import io.reactivex.Observable;

@@ -14,9 +14,9 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.command.CloseParams;
-import com.jforex.programming.order.command.SetSLParams;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.task.params.CloseParams;
+import com.jforex.programming.order.task.params.SetSLParams;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -55,16 +55,12 @@ public class BasicTask {
     }
 
     public Observable<OrderEvent> close(final IOrder orderToClose) {
-
-        return Observable
-            .just(orderToClose)
-            .filter(order -> !OrderStaticUtil.isClosed.test(order))
-            .flatMap(order -> taskExecutor.close(order)
-                .andThen(orderUtilObservable(order, OrderCallReason.CLOSE)));
+        return close(CloseParams
+            .newBuilder(orderToClose)
+            .build());
     }
 
     public Observable<OrderEvent> close(final CloseParams closeParams) {
-
         return Observable
             .just(closeParams.order())
             .filter(order -> !OrderStaticUtil.isClosed.test(order))
@@ -74,16 +70,15 @@ public class BasicTask {
 
     private Completable evalCloseParmas(final IOrder orderToClose,
                                         final CloseParams closeParams) {
-        if (closeParams.maybePrice().isPresent())
-            return taskExecutor
-                .close(orderToClose,
-                       closeParams.amount(),
-                       closeParams.maybePrice().get(),
-                       closeParams.slippage());
-        else
-            return taskExecutor
-                .close(orderToClose,
-                       closeParams.amount());
+        return closeParams.maybePrice().isPresent()
+                ? taskExecutor
+                    .close(orderToClose,
+                           closeParams.amount(),
+                           closeParams.maybePrice().get(),
+                           closeParams.slippage())
+                : taskExecutor
+                    .close(orderToClose,
+                           closeParams.amount());
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToSetLabel,
@@ -128,12 +123,9 @@ public class BasicTask {
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder orderToSetSL,
                                                    final double newSL) {
-        return Observable
-            .just(orderToSetSL)
-            .filter(order -> !isSLSetTo(newSL).test(order))
-            .flatMap(order -> taskExecutor
-                .setStopLossPrice(order, newSL)
-                .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL)));
+        return setStopLossPrice(SetSLParams
+            .newBuilder(orderToSetSL, newSL)
+            .build());
     }
 
     public Observable<OrderEvent> setStopLossPrice(final SetSLParams setSLParams) {

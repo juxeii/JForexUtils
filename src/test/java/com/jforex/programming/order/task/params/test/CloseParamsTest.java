@@ -1,4 +1,4 @@
-package com.jforex.programming.order.command.test;
+package com.jforex.programming.order.task.params.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -8,7 +8,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.jforex.programming.init.JForexUtil;
-import com.jforex.programming.order.command.CloseParams;
+import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 public class CloseParamsTest extends QuoteProviderForTest {

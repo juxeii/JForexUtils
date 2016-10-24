@@ -1,4 +1,4 @@
-package com.jforex.programming.order.command.test;
+package com.jforex.programming.order.task.params.test;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -11,16 +11,16 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.command.CloseParams;
-import com.jforex.programming.order.command.ClosePositionCommand;
-import com.jforex.programming.order.command.ClosePositionCommandHandler;
-import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.MergeTask;
+import com.jforex.programming.order.task.params.CloseParams;
+import com.jforex.programming.order.task.params.ClosePositionParams;
+import com.jforex.programming.order.task.params.ClosePositionParamsHandler;
+import com.jforex.programming.order.task.params.MergeParams;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -30,9 +30,9 @@ import io.reactivex.functions.Function;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
+public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
 
-    private ClosePositionCommandHandler commandHandler;
+    private ClosePositionParamsHandler paramsHandler;
 
     @Mock
     private MergeTask orderMergeTaskMock;
@@ -41,11 +41,11 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private ClosePositionCommand closeCommandMock;
+    private ClosePositionParams closeCommandMock;
     @Mock
     private Function<IOrder, CloseParams> closeParamsProviderMock;
     @Mock
-    private MergeCommand mergeCommandMock;
+    private MergeParams mergeCommandMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> filledOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final Set<IOrder> openOrders = Sets.newHashSet(buyOrderEURUSD);
@@ -59,9 +59,9 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        commandHandler = new ClosePositionCommandHandler(orderMergeTaskMock,
-                                                         orderChangeBatchMock,
-                                                         positionUtilMock);
+        paramsHandler = new ClosePositionParamsHandler(orderMergeTaskMock,
+                                                       orderChangeBatchMock,
+                                                       positionUtilMock);
     }
 
     private void setUpMocks() {
@@ -81,7 +81,7 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(closeCommandMock.maybeMergeCommand()).thenReturn(Optional.of(mergeCommandMock));
+            when(closeCommandMock.maybeMergeParams()).thenReturn(Optional.of(mergeCommandMock));
             when(orderMergeTaskMock.merge(filledOrders, mergeCommandMock))
                 .thenReturn(eventObservable(testEvent));
         }
@@ -89,14 +89,14 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
         private void setExecutionModeAndSubscribe(final CloseExecutionMode mode) {
             setExecutionMode(mode);
 
-            testObserver = commandHandler
+            testObserver = paramsHandler
                 .observeMerge(closeCommandMock)
                 .test();
         }
 
         @Test
         public void observeMergeIsDeferred() {
-            commandHandler.observeMerge(closeCommandMock);
+            paramsHandler.observeMerge(closeCommandMock);
 
             verifyZeroInteractions(orderMergeTaskMock);
             verifyZeroInteractions(orderChangeBatchMock);
@@ -152,14 +152,14 @@ public class ClosePositionCommandHandlerTest extends InstrumentUtilForTest {
         private void setExecutionModeAndSubscribe(final CloseExecutionMode mode) {
             setExecutionMode(mode);
 
-            testObserver = commandHandler
+            testObserver = paramsHandler
                 .observeClose(closeCommandMock)
                 .test();
         }
 
         @Test
         public void observeCloseIsDeferred() {
-            commandHandler.observeClose(closeCommandMock);
+            paramsHandler.observeClose(closeCommandMock);
 
             verifyZeroInteractions(orderMergeTaskMock);
             verifyZeroInteractions(orderChangeBatchMock);

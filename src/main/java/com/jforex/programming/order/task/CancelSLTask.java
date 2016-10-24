@@ -3,8 +3,8 @@ package com.jforex.programming.order.task;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.task.params.MergeParams;
 
 import io.reactivex.Observable;
 
@@ -17,7 +17,7 @@ public class CancelSLTask {
     }
 
     public Observable<OrderEvent> observe(final Collection<IOrder> ordersForCancelSL,
-                                          final MergeCommand mergeCommand) {
+                                          final MergeParams mergeCommand) {
         return Observable.defer(() -> batchChangeTask.cancelSL(ordersForCancelSL,
                                                                mergeCommand.orderCancelSLMode(),
                                                                mergeCommand::orderCancelSLComposer));

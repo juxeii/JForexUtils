@@ -14,11 +14,11 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
-import com.jforex.programming.order.command.CloseParams;
-import com.jforex.programming.order.command.SetSLParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.TaskExecutor;
+import com.jforex.programming.order.task.params.CloseParams;
+import com.jforex.programming.order.task.params.SetSLParams;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -211,7 +211,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(orderTaskExecutorMock.close(orderForTest))
+            when(orderTaskExecutorMock.close(orderForTest, 0.0))
                 .thenReturn(emptyCompletable());
 
             observable = basicTask.close(orderForTest);
@@ -562,8 +562,11 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(orderTaskExecutorMock.setStopLossPrice(orderForTest, newSL))
-                .thenReturn(emptyCompletable());
+            when(orderTaskExecutorMock.setStopLossPrice(orderForTest,
+                                                        newSL,
+                                                        OfferSide.BID,
+                                                        -1))
+                                                            .thenReturn(emptyCompletable());
 
             observable = basicTask.setStopLossPrice(orderForTest, newSL);
         }

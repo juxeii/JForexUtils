@@ -1,25 +1,25 @@
-package com.jforex.programming.order.command.test;
+package com.jforex.programming.order.task.params.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.MergeExecutionMode;
+import com.jforex.programming.order.task.params.MergeParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
 import io.reactivex.observers.TestObserver;
 
-public class MergeCommandTest extends InstrumentUtilForTest {
+public class MergeParamsTest extends InstrumentUtilForTest {
 
-    private MergeCommand mergeCommand;
+    private MergeParams mergeParams;
 
     private static final String mergeOrderLabel = "mergeOrderLabel";
     private final OrderEvent testEvent = mergeEvent;
@@ -47,20 +47,20 @@ public class MergeCommandTest extends InstrumentUtilForTest {
 
     @Test
     public void defaultCommandValuesAreCorrect() throws Exception {
-        mergeCommand = MergeCommand
+        mergeParams = MergeParams
             .newBuilder(mergeOrderLabel)
             .build();
 
-        assertThat(mergeCommand.mergeOrderLabel(), equalTo(mergeOrderLabel));
-        assertThat(mergeCommand.executionMode(), equalTo(MergeExecutionMode.MergeCancelSLAndTP));
-        assertThat(mergeCommand.orderCancelSLMode(), equalTo(BatchMode.MERGE));
-        assertThat(mergeCommand.orderCancelTPMode(), equalTo(BatchMode.MERGE));
-        assertComposerIsNeutral(mergeCommand.cancelSLTPComposer());
-        assertComposerIsNeutral(mergeCommand.cancelSLComposer());
-        assertComposerIsNeutral(mergeCommand.cancelTPComposer());
-        assertComposerIsNeutral(mergeCommand.orderCancelSLComposer(buyOrderEURUSD));
-        assertComposerIsNeutral(mergeCommand.orderCancelTPComposer(buyOrderEURUSD));
-        assertComposerIsNeutral(mergeCommand.mergeComposer());
+        assertThat(mergeParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
+        assertThat(mergeParams.executionMode(), equalTo(MergeExecutionMode.MergeCancelSLAndTP));
+        assertThat(mergeParams.orderCancelSLMode(), equalTo(BatchMode.MERGE));
+        assertThat(mergeParams.orderCancelTPMode(), equalTo(BatchMode.MERGE));
+        assertComposerIsNeutral(mergeParams.cancelSLTPComposer());
+        assertComposerIsNeutral(mergeParams.cancelSLComposer());
+        assertComposerIsNeutral(mergeParams.cancelTPComposer());
+        assertComposerIsNeutral(mergeParams.orderCancelSLComposer(buyOrderEURUSD));
+        assertComposerIsNeutral(mergeParams.orderCancelTPComposer(buyOrderEURUSD));
+        assertComposerIsNeutral(mergeParams.mergeComposer());
     }
 
     @Test
@@ -71,7 +71,7 @@ public class MergeCommandTest extends InstrumentUtilForTest {
                 order -> upstream -> upstream
                     .flatMap(orderEvent -> Observable.just(composerEvent));
 
-        mergeCommand = MergeCommand
+        mergeParams = MergeParams
             .newBuilder(mergeOrderLabel)
             .composeCancelSLAndTP(testComposer)
             .composeCancelSL(testComposer)
@@ -83,15 +83,15 @@ public class MergeCommandTest extends InstrumentUtilForTest {
             .composeMerge(testComposer)
             .build();
 
-        assertThat(mergeCommand.mergeOrderLabel(), equalTo(mergeOrderLabel));
-        assertThat(mergeCommand.executionMode(), equalTo(MergeExecutionMode.ConcatCancelSLAndTP));
-        assertThat(mergeCommand.orderCancelSLMode(), equalTo(BatchMode.MERGE));
-        assertThat(mergeCommand.orderCancelTPMode(), equalTo(BatchMode.CONCAT));
-        assertComposerEmitsComposerEvent(mergeCommand.cancelSLTPComposer());
-        assertComposerEmitsComposerEvent(mergeCommand.cancelSLComposer());
-        assertComposerEmitsComposerEvent(mergeCommand.cancelTPComposer());
-        assertComposerEmitsComposerEvent(mergeCommand.orderCancelSLComposer(buyOrderEURUSD));
-        assertComposerEmitsComposerEvent(mergeCommand.orderCancelTPComposer(buyOrderEURUSD));
-        assertComposerEmitsComposerEvent(mergeCommand.mergeComposer());
+        assertThat(mergeParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
+        assertThat(mergeParams.executionMode(), equalTo(MergeExecutionMode.ConcatCancelSLAndTP));
+        assertThat(mergeParams.orderCancelSLMode(), equalTo(BatchMode.MERGE));
+        assertThat(mergeParams.orderCancelTPMode(), equalTo(BatchMode.CONCAT));
+        assertComposerEmitsComposerEvent(mergeParams.cancelSLTPComposer());
+        assertComposerEmitsComposerEvent(mergeParams.cancelSLComposer());
+        assertComposerEmitsComposerEvent(mergeParams.cancelTPComposer());
+        assertComposerEmitsComposerEvent(mergeParams.orderCancelSLComposer(buyOrderEURUSD));
+        assertComposerEmitsComposerEvent(mergeParams.orderCancelTPComposer(buyOrderEURUSD));
+        assertComposerEmitsComposerEvent(mergeParams.mergeComposer());
     }
 }

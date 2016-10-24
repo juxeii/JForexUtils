@@ -154,25 +154,6 @@ public class TaskExecutorTest extends CommonUtilForTest {
         }
     }
 
-    public class CloseSetup {
-
-        @Before
-        public void setUp() {
-            taskExecutor.close(orderForTest);
-        }
-
-        @Test
-        public void closeIsNotCalled() {
-            verifyZeroInteractions(orderForTest);
-        }
-
-        @Test
-        public void taskExecutorCallsOnStrategyThreadWithAction() throws Exception {
-            captureAndRunAction();
-            verify(orderForTest).close();
-        }
-    }
-
     public class CloseWithAmountSetup {
 
         @Before

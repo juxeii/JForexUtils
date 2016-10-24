@@ -1,4 +1,4 @@
-package com.jforex.programming.order.command;
+package com.jforex.programming.order.task.params;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -8,7 +8,7 @@ import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.MergeExecutionMode;
 
-public class MergeCommand {
+public class MergeParams {
 
     private final String mergeOrderLabel;
     private final MergeExecutionMode executionMode;
@@ -27,7 +27,7 @@ public class MergeCommand {
 
         public MergeOption composeMerge(OrderEventTransformer mergeComposer);
 
-        public MergeCommand build();
+        public MergeParams build();
     }
 
     public interface CancelSLAndTPOption {
@@ -47,7 +47,7 @@ public class MergeCommand {
         public MergeOption done();
     }
 
-    private MergeCommand(final Builder builder) {
+    private MergeParams(final Builder builder) {
         mergeOrderLabel = builder.mergeOrderLabel;
         cancelSLTPComposer = builder.cancelSLTPComposer;
         cancelSLComposer = builder.cancelSLComposer;
@@ -132,8 +132,8 @@ public class MergeCommand {
         }
 
         @Override
-        public MergeCommand build() {
-            return new MergeCommand(this);
+        public MergeParams build() {
+            return new MergeParams(this);
         }
 
         @Override

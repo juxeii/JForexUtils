@@ -42,10 +42,6 @@ public class TaskExecutor {
         return single(() -> engine.mergeOrders(mergeOrderLabel, toMergeOrders));
     }
 
-    public Completable close(final IOrder order) {
-        return completable(() -> order.close());
-    }
-
     public Completable close(final IOrder order,
                              final double amount) {
         return completable(() -> order.close(amount));

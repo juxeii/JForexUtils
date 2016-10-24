@@ -9,12 +9,12 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.command.MergeCommand;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CancelSLTask;
+import com.jforex.programming.order.task.params.MergeParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -29,7 +29,7 @@ public class CancelSLTaskTest extends InstrumentUtilForTest {
     @Mock
     private BatchChangeTask orderChangeBatchMock;
     @Mock
-    private MergeCommand mergeCommandMock;
+    private MergeParams mergeCommandMock;
     @Mock
     private OrderEventTransformer orderCancelSLComposerMock;
     private final Set<IOrder> toCancelSLOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);

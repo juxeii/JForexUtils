@@ -1,4 +1,4 @@
-package com.jforex.programming.order.command;
+package com.jforex.programming.order.task.params;
 
 import java.util.Collection;
 
@@ -9,26 +9,26 @@ import com.jforex.programming.order.task.CancelSLTPTask;
 
 import io.reactivex.Observable;
 
-public class MergeCommandHandler {
+public class MergeParamsHandler {
 
     private final CancelSLTPTask orderCancelSLAndTP;
     private final BasicTask orderBasicTask;
 
-    public MergeCommandHandler(final CancelSLTPTask orderCancelSLAndTP,
-                               final BasicTask orderBasicTask) {
+    public MergeParamsHandler(final CancelSLTPTask orderCancelSLAndTP,
+                              final BasicTask orderBasicTask) {
         this.orderCancelSLAndTP = orderCancelSLAndTP;
         this.orderBasicTask = orderBasicTask;
     }
 
     public Observable<OrderEvent> observeCancelSLTP(final Collection<IOrder> toMergeOrders,
-                                                    final MergeCommand command) {
-        return orderCancelSLAndTP.observe(toMergeOrders, command);
+                                                    final MergeParams mergeParams) {
+        return orderCancelSLAndTP.observe(toMergeOrders, mergeParams);
     }
 
     public Observable<OrderEvent> observeMerge(final Collection<IOrder> toMergeOrders,
-                                               final MergeCommand command) {
+                                               final MergeParams mergeParams) {
         return orderBasicTask
-            .mergeOrders(command.mergeOrderLabel(), toMergeOrders)
-            .compose(command.mergeComposer());
+            .mergeOrders(mergeParams.mergeOrderLabel(), toMergeOrders)
+            .compose(mergeParams.mergeComposer());
     }
 }

@@ -1,4 +1,4 @@
-package com.jforex.programming.order.command;
+package com.jforex.programming.order.task.params;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -13,7 +13,7 @@ import com.jforex.programming.order.task.CloseExecutionMode;
 
 import io.reactivex.functions.Function;
 
-public class ClosePositionCommand {
+public class ClosePositionParams {
 
     private final Instrument instrument;
     private final Function<IOrder, CloseParams> closeParamsProvider;
@@ -22,7 +22,7 @@ public class ClosePositionCommand {
     private final OrderEventTransformer closeOpenedComposer;
     private final OrderEventTransformer closeAllComposer;
     private final OrderToEventTransformer singleCloseComposer;
-    private final Optional<MergeCommand> maybeMergeCommand;
+    private final Optional<MergeParams> maybeMergeParams;
     private final BatchMode closeBatchMode;
 
     public interface CloseOption {
@@ -41,15 +41,15 @@ public class ClosePositionCommand {
 
     public interface MergeForCloseOption {
 
-        BuildOption withMergeCommand(MergeCommand maybeMergeCommand);
+        BuildOption withMergeCommand(MergeParams maybeMergeParams);
     }
 
     public interface BuildOption {
 
-        public ClosePositionCommand build();
+        public ClosePositionParams build();
     }
 
-    private ClosePositionCommand(final Builder builder) {
+    private ClosePositionParams(final Builder builder) {
         instrument = builder.instrument;
         closeParamsProvider = builder.closeParamsProvider;
         executionMode = builder.executionMode;
@@ -57,7 +57,7 @@ public class ClosePositionCommand {
         closeOpenedComposer = builder.closeOpenedComposer;
         closeAllComposer = builder.closeAllComposer;
         singleCloseComposer = builder.singleCloseComposer;
-        maybeMergeCommand = builder.maybeMergeCommand;
+        maybeMergeParams = builder.maybeMergeParams;
         closeBatchMode = builder.closeBatchMode;
     }
 
@@ -69,8 +69,8 @@ public class ClosePositionCommand {
         return closeParamsProvider;
     }
 
-    public Optional<MergeCommand> maybeMergeCommand() {
-        return maybeMergeCommand;
+    public Optional<MergeParams> maybeMergeParams() {
+        return maybeMergeParams;
     }
 
     public CloseExecutionMode executionMode() {
@@ -121,7 +121,7 @@ public class ClosePositionCommand {
                 upstream -> upstream;
         private OrderToEventTransformer singleCloseComposer =
                 order -> upstream -> upstream;
-        private Optional<MergeCommand> maybeMergeCommand = Optional.empty();
+        private Optional<MergeParams> maybeMergeParams = Optional.empty();
         private BatchMode closeBatchMode;
 
         private Builder(final Instrument instrument,
@@ -172,14 +172,14 @@ public class ClosePositionCommand {
         }
 
         @Override
-        public BuildOption withMergeCommand(final MergeCommand maybeMergeCommand) {
-            this.maybeMergeCommand = Optional.ofNullable(maybeMergeCommand);
+        public BuildOption withMergeCommand(final MergeParams maybeMergeParams) {
+            this.maybeMergeParams = Optional.ofNullable(maybeMergeParams);
             return this;
         }
 
         @Override
-        public ClosePositionCommand build() {
-            return new ClosePositionCommand(this);
+        public ClosePositionParams build() {
+            return new ClosePositionParams(this);
         }
     }
 }

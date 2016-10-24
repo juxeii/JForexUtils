@@ -1,4 +1,4 @@
-package com.jforex.programming.order.command.test;
+package com.jforex.programming.order.task.params.test;
 
 import java.util.Set;
 
@@ -9,12 +9,12 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.order.command.MergeCommand;
-import com.jforex.programming.order.command.MergeCommandHandler;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
+import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.MergeParamsHandler;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -22,16 +22,16 @@ import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class MergeCommandHandlerTest extends InstrumentUtilForTest {
+public class MergeParamsHandlerTest extends InstrumentUtilForTest {
 
-    private MergeCommandHandler commandHandler;
+    private MergeParamsHandler paramsHandler;
 
     @Mock
     private CancelSLTPTask orderCancelSLAndTPMock;
     @Mock
     private BasicTask orderBasicTaskMock;
     @Mock
-    private MergeCommand mergeCommandMock;
+    private MergeParams mergeCommandMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final String mergeOrderLabel = "mergeOrderLabel";
@@ -44,7 +44,7 @@ public class MergeCommandHandlerTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        commandHandler = new MergeCommandHandler(orderCancelSLAndTPMock, orderBasicTaskMock);
+        paramsHandler = new MergeParamsHandler(orderCancelSLAndTPMock, orderBasicTaskMock);
     }
 
     private void setUpMocks() {
@@ -57,7 +57,7 @@ public class MergeCommandHandlerTest extends InstrumentUtilForTest {
 
     @Test
     public void observeCancelSLTPDelegatesToCancelSLTPMock() {
-        testObserver = commandHandler
+        testObserver = paramsHandler
             .observeCancelSLTP(toMergeOrders, mergeCommandMock)
             .test();
 
@@ -72,7 +72,7 @@ public class MergeCommandHandlerTest extends InstrumentUtilForTest {
             when(orderBasicTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
                 .thenReturn(eventObservable(testEvent));
 
-            testObserver = commandHandler
+            testObserver = paramsHandler
                 .observeMerge(toMergeOrders, mergeCommandMock)
                 .test();
         }
