@@ -38,10 +38,6 @@ public class CalculationUtilTest extends QuoteProviderForTest {
         return MathUtil.roundAmount(amount * quote);
     }
 
-    private double scaledAmount(final double amount) {
-        return MathUtil.roundAmount(amount / platformSettings.baseAmount());
-    }
-
     @Test
     public void testConvertAmountIsCorrectForEqualCurrencies() {
         final double amount = 213456.78;
@@ -145,21 +141,5 @@ public class CalculationUtilTest extends QuoteProviderForTest {
         final double tpPrice = calculationUtil.tpPriceForPips(sellOrderEURUSD, 12.3);
 
         assertThat(tpPrice, equalTo(1.12222));
-    }
-
-    @Test
-    public void testScaleAmountToPlatformIsCorrectForFractionalAmount() {
-        final double amount = 213456.78;
-        final double scaledAmount = CalculationUtil.scaleToPlatformAmount(amount);
-
-        assertThat(scaledAmount, equalTo(scaledAmount(amount)));
-    }
-
-    @Test
-    public void testScaleAmountToPlatformIsCorrectForNonFractionalAmount() {
-        final double amount = 1000000;
-        final double scaledAmount = CalculationUtil.scaleToPlatformAmount(amount);
-
-        assertThat(scaledAmount, equalTo(scaledAmount(amount)));
     }
 }

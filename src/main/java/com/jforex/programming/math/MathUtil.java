@@ -68,4 +68,8 @@ public final class MathUtil {
             .remainder(BigDecimal.valueOf(divisor))
             .doubleValue() == 0;
     }
+
+    public static final double scaleAmountForPlatform(final double amount) {
+        return roundAmount(amount / platformSettings.baseAmount());
+    }
 }

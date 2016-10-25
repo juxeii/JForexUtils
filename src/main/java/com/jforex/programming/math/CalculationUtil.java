@@ -7,17 +7,13 @@ import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.instrument.InstrumentFactory;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.quote.TickQuoteProvider;
-import com.jforex.programming.settings.PlatformSettings;
 
 public class CalculationUtil {
 
     private final TickQuoteProvider tickQuoteProvider;
-
-    private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
 
     public CalculationUtil(final TickQuoteProvider tickQuoteProvider) {
         this.tickQuoteProvider = tickQuoteProvider;
@@ -83,13 +79,6 @@ public class CalculationUtil {
         return addPipsToPriceForSL(order, -pips);
     }
 
-    private final double currentQuoteForSLTP(final IOrder order) {
-        final Instrument instrument = order.getInstrument();
-        return order.isLong()
-                ? tickQuoteProvider.bid(instrument)
-                : tickQuoteProvider.ask(instrument);
-    }
-
     private final double addPipsToPriceForSL(final IOrder order,
                                              final double pips) {
         return InstrumentUtil.addPipsToPrice(order.getInstrument(),
@@ -97,7 +86,10 @@ public class CalculationUtil {
                                              order.isLong() ? -pips : pips);
     }
 
-    public static final double scaleToPlatformAmount(final double amount) {
-        return roundAmount(amount / platformSettings.baseAmount());
+    private final double currentQuoteForSLTP(final IOrder order) {
+        final Instrument instrument = order.getInstrument();
+        return order.isLong()
+                ? tickQuoteProvider.bid(instrument)
+                : tickQuoteProvider.ask(instrument);
     }
 }

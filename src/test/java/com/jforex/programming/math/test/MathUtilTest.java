@@ -135,4 +135,12 @@ public class MathUtilTest extends CurrencyUtilForTest {
         assertTrue(MathUtil.isValueDivisibleByX(0.5, 0.5));
         assertTrue(MathUtil.isValueDivisibleByX(1000, 10));
     }
+
+    @Test
+    public void scaleAmountForPlatformIsCorrect() {
+        final double amount = 213456.78;
+        final double scaledAmount = MathUtil.scaleAmountForPlatform(amount);
+
+        assertThat(scaledAmount, equalTo(0.213457));
+    }
 }
