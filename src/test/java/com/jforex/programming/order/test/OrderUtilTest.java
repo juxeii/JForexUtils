@@ -183,6 +183,18 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
+    public void setSLForPipsDelegatesToBasicTask() {
+        final double pips = 12.3;
+        when(basicTaskMock.setStopLossForPips(orderForTest, pips))
+            .thenReturn(orderEventObservable);
+
+        final Observable<OrderEvent> actualObservable = orderUtil.setStopLossForPips(orderForTest, pips);
+
+        verify(basicTaskMock).setStopLossForPips(orderForTest, pips);
+        assertThat(actualObservable, equalTo(orderEventObservable));
+    }
+
+    @Test
     public void setSLWithParamsDelegatesToBasicTask() {
         final double newSL = 1.1234;
         final SetSLParams setSLParams = SetSLParams
@@ -207,6 +219,18 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final Observable<OrderEvent> actualObservable = orderUtil.setTakeProfitPrice(orderForTest, newTP);
 
         verify(basicTaskMock).setTakeProfitPrice(orderForTest, newTP);
+        assertThat(actualObservable, equalTo(orderEventObservable));
+    }
+
+    @Test
+    public void setTPForPipsDelegatesToBasicTask() {
+        final double pips = 12.3;
+        when(basicTaskMock.setTakeProfitForPips(orderForTest, pips))
+            .thenReturn(orderEventObservable);
+
+        final Observable<OrderEvent> actualObservable = orderUtil.setTakeProfitForPips(orderForTest, pips);
+
+        verify(basicTaskMock).setTakeProfitForPips(orderForTest, pips);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 

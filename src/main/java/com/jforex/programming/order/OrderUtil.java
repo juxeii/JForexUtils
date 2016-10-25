@@ -113,11 +113,25 @@ public class OrderUtil {
         return basicTask.setStopLossPrice(setSLParams);
     }
 
+    public Observable<OrderEvent> setStopLossForPips(final IOrder order,
+                                                     final double pips) {
+        checkNotNull(order);
+
+        return basicTask.setStopLossForPips(order, pips);
+    }
+
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder order,
                                                      final double newTP) {
         checkNotNull(order);
 
         return basicTask.setTakeProfitPrice(order, newTP);
+    }
+
+    public Observable<OrderEvent> setTakeProfitForPips(final IOrder order,
+                                                       final double pips) {
+        checkNotNull(order);
+
+        return basicTask.setTakeProfitForPips(order, pips);
     }
 
     public Observable<OrderEvent> mergePosition(final Instrument instrument,

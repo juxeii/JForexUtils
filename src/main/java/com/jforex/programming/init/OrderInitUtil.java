@@ -2,6 +2,7 @@ package com.jforex.programming.init;
 
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IMessage;
+import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.misc.JFHotPublisher;
 import com.jforex.programming.misc.StrategyThreadRunner;
 import com.jforex.programming.order.OrderUtil;
@@ -52,7 +53,8 @@ public class OrderInitUtil {
     private final JFHotPublisher<OrderCallRequest> callRequestPublisher = new JFHotPublisher<>();
 
     public OrderInitUtil(final ContextUtil contextUtil,
-                         final Observable<IMessage> messageObservable) {
+                         final Observable<IMessage> messageObservable,
+                         final CalculationUtil calculationUtil) {
         engine = contextUtil.engine();
         orderEventFactory = new OrderEventFactory(callRequestPublisher.observable());
         orderEventGateway = new OrderEventGateway(messageObservable, orderEventFactory);
@@ -63,7 +65,9 @@ public class OrderInitUtil {
                                                 orderEventTypeDataFactory,
                                                 callRequestPublisher);
         orderTaskExecutor = new TaskExecutor(strategyThreadRunner, engine);
-        orderBasicTask = new BasicTask(orderTaskExecutor, orderUtilHandler);
+        orderBasicTask = new BasicTask(orderTaskExecutor,
+                                       orderUtilHandler,
+                                       calculationUtil);
         orderChangeBatch = new BatchChangeTask(orderBasicTask);
         orderCancelSL = new CancelSLTask(orderChangeBatch);
         orderCancelTP = new CancelTPTask(orderChangeBatch);

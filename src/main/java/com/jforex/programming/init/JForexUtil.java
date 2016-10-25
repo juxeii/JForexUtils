@@ -44,8 +44,10 @@ public class JForexUtil {
 
         contextUtil = new ContextUtil(context);
         quoteUtil = new QuoteUtil(contextUtil, userSettings.enableWeekendQuoteFilter());
-        orderInitUtil = new OrderInitUtil(contextUtil, messagePublisher.observable());
         calculationUtil = new CalculationUtil(tickQuoteProvider());
+        orderInitUtil = new OrderInitUtil(contextUtil,
+                                          messagePublisher.observable(),
+                                          calculationUtil);
     }
 
     public IContext context() {

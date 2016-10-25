@@ -10,6 +10,7 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -25,11 +26,14 @@ public class BasicTask {
 
     private final TaskExecutor taskExecutor;
     private final OrderUtilHandler orderUtilHandler;
+    private final CalculationUtil calculationUtil;
 
     public BasicTask(final TaskExecutor orderTaskExecutor,
-                     final OrderUtilHandler orderUtilHandler) {
+                     final OrderUtilHandler orderUtilHandler,
+                     final CalculationUtil calculationUtil) {
         this.taskExecutor = orderTaskExecutor;
         this.orderUtilHandler = orderUtilHandler;
+        this.calculationUtil = calculationUtil;
     }
 
     public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
@@ -128,6 +132,12 @@ public class BasicTask {
             .build());
     }
 
+    public Observable<OrderEvent> setStopLossForPips(final IOrder order,
+                                                     final double pips) {
+        final double slPrice = calculationUtil.slPriceForPips(order, pips);
+        return setStopLossPrice(order, slPrice);
+    }
+
     public Observable<OrderEvent> setStopLossPrice(final SetSLParams setSLParams) {
         return Observable
             .just(setSLParams.order())
@@ -148,6 +158,12 @@ public class BasicTask {
             .flatMap(order -> taskExecutor
                 .setTakeProfitPrice(order, newTP)
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_TP)));
+    }
+
+    public Observable<OrderEvent> setTakeProfitForPips(final IOrder order,
+                                                       final double pips) {
+        final double tpPrice = calculationUtil.tpPriceForPips(order, pips);
+        return setTakeProfitPrice(order, tpPrice);
     }
 
     private final Observable<OrderEvent> orderUtilObservable(final IOrder order,

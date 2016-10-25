@@ -11,6 +11,7 @@ import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
+import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
@@ -37,6 +38,8 @@ public class BasicTaskTest extends InstrumentUtilForTest {
     @Mock
     private OrderUtilHandler orderUtilHandlerMock;
     @Mock
+    private CalculationUtil calculationUtilMock;
+    @Mock
     private Position positionMock;
     private final IOrder orderForTest = buyOrderEURUSD;
     private Observable<OrderEvent> observable;
@@ -44,7 +47,9 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
-        basicTask = new BasicTask(orderTaskExecutorMock, orderUtilHandlerMock);
+        basicTask = new BasicTask(orderTaskExecutorMock,
+                                  orderUtilHandlerMock,
+                                  calculationUtilMock);
     }
 
     private void setUpOrderUtilHandlerMock(final Observable<OrderEvent> observable,
@@ -391,7 +396,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void completesImmediatelyWhenLabelAlreadyClosed() {
+        public void completesImmediatelyWhenLabelAlreadySet() {
             orderUtilForTest.setLabel(orderForTest, newLabel);
 
             assertTaskFilterCausesNoAction();
@@ -437,7 +442,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void completesImmediatelyWhenGTTAlreadyClosed() {
+        public void completesImmediatelyWhenGTTAlreadySet() {
             orderUtilForTest.setGTT(orderForTest, newGTT);
 
             assertTaskFilterCausesNoAction();
@@ -483,7 +488,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void completesImmediatelyWhenAmountAlreadyClosed() {
+        public void completesImmediatelyWhenAmountAlreadySet() {
             orderUtilForTest.setRequestedAmount(orderForTest, newRequestedAmount);
 
             assertTaskFilterCausesNoAction();
@@ -529,7 +534,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void completesImmediatelyWhenOpenPriceAlreadyClosed() {
+        public void completesImmediatelyWhenOpenPriceAlreadySet() {
             orderUtilForTest.setOpenPrice(orderForTest, newOpenPrice);
 
             assertTaskFilterCausesNoAction();
@@ -578,7 +583,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void completesImmediatelyWhenSLAlreadyClosed() {
+        public void completesImmediatelyWhenSLAlreadySet() {
             orderUtilForTest.setSL(orderForTest, newSL);
 
             assertTaskFilterCausesNoAction();
@@ -602,6 +607,67 @@ public class BasicTaskTest extends InstrumentUtilForTest {
             @Test
             public void subscriberCompletes() {
                 testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class SetSLForPipsSetup {
+
+        private final double pips = 12.3;
+
+        @Before
+        public void setUp() {
+            when(calculationUtilMock.slPriceForPips(orderForTest, pips))
+                .thenReturn(askEURUSD);
+
+            when(orderTaskExecutorMock.setStopLossPrice(orderForTest,
+                                                        askEURUSD,
+                                                        OfferSide.BID,
+                                                        -1))
+                                                            .thenReturn(emptyCompletable());
+
+            observable = basicTask.setStopLossForPips(orderForTest, pips);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenSLAlreadySet() {
+            orderUtilForTest.setSL(orderForTest, askEURUSD);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_SL);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_SL);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+
+            @Test
+            public void verifyTaskExecutorCall() {
+                verify(orderTaskExecutorMock).setStopLossPrice(orderForTest,
+                                                               askEURUSD,
+                                                               OfferSide.BID,
+                                                               -1);
             }
         }
     }
@@ -634,7 +700,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void completesImmediatelyWhenSLAlreadyClosed() {
+        public void completesImmediatelyWhenSLAlreadySet() {
             orderUtilForTest.setSL(orderForTest, newSL);
 
             assertTaskFilterCausesNoAction();
@@ -689,7 +755,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void completesImmediatelyWhenTPAlreadyClosed() {
+        public void completesImmediatelyWhenTPAlreadySet() {
             orderUtilForTest.setTP(orderForTest, newTP);
 
             assertTaskFilterCausesNoAction();
@@ -713,6 +779,61 @@ public class BasicTaskTest extends InstrumentUtilForTest {
             @Test
             public void subscriberCompletes() {
                 testObserver.assertComplete();
+            }
+        }
+    }
+
+    public class SetTPForPipsSetup {
+
+        private final double pips = 12.3;
+
+        @Before
+        public void setUp() {
+            when(calculationUtilMock.tpPriceForPips(orderForTest, pips))
+                .thenReturn(askEURUSD);
+
+            when(orderTaskExecutorMock.setTakeProfitPrice(orderForTest, askEURUSD))
+                .thenReturn(emptyCompletable());
+
+            observable = basicTask.setTakeProfitForPips(orderForTest, pips);
+        }
+
+        @Test
+        public void callIsDeferred() {
+            verifyZeroInteractions(orderTaskExecutorMock);
+            verifyZeroInteractions(orderUtilHandlerMock);
+        }
+
+        @Test
+        public void completesImmediatelyWhenTPAlreadySet() {
+            orderUtilForTest.setTP(orderForTest, askEURUSD);
+
+            assertTaskFilterCausesNoAction();
+        }
+
+        public class OnSubscribe {
+
+            @Before
+            public void setUp() {
+                orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
+                setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CHANGE_TP);
+
+                testObserver = observable.test();
+            }
+
+            @Test
+            public void orderUtilHandlerIsCalled() {
+                verifyOrderUtilHandlerMockCall(OrderCallReason.CHANGE_TP);
+            }
+
+            @Test
+            public void subscriberCompletes() {
+                testObserver.assertComplete();
+            }
+
+            @Test
+            public void verifyTaskExecutorCall() {
+                verify(orderTaskExecutorMock).setTakeProfitPrice(orderForTest, askEURUSD);
             }
         }
     }
