@@ -18,10 +18,12 @@ public final class BarParams {
     private final OfferSide offerSide;
 
     public interface AndPeriod {
+
         public AndOfferSide period(Period period);
     }
 
     public interface AndOfferSide {
+
         public BarParams offerSide(OfferSide offerSide);
     }
 
@@ -29,12 +31,6 @@ public final class BarParams {
         instrument = builder.instrument;
         period = builder.period;
         offerSide = builder.offerSide;
-    }
-
-    public static final AndPeriod forInstrument(final Instrument instrument) {
-        checkNotNull(instrument);
-
-        return new Builder(instrument);
     }
 
     public final Instrument instrument() {
@@ -47,6 +43,12 @@ public final class BarParams {
 
     public final OfferSide offerSide() {
         return offerSide;
+    }
+
+    public static final AndPeriod forInstrument(final Instrument instrument) {
+        checkNotNull(instrument);
+
+        return new Builder(instrument);
     }
 
     private static class Builder implements

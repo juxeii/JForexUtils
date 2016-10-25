@@ -31,9 +31,11 @@ public class QuoteUtil {
                      final boolean isWeekendQuoteFilter) {
         this.contextUtil = contextUtil;
         this.isWeekendQuoteFilter = isWeekendQuoteFilter;
-        tickQuoteRepository = new TickQuoteRepository(tickQuotePublisher.observable(),
-                                                      contextUtil.historyUtil(),
-                                                      contextUtil.context().getSubscribedInstruments());
+        tickQuoteRepository = new TickQuoteRepository(tickQuotePublisher.observable());
+        contextUtil.historyUtil()
+            .tickQuotesObservable(contextUtil.context().getSubscribedInstruments())
+            .subscribe(tickQuotePublisher::onNext);
+
         tickQuoteProvider = new TickQuoteProvider(tickQuotePublisher.observable(), tickQuoteRepository);
         barQuoteRepository = new BarQuoteRepository(barQuotePublisher.observable(), contextUtil.historyUtil());
         barQuoteProvider = new BarQuoteProvider(this,
