@@ -9,12 +9,14 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import com.jforex.programming.init.JForexUtil;
+
 public final class DateTimeUtil {
 
     private DateTimeUtil() {
     }
 
-    public static final String defaultDateFormat = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String defaultDateFormat = JForexUtil.userSettings.dateFormat();
     public static final DateTimeFormatter defaultformatter = DateTimeFormatter.ofPattern(defaultDateFormat);
     public static final ZoneId localZoneId = ZoneId.systemDefault();
     public static final ZoneId dukascopyZoneId = ZoneId.ofOffset("UTC", ZoneOffset.UTC);
@@ -28,7 +30,7 @@ public final class DateTimeUtil {
         return LocalDateTime.ofInstant(instant, localZoneId);
     }
 
-    public static final long localMillisFromDateTime(final LocalDateTime localDateTime) {
+    public static final long millisFromDateTime(final LocalDateTime localDateTime) {
         checkNotNull(localDateTime);
 
         return localDateTime
@@ -38,7 +40,7 @@ public final class DateTimeUtil {
     }
 
     public static final long localMillisNow() {
-        return localMillisFromDateTime(LocalDateTime.now());
+        return millisFromDateTime(LocalDateTime.now());
     }
 
     public static final long millisFromNano(final long nanos) {

@@ -18,7 +18,7 @@ public class DateTimeUtilTest extends CommonUtilForTest {
     private final DateTimeFormatter formatter = DateTimeUtil.defaultformatter;
     private final String testDateTimeString = "2016-04-26 08:12:42.123";
     private final LocalDateTime testDateTime = LocalDateTime.parse(testDateTimeString, formatter);
-    private final long localTestMillis = DateTimeUtil.localMillisFromDateTime(testDateTime);
+    private final long localTestMillis = DateTimeUtil.millisFromDateTime(testDateTime);
     private LocalDateTime dateTimeOfMillis;
 
     @Test

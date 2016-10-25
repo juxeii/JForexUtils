@@ -37,4 +37,8 @@ public interface UserSettings extends Config {
     @Key("env.enableweekendquotefilter")
     @DefaultValue("true")
     public boolean enableWeekendQuoteFilter();
+
+    @Key("env.dateformat")
+    @DefaultValue("yyyy-MM-dd HH:mm:ss.SSS")
+    public String dateFormat();
 }
