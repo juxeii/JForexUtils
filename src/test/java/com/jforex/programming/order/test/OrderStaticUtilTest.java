@@ -28,12 +28,10 @@ import static com.jforex.programming.order.OrderStaticUtil.openPricePredicate;
 import static com.jforex.programming.order.OrderStaticUtil.sellOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.signedAmount;
 import static com.jforex.programming.order.OrderStaticUtil.slPredicate;
-import static com.jforex.programming.order.OrderStaticUtil.slPriceWithPips;
 import static com.jforex.programming.order.OrderStaticUtil.statePredicate;
 import static com.jforex.programming.order.OrderStaticUtil.switchCommand;
 import static com.jforex.programming.order.OrderStaticUtil.switchDirection;
 import static com.jforex.programming.order.OrderStaticUtil.tpPredicate;
-import static com.jforex.programming.order.OrderStaticUtil.tpPriceWithPips;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -53,7 +51,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.google.common.collect.Sets;
-import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
@@ -66,8 +63,6 @@ import de.bechte.junit.runners.context.HierarchicalContextRunner;
 @RunWith(HierarchicalContextRunner.class)
 public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
-    private final double currentPriceForSLTP = 1.32165;
-    private final double pipsToSLTP = 17.4;
     private final Set<IOrder> orders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Before
@@ -75,15 +70,6 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
         orderUtilForTest.setState(buyOrderEURUSD, IOrder.State.FILLED);
         orderUtilForTest.setState(sellOrderEURUSD, IOrder.State.FILLED);
         orderUtilForTest.setLabel(sellOrderEURUSD, "SecondOrderLabel");
-    }
-
-    private void assertSLTPCalculation(final IOrder order,
-                                       final double calculatedPrice,
-                                       final int factor) {
-        final double expectedPrice = InstrumentUtil.addPipsToPrice(order.getInstrument(),
-                                                                   currentPriceForSLTP,
-                                                                   factor * pipsToSLTP);
-        assertThat(calculatedPrice, equalTo(expectedPrice));
     }
 
     @Test
@@ -531,34 +517,6 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
         assertThat(switchCommand(OrderCommand.BUYSTOP_BYBID), equalTo(OrderCommand.SELLSTOP_BYASK));
         assertThat(switchCommand(OrderCommand.SELLSTOP_BYASK), equalTo(OrderCommand.BUYSTOP_BYBID));
-    }
-
-    @Test
-    public void testCalculateSLPriceWithPipsIsCorrectForBuyOrder() {
-        final double slPrice = slPriceWithPips(buyOrderEURUSD, currentPriceForSLTP, pipsToSLTP);
-
-        assertSLTPCalculation(buyOrderEURUSD, slPrice, -1);
-    }
-
-    @Test
-    public void testCalculateSLPriceWithPipsIsCorrectForSellOrder() {
-        final double slPrice = slPriceWithPips(sellOrderEURUSD, currentPriceForSLTP, pipsToSLTP);
-
-        assertSLTPCalculation(sellOrderEURUSD, slPrice, 1);
-    }
-
-    @Test
-    public void testCalculateTPPriceWithPipsIsCorrectForBuyOrder() {
-        final double tpPrice = tpPriceWithPips(buyOrderEURUSD, currentPriceForSLTP, pipsToSLTP);
-
-        assertSLTPCalculation(buyOrderEURUSD, tpPrice, 1);
-    }
-
-    @Test
-    public void testCalculateTPPriceWithPipsIsCorrectForSellOrder() {
-        final double tpPrice = tpPriceWithPips(sellOrderEURUSD, currentPriceForSLTP, pipsToSLTP);
-
-        assertSLTPCalculation(sellOrderEURUSD, tpPrice, -1);
     }
 
     @Test

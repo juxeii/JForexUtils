@@ -4,10 +4,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.jforex.programming.math.MathUtil.roundAmount;
 
 import com.dukascopy.api.ICurrency;
+import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.instrument.InstrumentFactory;
+import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
 
@@ -65,6 +67,34 @@ public class CalculationUtil {
                                            offerSide);
 
         return roundAmount(pipValueAmount);
+    }
+
+    public double slPriceForPips(final IOrder order,
+                                 final double pips) {
+        checkNotNull(order);
+
+        return addPipsToPriceForSL(order, pips);
+    }
+
+    public double tpPriceForPips(final IOrder order,
+                                 final double pips) {
+        checkNotNull(order);
+
+        return addPipsToPriceForSL(order, -pips);
+    }
+
+    private final double currentQuoteForSLTP(final IOrder order) {
+        final Instrument instrument = order.getInstrument();
+        return order.isLong()
+                ? tickQuoteProvider.bid(instrument)
+                : tickQuoteProvider.ask(instrument);
+    }
+
+    private final double addPipsToPriceForSL(final IOrder order,
+                                             final double pips) {
+        return InstrumentUtil.addPipsToPrice(order.getInstrument(),
+                                             currentQuoteForSLTP(order),
+                                             order.isLong() ? -pips : pips);
     }
 
     public static final double scaleToPlatformAmount(final double amount) {

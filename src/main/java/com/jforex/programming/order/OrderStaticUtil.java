@@ -14,7 +14,6 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.jforex.programming.init.JForexUtil;
-import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.settings.PlatformSettings;
 
 public final class OrderStaticUtil {
@@ -170,26 +169,6 @@ public final class OrderStaticUtil {
         return orderCommands.containsKey(orderCommand)
                 ? orderCommands.get(orderCommand)
                 : orderCommands.inverse().get(orderCommand);
-    }
-
-    public static final double slPriceWithPips(final IOrder order,
-                                               final double price,
-                                               final double pips) {
-        checkNotNull(order);
-
-        return InstrumentUtil.addPipsToPrice(order.getInstrument(),
-                                             price,
-                                             order.isLong() ? -pips : pips);
-    }
-
-    public static final double tpPriceWithPips(final IOrder order,
-                                               final double price,
-                                               final double pips) {
-        checkNotNull(order);
-
-        return slPriceWithPips(order,
-                               price,
-                               -pips);
     }
 
     public static final OrderParams adaptedOrderParamsForSignedAmount(final OrderParams orderParams,

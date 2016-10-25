@@ -108,6 +108,46 @@ public class CalculationUtilTest extends QuoteProviderForTest {
     }
 
     @Test
+    public void calculateSLPriceWithPipsIsCorrectForBuyOrder() {
+        when(tickQuoteHandlerMock.bid(instrumentEURUSD))
+            .thenReturn(1.12345);
+
+        final double slPrice = calculationUtil.slPriceForPips(buyOrderEURUSD, 13.5);
+
+        assertThat(slPrice, equalTo(1.1221));
+    }
+
+    @Test
+    public void calculateSLPriceWithPipsIsCorrectForSellOrder() {
+        when(tickQuoteHandlerMock.ask(instrumentEURUSD))
+            .thenReturn(1.12345);
+
+        final double slPrice = calculationUtil.slPriceForPips(sellOrderEURUSD, 12.3);
+
+        assertThat(slPrice, equalTo(1.12468));
+    }
+
+    @Test
+    public void calculateTPPriceWithPipsIsCorrectForBuyOrder() {
+        when(tickQuoteHandlerMock.bid(instrumentEURUSD))
+            .thenReturn(1.12345);
+
+        final double tpPrice = calculationUtil.tpPriceForPips(buyOrderEURUSD, 13.5);
+
+        assertThat(tpPrice, equalTo(1.1248));
+    }
+
+    @Test
+    public void calculateTPPriceWithPipsIsCorrectForSellOrder() {
+        when(tickQuoteHandlerMock.ask(instrumentEURUSD))
+            .thenReturn(1.12345);
+
+        final double tpPrice = calculationUtil.tpPriceForPips(sellOrderEURUSD, 12.3);
+
+        assertThat(tpPrice, equalTo(1.12222));
+    }
+
+    @Test
     public void testScaleAmountToPlatformIsCorrectForFractionalAmount() {
         final double amount = 213456.78;
         final double scaledAmount = CalculationUtil.scaleToPlatformAmount(amount);
