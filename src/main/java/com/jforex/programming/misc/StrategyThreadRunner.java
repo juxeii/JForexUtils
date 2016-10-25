@@ -1,5 +1,7 @@
 package com.jforex.programming.misc;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IContext;
@@ -18,10 +20,14 @@ public class StrategyThreadRunner {
     }
 
     public Completable execute(final Action action) {
+        checkNotNull(action);
+
         return execute(RxUtil.actionToCallable(action)).toCompletable();
     }
 
     public <T> Single<T> execute(final Callable<T> callable) {
+        checkNotNull(callable);
+
         return JForexUtil.isStrategyThread()
                 ? Single.fromCallable(callable)
                 : Single.defer(() -> Single.fromFuture(context.executeTask(callable)));
