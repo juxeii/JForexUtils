@@ -11,9 +11,8 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
+import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
-import com.jforex.programming.order.task.CancelSLTask;
-import com.jforex.programming.order.task.CancelTPTask;
 import com.jforex.programming.order.task.MergeExecutionMode;
 import com.jforex.programming.order.task.params.MergeParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -28,9 +27,7 @@ public class CancelSLTPTaskTest extends InstrumentUtilForTest {
     private CancelSLTPTask cancelSLTPTask;
 
     @Mock
-    private CancelSLTask orderCancelSLMock;
-    @Mock
-    private CancelTPTask orderCancelTPMock;
+    private BatchChangeTask batchChangeTaskMock;
     @Mock
     private MergeParams mergeCommandMock;
     private TestObserver<OrderEvent> testObserver;
@@ -42,14 +39,14 @@ public class CancelSLTPTaskTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
-        cancelSLTPTask = new CancelSLTPTask(orderCancelSLMock, orderCancelTPMock);
+        cancelSLTPTask = new CancelSLTPTask(batchChangeTaskMock);
     }
 
     private void setUpCommandObservables(final Observable<OrderEvent> cancelSLObservable,
                                          final Observable<OrderEvent> cancelTPObservable) {
-        when(orderCancelSLMock.observe(toCancelSLTPOrders, mergeCommandMock))
+        when(batchChangeTaskMock.cancelSL(eq(toCancelSLTPOrders), any(), any()))
             .thenReturn(cancelSLObservable);
-        when(orderCancelTPMock.observe(toCancelSLTPOrders, mergeCommandMock))
+        when(batchChangeTaskMock.cancelTP(eq(toCancelSLTPOrders), any(), any()))
             .thenReturn(cancelTPObservable);
     }
 
@@ -60,9 +57,8 @@ public class CancelSLTPTaskTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void observeTaskIsDeferred() {
-        verifyZeroInteractions(orderCancelSLMock);
-        verifyZeroInteractions(orderCancelTPMock);
+    public void batchTaskIsDeferred() {
+        verifyZeroInteractions(batchChangeTaskMock);
     }
 
     @Test
@@ -90,8 +86,7 @@ public class CancelSLTPTaskTest extends InstrumentUtilForTest {
         }
 
         private void setExecutionMode(final MergeExecutionMode mode) {
-            when(mergeCommandMock.executionMode())
-                .thenReturn(mode);
+            when(mergeCommandMock.executionMode()).thenReturn(mode);
         }
 
         @Test

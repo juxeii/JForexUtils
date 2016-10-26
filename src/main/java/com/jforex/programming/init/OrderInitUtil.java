@@ -15,8 +15,6 @@ import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
-import com.jforex.programming.order.task.CancelSLTask;
-import com.jforex.programming.order.task.CancelTPTask;
 import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.order.task.TaskExecutor;
@@ -38,15 +36,13 @@ public class OrderInitUtil {
     private final TaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
     private final BasicTask orderBasicTask;
-    private final BatchChangeTask orderChangeBatch;
+    private final BatchChangeTask batchChangeTask;
     private final MergeTask orderMergeTask;
     private final CloseTask orderCloseTask;
     private final MergeParamsHandler mergeParamsHandler;
     private final ClosePositionParamsHandler closePositionParamsHandler;
     private final CancelSLTPAndMergeTask cancelSLTPAndMergeTask;
     private final CancelSLTPTask orderCancelSLAndTP;
-    private final CancelSLTask orderCancelSL;
-    private final CancelTPTask orderCancelTP;
     private final OrderUtil orderUtil;
     private final OrderEventFactory orderEventFactory;
     private final OrderEventTypeDataFactory orderEventTypeDataFactory = new OrderEventTypeDataFactory();
@@ -68,15 +64,13 @@ public class OrderInitUtil {
         orderBasicTask = new BasicTask(orderTaskExecutor,
                                        orderUtilHandler,
                                        calculationUtil);
-        orderChangeBatch = new BatchChangeTask(orderBasicTask);
-        orderCancelSL = new CancelSLTask(orderChangeBatch);
-        orderCancelTP = new CancelTPTask(orderChangeBatch);
-        orderCancelSLAndTP = new CancelSLTPTask(orderCancelSL, orderCancelTP);
+        batchChangeTask = new BatchChangeTask(orderBasicTask);
+        orderCancelSLAndTP = new CancelSLTPTask(batchChangeTask);
         mergeParamsHandler = new MergeParamsHandler(orderCancelSLAndTP, orderBasicTask);
         cancelSLTPAndMergeTask = new CancelSLTPAndMergeTask(mergeParamsHandler);
         orderMergeTask = new MergeTask(cancelSLTPAndMergeTask, positionUtil);
         closePositionParamsHandler = new ClosePositionParamsHandler(orderMergeTask,
-                                                                    orderChangeBatch,
+                                                                    batchChangeTask,
                                                                     positionUtil);
         orderCloseTask = new CloseTask(closePositionParamsHandler, positionUtil);
         orderUtil = new OrderUtil(orderBasicTask,

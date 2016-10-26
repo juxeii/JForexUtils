@@ -39,15 +39,13 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
     private final OrderEvent composerEvent = closeEvent;
     private final OrderEventTransformer testComposer =
             upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
-    private final OrderToEventTransformer testOrderComposer =
-            order -> testComposer;
+    private final OrderToEventTransformer testOrderComposer = order -> testComposer;
 
     @Before
     public void setUp() throws Exception {
         batchChangeTask = new BatchChangeTask(basicTaskMock);
 
-        when(closeParamsPriovderMock.apply(any()))
-            .thenReturn(closeParams);
+        when(closeParamsPriovderMock.apply(any())).thenReturn(closeParams);
     }
 
     public class CloseBatch {

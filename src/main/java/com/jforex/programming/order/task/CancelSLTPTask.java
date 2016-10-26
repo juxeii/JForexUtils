@@ -10,13 +10,10 @@ import io.reactivex.Observable;
 
 public class CancelSLTPTask {
 
-    private final CancelSLTask cancelSLTask;
-    private final CancelTPTask cancelTPTask;
+    private final BatchChangeTask batchChangeTask;
 
-    public CancelSLTPTask(final CancelSLTask orderCancelSL,
-                          final CancelTPTask orderCancelTP) {
-        this.cancelSLTask = orderCancelSL;
-        this.cancelTPTask = orderCancelTP;
+    public CancelSLTPTask(final BatchChangeTask batchChangeTask) {
+        this.batchChangeTask = batchChangeTask;
     }
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelSLTPOrders,
@@ -28,8 +25,14 @@ public class CancelSLTPTask {
 
     private Observable<OrderEvent> createTask(final Collection<IOrder> toCancelSLTPOrders,
                                               final MergeParams mergeParams) {
-        final Observable<OrderEvent> cancelSL = cancelSLTask.observe(toCancelSLTPOrders, mergeParams);
-        final Observable<OrderEvent> cancelTP = cancelTPTask.observe(toCancelSLTPOrders, mergeParams);
+        final Observable<OrderEvent> cancelSL =
+                Observable.defer(() -> batchChangeTask.cancelSL(toCancelSLTPOrders,
+                                                                mergeParams.orderCancelSLMode(),
+                                                                mergeParams::orderCancelSLComposer));
+        final Observable<OrderEvent> cancelTP =
+                Observable.defer(() -> batchChangeTask.cancelTP(toCancelSLTPOrders,
+                                                                mergeParams.orderCancelTPMode(),
+                                                                mergeParams::orderCancelTPComposer));
 
         return arrangeObservables(cancelSL, cancelTP, mergeParams.executionMode())
             .compose(mergeParams.cancelSLTPComposer());
