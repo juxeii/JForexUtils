@@ -11,23 +11,23 @@ import io.reactivex.Observable;
 
 public class MergeParamsHandler {
 
-    private final CancelSLTPTask orderCancelSLAndTP;
-    private final BasicTask orderBasicTask;
+    private final CancelSLTPTask cancelSLTPTask;
+    private final BasicTask basicTask;
 
-    public MergeParamsHandler(final CancelSLTPTask orderCancelSLAndTP,
-                              final BasicTask orderBasicTask) {
-        this.orderCancelSLAndTP = orderCancelSLAndTP;
-        this.orderBasicTask = orderBasicTask;
+    public MergeParamsHandler(final CancelSLTPTask cancelSLTPTask,
+                              final BasicTask basicTask) {
+        this.cancelSLTPTask = cancelSLTPTask;
+        this.basicTask = basicTask;
     }
 
     public Observable<OrderEvent> observeCancelSLTP(final Collection<IOrder> toMergeOrders,
                                                     final MergeParams mergeParams) {
-        return orderCancelSLAndTP.observe(toMergeOrders, mergeParams);
+        return cancelSLTPTask.observe(toMergeOrders, mergeParams);
     }
 
     public Observable<OrderEvent> observeMerge(final Collection<IOrder> toMergeOrders,
                                                final MergeParams mergeParams) {
-        return orderBasicTask
+        return basicTask
             .mergeOrders(mergeParams.mergeOrderLabel(), toMergeOrders)
             .compose(mergeParams.mergeComposer());
     }
