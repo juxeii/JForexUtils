@@ -22,7 +22,7 @@ public final class ClientUtil {
     private final Authentification authentification;
     private final JFSystemListener jfSystemListener = new JFSystemListener();
     private final JFHotPublisher<LoginState> loginStatePublisher = new JFHotPublisher<>();
-    private ConnectionKeeper connectionKeeper;
+    private final ConnectionKeeper connectionKeeper;
     private final PinCaptcha pinCaptcha;
 
     private static final Logger logger = LogManager.getLogger(ClientUtil.class);
@@ -33,23 +33,20 @@ public final class ClientUtil {
         checkNotNull(cacheDirectory);
 
         this.client = client;
+        pinCaptcha = new PinCaptcha(client);
+        authentification = new Authentification(client, loginStatePublisher);
+        connectionKeeper = new ConnectionKeeper(client,
+                                                observeConnectionState(),
+                                                loginStatePublisher.observable());
+
         initCacheDirectory(cacheDirectory);
         client.setSystemListener(jfSystemListener);
-        authentification = new Authentification(client, loginStatePublisher);
-        initConnectionKeeper();
-        pinCaptcha = new PinCaptcha(client);
     }
 
     private void initCacheDirectory(final String cacheDirectoryPath) {
         final File cacheDirectoryFile = new File(cacheDirectoryPath);
         client.setCacheDirectory(cacheDirectoryFile);
         logger.debug("Setting of cache directory " + cacheDirectoryPath + " done.");
-    }
-
-    private final void initConnectionKeeper() {
-        connectionKeeper = new ConnectionKeeper(client,
-                                                observeConnectionState(),
-                                                loginStatePublisher.observable());
     }
 
     public Observable<ConnectionState> observeConnectionState() {
