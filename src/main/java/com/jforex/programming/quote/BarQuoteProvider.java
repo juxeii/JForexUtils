@@ -5,7 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 
 import com.dukascopy.api.IBar;
-import com.jforex.programming.init.QuoteUtil;
+import com.jforex.programming.strategy.QuoteUtil;
 
 import io.reactivex.Observable;
 

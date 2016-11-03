@@ -10,16 +10,16 @@ import org.paukov.combinatorics3.Generator;
 
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
-import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.strategy.StrategyUtil;
 
 public final class MathUtil {
 
     private MathUtil() {
     }
 
-    private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
+    private static final PlatformSettings platformSettings = StrategyUtil.platformSettings;
 
     public static final <T> Set<Set<T>> kPowerSet(final Set<T> sourceSet,
                                                   final int setSize) {

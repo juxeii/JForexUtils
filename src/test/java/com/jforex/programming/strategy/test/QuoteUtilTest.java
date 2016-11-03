@@ -1,11 +1,11 @@
-package com.jforex.programming.init.test;
+package com.jforex.programming.strategy.test;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.init.ContextUtil;
-import com.jforex.programming.init.QuoteUtil;
+import com.jforex.programming.strategy.ContextUtil;
+import com.jforex.programming.strategy.QuoteUtil;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 public class QuoteUtilTest extends QuoteProviderForTest {

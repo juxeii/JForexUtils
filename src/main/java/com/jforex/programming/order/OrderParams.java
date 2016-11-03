@@ -9,9 +9,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
+import com.jforex.programming.strategy.StrategyUtil;
 
 public final class OrderParams implements Cloneable {
 
@@ -161,8 +161,8 @@ public final class OrderParams implements Cloneable {
         private long goodTillTime;
         private String comment;
 
-        private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
-        private static final UserSettings userSettings = JForexUtil.userSettings;
+        private static final PlatformSettings platformSettings = StrategyUtil.platformSettings;
+        private static final UserSettings userSettings = StrategyUtil.userSettings;
 
         private Builder(final Instrument instrument) {
             this.instrument = instrument;

@@ -9,14 +9,14 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-import com.jforex.programming.init.JForexUtil;
+import com.jforex.programming.strategy.StrategyUtil;
 
 public final class DateTimeUtil {
 
     private DateTimeUtil() {
     }
 
-    public static final String defaultDateFormat = JForexUtil.userSettings.dateFormat();
+    public static final String defaultDateFormat = StrategyUtil.userSettings.dateFormat();
     public static final DateTimeFormatter defaultformatter = DateTimeFormatter.ofPattern(defaultDateFormat);
     public static final ZoneId localZoneId = ZoneId.systemDefault();
     public static final ZoneId dukascopyZoneId = ZoneId.ofOffset("UTC", ZoneOffset.UTC);

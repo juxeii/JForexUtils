@@ -1,4 +1,4 @@
-package com.jforex.programming.init.test;
+package com.jforex.programming.strategy.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -14,90 +14,90 @@ import com.dukascopy.api.IBar;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.JFException;
 import com.google.common.collect.Lists;
-import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.strategy.StrategyUtil;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class JForexUtilTest extends QuoteProviderForTest {
+public class StrategyUtilTest extends QuoteProviderForTest {
 
-    private JForexUtil jForexUtil;
+    private StrategyUtil strategyUtil;
 
     @Before
     public void setUp() {
-        jForexUtil = new JForexUtil(contextMock);
+        strategyUtil = new StrategyUtil(contextMock);
     }
 
     @Test
     public void returnedContextIsCorrectInstance() {
-        assertThat(jForexUtil.context(), equalTo(contextMock));
+        assertThat(strategyUtil.context(), equalTo(contextMock));
     }
 
     @Test
     public void returnedEngineIsCorrectInstance() {
-        assertThat(jForexUtil.engine(), equalTo(engineMock));
+        assertThat(strategyUtil.engine(), equalTo(engineMock));
     }
 
     @Test
     public void returnedAccountIsCorrectInstance() {
-        assertThat(jForexUtil.account(), equalTo(accountMock));
+        assertThat(strategyUtil.account(), equalTo(accountMock));
     }
 
     @Test
     public void returnedHistoryIsCorrectInstance() {
-        assertThat(jForexUtil.history(), equalTo(historyMock));
+        assertThat(strategyUtil.history(), equalTo(historyMock));
     }
 
     @Test
     public void returnedHistoryUtilIsValid() {
-        assertNotNull(jForexUtil.historyUtil());
+        assertNotNull(strategyUtil.historyUtil());
     }
 
     @Test
     public void returnedCalculationUtilIsValid() {
-        assertNotNull(jForexUtil.calculationUtil());
+        assertNotNull(strategyUtil.calculationUtil());
     }
 
     @Test
     public void returnedOrderUtilIsValid() {
-        assertNotNull(jForexUtil.orderUtil());
+        assertNotNull(strategyUtil.orderUtil());
     }
 
     @Test
     public void returnedPositionUtilIsValid() {
-        assertNotNull(jForexUtil.positionUtil());
+        assertNotNull(strategyUtil.positionUtil());
     }
 
     @Test
     public void returnedStrategyThreadRunnerIsValid() {
-        assertNotNull(jForexUtil.strategyThreadRunner());
+        assertNotNull(strategyUtil.strategyThreadRunner());
     }
 
     @Test
     public void onMessageRouting() {
-        jForexUtil.onMessage(mock(IMessage.class));
+        strategyUtil.onMessage(mock(IMessage.class));
     }
 
     @Test
     public void testIfStrategyThreadIsCorrect() {
         setStrategyThread();
 
-        assertTrue(JForexUtil.isStrategyThread());
+        assertTrue(StrategyUtil.isStrategyThread());
     }
 
     @Test
     public void testIfNotStrategyThreadIsCorrect() {
         setNotStrategyThread();
 
-        assertFalse(JForexUtil.isStrategyThread());
+        assertFalse(StrategyUtil.isStrategyThread());
     }
 
     @Test
@@ -106,7 +106,7 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
         setThreadName(threadName);
 
-        assertThat(JForexUtil.threadName(), equalTo(threadName));
+        assertThat(StrategyUtil.threadName(), equalTo(threadName));
     }
 
     @Test
@@ -115,7 +115,7 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
         when(dataServiceMock.isOfflineTime(testTime)).thenReturn(true);
 
-        assertTrue(jForexUtil.isMarketClosed(testTime));
+        assertTrue(strategyUtil.isMarketClosed(testTime));
     }
 
     @Test
@@ -124,12 +124,12 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
         when(dataServiceMock.isOfflineTime(testTime)).thenReturn(false);
 
-        assertFalse(jForexUtil.isMarketClosed(testTime));
+        assertFalse(strategyUtil.isMarketClosed(testTime));
     }
 
     @Test
     public void coverIsMarketNowClosed() {
-        jForexUtil.isMarketClosed();
+        strategyUtil.isMarketClosed();
     }
 
     @Test
@@ -138,15 +138,15 @@ public class JForexUtilTest extends QuoteProviderForTest {
                                                                    sellOrderEURUSD,
                                                                    sellOrderAUDUSD));
 
-        jForexUtil
+        strategyUtil
             .importOrders()
             .test()
             .assertComplete();
 
-        final PositionOrders ordersForEURUSD = jForexUtil
+        final PositionOrders ordersForEURUSD = strategyUtil
             .orderUtil()
             .positionOrders(instrumentEURUSD);
-        final PositionOrders ordersForAUDUSD = jForexUtil
+        final PositionOrders ordersForAUDUSD = strategyUtil
             .orderUtil()
             .positionOrders(instrumentAUDUSD);
 
@@ -167,15 +167,15 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
         @Before
         public void setUp() {
-            barQuoteProvider = jForexUtil.barQuoteProvider();
+            barQuoteProvider = strategyUtil.barQuoteProvider();
             barQuoteProvider
                 .observable()
                 .subscribe(subscriber);
-            instrumentUtil = jForexUtil.instrumentUtil(instrumentEURUSD);
-            pushBar = () -> jForexUtil.onBar(instrumentEURUSD,
-                                             barQuotePeriod,
-                                             askBarEURUSD,
-                                             bidBarEURUSD);
+            instrumentUtil = strategyUtil.instrumentUtil(instrumentEURUSD);
+            pushBar = () -> strategyUtil.onBar(instrumentEURUSD,
+                                               barQuotePeriod,
+                                               askBarEURUSD,
+                                               bidBarEURUSD);
             pushBar.run();
         }
 
@@ -204,7 +204,7 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
         @Test
         public void onStopUnsubscribesFromBars() {
-            jForexUtil.onStop();
+            strategyUtil.onStop();
 
             pushBar.run();
 
@@ -229,13 +229,13 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
         @Before
         public void setUp() {
-            tickQuoteProvider = jForexUtil.tickQuoteProvider();
+            tickQuoteProvider = strategyUtil.tickQuoteProvider();
             tickQuoteProvider
                 .observable()
                 .subscribe(subscriber);
-            instrumentUtil = jForexUtil.instrumentUtil(instrumentEURUSD);
+            instrumentUtil = strategyUtil.instrumentUtil(instrumentEURUSD);
 
-            jForexUtil.onTick(instrumentEURUSD, tickEURUSD);
+            strategyUtil.onTick(instrumentEURUSD, tickEURUSD);
         }
 
         @Test
@@ -254,9 +254,9 @@ public class JForexUtilTest extends QuoteProviderForTest {
 
         @Test
         public void onStopUnsubscribesFromTicks() {
-            jForexUtil.onStop();
+            strategyUtil.onStop();
 
-            jForexUtil.onTick(instrumentEURUSD, tickEURUSD);
+            strategyUtil.onTick(instrumentEURUSD, tickEURUSD);
 
             subscriber.assertValueCount(1);
         }
@@ -265,7 +265,7 @@ public class JForexUtilTest extends QuoteProviderForTest {
         public void tickIsNotPushedWhenMarketIsClosed() {
             when(dataServiceMock.isOfflineTime(anyLong())).thenReturn(true);
 
-            jForexUtil.onTick(instrumentEURUSD, tickEURUSD);
+            strategyUtil.onTick(instrumentEURUSD, tickEURUSD);
 
             subscriber.assertValueCount(1);
         }

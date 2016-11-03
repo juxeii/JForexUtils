@@ -15,11 +15,11 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
-import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.QuoteException;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.settings.UserSettings;
+import com.jforex.programming.strategy.StrategyUtil;
 
 import io.reactivex.Observable;
 
@@ -27,7 +27,7 @@ public class HistoryUtil {
 
     private final IHistory history;
 
-    private static final UserSettings userSettings = JForexUtil.userSettings;
+    private static final UserSettings userSettings = StrategyUtil.userSettings;
     private static final long delayOnHistoryFailRetry = userSettings.delayOnHistoryFailRetry();
     private static final int maxRetriesOnHistoryFail = userSettings.maxRetriesOnHistoryFail();
     private static final Logger logger = LogManager.getLogger(HistoryUtil.class);

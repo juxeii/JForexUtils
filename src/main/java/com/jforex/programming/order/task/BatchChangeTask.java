@@ -4,11 +4,11 @@ import java.util.Collection;
 import java.util.List;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.strategy.StrategyUtil;
 
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
@@ -17,7 +17,7 @@ public class BatchChangeTask {
 
     private final BasicTask basicTask;
 
-    private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
+    private static final PlatformSettings platformSettings = StrategyUtil.platformSettings;
 
     public BatchChangeTask(final BasicTask orderBasicTask) {
         this.basicTask = orderBasicTask;

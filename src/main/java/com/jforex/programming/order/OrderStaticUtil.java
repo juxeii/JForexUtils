@@ -13,15 +13,15 @@ import com.dukascopy.api.OfferSide;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.settings.PlatformSettings;
+import com.jforex.programming.strategy.StrategyUtil;
 
 public final class OrderStaticUtil {
 
     private OrderStaticUtil() {
     }
 
-    private static final PlatformSettings platformSettings = JForexUtil.platformSettings;
+    private static final PlatformSettings platformSettings = StrategyUtil.platformSettings;
 
     public static final ImmutableBiMap<OrderCommand, OrderCommand> orderCommands =
             new ImmutableBiMap.Builder<OrderCommand, OrderCommand>()

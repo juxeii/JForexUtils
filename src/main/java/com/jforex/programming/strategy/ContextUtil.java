@@ -1,4 +1,4 @@
-package com.jforex.programming.init;
+package com.jforex.programming.strategy;
 
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IContext;

@@ -29,7 +29,6 @@ import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.currency.CurrencyCode;
-import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.order.OrderDirection;
 import com.jforex.programming.order.OrderParams;
@@ -44,6 +43,7 @@ import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
+import com.jforex.programming.strategy.StrategyUtil;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -53,7 +53,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 public class CommonUtilForTest extends BDDMockito {
 
     @Mock
-    protected JForexUtil jforexUtilMock;
+    protected StrategyUtil strategyUtilMock;
     @Mock
     protected IClient clientMock;
     @Mock
@@ -105,8 +105,8 @@ public class CommonUtilForTest extends BDDMockito {
     protected OrderEvent changedRejectEvent = createEvent(OrderEventType.CHANGED_REJECTED);
 
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
-    protected static final PlatformSettings platformSettings = JForexUtil.platformSettings;
-    protected static final UserSettings userSettings = JForexUtil.userSettings;
+    protected static final PlatformSettings platformSettings = StrategyUtil.platformSettings;
+    protected static final UserSettings userSettings = StrategyUtil.userSettings;
     protected static final double noSL = platformSettings.noSLPrice();
     protected static final double noTP = platformSettings.noTPPrice();
 
@@ -120,11 +120,11 @@ public class CommonUtilForTest extends BDDMockito {
         when(contextMock.getHistory()).thenReturn(historyMock);
         when(contextMock.getDataService()).thenReturn(dataServiceMock);
 
-        when(jforexUtilMock.context()).thenReturn(contextMock);
-        when(jforexUtilMock.engine()).thenReturn(engineMock);
-        when(jforexUtilMock.account()).thenReturn(accountMock);
-        when(jforexUtilMock.history()).thenReturn(historyMock);
-        when(jforexUtilMock.historyUtil()).thenReturn(historyUtilMock);
+        when(strategyUtilMock.context()).thenReturn(contextMock);
+        when(strategyUtilMock.engine()).thenReturn(engineMock);
+        when(strategyUtilMock.account()).thenReturn(accountMock);
+        when(strategyUtilMock.history()).thenReturn(historyMock);
+        when(strategyUtilMock.historyUtil()).thenReturn(historyUtilMock);
 
         doAnswer(invocation -> {
             final ISystemListener listener = ((ISystemListener) invocation.getArgument(0));

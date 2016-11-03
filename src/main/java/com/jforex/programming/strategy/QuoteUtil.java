@@ -1,4 +1,4 @@
-package com.jforex.programming.init;
+package com.jforex.programming.strategy;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

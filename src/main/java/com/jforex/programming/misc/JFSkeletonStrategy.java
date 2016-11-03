@@ -9,21 +9,21 @@ import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.Period;
-import com.jforex.programming.init.JForexUtil;
+import com.jforex.programming.strategy.StrategyUtil;
 
 public class JFSkeletonStrategy implements IStrategy {
 
-    private JForexUtil jForexUtil;
+    private StrategyUtil strategyUtil;
 
     @Override
     public void onStart(final IContext context) throws JFException {
-        jForexUtil = new JForexUtil(context);
+        strategyUtil = new StrategyUtil(context);
     }
 
     @Override
     public void onTick(final Instrument instrument,
                        final ITick tick) throws JFException {
-        jForexUtil.onTick(instrument, tick);
+        strategyUtil.onTick(instrument, tick);
     }
 
     @Override
@@ -31,20 +31,20 @@ public class JFSkeletonStrategy implements IStrategy {
                       final Period period,
                       final IBar askBar,
                       final IBar bidBar) throws JFException {
-        jForexUtil.onBar(instrument,
-                         period,
-                         askBar,
-                         bidBar);
+        strategyUtil.onBar(instrument,
+                           period,
+                           askBar,
+                           bidBar);
     }
 
     @Override
     public void onMessage(final IMessage message) throws JFException {
-        jForexUtil.onMessage(message);
+        strategyUtil.onMessage(message);
     }
 
     @Override
     public void onStop() throws JFException {
-        jForexUtil.onStop();
+        strategyUtil.onStop();
     }
 
     @Override

@@ -5,7 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Optional;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.init.JForexUtil;
+import com.jforex.programming.strategy.StrategyUtil;
 
 public class CloseParams {
 
@@ -14,7 +14,7 @@ public class CloseParams {
     private final Optional<Double> maybePrice;
     private final double slippage;
 
-    private static final double defaultCloseSlippage = JForexUtil.platformSettings.defaultCloseSlippage();
+    private static final double defaultCloseSlippage = StrategyUtil.platformSettings.defaultCloseSlippage();
     private static final double noCloseSlippageValue = Double.NaN;
 
     public interface CloseOption {

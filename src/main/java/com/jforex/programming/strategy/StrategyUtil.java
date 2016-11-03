@@ -1,4 +1,4 @@
-package com.jforex.programming.init;
+package com.jforex.programming.strategy;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -28,7 +28,7 @@ import com.jforex.programming.settings.UserSettings;
 
 import io.reactivex.Completable;
 
-public class JForexUtil {
+public class StrategyUtil {
 
     private final ContextUtil contextUtil;
     private final QuoteUtil quoteUtil;
@@ -39,7 +39,7 @@ public class JForexUtil {
     public static final PlatformSettings platformSettings = ConfigFactory.create(PlatformSettings.class);
     public static final UserSettings userSettings = ConfigFactory.create(UserSettings.class);
 
-    public JForexUtil(final IContext context) {
+    public StrategyUtil(final IContext context) {
         checkNotNull(context);
 
         contextUtil = new ContextUtil(context);

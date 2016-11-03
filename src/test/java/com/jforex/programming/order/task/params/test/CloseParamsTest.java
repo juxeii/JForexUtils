@@ -7,8 +7,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.jforex.programming.init.JForexUtil;
 import com.jforex.programming.order.task.params.CloseParams;
+import com.jforex.programming.strategy.StrategyUtil;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 public class CloseParamsTest extends QuoteProviderForTest {
@@ -16,7 +16,7 @@ public class CloseParamsTest extends QuoteProviderForTest {
     private CloseParams closeParams;
 
     private final double amount = 0.12;
-    private static final double defaultCloseSlippage = JForexUtil.platformSettings.defaultCloseSlippage();
+    private static final double defaultCloseSlippage = StrategyUtil.platformSettings.defaultCloseSlippage();
 
     @Test
     public void defaultParamsAreCorrect() {

@@ -11,11 +11,11 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.init.QuoteUtil;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.BarQuoteRepository;
+import com.jforex.programming.strategy.QuoteUtil;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import io.reactivex.Observable;
