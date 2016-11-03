@@ -7,6 +7,8 @@ import java.util.Collection;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.spec.SetSLSpec;
+import com.jforex.programming.order.spec.SubmitSpec;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.order.task.MergeTask;
@@ -41,6 +43,12 @@ public class OrderUtil {
         checkNotNull(orderParams);
 
         return basicTask.submitOrder(orderParams);
+    }
+
+    public SubmitSpec.Builder specifySubmit(final OrderParams orderParams) {
+        checkNotNull(orderParams);
+
+        return SubmitSpec.submitSpec(submitOrder(orderParams));
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
@@ -105,6 +113,13 @@ public class OrderUtil {
         checkNotNull(order);
 
         return basicTask.setStopLossPrice(order, newSL);
+    }
+
+    public SetSLSpec.Builder specifySetSL(final IOrder order,
+                                          final double newSL) {
+        checkNotNull(order);
+
+        return SetSLSpec.setSLSpec(setStopLossPrice(order, newSL));
     }
 
     public Observable<OrderEvent> setStopLossPrice(final SetSLParams setSLParams) {
