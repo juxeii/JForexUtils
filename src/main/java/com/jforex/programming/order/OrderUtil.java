@@ -7,6 +7,12 @@ import java.util.Collection;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.spec.CloseSpec;
+import com.jforex.programming.order.spec.MergeSpec;
+import com.jforex.programming.order.spec.SetAmountSpec;
+import com.jforex.programming.order.spec.SetGTTSpec;
+import com.jforex.programming.order.spec.SetLabelSpec;
+import com.jforex.programming.order.spec.SetOpenPriceSpec;
 import com.jforex.programming.order.spec.SetSLSpec;
 import com.jforex.programming.order.spec.SubmitSpec;
 import com.jforex.programming.order.task.BasicTask;
@@ -59,6 +65,14 @@ public class OrderUtil {
         return basicTask.mergeOrders(mergeOrderLabel, toMergeOrders);
     }
 
+    public MergeSpec.Builder specifyMerge(final String mergeOrderLabel,
+                                          final Collection<IOrder> toMergeOrders) {
+        checkNotNull(mergeOrderLabel);
+        checkNotNull(toMergeOrders);
+
+        return MergeSpec.mergeSpec(mergeOrders(mergeOrderLabel, toMergeOrders));
+    }
+
     public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
                                               final MergeParams mergeParams) {
         checkNotNull(toMergeOrders);
@@ -73,10 +87,22 @@ public class OrderUtil {
         return basicTask.close(order);
     }
 
+    public CloseSpec.Builder specifyClose(final IOrder order) {
+        checkNotNull(order);
+
+        return CloseSpec.closeSpec(close(order));
+    }
+
     public Observable<OrderEvent> close(final CloseParams closeParams) {
         checkNotNull(closeParams);
 
         return basicTask.close(closeParams);
+    }
+
+    public CloseSpec.Builder specifyClose(final CloseParams closeParams) {
+        checkNotNull(closeParams);
+
+        return CloseSpec.closeSpec(close(closeParams));
     }
 
     public Observable<OrderEvent> setLabel(final IOrder order,
@@ -87,11 +113,25 @@ public class OrderUtil {
         return basicTask.setLabel(order, label);
     }
 
+    public SetLabelSpec.Builder specifySetGoodTillTime(final IOrder order,
+                                                       final String label) {
+        checkNotNull(order);
+
+        return SetLabelSpec.setLabelSpec(setLabel(order, label));
+    }
+
     public Observable<OrderEvent> setGoodTillTime(final IOrder order,
                                                   final long newGTT) {
         checkNotNull(order);
 
         return basicTask.setGoodTillTime(order, newGTT);
+    }
+
+    public SetGTTSpec.Builder specifySetGoodTillTime(final IOrder order,
+                                                     final long newGTT) {
+        checkNotNull(order);
+
+        return SetGTTSpec.setGTTSpec(setOpenPrice(order, newGTT));
     }
 
     public Observable<OrderEvent> setRequestedAmount(final IOrder order,
@@ -101,11 +141,25 @@ public class OrderUtil {
         return basicTask.setRequestedAmount(order, newRequestedAmount);
     }
 
+    public SetAmountSpec.Builder specifySetRequestedAmount(final IOrder order,
+                                                           final double newRequestedAmount) {
+        checkNotNull(order);
+
+        return SetAmountSpec.setAmountSpec(setOpenPrice(order, newRequestedAmount));
+    }
+
     public Observable<OrderEvent> setOpenPrice(final IOrder order,
                                                final double newOpenPrice) {
         checkNotNull(order);
 
         return basicTask.setOpenPrice(order, newOpenPrice);
+    }
+
+    public SetOpenPriceSpec.Builder specifySetOpenPrice(final IOrder order,
+                                                        final double newOpenPrice) {
+        checkNotNull(order);
+
+        return SetOpenPriceSpec.setOpenPriceSpec(setOpenPrice(order, newOpenPrice));
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder order,
