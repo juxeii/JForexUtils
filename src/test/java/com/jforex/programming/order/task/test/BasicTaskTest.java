@@ -633,6 +633,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void callIsDeferred() {
             verifyZeroInteractions(orderTaskExecutorMock);
             verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(calculationUtilMock);
         }
 
         @Test
@@ -802,6 +803,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         public void callIsDeferred() {
             verifyZeroInteractions(orderTaskExecutorMock);
             verifyZeroInteractions(orderUtilHandlerMock);
+            verifyZeroInteractions(calculationUtilMock);
         }
 
         @Test

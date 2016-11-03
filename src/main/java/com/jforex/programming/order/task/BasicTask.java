@@ -134,8 +134,10 @@ public class BasicTask {
 
     public Observable<OrderEvent> setStopLossForPips(final IOrder order,
                                                      final double pips) {
-        final double slPrice = calculationUtil.slPriceForPips(order, pips);
-        return setStopLossPrice(order, slPrice);
+        return Observable.defer(() -> {
+            final double slPrice = calculationUtil.slPriceForPips(order, pips);
+            return setStopLossPrice(order, slPrice);
+        });
     }
 
     public Observable<OrderEvent> setStopLossPrice(final SetSLParams setSLParams) {
@@ -162,8 +164,10 @@ public class BasicTask {
 
     public Observable<OrderEvent> setTakeProfitForPips(final IOrder order,
                                                        final double pips) {
-        final double tpPrice = calculationUtil.tpPriceForPips(order, pips);
-        return setTakeProfitPrice(order, tpPrice);
+        return Observable.defer(() -> {
+            final double tpPrice = calculationUtil.tpPriceForPips(order, pips);
+            return setTakeProfitPrice(order, tpPrice);
+        });
     }
 
     private final Observable<OrderEvent> orderUtilObservable(final IOrder order,
