@@ -5,7 +5,7 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import io.reactivex.Observable;
 
-public class CloseSpec extends SpecBase<CloseSpec.Builder, CloseSpec> {
+public class CloseSpec extends SpecBase {
 
     private CloseSpec(final Builder builder) {
         super(builder);

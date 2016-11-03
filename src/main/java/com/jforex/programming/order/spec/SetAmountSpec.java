@@ -5,7 +5,7 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import io.reactivex.Observable;
 
-public class SetAmountSpec extends SpecBase<SetAmountSpec.Builder, SetAmountSpec> {
+public class SetAmountSpec extends SpecBase {
 
     private SetAmountSpec(final Builder builder) {
         super(builder);

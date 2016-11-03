@@ -24,7 +24,7 @@ public abstract class SpecBuilderBase<B, S> {
         this.observable = observable;
     }
 
-    public SpecBuilderBase doOnException(final ErrorConsumer errorConsumer) {
+    public SpecBuilderBase<B, S> doOnException(final ErrorConsumer errorConsumer) {
         checkNotNull(errorConsumer);
 
         this.errorConsumer = errorConsumer;

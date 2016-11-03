@@ -9,7 +9,7 @@ import com.jforex.programming.order.task.TaskRetry;
 import io.reactivex.Observable;
 import io.reactivex.functions.Action;
 
-public abstract class SpecBase<B, S> {
+public abstract class SpecBase {
 
     protected Observable<OrderEvent> observable;
     protected final Map<OrderEventType, OrderEventConsumer> consumerForEvent;
@@ -18,7 +18,7 @@ public abstract class SpecBase<B, S> {
     private final int noOfRetries;
     private final long delayInMillis;
 
-    protected SpecBase(final SpecBuilderBase<B, S> specBuilderBase) {
+    protected SpecBase(final SpecBuilderBase<?, ?> specBuilderBase) {
         observable = specBuilderBase.observable;
         consumerForEvent = specBuilderBase.consumerForEvent;
         errorConsumer = specBuilderBase.errorConsumer;

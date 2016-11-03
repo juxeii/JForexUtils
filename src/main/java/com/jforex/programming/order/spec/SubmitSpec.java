@@ -5,7 +5,7 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import io.reactivex.Observable;
 
-public class SubmitSpec extends SpecBase<SubmitSpec.Builder, SubmitSpec> {
+public class SubmitSpec extends SpecBase {
 
     private SubmitSpec(final Builder builder) {
         super(builder);

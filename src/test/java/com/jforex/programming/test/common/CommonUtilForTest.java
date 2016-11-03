@@ -100,6 +100,7 @@ public class CommonUtilForTest extends BDDMockito {
     protected final IOrder sellOrderAUDUSD = orderUtilForTest.sellOrderAUDUSD();
     protected OrderEvent submitEvent = createEvent(OrderEventType.SUBMIT_OK);
     protected OrderEvent closeEvent = createEvent(OrderEventType.CLOSE_OK);
+    protected OrderEvent closeRejectEvent = createEvent(OrderEventType.CLOSE_REJECTED);
     protected OrderEvent mergeEvent = createEvent(OrderEventType.MERGE_OK);
     protected OrderEvent changedLabelEvent = createEvent(OrderEventType.CHANGED_LABEL);
     protected OrderEvent changedRejectEvent = createEvent(OrderEventType.CHANGED_REJECTED);

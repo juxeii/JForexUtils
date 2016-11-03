@@ -5,7 +5,7 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import io.reactivex.Observable;
 
-public class SetLabelSpec extends SpecBase<SetLabelSpec.Builder, SetLabelSpec> {
+public class SetLabelSpec extends SpecBase {
 
     private SetLabelSpec(final Builder builder) {
         super(builder);

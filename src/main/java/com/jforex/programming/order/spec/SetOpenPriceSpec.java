@@ -5,7 +5,7 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import io.reactivex.Observable;
 
-public class SetOpenPriceSpec extends SpecBase<SetOpenPriceSpec.Builder, SetOpenPriceSpec> {
+public class SetOpenPriceSpec extends SpecBase {
 
     private SetOpenPriceSpec(final Builder builder) {
         super(builder);

@@ -5,7 +5,7 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import io.reactivex.Observable;
 
-public class MergeSpec extends SpecBase<MergeSpec.Builder, MergeSpec> {
+public class MergeSpec extends SpecBase {
 
     private MergeSpec(final Builder builder) {
         super(builder);
