@@ -14,6 +14,7 @@ import com.jforex.programming.order.spec.SetGTTSpec;
 import com.jforex.programming.order.spec.SetLabelSpec;
 import com.jforex.programming.order.spec.SetOpenPriceSpec;
 import com.jforex.programming.order.spec.SetSLSpec;
+import com.jforex.programming.order.spec.SetTPSpec;
 import com.jforex.programming.order.spec.SubmitSpec;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CloseTask;
@@ -182,11 +183,24 @@ public class OrderUtil {
         return basicTask.setStopLossPrice(setSLParams);
     }
 
+    public SetSLSpec.Builder specifySetSL(final SetSLParams setSLParams) {
+        checkNotNull(setSLParams);
+
+        return SetSLSpec.setSLSpec(setStopLossPrice(setSLParams));
+    }
+
     public Observable<OrderEvent> setStopLossForPips(final IOrder order,
                                                      final double pips) {
         checkNotNull(order);
 
         return basicTask.setStopLossForPips(order, pips);
+    }
+
+    public SetSLSpec.Builder specifySetSLForPips(final IOrder order,
+                                                 final double pips) {
+        checkNotNull(order);
+
+        return SetSLSpec.setSLSpec(setStopLossForPips(order, pips));
     }
 
     public Observable<OrderEvent> setTakeProfitPrice(final IOrder order,
@@ -196,11 +210,25 @@ public class OrderUtil {
         return basicTask.setTakeProfitPrice(order, newTP);
     }
 
+    public SetTPSpec.Builder specifySetTP(final IOrder order,
+                                          final double newTP) {
+        checkNotNull(order);
+
+        return SetTPSpec.setTPSpec(setTakeProfitPrice(order, newTP));
+    }
+
     public Observable<OrderEvent> setTakeProfitForPips(final IOrder order,
                                                        final double pips) {
         checkNotNull(order);
 
         return basicTask.setTakeProfitForPips(order, pips);
+    }
+
+    public SetTPSpec.Builder specifySetTPForPips(final IOrder order,
+                                                 final double pips) {
+        checkNotNull(order);
+
+        return SetTPSpec.setTPSpec(setTakeProfitForPips(order, pips));
     }
 
     public Observable<OrderEvent> mergePosition(final Instrument instrument,
