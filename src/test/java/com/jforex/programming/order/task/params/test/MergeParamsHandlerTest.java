@@ -13,7 +13,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
-import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.MergePositionParams;
 import com.jforex.programming.order.task.params.MergeParamsHandler;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -31,7 +31,7 @@ public class MergeParamsHandlerTest extends InstrumentUtilForTest {
     @Mock
     private BasicTask orderBasicTaskMock;
     @Mock
-    private MergeParams mergeParamsMock;
+    private MergePositionParams mergeParamsMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final String mergeOrderLabel = "mergeOrderLabel";

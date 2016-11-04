@@ -12,13 +12,12 @@ import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.order.task.params.ClosePositionParams;
-import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.MergePositionParams;
 import com.jforex.programming.order.task.params.SetSLParams;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
 
 public class OrderUtil {
 
@@ -52,7 +51,7 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
-                                              final MergeParams mergeParams) {
+                                              final MergePositionParams mergeParams) {
         checkNotNull(toMergeOrders);
         checkNotNull(mergeParams);
 
@@ -135,29 +134,30 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> mergePosition(final Instrument instrument,
-                                                final MergeParams mergeParams) {
+                                                final MergePositionParams mergeParams) {
         checkNotNull(instrument);
         checkNotNull(mergeParams);
 
         return mergeTask.mergePosition(instrument, mergeParams);
     }
 
-    public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, MergeParams> paramsFactory) {
-        checkNotNull(paramsFactory);
+    public Observable<OrderEvent> mergeAllPositions(final MergePositionParams mergeParams) {
+        checkNotNull(mergeParams);
 
-        return mergeTask.mergeAllPositions(paramsFactory);
+        return mergeTask.mergeAllPositions(mergeParams);
     }
 
-    public Observable<OrderEvent> closePosition(final ClosePositionParams positionParams) {
+    public Observable<OrderEvent> closePosition(final Instrument instrument,
+                                                final ClosePositionParams positionParams) {
         checkNotNull(positionParams);
 
-        return closeTask.close(positionParams);
+        return closeTask.close(instrument, positionParams);
     }
 
-    public Observable<OrderEvent> closeAllPositions(final Function<Instrument, ClosePositionParams> paramsFactory) {
-        checkNotNull(paramsFactory);
+    public Observable<OrderEvent> closeAllPositions(final ClosePositionParams positionParams) {
+        checkNotNull(positionParams);
 
-        return closeTask.closeAllPositions(paramsFactory);
+        return closeTask.closeAllPositions(positionParams);
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {

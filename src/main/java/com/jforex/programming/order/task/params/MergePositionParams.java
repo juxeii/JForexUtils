@@ -8,7 +8,7 @@ import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.MergeExecutionMode;
 
-public class MergeParams {
+public class MergePositionParams {
 
     private final String mergeOrderLabel;
     private final MergeExecutionMode executionMode;
@@ -27,7 +27,7 @@ public class MergeParams {
 
         public MergeOption composeMerge(OrderEventTransformer mergeComposer);
 
-        public MergeParams build();
+        public MergePositionParams build();
     }
 
     public interface CancelSLAndTPOption {
@@ -47,7 +47,7 @@ public class MergeParams {
         public MergeOption done();
     }
 
-    private MergeParams(final Builder builder) {
+    private MergePositionParams(final Builder builder) {
         mergeOrderLabel = builder.mergeOrderLabel;
         cancelSLTPComposer = builder.cancelSLTPComposer;
         cancelSLComposer = builder.cancelSLComposer;
@@ -132,8 +132,8 @@ public class MergeParams {
         }
 
         @Override
-        public MergeParams build() {
-            return new MergeParams(this);
+        public MergePositionParams build() {
+            return new MergePositionParams(this);
         }
 
         @Override

@@ -11,7 +11,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
@@ -20,7 +19,7 @@ import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.order.task.params.ClosePositionParams;
-import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.MergePositionParams;
 import com.jforex.programming.order.task.params.SetSLParams;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
@@ -28,7 +27,6 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {
@@ -44,11 +42,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private MergeParams mergepositionParamsMock;
+    private MergePositionParams mergePositionParamsMock;
     @Mock
-    private Function<Instrument, MergeParams> mergePositionParamsFactory;
-    @Mock
-    private Function<Instrument, ClosePositionParams> closePositionParamsFactory;
+    private ClosePositionParams closePositionParamsMock;
     private final IOrder orderForTest = buyOrderEURUSD;
     private Observable<OrderEvent> orderEventObservable;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
@@ -86,12 +82,13 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergeOrdersWithpositionParamsDelegatesToMergeTask() {
-        when(orderMergeTaskMock.merge(toMergeOrders, mergepositionParamsMock))
+        when(orderMergeTaskMock.merge(toMergeOrders, mergePositionParamsMock))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.mergeOrders(toMergeOrders, mergepositionParamsMock);
+        final Observable<OrderEvent> actualObservable = orderUtil.mergeOrders(toMergeOrders,
+                                                                              mergePositionParamsMock);
 
-        verify(orderMergeTaskMock).merge(toMergeOrders, mergepositionParamsMock);
+        verify(orderMergeTaskMock).merge(toMergeOrders, mergePositionParamsMock);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
@@ -236,48 +233,47 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void mergePositionDelegatesToMergeTask() {
-        when(orderMergeTaskMock.mergePosition(instrumentEURUSD, mergepositionParamsMock))
+        when(orderMergeTaskMock.mergePosition(instrumentEURUSD, mergePositionParamsMock))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable =
-                orderUtil.mergePosition(instrumentEURUSD, mergepositionParamsMock);
+        final Observable<OrderEvent> actualObservable = orderUtil.mergePosition(instrumentEURUSD,
+                                                                                mergePositionParamsMock);
 
-        verify(orderMergeTaskMock).mergePosition(instrumentEURUSD, mergepositionParamsMock);
+        verify(orderMergeTaskMock).mergePosition(instrumentEURUSD, mergePositionParamsMock);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void mergeAllPositionsDelegatesToMergeTask() {
-        when(orderMergeTaskMock.mergeAllPositions(mergePositionParamsFactory))
+        when(orderMergeTaskMock.mergeAllPositions(mergePositionParamsMock))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.mergeAllPositions(mergePositionParamsFactory);
+        final Observable<OrderEvent> actualObservable = orderUtil.mergeAllPositions(mergePositionParamsMock);
 
-        verify(orderMergeTaskMock).mergeAllPositions(mergePositionParamsFactory);
+        verify(orderMergeTaskMock).mergeAllPositions(mergePositionParamsMock);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void closePositionDelegatesToCloseTask() {
-        final ClosePositionParams positionParams = mock(ClosePositionParams.class);
-
-        when(orderCloseTaskMock.close(positionParams))
+        when(orderCloseTaskMock.close(instrumentEURUSD, closePositionParamsMock))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.closePosition(positionParams);
+        final Observable<OrderEvent> actualObservable = orderUtil.closePosition(instrumentEURUSD,
+                                                                                closePositionParamsMock);
 
-        verify(orderCloseTaskMock).close(positionParams);
+        verify(orderCloseTaskMock).close(instrumentEURUSD, closePositionParamsMock);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void closeAllPositionsDelegatesToCloseTask() {
-        when(orderCloseTaskMock.closeAllPositions(closePositionParamsFactory))
+        when(orderCloseTaskMock.closeAllPositions(closePositionParamsMock))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.closeAllPositions(closePositionParamsFactory);
+        final Observable<OrderEvent> actualObservable = orderUtil.closeAllPositions(closePositionParamsMock);
 
-        verify(orderCloseTaskMock).closeAllPositions(closePositionParamsFactory);
+        verify(orderCloseTaskMock).closeAllPositions(closePositionParamsMock);
         assertThat(actualObservable, equalTo(orderEventObservable));
     }
 

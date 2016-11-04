@@ -21,12 +21,12 @@ public class MergeParamsHandler {
     }
 
     public Observable<OrderEvent> observeCancelSLTP(final Collection<IOrder> toMergeOrders,
-                                                    final MergeParams mergeParams) {
+                                                    final MergePositionParams mergeParams) {
         return cancelSLTPTask.observe(toMergeOrders, mergeParams);
     }
 
     public Observable<OrderEvent> observeMerge(final Collection<IOrder> toMergeOrders,
-                                               final MergeParams mergeParams) {
+                                               final MergePositionParams mergeParams) {
         return basicTask
             .mergeOrders(mergeParams.mergeOrderLabel(), toMergeOrders)
             .compose(mergeParams.mergeComposer());

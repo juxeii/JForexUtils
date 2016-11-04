@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.MergePositionParams;
 
 import io.reactivex.Observable;
 
@@ -17,14 +17,14 @@ public class CancelSLTPTask {
     }
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelSLTPOrders,
-                                          final MergeParams mergeParams) {
+                                          final MergePositionParams mergeParams) {
         return Observable.defer(() -> toCancelSLTPOrders.size() < 2
                 ? Observable.empty()
                 : createTask(toCancelSLTPOrders, mergeParams));
     }
 
     private Observable<OrderEvent> createTask(final Collection<IOrder> toCancelSLTPOrders,
-                                              final MergeParams mergeParams) {
+                                              final MergePositionParams mergeParams) {
         final Observable<OrderEvent> cancelSL =
                 Observable.defer(() -> batchChangeTask.cancelSL(toCancelSLTPOrders,
                                                                 mergeParams.orderCancelSLMode(),
