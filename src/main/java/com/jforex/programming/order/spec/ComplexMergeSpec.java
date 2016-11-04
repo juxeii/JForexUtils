@@ -10,6 +10,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.MergeExecutionMode;
 import com.jforex.programming.order.task.MergeTask;
+import com.jforex.programming.order.task.TaskRetry;
 
 import io.reactivex.Observable;
 
@@ -42,7 +43,22 @@ public class ComplexMergeSpec extends GenericSpecBase {
         cancelSLBuilder = builder.cancelSLTPBuilder.cancelSLBuilder;
         cancelTPBuilder = builder.cancelSLTPBuilder.cancelTPBuilder;
 
-        mergeTask.merge(this);
+        Observable<OrderEvent> observable = mergeTask.merge(this);
+        if (noOfRetries > 0)
+            observable = observable.compose(TaskRetry.onRejectRetryWith(noOfRetries, delayInMillis));
+        observable
+            .doOnSubscribe(d -> startAction.run())
+            .subscribe(this::handleEvent,
+                       errorConsumer::accept,
+                       completeAction::run);
+    }
+
+    private void handleEvent(final OrderEvent orderEvent) {
+        final OrderEventType type = orderEvent.type();
+        if (consumerForEvent.containsKey(type))
+            consumerForEvent
+                .get(type)
+                .accept(orderEvent);
     }
 
     public Collection<IOrder> toMergeOrders() {

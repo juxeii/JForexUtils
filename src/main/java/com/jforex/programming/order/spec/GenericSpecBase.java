@@ -27,7 +27,7 @@ public class GenericSpecBase {
         delayInMillis = specBuilderBase.delayInMillis;
     }
 
-    public Observable<OrderEvent> composeObservable(Observable<OrderEvent> observable) {
+    protected Observable<OrderEvent> composeObservable(Observable<OrderEvent> observable) {
         if (noOfRetries > 0)
             observable = observable.compose(TaskRetry.onRejectRetryWith(noOfRetries, delayInMillis));
         return observable
