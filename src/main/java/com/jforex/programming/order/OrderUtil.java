@@ -7,8 +7,6 @@ import java.util.Collection;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.spec.BasicSpec;
-import com.jforex.programming.order.spec.ComplexMergeSpec;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.order.task.MergeTask;
@@ -39,92 +37,18 @@ public class OrderUtil {
         this.positionUtil = positionUtil;
     }
 
-    public BasicSpec.SubmitBuilder submitOrder(final OrderParams orderParams) {
+    public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
         checkNotNull(orderParams);
 
-        return BasicSpec.forSubmit(basicTask.submitOrder(orderParams));
+        return basicTask.submitOrder(orderParams);
     }
 
-    public BasicSpec.MergeBuilder mergeOrders(final String mergeOrderLabel,
+    public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
         checkNotNull(mergeOrderLabel);
         checkNotNull(toMergeOrders);
 
-        return BasicSpec.forMerge(basicTask.mergeOrders(mergeOrderLabel, toMergeOrders));
-    }
-
-    public BasicSpec.CloseBuilder close(final IOrder order) {
-        checkNotNull(order);
-
-        return BasicSpec.forClose(basicTask.close(order));
-    }
-
-    public BasicSpec.CloseBuilder close(final CloseParams closeParams) {
-        checkNotNull(closeParams);
-
-        return BasicSpec.forClose(basicTask.close(closeParams));
-    }
-
-    public BasicSpec.SetLabelBuilder setLabel(final IOrder order,
-                                              final String label) {
-        checkNotNull(order);
-
-        return BasicSpec.forSetLabel(basicTask.setLabel(order, label));
-    }
-
-    public BasicSpec.SetGTTBuilder setGoodTillTime(final IOrder order,
-                                                   final long newGTT) {
-        checkNotNull(order);
-
-        return BasicSpec.forSetGTT(basicTask.setGoodTillTime(order, newGTT));
-    }
-
-    public BasicSpec.SetAmountBuilder setRequestedAmount(final IOrder order,
-                                                         final double newRequestedAmount) {
-        checkNotNull(order);
-
-        return BasicSpec.forSetAmount(basicTask.setRequestedAmount(order, newRequestedAmount));
-    }
-
-    public BasicSpec.SetOpenPriceBuilder setOpenPrice(final IOrder order,
-                                                      final double newOpenPrice) {
-        checkNotNull(order);
-
-        return BasicSpec.forSetOpenPrice(basicTask.setOpenPrice(order, newOpenPrice));
-    }
-
-    public BasicSpec.SetSLBuilder setStopLossPrice(final IOrder order,
-                                                   final double newSL) {
-        checkNotNull(order);
-
-        return BasicSpec.forSetSL(basicTask.setStopLossPrice(order, newSL));
-    }
-
-    public BasicSpec.SetSLBuilder setStopLossPrice(final SetSLParams setSLParams) {
-        checkNotNull(setSLParams);
-
-        return BasicSpec.forSetSL(basicTask.setStopLossPrice(setSLParams));
-    }
-
-    public BasicSpec.SetSLBuilder setStopLossForPips(final IOrder order,
-                                                     final double pips) {
-        checkNotNull(order);
-
-        return BasicSpec.forSetSL(basicTask.setStopLossForPips(order, pips));
-    }
-
-    public BasicSpec.SetTPBuilder setTakeProfitPrice(final IOrder order,
-                                                     final double newTP) {
-        checkNotNull(order);
-
-        return BasicSpec.forSetTP(basicTask.setTakeProfitPrice(order, newTP));
-    }
-
-    public BasicSpec.SetTPBuilder setTakeProfitForPips(final IOrder order,
-                                                       final double pips) {
-        checkNotNull(order);
-
-        return BasicSpec.forSetTP(basicTask.setTakeProfitForPips(order, pips));
+        return basicTask.mergeOrders(mergeOrderLabel, toMergeOrders);
     }
 
     public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
@@ -135,14 +59,79 @@ public class OrderUtil {
         return mergeTask.merge(toMergeOrders, mergeParams);
     }
 
-    public ComplexMergeSpec.ComplexMergeBuilder mergeOrdersTest(final String mergeOrderLabel,
-                                                                final Collection<IOrder> toMergeOrders) {
-        checkNotNull(toMergeOrders);
-        checkNotNull(toMergeOrders);
+    public Observable<OrderEvent> close(final IOrder order) {
+        checkNotNull(order);
 
-        return ComplexMergeSpec.forMerge(mergeOrderLabel,
-                                         toMergeOrders,
-                                         mergeTask);
+        return basicTask.close(order);
+    }
+
+    public Observable<OrderEvent> close(final CloseParams closeParams) {
+        checkNotNull(closeParams);
+
+        return basicTask.close(closeParams);
+    }
+
+    public Observable<OrderEvent> setLabel(final IOrder order,
+                                           final String label) {
+        checkNotNull(order);
+        checkNotNull(label);
+
+        return basicTask.setLabel(order, label);
+    }
+
+    public Observable<OrderEvent> setGoodTillTime(final IOrder order,
+                                                  final long newGTT) {
+        checkNotNull(order);
+
+        return basicTask.setGoodTillTime(order, newGTT);
+    }
+
+    public Observable<OrderEvent> setRequestedAmount(final IOrder order,
+                                                     final double newRequestedAmount) {
+        checkNotNull(order);
+
+        return basicTask.setRequestedAmount(order, newRequestedAmount);
+    }
+
+    public Observable<OrderEvent> setOpenPrice(final IOrder order,
+                                               final double newOpenPrice) {
+        checkNotNull(order);
+
+        return basicTask.setOpenPrice(order, newOpenPrice);
+    }
+
+    public Observable<OrderEvent> setStopLossPrice(final IOrder order,
+                                                   final double newSL) {
+        checkNotNull(order);
+
+        return basicTask.setStopLossPrice(order, newSL);
+    }
+
+    public Observable<OrderEvent> setStopLossPrice(final SetSLParams setSLParams) {
+        checkNotNull(setSLParams);
+
+        return basicTask.setStopLossPrice(setSLParams);
+    }
+
+    public Observable<OrderEvent> setStopLossForPips(final IOrder order,
+                                                     final double pips) {
+        checkNotNull(order);
+
+        return basicTask.setStopLossForPips(order, pips);
+    }
+
+    public Observable<OrderEvent> setTakeProfitPrice(final IOrder order,
+                                                     final double newTP) {
+        checkNotNull(order);
+
+        return basicTask.setTakeProfitPrice(order, newTP);
+    }
+
+    public Observable<OrderEvent> setTakeProfitForPips(final IOrder order,
+                                                       final double pips) {
+        checkNotNull(order);
+
+        return basicTask.setTakeProfitForPips(order, pips);
     }
 
     public Observable<OrderEvent> mergePosition(final Instrument instrument,

@@ -6,7 +6,6 @@ import java.util.List;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderToEventTransformer;
-import com.jforex.programming.order.spec.ComplexMergeSpec;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.strategy.StrategyUtil;
@@ -47,14 +46,6 @@ public class BatchChangeTask {
                             taskCall);
     }
 
-    public Observable<OrderEvent> cancelSL(final ComplexMergeSpec mergeSpec) {
-        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> mergeSpec
-            .composeCancelSL(basicTask.setStopLossPrice(order, platformSettings.noSLPrice()));
-        return forBasicTask(mergeSpec.toMergeOrders(),
-                            mergeSpec.cancelSLBatchMode(),
-                            taskCall);
-    }
-
     public Observable<OrderEvent> cancelTP(final Collection<IOrder> orders,
                                            final BatchMode batchMode,
                                            final OrderToEventTransformer composer) {
@@ -66,17 +57,9 @@ public class BatchChangeTask {
                             taskCall);
     }
 
-    public Observable<OrderEvent> cancelTP(final ComplexMergeSpec mergeSpec) {
-        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> mergeSpec
-            .composeCancelTP(basicTask.setTakeProfitForPips(order, platformSettings.noTPPrice()));
-        return forBasicTask(mergeSpec.toMergeOrders(),
-                            mergeSpec.cancelTPBatchMode(),
-                            taskCall);
-    }
-
-    public Observable<OrderEvent> forBasicTask(final Collection<IOrder> orders,
-                                               final BatchMode batchMode,
-                                               final Function<IOrder, Observable<OrderEvent>> basicTask) {
+    private Observable<OrderEvent> forBasicTask(final Collection<IOrder> orders,
+                                                final BatchMode batchMode,
+                                                final Function<IOrder, Observable<OrderEvent>> basicTask) {
         final List<Observable<OrderEvent>> observables = Observable
             .fromIterable(orders)
             .map(basicTask::apply)

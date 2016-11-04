@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.spec.ComplexMergeSpec;
 import com.jforex.programming.order.task.params.MergeParams;
 import com.jforex.programming.order.task.params.MergeParamsHandler;
 
@@ -22,13 +21,6 @@ public class CancelSLTPAndMergeTask {
                                           final MergeParams mergeParams) {
         final Observable<OrderEvent> cancelSLTP = mergeParamsHandler.observeCancelSLTP(toMergeOrders, mergeParams);
         final Observable<OrderEvent> merge = mergeParamsHandler.observeMerge(toMergeOrders, mergeParams);
-
-        return cancelSLTP.concatWith(merge);
-    }
-
-    public Observable<OrderEvent> observe(final ComplexMergeSpec mergeSpec) {
-        final Observable<OrderEvent> cancelSLTP = mergeParamsHandler.observeCancelSLTP(mergeSpec);
-        final Observable<OrderEvent> merge = mergeParamsHandler.observeMerge(mergeSpec);
 
         return cancelSLTP.concatWith(merge);
     }

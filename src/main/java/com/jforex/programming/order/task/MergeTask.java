@@ -6,7 +6,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.google.common.base.Supplier;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.spec.ComplexMergeSpec;
 import com.jforex.programming.order.task.params.MergeParams;
 import com.jforex.programming.position.PositionUtil;
 
@@ -29,10 +28,6 @@ public class MergeTask {
         return observeSplit(() -> toMergeOrders, mergeParams);
     }
 
-    public Observable<OrderEvent> merge(final ComplexMergeSpec mergeSpec) {
-        return observeSplit(mergeSpec);
-    }
-
     public Observable<OrderEvent> mergePosition(final Instrument instrument,
                                                 final MergeParams mergeParams) {
         return observeSplit(() -> positionUtil.filledOrders(instrument), mergeParams);
@@ -41,10 +36,6 @@ public class MergeTask {
     private final Observable<OrderEvent> observeSplit(final Supplier<Collection<IOrder>> toMergeOrders,
                                                       final MergeParams mergeParams) {
         return Observable.defer(() -> cancelSLTPAndMergeTask.observe(toMergeOrders.get(), mergeParams));
-    }
-
-    private final Observable<OrderEvent> observeSplit(final ComplexMergeSpec mergeSpec) {
-        return Observable.defer(() -> cancelSLTPAndMergeTask.observe(mergeSpec));
     }
 
     public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, MergeParams> paramsFactory) {
