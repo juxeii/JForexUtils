@@ -104,6 +104,11 @@ public class CommonUtilForTest extends BDDMockito {
     protected OrderEvent mergeEvent = createEvent(OrderEventType.MERGE_OK);
     protected OrderEvent changedLabelEvent = createEvent(OrderEventType.CHANGED_LABEL);
     protected OrderEvent changedRejectEvent = createEvent(OrderEventType.CHANGED_REJECTED);
+    protected OrderEvent changedGTTEvent = createEvent(OrderEventType.CHANGED_GTT);
+    protected OrderEvent changedAmountEvent = createEvent(OrderEventType.CHANGED_AMOUNT);
+    protected OrderEvent changedOpenPriceEvent = createEvent(OrderEventType.CHANGED_PRICE);
+    protected OrderEvent changedSLEvent = createEvent(OrderEventType.CHANGED_SL);
+    protected OrderEvent changedTPEvent = createEvent(OrderEventType.CHANGED_TP);
 
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
     protected static final PlatformSettings platformSettings = StrategyUtil.platformSettings;

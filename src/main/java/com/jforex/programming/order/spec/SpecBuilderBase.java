@@ -11,7 +11,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import io.reactivex.Observable;
 import io.reactivex.functions.Action;
 
-public abstract class SpecBuilderBase<B, S> {
+public abstract class SpecBuilderBase<B> {
 
     protected final Observable<OrderEvent> observable;
     protected ErrorConsumer errorConsumer = t -> {};
@@ -24,7 +24,7 @@ public abstract class SpecBuilderBase<B, S> {
         this.observable = observable;
     }
 
-    public SpecBuilderBase<B, S> doOnException(final ErrorConsumer errorConsumer) {
+    public SpecBuilderBase<B> doOnException(final ErrorConsumer errorConsumer) {
         checkNotNull(errorConsumer);
 
         this.errorConsumer = errorConsumer;
@@ -56,5 +56,7 @@ public abstract class SpecBuilderBase<B, S> {
         return (B) this;
     }
 
-    public abstract S start();
+    public BasicSpec start() {
+        return new BasicSpec(this);
+    }
 }

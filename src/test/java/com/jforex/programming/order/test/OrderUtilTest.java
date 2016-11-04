@@ -63,25 +63,29 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void submitOrderDelegatesToOrderBasicTask() {
+        orderEventObservable = Observable.just(submitEvent);
         when(basicTaskMock.submitOrder(buyParamsEURUSD))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.submitOrder(buyParamsEURUSD);
+        orderUtil
+            .submitOrder(buyParamsEURUSD)
+            .start();
 
         verify(basicTaskMock).submitOrder(buyParamsEURUSD);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void mergeOrdersDelegatesToOrderBasicTask() {
         final String mergeOrderLabel = "mergeOrderLabel";
+        orderEventObservable = Observable.just(mergeEvent);
         when(basicTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
+        orderUtil
+            .mergeOrders(mergeOrderLabel, toMergeOrders)
+            .start();
 
         verify(basicTaskMock).mergeOrders(mergeOrderLabel, toMergeOrders);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
@@ -97,13 +101,15 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void closeDelegatesToOrderTask() {
+        orderEventObservable = Observable.just(closeEvent);
         when(basicTaskMock.close(orderForTest))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.close(orderForTest);
+        orderUtil
+            .close(orderForTest)
+            .start();
 
         verify(basicTaskMock).close(orderForTest);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
@@ -112,91 +118,105 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .newBuilder(orderForTest)
             .build();
 
+        orderEventObservable = Observable.just(closeEvent);
         when(basicTaskMock.close(closeParams))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable =
-                orderUtil.close(closeParams);
+        orderUtil
+            .close(closeParams)
+            .start();
 
         verify(basicTaskMock).close(closeParams);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void setLabelDelegatesToOrderTask() {
         final String newLabel = "newLabel";
+        orderEventObservable = Observable.just(changedLabelEvent);
         when(basicTaskMock.setLabel(orderForTest, newLabel))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setLabel(orderForTest, newLabel);
+        orderUtil
+            .setLabel(orderForTest, newLabel)
+            .start();
 
         verify(basicTaskMock).setLabel(orderForTest, newLabel);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void setGTTDelegatesToOrderTask() {
         final long newGTT = 1L;
+        orderEventObservable = Observable.just(changedGTTEvent);
         when(basicTaskMock.setGoodTillTime(orderForTest, newGTT))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setGoodTillTime(orderForTest, newGTT);
+        orderUtil
+            .setGoodTillTime(orderForTest, newGTT)
+            .start();
 
         verify(basicTaskMock).setGoodTillTime(orderForTest, newGTT);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void setRequestedAmountDelegatesToOrderTask() {
         final double newRequestedAmount = 0.12;
+        orderEventObservable = Observable.just(changedAmountEvent);
         when(basicTaskMock.setRequestedAmount(orderForTest, newRequestedAmount))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setRequestedAmount(orderForTest, newRequestedAmount);
+        orderUtil
+            .setRequestedAmount(orderForTest, newRequestedAmount)
+            .start();
 
         verify(basicTaskMock).setRequestedAmount(orderForTest, newRequestedAmount);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void setOpenPriceDelegatesToOrderTask() {
         final double newOpenPrice = 1.1234;
+        orderEventObservable = Observable.just(changedOpenPriceEvent);
         when(basicTaskMock.setOpenPrice(orderForTest, newOpenPrice))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setOpenPrice(orderForTest, newOpenPrice);
+        orderUtil
+            .setOpenPrice(orderForTest, newOpenPrice)
+            .start();
 
         verify(basicTaskMock).setOpenPrice(orderForTest, newOpenPrice);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void setSLDelegatesToOrderTask() {
         final double newSL = 1.1234;
+        orderEventObservable = Observable.just(changedSLEvent);
         when(basicTaskMock.setStopLossPrice(orderForTest, newSL))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setStopLossPrice(orderForTest, newSL);
+        orderUtil
+            .setStopLossPrice(orderForTest, newSL)
+            .start();
 
         verify(basicTaskMock).setStopLossPrice(orderForTest, newSL);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void setSLForPipsDelegatesToBasicTask() {
         final double pips = 12.3;
+        orderEventObservable = Observable.just(changedSLEvent);
         when(basicTaskMock.setStopLossForPips(orderForTest, pips))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setStopLossForPips(orderForTest, pips);
+        orderUtil
+            .setStopLossForPips(orderForTest, pips)
+            .start();
 
         verify(basicTaskMock).setStopLossForPips(orderForTest, pips);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void setSLWithParamsDelegatesToBasicTask() {
         final double newSL = 1.1234;
+        orderEventObservable = Observable.just(changedSLEvent);
         final SetSLParams setSLParams = SetSLParams
             .newBuilder(orderForTest, newSL)
             .build();
@@ -204,34 +224,39 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(basicTaskMock.setStopLossPrice(setSLParams))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setStopLossPrice(setSLParams);
+        orderUtil
+            .setStopLossPrice(setSLParams)
+            .start();
 
         verify(basicTaskMock).setStopLossPrice(setSLParams);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void setTPDelegatesToOrderTask() {
         final double newTP = 1.1234;
+        orderEventObservable = Observable.just(changedTPEvent);
         when(basicTaskMock.setTakeProfitPrice(orderForTest, newTP))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setTakeProfitPrice(orderForTest, newTP);
+        orderUtil
+            .setTakeProfitPrice(orderForTest, newTP)
+            .start();
 
         verify(basicTaskMock).setTakeProfitPrice(orderForTest, newTP);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
     public void setTPForPipsDelegatesToBasicTask() {
         final double pips = 12.3;
+        orderEventObservable = Observable.just(changedTPEvent);
         when(basicTaskMock.setTakeProfitForPips(orderForTest, pips))
             .thenReturn(orderEventObservable);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setTakeProfitForPips(orderForTest, pips);
+        orderUtil
+            .setTakeProfitForPips(orderForTest, pips)
+            .start();
 
         verify(basicTaskMock).setTakeProfitForPips(orderForTest, pips);
-        assertThat(actualObservable, equalTo(orderEventObservable));
     }
 
     @Test
