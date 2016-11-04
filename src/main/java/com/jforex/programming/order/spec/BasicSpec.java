@@ -1,52 +1,16 @@
 package com.jforex.programming.order.spec;
 
-import java.util.Map;
-
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.TaskRetry;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Action;
 
-public class BasicSpec {
-
-    protected Observable<OrderEvent> observable;
-    protected final Map<OrderEventType, OrderEventConsumer> consumerForEvent;
-    protected final ErrorConsumer errorConsumer;
-    protected Action startAction;
-    protected Action completeAction;
-    private final int noOfRetries;
-    private final long delayInMillis;
+public class BasicSpec extends SpecBase {
 
     protected BasicSpec(final SpecBuilderBase<?> specBuilderBase) {
-        observable = specBuilderBase.observable;
-        consumerForEvent = specBuilderBase.consumerForEvent;
-        errorConsumer = specBuilderBase.errorConsumer;
-        startAction = specBuilderBase.startAction;
-        completeAction = specBuilderBase.completeAction;
-        noOfRetries = specBuilderBase.noOfRetries;
-        delayInMillis = specBuilderBase.delayInMillis;
+        super(specBuilderBase);
 
-        setupRetry();
-        observable
-            .doOnSubscribe(d -> startAction.run())
-            .subscribe(this::handleEvent,
-                       errorConsumer::accept,
-                       completeAction::run);
-    }
-
-    private void handleEvent(final OrderEvent orderEvent) {
-        final OrderEventType type = orderEvent.type();
-        if (consumerForEvent.containsKey(type))
-            consumerForEvent
-                .get(type)
-                .accept(orderEvent);
-    }
-
-    private void setupRetry() {
-        if (noOfRetries > 0)
-            observable = observable.compose(TaskRetry.onRejectRetryWith(noOfRetries, delayInMillis));
+        subscribe();
     }
 
     public static SubmitBuilder forSubmit(final Observable<OrderEvent> observable) {
@@ -110,6 +74,10 @@ public class BasicSpec {
         public SubmitBuilder doOnFillReject(final OrderEventConsumer fillRejectConsumer) {
             return setEventConsumer(OrderEventType.FILL_REJECTED, fillRejectConsumer);
         }
+
+        public BasicSpec start() {
+            return new BasicSpec(this);
+        }
     }
 
     public static class MergeBuilder extends SpecBuilderBase<MergeBuilder> {
@@ -129,6 +97,10 @@ public class BasicSpec {
         public MergeBuilder doOnReject(final OrderEventConsumer rejectConsumer) {
             return setEventConsumer(OrderEventType.MERGE_REJECTED, rejectConsumer);
         }
+
+        public BasicSpec start() {
+            return new BasicSpec(this);
+        }
     }
 
     public static class CloseBuilder extends SpecBuilderBase<CloseBuilder> {
@@ -143,6 +115,10 @@ public class BasicSpec {
 
         public CloseBuilder doOnReject(final OrderEventConsumer closeRejectConsumer) {
             return setEventConsumer(OrderEventType.CLOSE_REJECTED, closeRejectConsumer);
+        }
+
+        public BasicSpec start() {
+            return new BasicSpec(this);
         }
     }
 
@@ -159,6 +135,10 @@ public class BasicSpec {
         public SetLabelBuilder doOnReject(final OrderEventConsumer changeRejectConsumer) {
             return setEventConsumer(OrderEventType.CHANGE_LABEL_REJECTED, changeRejectConsumer);
         }
+
+        public BasicSpec start() {
+            return new BasicSpec(this);
+        }
     }
 
     public static class SetAmountBuilder extends SpecBuilderBase<SetAmountBuilder> {
@@ -173,6 +153,10 @@ public class BasicSpec {
 
         public SetAmountBuilder doOnReject(final OrderEventConsumer changeRejectConsumer) {
             return setEventConsumer(OrderEventType.CHANGE_AMOUNT_REJECTED, changeRejectConsumer);
+        }
+
+        public BasicSpec start() {
+            return new BasicSpec(this);
         }
     }
 
@@ -189,6 +173,10 @@ public class BasicSpec {
         public SetGTTBuilder doOnReject(final OrderEventConsumer changeRejectConsumer) {
             return setEventConsumer(OrderEventType.CHANGE_GTT_REJECTED, changeRejectConsumer);
         }
+
+        public BasicSpec start() {
+            return new BasicSpec(this);
+        }
     }
 
     public static class SetOpenPriceBuilder extends SpecBuilderBase<SetOpenPriceBuilder> {
@@ -203,6 +191,10 @@ public class BasicSpec {
 
         public SetOpenPriceBuilder doOnReject(final OrderEventConsumer changeRejectConsumer) {
             return setEventConsumer(OrderEventType.CHANGE_PRICE_REJECTED, changeRejectConsumer);
+        }
+
+        public BasicSpec start() {
+            return new BasicSpec(this);
         }
     }
 
@@ -219,6 +211,10 @@ public class BasicSpec {
         public SetSLBuilder doOnReject(final OrderEventConsumer changeRejectConsumer) {
             return setEventConsumer(OrderEventType.CHANGE_SL_REJECTED, changeRejectConsumer);
         }
+
+        public BasicSpec start() {
+            return new BasicSpec(this);
+        }
     }
 
     public static class SetTPBuilder extends SpecBuilderBase<SetTPBuilder> {
@@ -233,6 +229,10 @@ public class BasicSpec {
 
         public SetTPBuilder doOnReject(final OrderEventConsumer changeRejectConsumer) {
             return setEventConsumer(OrderEventType.CHANGE_TP_REJECTED, changeRejectConsumer);
+        }
+
+        public BasicSpec start() {
+            return new BasicSpec(this);
         }
     }
 }

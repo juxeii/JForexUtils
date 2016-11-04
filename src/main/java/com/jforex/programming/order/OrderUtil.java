@@ -8,6 +8,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.spec.BasicSpec;
+import com.jforex.programming.order.spec.ComplexMergeSpec;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.order.task.MergeTask;
@@ -132,6 +133,16 @@ public class OrderUtil {
         checkNotNull(mergeParams);
 
         return mergeTask.merge(toMergeOrders, mergeParams);
+    }
+
+    public ComplexMergeSpec.ComplexMergeBuilder mergeOrdersTest(final String mergeOrderLabel,
+                                                                final Collection<IOrder> toMergeOrders) {
+        checkNotNull(toMergeOrders);
+        checkNotNull(toMergeOrders);
+
+        return ComplexMergeSpec.forMerge(mergeOrderLabel,
+                                         toMergeOrders,
+                                         mergeTask);
     }
 
     public Observable<OrderEvent> mergePosition(final Instrument instrument,
