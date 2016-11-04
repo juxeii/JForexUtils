@@ -20,7 +20,7 @@ import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.order.task.params.ClosePositionParams;
 import com.jforex.programming.order.task.params.ClosePositionParamsHandler;
-import com.jforex.programming.order.task.params.MergePositionParams;
+import com.jforex.programming.order.task.params.MergeParams;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -45,7 +45,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     @Mock
     private Function<IOrder, CloseParams> closeParamsProviderMock;
     @Mock
-    private MergePositionParams mergePositionParamsMock;
+    private MergeParams mergeParamsMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> filledOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final Set<IOrder> openOrders = Sets.newHashSet(buyOrderEURUSD);
@@ -65,6 +65,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
+        when(closeParamsMock.instrument()).thenReturn(instrumentEURUSD);
         when(closeParamsMock.closeBatchMode()).thenReturn(BatchMode.MERGE);
 
         when(positionUtilMock.filledOrders(instrumentEURUSD)).thenReturn(filledOrders);
@@ -80,8 +81,8 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(closeParamsMock.maybeMergeParams()).thenReturn(Optional.of(mergePositionParamsMock));
-            when(orderMergeTaskMock.merge(filledOrders, mergePositionParamsMock))
+            when(closeParamsMock.maybeMergeParams()).thenReturn(Optional.of(mergeParamsMock));
+            when(orderMergeTaskMock.merge(filledOrders, mergeParamsMock))
                 .thenReturn(eventObservable(testEvent));
         }
 
@@ -89,13 +90,13 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
             setExecutionMode(mode);
 
             testObserver = paramsHandler
-                .observeMerge(instrumentEURUSD, closeParamsMock)
+                .observeMerge(closeParamsMock)
                 .test();
         }
 
         @Test
         public void observeMergeIsDeferred() {
-            paramsHandler.observeMerge(instrumentEURUSD, closeParamsMock);
+            paramsHandler.observeMerge(closeParamsMock);
 
             verifyZeroInteractions(orderMergeTaskMock);
             verifyZeroInteractions(orderChangeBatchMock);
@@ -114,7 +115,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
         public void observeMergeForFilledOrdersReturnsObservableFromOrderMergeTask() {
             setExecutionModeAndSubscribe(CloseExecutionMode.CloseFilled);
 
-            verify(orderMergeTaskMock).merge(filledOrders, mergePositionParamsMock);
+            verify(orderMergeTaskMock).merge(filledOrders, mergeParamsMock);
             testObserver.assertComplete();
             testObserver.assertValue(testEvent);
         }
@@ -123,7 +124,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
         public void observeMergeForFilledOrOpenedOrdersReturnsObservableFromOrderMergeTask() {
             setExecutionModeAndSubscribe(CloseExecutionMode.CloseAll);
 
-            verify(orderMergeTaskMock).merge(filledOrders, mergePositionParamsMock);
+            verify(orderMergeTaskMock).merge(filledOrders, mergeParamsMock);
             testObserver.assertComplete();
             testObserver.assertValue(testEvent);
         }
@@ -152,13 +153,13 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
             setExecutionMode(mode);
 
             testObserver = paramsHandler
-                .observeClose(instrumentEURUSD, closeParamsMock)
+                .observeClose(closeParamsMock)
                 .test();
         }
 
         @Test
         public void observeCloseIsDeferred() {
-            paramsHandler.observeClose(instrumentEURUSD, closeParamsMock);
+            paramsHandler.observeClose(closeParamsMock);
 
             verifyZeroInteractions(orderMergeTaskMock);
             verifyZeroInteractions(orderChangeBatchMock);

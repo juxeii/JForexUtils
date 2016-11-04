@@ -16,7 +16,7 @@ import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.order.task.params.ClosePositionParams;
-import com.jforex.programming.order.task.params.MergePositionParams;
+import com.jforex.programming.order.task.params.MergeParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
@@ -29,15 +29,16 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
     private ClosePositionParams positionParams;
 
     @Mock
-    private MergePositionParams mergePositionParamsMock;
+    private MergeParams mergeParamsMock;
     @Mock
-    private Function<IOrder, CloseParams> closeParamsProviderMock;
+    private Function<IOrder, CloseParams> closeParamsPriovderMock;
     private final OrderEvent testEvent = closeEvent;
     private final OrderEvent composerEvent = changedLabelEvent;
     private final OrderEventTransformer testComposer =
             upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
     private final OrderToEventTransformer testOrderComposer =
-            order -> upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
+            order -> upstream -> upstream
+                .flatMap(orderEvent -> Observable.just(composerEvent));
 
     private void assertComposerIsNeutral(final ObservableTransformer<OrderEvent,
                                                                      OrderEvent> composer) {
@@ -64,11 +65,12 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
     @Test
     public void defaultParamsValuesAreCorrect() {
         positionParams = ClosePositionParams
-            .newBuilder(closeParamsProviderMock)
+            .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .closeOpenedComposer(testComposer, BatchMode.MERGE)
             .build();
 
-        assertThat(positionParams.closeParamsProvider(), equalTo(closeParamsProviderMock));
+        assertThat(positionParams.instrument(), equalTo(instrumentEURUSD));
+        assertThat(positionParams.closeParamsProvider(), equalTo(closeParamsPriovderMock));
         assertFalse(positionParams.maybeMergeParams().isPresent());
         assertThat(positionParams.closeBatchMode(), equalTo(BatchMode.MERGE));
         assertComposerIsNeutral(positionParams.singleCloseComposer(buyOrderEURUSD));
@@ -80,13 +82,14 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
     @Test
     public void definedValuesForCloseFilledAreCorrect() {
         positionParams = ClosePositionParams
-            .newBuilder(closeParamsProviderMock)
+            .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .singleCloseComposer(testOrderComposer)
             .closeFilledComposer(testComposer, BatchMode.CONCAT)
-            .withMergeParams(mergePositionParamsMock)
+            .withMergeParams(mergeParamsMock)
             .build();
 
-        assertThat(positionParams.closeParamsProvider(), equalTo(closeParamsProviderMock));
+        assertThat(positionParams.instrument(), equalTo(instrumentEURUSD));
+        assertThat(positionParams.closeParamsProvider(), equalTo(closeParamsPriovderMock));
         assertTrue(positionParams.maybeMergeParams().isPresent());
         assertThat(positionParams.closeBatchMode(), equalTo(BatchMode.CONCAT));
         assertThat(positionParams.executionMode(), equalTo(CloseExecutionMode.CloseFilled));
@@ -99,13 +102,14 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
     @Test
     public void definedValuesForCloseFilledOrOpenedAreCorrect() {
         positionParams = ClosePositionParams
-            .newBuilder(closeParamsProviderMock)
+            .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .singleCloseComposer(testOrderComposer)
             .closeAllComposer(testComposer, BatchMode.MERGE)
-            .withMergeParams(mergePositionParamsMock)
+            .withMergeParams(mergeParamsMock)
             .build();
 
-        assertThat(positionParams.closeParamsProvider(), equalTo(closeParamsProviderMock));
+        assertThat(positionParams.instrument(), equalTo(instrumentEURUSD));
+        assertThat(positionParams.closeParamsProvider(), equalTo(closeParamsPriovderMock));
         assertTrue(positionParams.maybeMergeParams().isPresent());
         assertThat(positionParams.executionMode(), equalTo(CloseExecutionMode.CloseAll));
         assertComposerIsNeutral(positionParams.closeFilledComposer());
@@ -116,12 +120,13 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
     @Test
     public void definedValuesForCloseOpenedAreCorrect() {
         positionParams = ClosePositionParams
-            .newBuilder(closeParamsProviderMock)
+            .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .singleCloseComposer(testOrderComposer)
             .closeOpenedComposer(testComposer, BatchMode.MERGE)
             .build();
 
-        assertThat(positionParams.closeParamsProvider(), equalTo(closeParamsProviderMock));
+        assertThat(positionParams.instrument(), equalTo(instrumentEURUSD));
+        assertThat(positionParams.closeParamsProvider(), equalTo(closeParamsPriovderMock));
         assertFalse(positionParams.maybeMergeParams().isPresent());
         assertThat(positionParams.executionMode(), equalTo(CloseExecutionMode.CloseOpened));
         assertComposerIsNeutral(positionParams.closeFilledComposer());

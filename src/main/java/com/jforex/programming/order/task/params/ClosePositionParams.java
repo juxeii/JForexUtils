@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Optional;
 
 import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.BatchMode;
@@ -14,13 +15,14 @@ import io.reactivex.functions.Function;
 
 public class ClosePositionParams {
 
+    private final Instrument instrument;
     private final Function<IOrder, CloseParams> closeParamsProvider;
     private final CloseExecutionMode executionMode;
     private final OrderEventTransformer closeFilledComposer;
     private final OrderEventTransformer closeOpenedComposer;
     private final OrderEventTransformer closeAllComposer;
     private final OrderToEventTransformer singleCloseComposer;
-    private final Optional<MergePositionParams> maybeMergeParams;
+    private final Optional<MergeParams> maybeMergeParams;
     private final BatchMode closeBatchMode;
 
     public interface CloseOption {
@@ -39,7 +41,7 @@ public class ClosePositionParams {
 
     public interface MergeForCloseOption {
 
-        BuildOption withMergeParams(MergePositionParams maybeMergeParams);
+        BuildOption withMergeParams(MergeParams maybeMergeParams);
     }
 
     public interface BuildOption {
@@ -48,6 +50,7 @@ public class ClosePositionParams {
     }
 
     private ClosePositionParams(final Builder builder) {
+        instrument = builder.instrument;
         closeParamsProvider = builder.closeParamsProvider;
         executionMode = builder.executionMode;
         closeFilledComposer = builder.closeFilledComposer;
@@ -58,11 +61,15 @@ public class ClosePositionParams {
         closeBatchMode = builder.closeBatchMode;
     }
 
+    public Instrument instrument() {
+        return instrument;
+    }
+
     public Function<IOrder, CloseParams> closeParamsProvider() {
         return closeParamsProvider;
     }
 
-    public Optional<MergePositionParams> maybeMergeParams() {
+    public Optional<MergeParams> maybeMergeParams() {
         return maybeMergeParams;
     }
 
@@ -90,10 +97,12 @@ public class ClosePositionParams {
         return closeBatchMode;
     }
 
-    public static CloseOption newBuilder(final Function<IOrder, CloseParams> closeParamsProvider) {
+    public static CloseOption newBuilder(final Instrument instrument,
+                                         final Function<IOrder, CloseParams> closeParamsProvider) {
+        checkNotNull(instrument);
         checkNotNull(closeParamsProvider);
 
-        return new Builder(closeParamsProvider);
+        return new Builder(instrument, closeParamsProvider);
     }
 
     public static class Builder implements
@@ -101,6 +110,7 @@ public class ClosePositionParams {
                                 MergeForCloseOption,
                                 BuildOption {
 
+        private final Instrument instrument;
         private final Function<IOrder, CloseParams> closeParamsProvider;
         private CloseExecutionMode executionMode;
         private OrderEventTransformer closeFilledComposer =
@@ -111,10 +121,12 @@ public class ClosePositionParams {
                 upstream -> upstream;
         private OrderToEventTransformer singleCloseComposer =
                 order -> upstream -> upstream;
-        private Optional<MergePositionParams> maybeMergeParams = Optional.empty();
+        private Optional<MergeParams> maybeMergeParams = Optional.empty();
         private BatchMode closeBatchMode;
 
-        private Builder(final Function<IOrder, CloseParams> closeParamsProvider) {
+        private Builder(final Instrument instrument,
+                        final Function<IOrder, CloseParams> closeParamsProvider) {
+            this.instrument = instrument;
             this.closeParamsProvider = closeParamsProvider;
         }
 
@@ -160,7 +172,7 @@ public class ClosePositionParams {
         }
 
         @Override
-        public BuildOption withMergeParams(final MergePositionParams maybeMergeParams) {
+        public BuildOption withMergeParams(final MergeParams maybeMergeParams) {
             this.maybeMergeParams = Optional.ofNullable(maybeMergeParams);
             return this;
         }

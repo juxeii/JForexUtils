@@ -20,20 +20,20 @@ public class CloseTask {
         this.positionUtil = positionUtil;
     }
 
-    public Observable<OrderEvent> close(final Instrument instrument,
-                                        final ClosePositionParams positionParams) {
+    public Observable<OrderEvent> close(final ClosePositionParams positionParams) {
         return Observable.defer(() -> {
-            final Observable<OrderEvent> merge = positionParamsHandler.observeMerge(instrument, positionParams);
-            final Observable<OrderEvent> close = positionParamsHandler.observeClose(instrument, positionParams);
+            final Observable<OrderEvent> merge = positionParamsHandler.observeMerge(positionParams);
+            final Observable<OrderEvent> close = positionParamsHandler.observeClose(positionParams);
 
             return merge.concatWith(close);
         });
     }
 
-    public Observable<OrderEvent> closeAllPositions(final ClosePositionParams positionParams) {
+    public Observable<OrderEvent>
+           closeAllPositions(final Function<Instrument, ClosePositionParams> positionParamsFactory) {
         return Observable.defer(() -> {
             final Function<Instrument, Observable<OrderEvent>> observablesFromFactory =
-                    instrument -> close(instrument, positionParams);
+                    instrument -> close(positionParamsFactory.apply(instrument));
             return Observable.merge(positionUtil.observablesFromFactory(observablesFromFactory));
         });
     }

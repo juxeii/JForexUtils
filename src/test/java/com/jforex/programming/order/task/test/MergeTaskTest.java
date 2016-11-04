@@ -16,7 +16,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.MergeTask;
-import com.jforex.programming.order.task.params.MergePositionParams;
+import com.jforex.programming.order.task.params.MergeParams;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -35,7 +35,9 @@ public class MergeTaskTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private MergePositionParams mergePositionParamsMock;
+    private MergeParams mergeParamsMock;
+    @Mock
+    private Function<Instrument, MergeParams> paramsFactoryMock;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = mergeEvent;
     private Observable<OrderEvent> testObservable;
@@ -54,7 +56,7 @@ public class MergeTaskTest extends InstrumentUtilForTest {
     }
 
     private void setUpSplitterObservable(final Observable<OrderEvent> splitterObservable) {
-        when(splitterMock.observe(toMergeOrders, mergePositionParamsMock))
+        when(splitterMock.observe(toMergeOrders, mergeParamsMock))
             .thenReturn(splitterObservable);
     }
 
@@ -62,7 +64,7 @@ public class MergeTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            testObservable = mergeTask.merge(toMergeOrders, mergePositionParamsMock);
+            testObservable = mergeTask.merge(toMergeOrders, mergeParamsMock);
         }
 
         @Test
@@ -79,7 +81,7 @@ public class MergeTaskTest extends InstrumentUtilForTest {
                 .test()
                 .assertValue(testEvent);
 
-            verify(splitterMock).observe(toMergeOrders, mergePositionParamsMock);
+            verify(splitterMock).observe(toMergeOrders, mergeParamsMock);
         }
     }
 
@@ -87,7 +89,7 @@ public class MergeTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            testObservable = mergeTask.mergePosition(instrumentEURUSD, mergePositionParamsMock);
+            testObservable = mergeTask.mergePosition(instrumentEURUSD, mergeParamsMock);
         }
 
         @Test
@@ -104,7 +106,7 @@ public class MergeTaskTest extends InstrumentUtilForTest {
                 .test()
                 .assertValue(testEvent);
 
-            verify(splitterMock).observe(toMergeOrders, mergePositionParamsMock);
+            verify(splitterMock).observe(toMergeOrders, mergeParamsMock);
             verify(positionUtilMock).filledOrders(instrumentEURUSD);
         }
     }
@@ -113,9 +115,14 @@ public class MergeTaskTest extends InstrumentUtilForTest {
 
         private List<Observable<OrderEvent>> closeObservables;
 
+        @Before
+        public void setUp() throws Exception {
+            when(paramsFactoryMock.apply(instrumentEURUSD)).thenReturn(mergeParamsMock);
+        }
+
         private void mergeAllSubscribe() {
             testObserver = mergeTask
-                .mergeAllPositions(mergePositionParamsMock)
+                .mergeAllPositions(paramsFactoryMock)
                 .test();
         }
 
@@ -141,13 +148,13 @@ public class MergeTaskTest extends InstrumentUtilForTest {
             doAnswer(invocation -> ((Function<Instrument, Observable<OrderEvent>>) invocation.getArgument(0))
                 .apply(instrumentEURUSD)
                 .subscribe())
-                    .when(positionUtilMock)
-                    .observablesFromFactory(any());
+                    .when(positionUtilMock).observablesFromFactory(any());
 
             setUpSplitterObservable(emptyObservable());
             mergeAllSubscribe();
 
-            verify(splitterMock).observe(toMergeOrders, mergePositionParamsMock);
+            verify(paramsFactoryMock).apply(instrumentEURUSD);
+            verify(splitterMock).observe(toMergeOrders, mergeParamsMock);
         }
 
         @Test
