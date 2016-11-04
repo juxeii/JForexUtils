@@ -14,6 +14,7 @@ public class BasicSpec {
     protected Observable<OrderEvent> observable;
     protected final Map<OrderEventType, OrderEventConsumer> consumerForEvent;
     protected final ErrorConsumer errorConsumer;
+    protected Action startAction;
     protected Action completeAction;
     private final int noOfRetries;
     private final long delayInMillis;
@@ -22,14 +23,17 @@ public class BasicSpec {
         observable = specBuilderBase.observable;
         consumerForEvent = specBuilderBase.consumerForEvent;
         errorConsumer = specBuilderBase.errorConsumer;
+        startAction = specBuilderBase.startAction;
         completeAction = specBuilderBase.completeAction;
         noOfRetries = specBuilderBase.noOfRetries;
         delayInMillis = specBuilderBase.delayInMillis;
 
         setupRetry();
-        observable.subscribe(this::handleEvent,
-                             errorConsumer::accept,
-                             completeAction::run);
+        observable
+            .doOnSubscribe(d -> startAction.run())
+            .subscribe(this::handleEvent,
+                       errorConsumer::accept,
+                       completeAction::run);
     }
 
     private void handleEvent(final OrderEvent orderEvent) {

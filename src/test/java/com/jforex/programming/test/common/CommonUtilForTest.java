@@ -99,16 +99,32 @@ public class CommonUtilForTest extends BDDMockito {
     protected final IOrder buyOrderAUDUSD = orderUtilForTest.buyOrderAUDUSD();
     protected final IOrder sellOrderAUDUSD = orderUtilForTest.sellOrderAUDUSD();
     protected OrderEvent submitEvent = createEvent(OrderEventType.SUBMIT_OK);
+    protected OrderEvent submitRejectEvent = createEvent(OrderEventType.SUBMIT_REJECTED);
+    protected OrderEvent partialFillEvent = createEvent(OrderEventType.PARTIAL_FILL_OK);
+    protected OrderEvent fillEvent = createEvent(OrderEventType.FULLY_FILLED);
+    protected OrderEvent fillRejectEvent = createEvent(OrderEventType.FILL_REJECTED);
     protected OrderEvent closeEvent = createEvent(OrderEventType.CLOSE_OK);
     protected OrderEvent closeRejectEvent = createEvent(OrderEventType.CLOSE_REJECTED);
     protected OrderEvent mergeEvent = createEvent(OrderEventType.MERGE_OK);
+    protected OrderEvent mergeCloseEvent = createEvent(OrderEventType.MERGE_CLOSE_OK);
+    protected OrderEvent mergeRejectEvent = createEvent(OrderEventType.MERGE_REJECTED);
     protected OrderEvent changedLabelEvent = createEvent(OrderEventType.CHANGED_LABEL);
+    protected OrderEvent labelChangeRejectEvent = createEvent(OrderEventType.CHANGE_LABEL_REJECTED);
     protected OrderEvent changedRejectEvent = createEvent(OrderEventType.CHANGED_REJECTED);
     protected OrderEvent changedGTTEvent = createEvent(OrderEventType.CHANGED_GTT);
+    protected OrderEvent setGTTRejectEvent = createEvent(OrderEventType.CHANGE_GTT_REJECTED);
+
     protected OrderEvent changedAmountEvent = createEvent(OrderEventType.CHANGED_AMOUNT);
+    protected OrderEvent setAmountRejectEvent = createEvent(OrderEventType.CHANGE_AMOUNT_REJECTED);
+
     protected OrderEvent changedOpenPriceEvent = createEvent(OrderEventType.CHANGED_PRICE);
+    protected OrderEvent setOpenPriceRejectEvent = createEvent(OrderEventType.CHANGE_PRICE_REJECTED);
+
     protected OrderEvent changedSLEvent = createEvent(OrderEventType.CHANGED_SL);
+    protected OrderEvent setSLRejectEvent = createEvent(OrderEventType.CHANGE_SL_REJECTED);
+
     protected OrderEvent changedTPEvent = createEvent(OrderEventType.CHANGED_TP);
+    protected OrderEvent setTPRejectEvent = createEvent(OrderEventType.CHANGE_TP_REJECTED);
 
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
     protected static final PlatformSettings platformSettings = StrategyUtil.platformSettings;

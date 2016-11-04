@@ -15,6 +15,7 @@ import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.spec.OrderEventConsumer;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.order.task.MergeTask;
@@ -35,6 +36,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     private OrderUtil orderUtil;
 
+    @Mock
+    private OrderEventConsumer eventConsumerMock;
     @Mock
     private BasicTask basicTaskMock;
     @Mock
@@ -69,9 +72,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .submitOrder(buyParamsEURUSD)
+            .doOnSubmit(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).submitOrder(buyParamsEURUSD);
+        verify(eventConsumerMock).accept(submitEvent);
     }
 
     @Test
@@ -83,9 +88,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .mergeOrders(mergeOrderLabel, toMergeOrders)
+            .doOnMerge(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).mergeOrders(mergeOrderLabel, toMergeOrders);
+        verify(eventConsumerMock).accept(mergeEvent);
     }
 
     @Test
@@ -107,9 +114,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .close(orderForTest)
+            .doOnClose(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).close(orderForTest);
+        verify(eventConsumerMock).accept(closeEvent);
     }
 
     @Test
@@ -124,9 +133,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .close(closeParams)
+            .doOnClose(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).close(closeParams);
+        verify(eventConsumerMock).accept(closeEvent);
     }
 
     @Test
@@ -138,9 +149,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .setLabel(orderForTest, newLabel)
+            .doOnChangedLabel(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).setLabel(orderForTest, newLabel);
+        verify(eventConsumerMock).accept(changedLabelEvent);
     }
 
     @Test
@@ -152,9 +165,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .setGoodTillTime(orderForTest, newGTT)
+            .doOnChangedGTT(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).setGoodTillTime(orderForTest, newGTT);
+        verify(eventConsumerMock).accept(changedGTTEvent);
     }
 
     @Test
@@ -166,9 +181,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .setRequestedAmount(orderForTest, newRequestedAmount)
+            .doOnChangedAmount(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).setRequestedAmount(orderForTest, newRequestedAmount);
+        verify(eventConsumerMock).accept(changedAmountEvent);
     }
 
     @Test
@@ -180,9 +197,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .setOpenPrice(orderForTest, newOpenPrice)
+            .doOnChangedOpenPrice(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).setOpenPrice(orderForTest, newOpenPrice);
+        verify(eventConsumerMock).accept(changedOpenPriceEvent);
     }
 
     @Test
@@ -194,9 +213,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .setStopLossPrice(orderForTest, newSL)
+            .doOnChangedSL(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).setStopLossPrice(orderForTest, newSL);
+        verify(eventConsumerMock).accept(changedSLEvent);
     }
 
     @Test
@@ -208,9 +229,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .setStopLossForPips(orderForTest, pips)
+            .doOnChangedSL(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).setStopLossForPips(orderForTest, pips);
+        verify(eventConsumerMock).accept(changedSLEvent);
     }
 
     @Test
@@ -226,9 +249,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .setStopLossPrice(setSLParams)
+            .doOnChangedSL(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).setStopLossPrice(setSLParams);
+        verify(eventConsumerMock).accept(changedSLEvent);
     }
 
     @Test
@@ -240,9 +265,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .setTakeProfitPrice(orderForTest, newTP)
+            .doOnChangedTP(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).setTakeProfitPrice(orderForTest, newTP);
+        verify(eventConsumerMock).accept(changedTPEvent);
     }
 
     @Test
@@ -254,9 +281,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil
             .setTakeProfitForPips(orderForTest, pips)
+            .doOnChangedTP(eventConsumerMock)
             .start();
 
         verify(basicTaskMock).setTakeProfitForPips(orderForTest, pips);
+        verify(eventConsumerMock).accept(changedTPEvent);
     }
 
     @Test

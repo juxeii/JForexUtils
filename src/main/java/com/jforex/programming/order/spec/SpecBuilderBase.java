@@ -15,6 +15,7 @@ public abstract class SpecBuilderBase<B> {
 
     protected final Observable<OrderEvent> observable;
     protected ErrorConsumer errorConsumer = t -> {};
+    protected Action startAction = () -> {};
     protected Action completeAction = () -> {};
     protected final Map<OrderEventType, OrderEventConsumer> consumerForEvent = new HashMap<>();
     protected int noOfRetries;
@@ -22,6 +23,14 @@ public abstract class SpecBuilderBase<B> {
 
     public SpecBuilderBase(final Observable<OrderEvent> observable) {
         this.observable = observable;
+    }
+
+    @SuppressWarnings("unchecked")
+    public B doOnStart(final Action startAction) {
+        checkNotNull(startAction);
+
+        this.startAction = startAction;
+        return (B) this;
     }
 
     public SpecBuilderBase<B> doOnException(final ErrorConsumer errorConsumer) {
