@@ -97,30 +97,12 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void closeDelegatesToOrderTask() {
-        when(basicTaskMock.close(orderForTest))
-            .thenReturn(orderEventObservable);
+    public void closeCallsSubscribeOnCloseParams() {
+        final CloseParams closeParams = mock(CloseParams.class);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.close(orderForTest);
+        orderUtil.close(closeParams);
 
-        verify(basicTaskMock).close(orderForTest);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void closeWithParamsDelegatesToBasicTask() {
-        final CloseParams closeParams = CloseParams
-            .newBuilder(orderForTest)
-            .build();
-
-        when(basicTaskMock.close(closeParams))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable =
-                orderUtil.close(closeParams);
-
-        verify(basicTaskMock).close(closeParams);
-        assertThat(actualObservable, equalTo(orderEventObservable));
+        verify(closeParams).subscribe(basicTaskMock);
     }
 
     @Test

@@ -58,12 +58,6 @@ public class BasicTask {
                 .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE)));
     }
 
-    public Observable<OrderEvent> close(final IOrder orderToClose) {
-        return close(CloseParams
-            .newBuilder(orderToClose)
-            .build());
-    }
-
     public Observable<OrderEvent> close(final CloseParams closeParams) {
         return Observable
             .just(closeParams.order())
@@ -77,12 +71,12 @@ public class BasicTask {
         return closeParams.maybePrice().isPresent()
                 ? taskExecutor
                     .close(orderToClose,
-                           closeParams.amount(),
+                           closeParams.partialCloseAmount(),
                            closeParams.maybePrice().get(),
                            closeParams.slippage())
                 : taskExecutor
                     .close(orderToClose,
-                           closeParams.amount());
+                           closeParams.partialCloseAmount());
     }
 
     public Observable<OrderEvent> setLabel(final IOrder orderToSetLabel,

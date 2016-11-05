@@ -63,16 +63,10 @@ public class OrderUtil {
         return mergeTask.merge(toMergeOrders, mergeParams);
     }
 
-    public Observable<OrderEvent> close(final IOrder order) {
-        checkNotNull(order);
-
-        return basicTask.close(order);
-    }
-
-    public Observable<OrderEvent> close(final CloseParams closeParams) {
+    public void close(final CloseParams closeParams) {
         checkNotNull(closeParams);
 
-        return basicTask.close(closeParams);
+        closeParams.subscribe(basicTask);
     }
 
     public void setLabel(final SetLabelParams setLabelParams) {

@@ -21,11 +21,11 @@ public class CloseParamsTest extends QuoteProviderForTest {
     @Test
     public void defaultParamsAreCorrect() {
         closeParams = CloseParams
-            .newBuilder(buyOrderEURUSD)
+            .closeWith(buyOrderEURUSD)
             .build();
 
         assertThat(closeParams.order(), equalTo(buyOrderEURUSD));
-        assertThat(closeParams.amount(), equalTo(0.0));
+        assertThat(closeParams.partialCloseAmount(), equalTo(0.0));
         assertFalse(closeParams.maybePrice().isPresent());
         assertTrue(Double.isNaN(closeParams.slippage()));
     }
@@ -33,12 +33,12 @@ public class CloseParamsTest extends QuoteProviderForTest {
     @Test
     public void paramsOnlyWithAmountAreCorrect() {
         closeParams = CloseParams
-            .newBuilder(buyOrderEURUSD)
-            .withAmount(amount)
+            .closeWith(buyOrderEURUSD)
+            .closePartial(amount)
             .build();
 
         assertThat(closeParams.order(), equalTo(buyOrderEURUSD));
-        assertThat(closeParams.amount(), equalTo(amount));
+        assertThat(closeParams.partialCloseAmount(), equalTo(amount));
         assertFalse(closeParams.maybePrice().isPresent());
         assertTrue(Double.isNaN(closeParams.slippage()));
     }
@@ -46,13 +46,13 @@ public class CloseParamsTest extends QuoteProviderForTest {
     @Test
     public void paramsWithPriceAreCorrect() {
         closeParams = CloseParams
-            .newBuilder(buyOrderEURUSD)
-            .withAmount(amount)
-            .withPrice(askEURUSD)
+            .closeWith(buyOrderEURUSD)
+            .closePartial(amount)
+            .atPrice(askEURUSD)
             .build();
 
         assertThat(closeParams.order(), equalTo(buyOrderEURUSD));
-        assertThat(closeParams.amount(), equalTo(amount));
+        assertThat(closeParams.partialCloseAmount(), equalTo(amount));
         assertTrue(closeParams.maybePrice().isPresent());
         assertTrue(Double.isNaN(closeParams.slippage()));
     }
@@ -60,14 +60,14 @@ public class CloseParamsTest extends QuoteProviderForTest {
     @Test
     public void paramsWithNegativeSlippageReturnsPlatformSlippage() {
         closeParams = CloseParams
-            .newBuilder(buyOrderEURUSD)
-            .withAmount(amount)
-            .withPrice(askEURUSD)
+            .closeWith(buyOrderEURUSD)
+            .closePartial(amount)
+            .atPrice(askEURUSD)
             .withSlippage(-1)
             .build();
 
         assertThat(closeParams.order(), equalTo(buyOrderEURUSD));
-        assertThat(closeParams.amount(), equalTo(amount));
+        assertThat(closeParams.partialCloseAmount(), equalTo(amount));
         assertTrue(closeParams.maybePrice().isPresent());
         assertThat(closeParams.slippage(), equalTo(defaultCloseSlippage));
     }
