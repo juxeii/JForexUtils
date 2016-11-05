@@ -4,9 +4,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.BasicTask;
 
-public class SetOpenPriceParams extends BasicTaskParams {
+public class SetOpenPriceParams extends BasicTaskParamsBase {
 
     private final IOrder order;
     private final double newOpenPrice;
@@ -18,8 +17,12 @@ public class SetOpenPriceParams extends BasicTaskParams {
         this.newOpenPrice = builder.newOpenPrice;
     }
 
-    public void subscribe(final BasicTask basicTask) {
-        subscribe(basicTask.setOpenPrice(order, newOpenPrice));
+    public IOrder order() {
+        return order;
+    }
+
+    public double newOpenPrice() {
+        return newOpenPrice;
     }
 
     public static Builder setOpenPriceWith(final IOrder order,

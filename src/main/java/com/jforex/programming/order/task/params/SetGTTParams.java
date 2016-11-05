@@ -4,9 +4,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.BasicTask;
 
-public class SetGTTParams extends BasicTaskParams {
+public class SetGTTParams extends BasicTaskParamsBase {
 
     private final IOrder order;
     private final long newGTT;
@@ -18,8 +17,12 @@ public class SetGTTParams extends BasicTaskParams {
         this.newGTT = builder.newGTT;
     }
 
-    public void subscribe(final BasicTask basicTask) {
-        subscribe(basicTask.setGoodTillTime(order, newGTT));
+    public IOrder order() {
+        return order;
+    }
+
+    public long newGTT() {
+        return newGTT;
     }
 
     public static Builder setOpenPriceWith(final IOrder order,

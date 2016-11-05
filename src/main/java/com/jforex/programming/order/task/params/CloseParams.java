@@ -6,10 +6,9 @@ import java.util.Optional;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.strategy.StrategyUtil;
 
-public class CloseParams extends BasicTaskParams {
+public class CloseParams extends BasicTaskParamsBase {
 
     private final IOrder order;
     private final double partialCloseAmount;
@@ -56,10 +55,6 @@ public class CloseParams extends BasicTaskParams {
         return builderSlippage < 0
                 ? defaultCloseSlippage
                 : builderSlippage;
-    }
-
-    public void subscribe(final BasicTask basicTask) {
-        subscribe(basicTask.close(this));
     }
 
     public IOrder order() {

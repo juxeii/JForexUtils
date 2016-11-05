@@ -4,9 +4,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.BasicTask;
 
-public class SetAmountParams extends BasicTaskParams {
+public class SetAmountParams extends BasicTaskParamsBase {
 
     private final IOrder order;
     private final double newAmount;
@@ -18,8 +17,12 @@ public class SetAmountParams extends BasicTaskParams {
         this.newAmount = builder.newAmount;
     }
 
-    public void subscribe(final BasicTask basicTask) {
-        subscribe(basicTask.setRequestedAmount(order, newAmount));
+    public IOrder order() {
+        return order;
+    }
+
+    public double newAmount() {
+        return newAmount;
     }
 
     public static Builder setAmountWith(final IOrder order,

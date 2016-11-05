@@ -6,9 +6,8 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.BasicTask;
 
-public class MergeParams extends BasicTaskParams {
+public class MergeParams extends BasicTaskParamsBase {
 
     private final String mergeOrderLabel;
     private final Collection<IOrder> toMergeOrders;
@@ -20,8 +19,12 @@ public class MergeParams extends BasicTaskParams {
         this.toMergeOrders = builder.toMergeOrders;
     }
 
-    public void subscribe(final BasicTask basicTask) {
-        subscribe(basicTask.mergeOrders(mergeOrderLabel, toMergeOrders));
+    public String mergeOrderLabel() {
+        return mergeOrderLabel;
+    }
+
+    public Collection<IOrder> toMergeOrders() {
+        return toMergeOrders;
     }
 
     public static Builder mergeWith(final String mergeOrderLabel,

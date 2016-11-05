@@ -4,9 +4,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.BasicTask;
 
-public class SetLabelParams extends BasicTaskParams {
+public class SetLabelParams extends BasicTaskParamsBase {
 
     private final IOrder order;
     private final String newLabel;
@@ -18,8 +17,12 @@ public class SetLabelParams extends BasicTaskParams {
         this.newLabel = builder.newLabel;
     }
 
-    public void subscribe(final BasicTask basicTask) {
-        subscribe(basicTask.setLabel(order, newLabel));
+    public IOrder order() {
+        return order;
+    }
+
+    public String newLabel() {
+        return newLabel;
     }
 
     public static Builder setLabelWith(final IOrder order,

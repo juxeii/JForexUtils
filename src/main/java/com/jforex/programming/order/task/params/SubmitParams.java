@@ -4,9 +4,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.BasicTask;
 
-public class SubmitParams extends BasicTaskParams {
+public class SubmitParams extends BasicTaskParamsBase {
 
     private final OrderParams orderParams;
 
@@ -16,8 +15,8 @@ public class SubmitParams extends BasicTaskParams {
         this.orderParams = builder.orderParams;
     }
 
-    public void subscribe(final BasicTask basicTask) {
-        subscribe(basicTask.submitOrder(orderParams));
+    public OrderParams orderParams() {
+        return orderParams;
     }
 
     public static Builder withOrderParams(final OrderParams orderParams) {

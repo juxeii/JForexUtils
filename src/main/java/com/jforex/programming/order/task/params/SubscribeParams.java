@@ -6,7 +6,7 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import io.reactivex.functions.Action;
 
-public class ComposeParams {
+public class SubscribeParams {
 
     private final Map<OrderEventType, OrderEventConsumer> consumerForEvent;
     private final ErrorConsumer errorConsumer;
@@ -15,7 +15,7 @@ public class ComposeParams {
     private final int noOfRetries;
     private final long delayInMillis;
 
-    public ComposeParams(final ParamsBuilderBase<?> paramsBuilderBase) {
+    public SubscribeParams(final ParamsBuilderBase<?> paramsBuilderBase) {
         consumerForEvent = paramsBuilderBase.consumerForEvent;
         errorConsumer = paramsBuilderBase.errorConsumer;
         startAction = paramsBuilderBase.startAction;
