@@ -21,6 +21,11 @@ import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.order.task.params.ClosePositionParams;
 import com.jforex.programming.order.task.params.ComplexMergeParams;
+import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.SetAmountParams;
+import com.jforex.programming.order.task.params.SetGTTParams;
+import com.jforex.programming.order.task.params.SetLabelParams;
+import com.jforex.programming.order.task.params.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.SetSLParams;
 import com.jforex.programming.order.task.params.SubmitParams;
 import com.jforex.programming.position.PositionOrders;
@@ -45,8 +50,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private SubmitParams submitParamsMock;
-    @Mock
     private ComplexMergeParams mergepositionParamsMock;
     @Mock
     private Function<Instrument, ComplexMergeParams> mergePositionParamsFactory;
@@ -66,21 +69,20 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void submitOrderCallsSubscribeOnSubmitParams() {
+        final SubmitParams submitParamsMock = mock(SubmitParams.class);
+
         orderUtil.submitOrder(submitParamsMock);
 
         verify(submitParamsMock).subscribe(basicTaskMock);
     }
 
     @Test
-    public void mergeOrdersDelegatesToOrderBasicTask() {
-        final String mergeOrderLabel = "mergeOrderLabel";
-        when(basicTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
-            .thenReturn(orderEventObservable);
+    public void mergeOrdersCallsSubscribeOnMergeParams() {
+        final MergeParams mergeParamsMock = mock(MergeParams.class);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.mergeOrders(mergeOrderLabel, toMergeOrders);
+        orderUtil.mergeOrders(mergeParamsMock);
 
-        verify(basicTaskMock).mergeOrders(mergeOrderLabel, toMergeOrders);
-        assertThat(actualObservable, equalTo(orderEventObservable));
+        verify(mergeParamsMock).subscribe(basicTaskMock);
     }
 
     @Test
@@ -123,50 +125,38 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void setLabelDelegatesToOrderTask() {
-        final String newLabel = "newLabel";
-        when(basicTaskMock.setLabel(orderForTest, newLabel))
-            .thenReturn(orderEventObservable);
+        final SetLabelParams setLabelParamsMock = mock(SetLabelParams.class);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setLabel(orderForTest, newLabel);
+        orderUtil.setLabel(setLabelParamsMock);
 
-        verify(basicTaskMock).setLabel(orderForTest, newLabel);
-        assertThat(actualObservable, equalTo(orderEventObservable));
+        verify(setLabelParamsMock).subscribe(basicTaskMock);
     }
 
     @Test
-    public void setGTTDelegatesToOrderTask() {
-        final long newGTT = 1L;
-        when(basicTaskMock.setGoodTillTime(orderForTest, newGTT))
-            .thenReturn(orderEventObservable);
+    public void setGTTCallsSubscribeOnSetGTTParams() {
+        final SetGTTParams setGTTParamsMock = mock(SetGTTParams.class);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setGoodTillTime(orderForTest, newGTT);
+        orderUtil.setGoodTillTime(setGTTParamsMock);
 
-        verify(basicTaskMock).setGoodTillTime(orderForTest, newGTT);
-        assertThat(actualObservable, equalTo(orderEventObservable));
+        verify(setGTTParamsMock).subscribe(basicTaskMock);
     }
 
     @Test
-    public void setRequestedAmountDelegatesToOrderTask() {
-        final double newRequestedAmount = 0.12;
-        when(basicTaskMock.setRequestedAmount(orderForTest, newRequestedAmount))
-            .thenReturn(orderEventObservable);
+    public void setRequestedAmountCallsSubscribeOnSetAmountParams() {
+        final SetAmountParams setAmountParamsMock = mock(SetAmountParams.class);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setRequestedAmount(orderForTest, newRequestedAmount);
+        orderUtil.setRequestedAmount(setAmountParamsMock);
 
-        verify(basicTaskMock).setRequestedAmount(orderForTest, newRequestedAmount);
-        assertThat(actualObservable, equalTo(orderEventObservable));
+        verify(setAmountParamsMock).subscribe(basicTaskMock);
     }
 
     @Test
-    public void setOpenPriceDelegatesToOrderTask() {
-        final double newOpenPrice = 1.1234;
-        when(basicTaskMock.setOpenPrice(orderForTest, newOpenPrice))
-            .thenReturn(orderEventObservable);
+    public void setOpenPriceCallsSubscribeOnSetOpenPriceParams() {
+        final SetOpenPriceParams setOpenPriceParamsMock = mock(SetOpenPriceParams.class);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setOpenPrice(orderForTest, newOpenPrice);
+        orderUtil.setOpenPrice(setOpenPriceParamsMock);
 
-        verify(basicTaskMock).setOpenPrice(orderForTest, newOpenPrice);
-        assertThat(actualObservable, equalTo(orderEventObservable));
+        verify(setOpenPriceParamsMock).subscribe(basicTaskMock);
     }
 
     @Test

@@ -13,6 +13,11 @@ import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.order.task.params.ClosePositionParams;
 import com.jforex.programming.order.task.params.ComplexMergeParams;
+import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.SetAmountParams;
+import com.jforex.programming.order.task.params.SetGTTParams;
+import com.jforex.programming.order.task.params.SetLabelParams;
+import com.jforex.programming.order.task.params.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.SetSLParams;
 import com.jforex.programming.order.task.params.SubmitParams;
 import com.jforex.programming.position.PositionOrders;
@@ -44,12 +49,10 @@ public class OrderUtil {
         submitParams.subscribe(basicTask);
     }
 
-    public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
-                                              final Collection<IOrder> toMergeOrders) {
-        checkNotNull(mergeOrderLabel);
-        checkNotNull(toMergeOrders);
+    public void mergeOrders(final MergeParams mergeParams) {
+        checkNotNull(mergeParams);
 
-        return basicTask.mergeOrders(mergeOrderLabel, toMergeOrders);
+        mergeParams.subscribe(basicTask);
     }
 
     public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
@@ -72,33 +75,28 @@ public class OrderUtil {
         return basicTask.close(closeParams);
     }
 
-    public Observable<OrderEvent> setLabel(final IOrder order,
-                                           final String label) {
-        checkNotNull(order);
-        checkNotNull(label);
+    public void setLabel(final SetLabelParams setLabelParams) {
+        checkNotNull(setLabelParams);
 
-        return basicTask.setLabel(order, label);
+        setLabelParams.subscribe(basicTask);
     }
 
-    public Observable<OrderEvent> setGoodTillTime(final IOrder order,
-                                                  final long newGTT) {
-        checkNotNull(order);
+    public void setGoodTillTime(final SetGTTParams setGTTParams) {
+        checkNotNull(setGTTParams);
 
-        return basicTask.setGoodTillTime(order, newGTT);
+        setGTTParams.subscribe(basicTask);
     }
 
-    public Observable<OrderEvent> setRequestedAmount(final IOrder order,
-                                                     final double newRequestedAmount) {
-        checkNotNull(order);
+    public void setRequestedAmount(final SetAmountParams setAmountParams) {
+        checkNotNull(setAmountParams);
 
-        return basicTask.setRequestedAmount(order, newRequestedAmount);
+        setAmountParams.subscribe(basicTask);
     }
 
-    public Observable<OrderEvent> setOpenPrice(final IOrder order,
-                                               final double newOpenPrice) {
-        checkNotNull(order);
+    public void setOpenPrice(final SetOpenPriceParams setOpenPriceParams) {
+        checkNotNull(setOpenPriceParams);
 
-        return basicTask.setOpenPrice(order, newOpenPrice);
+        setOpenPriceParams.subscribe(basicTask);
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder order,
