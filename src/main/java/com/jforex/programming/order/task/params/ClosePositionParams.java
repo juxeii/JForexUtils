@@ -22,7 +22,7 @@ public class ClosePositionParams {
     private final OrderEventTransformer closeOpenedComposer;
     private final OrderEventTransformer closeAllComposer;
     private final OrderToEventTransformer singleCloseComposer;
-    private final Optional<MergeParams> maybeMergeParams;
+    private final Optional<ComplexMergeParams> maybeMergeParams;
     private final BatchMode closeBatchMode;
 
     public interface CloseOption {
@@ -41,7 +41,7 @@ public class ClosePositionParams {
 
     public interface MergeForCloseOption {
 
-        BuildOption withMergeParams(MergeParams maybeMergeParams);
+        BuildOption withMergeParams(ComplexMergeParams maybeMergeParams);
     }
 
     public interface BuildOption {
@@ -69,7 +69,7 @@ public class ClosePositionParams {
         return closeParamsProvider;
     }
 
-    public Optional<MergeParams> maybeMergeParams() {
+    public Optional<ComplexMergeParams> maybeMergeParams() {
         return maybeMergeParams;
     }
 
@@ -121,7 +121,7 @@ public class ClosePositionParams {
                 upstream -> upstream;
         private OrderToEventTransformer singleCloseComposer =
                 order -> upstream -> upstream;
-        private Optional<MergeParams> maybeMergeParams = Optional.empty();
+        private Optional<ComplexMergeParams> maybeMergeParams = Optional.empty();
         private BatchMode closeBatchMode;
 
         private Builder(final Instrument instrument,
@@ -172,7 +172,7 @@ public class ClosePositionParams {
         }
 
         @Override
-        public BuildOption withMergeParams(final MergeParams maybeMergeParams) {
+        public BuildOption withMergeParams(final ComplexMergeParams maybeMergeParams) {
             this.maybeMergeParams = Optional.ofNullable(maybeMergeParams);
             return this;
         }

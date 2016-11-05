@@ -15,7 +15,7 @@ public class ComposeParams {
     private final int noOfRetries;
     private final long delayInMillis;
 
-    private ComposeParams(final ParamsBuilderBase paramsBuilderBase) {
+    public ComposeParams(final ParamsBuilderBase<?> paramsBuilderBase) {
         consumerForEvent = paramsBuilderBase.consumerForEvent;
         errorConsumer = paramsBuilderBase.errorConsumer;
         startAction = paramsBuilderBase.startAction;

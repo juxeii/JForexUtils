@@ -36,7 +36,7 @@ public class ClosePositionParamsHandler {
         return Observable.defer(() -> {
             final Instrument instrument = positionParams.instrument();
             final Collection<IOrder> ordersToMerge = positionUtil.filledOrders(instrument);
-            final MergeParams mergepositionParams = positionParams.maybeMergeParams().get();
+            final ComplexMergeParams mergepositionParams = positionParams.maybeMergeParams().get();
 
             return orderMergeTask.merge(ordersToMerge, mergepositionParams);
         });

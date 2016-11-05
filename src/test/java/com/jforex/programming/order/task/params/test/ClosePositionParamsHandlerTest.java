@@ -20,7 +20,7 @@ import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.order.task.params.ClosePositionParams;
 import com.jforex.programming.order.task.params.ClosePositionParamsHandler;
-import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.ComplexMergeParams;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -45,7 +45,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     @Mock
     private Function<IOrder, CloseParams> closeParamsProviderMock;
     @Mock
-    private MergeParams mergeParamsMock;
+    private ComplexMergeParams mergeParamsMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> filledOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final Set<IOrder> openOrders = Sets.newHashSet(buyOrderEURUSD);

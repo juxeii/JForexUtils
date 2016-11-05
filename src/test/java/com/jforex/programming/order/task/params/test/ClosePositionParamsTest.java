@@ -16,7 +16,7 @@ import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.order.task.params.ClosePositionParams;
-import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.ComplexMergeParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
@@ -29,7 +29,7 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
     private ClosePositionParams positionParams;
 
     @Mock
-    private MergeParams mergeParamsMock;
+    private ComplexMergeParams mergeParamsMock;
     @Mock
     private Function<IOrder, CloseParams> closeParamsPriovderMock;
     private final OrderEvent testEvent = closeEvent;

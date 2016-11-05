@@ -12,8 +12,9 @@ import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.order.task.params.ClosePositionParams;
-import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.ComplexMergeParams;
 import com.jforex.programming.order.task.params.SetSLParams;
+import com.jforex.programming.order.task.params.SubmitParams;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 
@@ -37,10 +38,10 @@ public class OrderUtil {
         this.positionUtil = positionUtil;
     }
 
-    public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
-        checkNotNull(orderParams);
+    public void submitOrder(final SubmitParams submitParams) {
+        checkNotNull(submitParams);
 
-        return basicTask.submitOrder(orderParams);
+        submitParams.subscribe(basicTask);
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
@@ -52,7 +53,7 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
-                                              final MergeParams mergeParams) {
+                                              final ComplexMergeParams mergeParams) {
         checkNotNull(toMergeOrders);
         checkNotNull(mergeParams);
 
@@ -135,14 +136,14 @@ public class OrderUtil {
     }
 
     public Observable<OrderEvent> mergePosition(final Instrument instrument,
-                                                final MergeParams mergeParams) {
+                                                final ComplexMergeParams mergeParams) {
         checkNotNull(instrument);
         checkNotNull(mergeParams);
 
         return mergeTask.mergePosition(instrument, mergeParams);
     }
 
-    public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, MergeParams> paramsFactory) {
+    public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, ComplexMergeParams> paramsFactory) {
         checkNotNull(paramsFactory);
 
         return mergeTask.mergeAllPositions(paramsFactory);

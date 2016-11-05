@@ -16,7 +16,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.MergeTask;
-import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.ComplexMergeParams;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -35,9 +35,9 @@ public class MergeTaskTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private MergeParams mergeParamsMock;
+    private ComplexMergeParams mergeParamsMock;
     @Mock
-    private Function<Instrument, MergeParams> paramsFactoryMock;
+    private Function<Instrument, ComplexMergeParams> paramsFactoryMock;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = mergeEvent;
     private Observable<OrderEvent> testObservable;

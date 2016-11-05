@@ -20,8 +20,9 @@ import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.order.task.MergeTask;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.order.task.params.ClosePositionParams;
-import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.ComplexMergeParams;
 import com.jforex.programming.order.task.params.SetSLParams;
+import com.jforex.programming.order.task.params.SubmitParams;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -44,9 +45,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private MergeParams mergepositionParamsMock;
+    private SubmitParams submitParamsMock;
     @Mock
-    private Function<Instrument, MergeParams> mergePositionParamsFactory;
+    private ComplexMergeParams mergepositionParamsMock;
+    @Mock
+    private Function<Instrument, ComplexMergeParams> mergePositionParamsFactory;
     @Mock
     private Function<Instrument, ClosePositionParams> closePositionParamsFactory;
     private final IOrder orderForTest = buyOrderEURUSD;
@@ -62,14 +65,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void submitOrderDelegatesToOrderBasicTask() {
-        when(basicTaskMock.submitOrder(buyParamsEURUSD))
-            .thenReturn(orderEventObservable);
+    public void submitOrderCallsSubscribeOnSubmitParams() {
+        orderUtil.submitOrder(submitParamsMock);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.submitOrder(buyParamsEURUSD);
-
-        verify(basicTaskMock).submitOrder(buyParamsEURUSD);
-        assertThat(actualObservable, equalTo(orderEventObservable));
+        verify(submitParamsMock).subscribe(basicTaskMock);
     }
 
     @Test
