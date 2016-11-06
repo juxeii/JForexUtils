@@ -25,7 +25,7 @@ public class SubmitParams extends BasicTaskParamsBase {
         return new Builder(orderParams);
     }
 
-    public static class Builder extends ParamsBuilderBase<Builder> {
+    public static class Builder extends GeneralBuilder<Builder> {
 
         private final OrderParams orderParams;
 

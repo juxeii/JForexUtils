@@ -49,7 +49,7 @@ public class SetTPParams extends BasicTaskParamsBase {
                            SetSLTPMode.PIPS);
     }
 
-    public static class Builder extends ParamsBuilderBase<Builder> {
+    public static class Builder extends GeneralBuilder<Builder> {
 
         private final IOrder order;
         private final double priceOrPips;

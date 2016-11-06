@@ -11,7 +11,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.CloseTask;
+import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.params.ClosePositionParams;
 import com.jforex.programming.order.task.params.ClosePositionParamsHandler;
 import com.jforex.programming.position.PositionUtil;
@@ -25,7 +25,7 @@ import io.reactivex.observers.TestObserver;
 @RunWith(HierarchicalContextRunner.class)
 public class CloseTaskTest extends InstrumentUtilForTest {
 
-    private CloseTask closeTask;
+    private ClosePositionTask closeTask;
 
     @Mock
     private ClosePositionParamsHandler paramsHandlerMock;
@@ -40,7 +40,7 @@ public class CloseTaskTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() throws Exception {
-        closeTask = new CloseTask(paramsHandlerMock, positionUtilMock);
+        closeTask = new ClosePositionTask(paramsHandlerMock, positionUtilMock);
     }
 
     private void setUpCommandObservables(final Observable<OrderEvent> mergeObservable,
@@ -61,7 +61,7 @@ public class CloseTaskTest extends InstrumentUtilForTest {
 
     @Test
     public void closeAllCallIsDeferred() {
-        closeTask.closeAllPositions(paramsFactoryMock);
+        closeTask.closeAll(paramsFactoryMock);
 
         verifyZeroInteractions(paramsHandlerMock);
         verifyZeroInteractions(positionUtilMock);
@@ -112,7 +112,7 @@ public class CloseTaskTest extends InstrumentUtilForTest {
 
         private void closeAllSubscribe() {
             testObserver = closeTask
-                .closeAllPositions(paramsFactoryMock)
+                .closeAll(paramsFactoryMock)
                 .test();
         }
 

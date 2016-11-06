@@ -15,8 +15,8 @@ import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
-import com.jforex.programming.order.task.MergeTask;
-import com.jforex.programming.order.task.params.ComplexMergeParams;
+import com.jforex.programming.order.task.ComplexMergeTask;
+import com.jforex.programming.order.task.params.ComplexMergePositionParams;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -28,16 +28,16 @@ import io.reactivex.observers.TestObserver;
 @RunWith(HierarchicalContextRunner.class)
 public class MergeTaskTest extends InstrumentUtilForTest {
 
-    private MergeTask mergeTask;
+    private ComplexMergeTask mergeTask;
 
     @Mock
     private CancelSLTPAndMergeTask splitterMock;
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private ComplexMergeParams mergeParamsMock;
+    private ComplexMergePositionParams mergeParamsMock;
     @Mock
-    private Function<Instrument, ComplexMergeParams> paramsFactoryMock;
+    private Function<Instrument, ComplexMergePositionParams> paramsFactoryMock;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = mergeEvent;
     private Observable<OrderEvent> testObservable;
@@ -47,7 +47,7 @@ public class MergeTaskTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        mergeTask = new MergeTask(splitterMock, positionUtilMock);
+        mergeTask = new ComplexMergeTask(splitterMock, positionUtilMock);
     }
 
     private void setUpMocks() {
@@ -122,7 +122,7 @@ public class MergeTaskTest extends InstrumentUtilForTest {
 
         private void mergeAllSubscribe() {
             testObserver = mergeTask
-                .mergeAllPositions(paramsFactoryMock)
+                .mergeAll(paramsFactoryMock)
                 .test();
         }
 

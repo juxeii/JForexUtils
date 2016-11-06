@@ -57,7 +57,7 @@ public class CloseParams extends BasicTaskParamsBase {
         return new Builder(order);
     }
 
-    public static class Builder extends ParamsBuilderBase<Builder> {
+    public static class Builder extends GeneralBuilder<Builder> {
 
         private final IOrder order;
         private double partialCloseAmount = 0.0;

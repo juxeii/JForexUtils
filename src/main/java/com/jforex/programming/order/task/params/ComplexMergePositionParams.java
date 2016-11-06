@@ -2,7 +2,6 @@ package com.jforex.programming.order.task.params;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -11,9 +10,10 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import io.reactivex.functions.Action;
 
-public class MergePositionParams implements RetryParams {
+public class ComplexMergePositionParams implements RetryParams {
 
-    private final String mergeOrderLabel;
+    private final BatchCancelSLAndTPParams batchCancelSLAndTPParams;
+    private final MergePositionParams mergePositionParams;
     private final Map<OrderEventType, OrderEventConsumer> consumerForEvent;
     private final BiConsumer<Throwable, Instrument> errorConsumer;
     private final InstrumentConsumer startConsumer;
@@ -21,21 +21,28 @@ public class MergePositionParams implements RetryParams {
     private final int noOfRetries;
     private final long delayInMillis;
 
-    private MergePositionParams(final Builder builder) {
-        mergeOrderLabel = builder.mergeOrderLabel;
-        consumerForEvent = builder.consumerForEvent;
+    private ComplexMergePositionParams(final Builder builder) {
+        batchCancelSLAndTPParams = builder.batchCancelSLAndTPParams;
+        mergePositionParams = builder.mergePositionParams;
         errorConsumer = builder.errorConsumer;
         startConsumer = builder.startConsumer;
         completeConsumer = builder.completeConsumer;
         noOfRetries = builder.noOfRetries;
         delayInMillis = builder.delayInMillis;
+
+        consumerForEvent = batchCancelSLAndTPParams.consumerForEvent();
+        consumerForEvent.putAll(mergePositionParams.consumerForEvent());
     }
 
-    public String mergeOrderLabel() {
-        return mergeOrderLabel;
+    public BatchCancelSLAndTPParams batchCancelSLAndTPParams() {
+        return batchCancelSLAndTPParams;
     }
 
-    public Map<OrderEventType, OrderEventConsumer> consumerForEvent() {
+    public MergePositionParams mergePositionParams() {
+        return mergePositionParams;
+    }
+
+    public final Map<OrderEventType, OrderEventConsumer> consumerForEvent() {
         return consumerForEvent;
     }
 
@@ -51,41 +58,39 @@ public class MergePositionParams implements RetryParams {
         return err -> errorConsumer.accept(err, instrument);
     }
 
-    @Override
     public int noOfRetries() {
         return noOfRetries;
     }
 
-    @Override
     public long delayInMillis() {
         return delayInMillis;
     }
 
-    public static Builder mergeWith(final String mergeOrderLabel) {
-        checkNotNull(mergeOrderLabel);
+    public static Builder withMergeParams(final MergePositionParams mergePositionParams) {
+        checkNotNull(mergePositionParams);
 
-        return new Builder(mergeOrderLabel);
+        return new Builder(mergePositionParams);
     }
 
     public static class Builder {
 
-        private final String mergeOrderLabel;
-        private final Map<OrderEventType, OrderEventConsumer> consumerForEvent = new HashMap<>();
+        private final BatchCancelSLAndTPParams batchCancelSLAndTPParams =
+                BatchCancelSLAndTPParams.newBuilder().build();
+        private MergePositionParams mergePositionParams;
         private BiConsumer<Throwable, Instrument> errorConsumer;
         private InstrumentConsumer startConsumer;
         private InstrumentConsumer completeConsumer;
         private int noOfRetries;
         private long delayInMillis;
 
-        public Builder(final String mergeOrderLabel) {
-            this.mergeOrderLabel = mergeOrderLabel;
+        public Builder(final MergePositionParams mergePositionParams) {
+            this.mergePositionParams = mergePositionParams;
         }
 
-        private Builder setEventConsumer(final OrderEventType orderEventType,
-                                         final OrderEventConsumer consumer) {
-            checkNotNull(consumer);
+        public Builder withMergeParams(final MergePositionParams mergePositionParams) {
+            checkNotNull(mergePositionParams);
 
-            consumerForEvent.put(orderEventType, consumer);
+            this.mergePositionParams = mergePositionParams;
             return this;
         }
 
@@ -117,20 +122,8 @@ public class MergePositionParams implements RetryParams {
             return this;
         }
 
-        public Builder doOnMerge(final OrderEventConsumer mergeConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_OK, mergeConsumer);
-        }
-
-        public Builder doOnMergeClose(final OrderEventConsumer mergeCloseConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_CLOSE_OK, mergeCloseConsumer);
-        }
-
-        public Builder doOnReject(final OrderEventConsumer rejectConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_REJECTED, rejectConsumer);
-        }
-
-        public MergePositionParams build() {
-            return new MergePositionParams(this);
+        public ComplexMergePositionParams build() {
+            return new ComplexMergePositionParams(this);
         }
     }
 }

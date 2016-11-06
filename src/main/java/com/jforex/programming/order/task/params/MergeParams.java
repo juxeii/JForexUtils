@@ -35,7 +35,7 @@ public class MergeParams extends BasicTaskParamsBase {
         return new Builder(mergeOrderLabel, toMergeOrders);
     }
 
-    public static class Builder extends ParamsBuilderBase<Builder> {
+    public static class Builder extends GeneralBuilder<Builder> {
 
         private final String mergeOrderLabel;
         private final Collection<IOrder> toMergeOrders;

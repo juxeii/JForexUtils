@@ -56,19 +56,6 @@ public class BasicTask {
             .flatMap(order -> orderUtilObservable(order, callReason)));
     }
 
-    public Observable<OrderEvent> mergeOrders(final MergeParams mergeParams) {
-        final String mergeOrderLabel = mergeParams.mergeOrderLabel();
-        final Collection<IOrder> toMergeOrders = mergeParams.toMergeOrders();
-
-        return Observable
-            .just(toMergeOrders)
-            .filter(orders -> orders.size() >= 2)
-            .flatMap(orders -> taskExecutor
-                .mergeOrders(mergeOrderLabel, orders)
-                .toObservable()
-                .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE)));
-    }
-
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
                                               final Collection<IOrder> toMergeOrders) {
         return Observable
@@ -78,6 +65,13 @@ public class BasicTask {
                 .mergeOrders(mergeOrderLabel, orders)
                 .toObservable()
                 .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE)));
+    }
+
+    public Observable<OrderEvent> mergeOrders(final MergeParams mergeParams) {
+        final String mergeOrderLabel = mergeParams.mergeOrderLabel();
+        final Collection<IOrder> toMergeOrders = mergeParams.toMergeOrders();
+
+        return mergeOrders(mergeOrderLabel, toMergeOrders);
     }
 
     public Observable<OrderEvent> close(final CloseParams closeParams) {

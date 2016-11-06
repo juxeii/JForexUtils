@@ -6,7 +6,7 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import io.reactivex.functions.Action;
 
-public class SubscribeParams {
+public class SubscribeParams implements RetryParams {
 
     private final Map<OrderEventType, OrderEventConsumer> consumerForEvent;
     private final ErrorConsumer errorConsumer;
@@ -15,7 +15,7 @@ public class SubscribeParams {
     private final int noOfRetries;
     private final long delayInMillis;
 
-    public SubscribeParams(final ParamsBuilderBase<?> paramsBuilderBase) {
+    public SubscribeParams(final GeneralBuilder<?> paramsBuilderBase) {
         consumerForEvent = paramsBuilderBase.consumerForEvent;
         errorConsumer = paramsBuilderBase.errorConsumer;
         startAction = paramsBuilderBase.startAction;
@@ -40,10 +40,12 @@ public class SubscribeParams {
         return completeAction;
     }
 
+    @Override
     public int noOfRetries() {
         return noOfRetries;
     }
 
+    @Override
     public long delayInMillis() {
         return delayInMillis;
     }

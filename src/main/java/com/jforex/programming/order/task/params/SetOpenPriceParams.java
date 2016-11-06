@@ -32,7 +32,7 @@ public class SetOpenPriceParams extends BasicTaskParamsBase {
         return new Builder(order, newOpenPrice);
     }
 
-    public static class Builder extends ParamsBuilderBase<Builder> {
+    public static class Builder extends GeneralBuilder<Builder> {
 
         private final IOrder order;
         private final double newOpenPrice;

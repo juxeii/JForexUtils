@@ -14,7 +14,7 @@ import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
 import com.jforex.programming.order.task.MergeExecutionMode;
-import com.jforex.programming.order.task.params.ComplexMergeParams;
+import com.jforex.programming.order.task.params.ComplexMergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -29,7 +29,7 @@ public class CancelSLTPTaskTest extends InstrumentUtilForTest {
     @Mock
     private BatchChangeTask batchChangeTaskMock;
     @Mock
-    private ComplexMergeParams mergeCommandMock;
+    private ComplexMergePositionParams mergeCommandMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> toCancelSLTPOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = mergeEvent;

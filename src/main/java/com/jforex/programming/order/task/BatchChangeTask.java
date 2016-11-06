@@ -4,9 +4,15 @@ import java.util.Collection;
 import java.util.List;
 
 import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderToEventTransformer;
+import com.jforex.programming.order.task.params.BatchCancelSLParams;
+import com.jforex.programming.order.task.params.BatchCancelTPParams;
 import com.jforex.programming.order.task.params.CloseParams;
+import com.jforex.programming.order.task.params.ClosePositionParams;
+import com.jforex.programming.order.task.params.SetSLParams;
+import com.jforex.programming.order.task.params.SetTPParams;
+import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.strategy.StrategyUtil;
 
@@ -23,37 +29,43 @@ public class BatchChangeTask {
         this.basicTask = orderBasicTask;
     }
 
-    public Observable<OrderEvent> close(final Collection<IOrder> orders,
-                                        final Function<IOrder, CloseParams> closeParamsProvider,
-                                        final BatchMode batchMode,
-                                        final OrderToEventTransformer composer) {
-        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> basicTask
-            .close(closeParamsProvider.apply(order))
-            .compose(composer.apply(order));
+    public Observable<OrderEvent> close(final Instrument instrument,
+                                        final Collection<IOrder> orders,
+                                        final ClosePositionParams closePositionParams) {
+        final Function<IOrder, Observable<OrderEvent>> taskCall =
+                order -> TaskParamsUtil.composeBatchClose(order.getInstrument(),
+                                                          basicTask.close(CloseParams
+                                                              .closeWith(order)
+                                                              .build()),
+                                                          closePositionParams);
         return forBasicTask(orders,
-                            batchMode,
+                            BatchMode.MERGE,
                             taskCall);
     }
 
     public Observable<OrderEvent> cancelSL(final Collection<IOrder> orders,
-                                           final BatchMode batchMode,
-                                           final OrderToEventTransformer composer) {
-        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> basicTask
-            .setStopLossPrice(order, platformSettings.noSLPrice())
-            .compose(composer.apply(order));
+                                           final BatchCancelSLParams batchCancelSLParams) {
+        final Function<IOrder, Observable<OrderEvent>> taskCall =
+                order -> TaskParamsUtil.composeBatchCancelSL(order.getInstrument(),
+                                                             basicTask.setStopLossPrice(SetSLParams
+                                                                 .setSLAtPrice(order, platformSettings.noSLPrice())
+                                                                 .build()),
+                                                             batchCancelSLParams);
         return forBasicTask(orders,
-                            batchMode,
+                            batchCancelSLParams.batchMode(),
                             taskCall);
     }
 
     public Observable<OrderEvent> cancelTP(final Collection<IOrder> orders,
-                                           final BatchMode batchMode,
-                                           final OrderToEventTransformer composer) {
-        final Function<IOrder, Observable<OrderEvent>> taskCall = order -> basicTask
-            .setTakeProfitPrice(order, platformSettings.noTPPrice())
-            .compose(composer.apply(order));
+                                           final BatchCancelTPParams batchCancelTPParams) {
+        final Function<IOrder, Observable<OrderEvent>> taskCall =
+                order -> TaskParamsUtil.composeBatchCancelTP(order.getInstrument(),
+                                                             basicTask.setTakeProfitPrice(SetTPParams
+                                                                 .setTPAtPrice(order, platformSettings.noTPPrice())
+                                                                 .build()),
+                                                             batchCancelTPParams);
         return forBasicTask(orders,
-                            batchMode,
+                            batchCancelTPParams.batchMode(),
                             taskCall);
     }
 

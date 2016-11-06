@@ -32,7 +32,7 @@ public class SetGTTParams extends BasicTaskParamsBase {
         return new Builder(order, newGTT);
     }
 
-    public static class Builder extends ParamsBuilderBase<Builder> {
+    public static class Builder extends GeneralBuilder<Builder> {
 
         private final IOrder order;
         private final long newGTT;

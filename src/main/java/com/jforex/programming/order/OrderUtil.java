@@ -2,18 +2,15 @@ package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Collection;
-
-import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
-import com.jforex.programming.order.task.CloseTask;
-import com.jforex.programming.order.task.MergeTask;
+import com.jforex.programming.order.task.ClosePositionTask;
+import com.jforex.programming.order.task.ComplexMergeTask;
 import com.jforex.programming.order.task.params.BasicTaskParamsBase;
 import com.jforex.programming.order.task.params.CloseParams;
-import com.jforex.programming.order.task.params.ClosePositionParams;
-import com.jforex.programming.order.task.params.ComplexMergeParams;
+import com.jforex.programming.order.task.params.ComplexClosePositionParams;
+import com.jforex.programming.order.task.params.ComplexMergePositionParams;
 import com.jforex.programming.order.task.params.MergeParams;
 import com.jforex.programming.order.task.params.SetAmountParams;
 import com.jforex.programming.order.task.params.SetGTTParams;
@@ -27,22 +24,21 @@ import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
 
 public class OrderUtil {
 
     private final BasicTask basicTask;
-    private final MergeTask mergeTask;
-    private final CloseTask closeTask;
+    private final ComplexMergeTask mergeTask;
+    private final ClosePositionTask closePositionTask;
     private final PositionUtil positionUtil;
 
     public OrderUtil(final BasicTask basicTask,
-                     final MergeTask mergeTask,
-                     final CloseTask closeTask,
+                     final ComplexMergeTask mergeTask,
+                     final ClosePositionTask closePositionTask,
                      final PositionUtil positionUtil) {
         this.basicTask = basicTask;
         this.mergeTask = mergeTask;
-        this.closeTask = closeTask;
+        this.closePositionTask = closePositionTask;
         this.positionUtil = positionUtil;
     }
 
@@ -56,14 +52,6 @@ public class OrderUtil {
         checkNotNull(mergeParams);
 
         subscribe(basicTask.mergeOrders(mergeParams), mergeParams);
-    }
-
-    public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
-                                              final ComplexMergeParams mergeParams) {
-        checkNotNull(toMergeOrders);
-        checkNotNull(mergeParams);
-
-        return mergeTask.merge(toMergeOrders, mergeParams);
     }
 
     public void close(final CloseParams closeParams) {
@@ -113,30 +101,41 @@ public class OrderUtil {
         TaskParamsUtil.subscribe(observable, basicTaskParamsBase.subscribeParams());
     }
 
-    public Observable<OrderEvent> mergePosition(final Instrument instrument,
-                                                final ComplexMergeParams mergeParams) {
+    public void mergePosition(final Instrument instrument,
+                              final ComplexMergePositionParams complexMergePositionParams) {
         checkNotNull(instrument);
-        checkNotNull(mergeParams);
+        checkNotNull(complexMergePositionParams);
 
-        return mergeTask.mergePosition(instrument, mergeParams);
+        TaskParamsUtil.subscribePositionMerge(instrument,
+                                              mergeTask.mergePosition(instrument, complexMergePositionParams),
+                                              complexMergePositionParams);
     }
 
-    public Observable<OrderEvent> mergeAllPositions(final Function<Instrument, ComplexMergeParams> paramsFactory) {
-        checkNotNull(paramsFactory);
+    public void mergeAllPositions(final ComplexMergePositionParams complexMergePositionParams) {
+        checkNotNull(complexMergePositionParams);
 
-        return mergeTask.mergeAllPositions(paramsFactory);
+        // TODO: fill handlers
+        mergeTask
+            .mergeAll(complexMergePositionParams)
+            .subscribe();
     }
 
-    public Observable<OrderEvent> closePosition(final ClosePositionParams positionParams) {
-        checkNotNull(positionParams);
+    public void closePosition(final Instrument instrument,
+                              final ComplexClosePositionParams complexClosePositionParams) {
+        checkNotNull(complexClosePositionParams);
 
-        return closeTask.close(positionParams);
+        TaskParamsUtil.subscribePositionClose(instrument,
+                                              closePositionTask.close(instrument, complexClosePositionParams),
+                                              complexClosePositionParams);
     }
 
-    public Observable<OrderEvent> closeAllPositions(final Function<Instrument, ClosePositionParams> paramsFactory) {
-        checkNotNull(paramsFactory);
+    public void closeAllPositions(final ComplexClosePositionParams complexClosePositionParams) {
+        checkNotNull(complexClosePositionParams);
 
-        return closeTask.closeAllPositions(paramsFactory);
+        // TODO: fill handlers
+        closePositionTask
+            .closeAll(complexClosePositionParams)
+            .subscribe();
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {

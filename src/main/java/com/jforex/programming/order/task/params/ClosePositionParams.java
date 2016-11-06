@@ -2,182 +2,120 @@ package com.jforex.programming.order.task.params;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
-import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.event.OrderEventTransformer;
-import com.jforex.programming.order.event.OrderToEventTransformer;
-import com.jforex.programming.order.task.BatchMode;
-import com.jforex.programming.order.task.CloseExecutionMode;
+import com.jforex.programming.order.event.OrderEventType;
 
-import io.reactivex.functions.Function;
+import io.reactivex.functions.Action;
 
-public class ClosePositionParams {
+public class ClosePositionParams implements RetryParams {
 
-    private final Instrument instrument;
-    private final Function<IOrder, CloseParams> closeParamsProvider;
-    private final CloseExecutionMode executionMode;
-    private final OrderEventTransformer closeFilledComposer;
-    private final OrderEventTransformer closeOpenedComposer;
-    private final OrderEventTransformer closeAllComposer;
-    private final OrderToEventTransformer singleCloseComposer;
-    private final Optional<ComplexMergeParams> maybeMergeParams;
-    private final BatchMode closeBatchMode;
-
-    public interface CloseOption {
-
-        public CloseOption singleCloseComposer(OrderToEventTransformer singleCloseComposer);
-
-        public MergeForCloseOption closeFilledComposer(OrderEventTransformer closeFilledComposer,
-                                                       BatchMode batchMode);
-
-        public BuildOption closeOpenedComposer(OrderEventTransformer closeOpenedComposer,
-                                               BatchMode batchMode);
-
-        public MergeForCloseOption closeAllComposer(OrderEventTransformer closeAllComposer,
-                                                    BatchMode batchMode);
-    }
-
-    public interface MergeForCloseOption {
-
-        BuildOption withMergeParams(ComplexMergeParams maybeMergeParams);
-    }
-
-    public interface BuildOption {
-
-        public ClosePositionParams build();
-    }
+    private final Map<OrderEventType, OrderEventConsumer> consumerForEvent;
+    private final BiConsumer<Throwable, Instrument> errorConsumer;
+    private final InstrumentConsumer startConsumer;
+    private final InstrumentConsumer completeConsumer;
+    private final int noOfRetries;
+    private final long delayInMillis;
 
     private ClosePositionParams(final Builder builder) {
-        instrument = builder.instrument;
-        closeParamsProvider = builder.closeParamsProvider;
-        executionMode = builder.executionMode;
-        closeFilledComposer = builder.closeFilledComposer;
-        closeOpenedComposer = builder.closeOpenedComposer;
-        closeAllComposer = builder.closeAllComposer;
-        singleCloseComposer = builder.singleCloseComposer;
-        maybeMergeParams = builder.maybeMergeParams;
-        closeBatchMode = builder.closeBatchMode;
+        consumerForEvent = builder.consumerForEvent;
+        errorConsumer = builder.errorConsumer;
+        startConsumer = builder.startConsumer;
+        completeConsumer = builder.completeConsumer;
+        noOfRetries = builder.noOfRetries;
+        delayInMillis = builder.delayInMillis;
     }
 
-    public Instrument instrument() {
-        return instrument;
+    public Map<OrderEventType, OrderEventConsumer> consumerForEvent() {
+        return consumerForEvent;
     }
 
-    public Function<IOrder, CloseParams> closeParamsProvider() {
-        return closeParamsProvider;
+    public final Action startAction(final Instrument instrument) {
+        return () -> startConsumer.accept(instrument);
     }
 
-    public Optional<ComplexMergeParams> maybeMergeParams() {
-        return maybeMergeParams;
+    public final Action completeAction(final Instrument instrument) {
+        return () -> completeConsumer.accept(instrument);
     }
 
-    public CloseExecutionMode executionMode() {
-        return executionMode;
+    public final ErrorConsumer errorConsumer(final Instrument instrument) {
+        return err -> errorConsumer.accept(err, instrument);
     }
 
-    public OrderEventTransformer closeFilledComposer() {
-        return closeFilledComposer;
+    @Override
+    public int noOfRetries() {
+        return noOfRetries;
     }
 
-    public OrderEventTransformer closeOpenedComposer() {
-        return closeOpenedComposer;
+    @Override
+    public long delayInMillis() {
+        return delayInMillis;
     }
 
-    public OrderEventTransformer closeAllComposer() {
-        return closeAllComposer;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
-    public OrderEventTransformer singleCloseComposer(final IOrder orderToClose) {
-        return singleCloseComposer.apply(orderToClose);
-    }
+    public static class Builder {
 
-    public BatchMode closeBatchMode() {
-        return closeBatchMode;
-    }
+        private final Map<OrderEventType, OrderEventConsumer> consumerForEvent = new HashMap<>();
+        private BiConsumer<Throwable, Instrument> errorConsumer;
+        private InstrumentConsumer startConsumer;
+        private InstrumentConsumer completeConsumer;
+        private int noOfRetries;
+        private long delayInMillis;
 
-    public static CloseOption newBuilder(final Instrument instrument,
-                                         final Function<IOrder, CloseParams> closeParamsProvider) {
-        checkNotNull(instrument);
-        checkNotNull(closeParamsProvider);
+        private Builder setEventConsumer(final OrderEventType orderEventType,
+                                         final OrderEventConsumer consumer) {
+            checkNotNull(consumer);
 
-        return new Builder(instrument, closeParamsProvider);
-    }
-
-    public static class Builder implements
-                                CloseOption,
-                                MergeForCloseOption,
-                                BuildOption {
-
-        private final Instrument instrument;
-        private final Function<IOrder, CloseParams> closeParamsProvider;
-        private CloseExecutionMode executionMode;
-        private OrderEventTransformer closeFilledComposer =
-                upstream -> upstream;
-        private OrderEventTransformer closeOpenedComposer =
-                upstream -> upstream;
-        private OrderEventTransformer closeAllComposer =
-                upstream -> upstream;
-        private OrderToEventTransformer singleCloseComposer =
-                order -> upstream -> upstream;
-        private Optional<ComplexMergeParams> maybeMergeParams = Optional.empty();
-        private BatchMode closeBatchMode;
-
-        private Builder(final Instrument instrument,
-                        final Function<IOrder, CloseParams> closeParamsProvider) {
-            this.instrument = instrument;
-            this.closeParamsProvider = closeParamsProvider;
-        }
-
-        @Override
-        public CloseOption singleCloseComposer(final OrderToEventTransformer singleCloseComposer) {
-            checkNotNull(singleCloseComposer);
-
-            this.singleCloseComposer = singleCloseComposer;
+            consumerForEvent.put(orderEventType, consumer);
             return this;
         }
 
-        @Override
-        public MergeForCloseOption closeFilledComposer(final OrderEventTransformer closeFilledComposer,
-                                                       final BatchMode batchMode) {
-            checkNotNull(closeFilledComposer);
+        public Builder doOnStart(final InstrumentConsumer startConsumer) {
+            checkNotNull(startConsumer);
 
-            this.executionMode = CloseExecutionMode.CloseFilled;
-            this.closeFilledComposer = closeFilledComposer;
-            this.closeBatchMode = batchMode;
+            this.startConsumer = startConsumer;
             return this;
         }
 
-        @Override
-        public BuildOption closeOpenedComposer(final OrderEventTransformer closeOpenedComposer,
-                                               final BatchMode batchMode) {
-            checkNotNull(closeOpenedComposer);
+        public Builder doOnException(final BiConsumer<Throwable, Instrument> errorConsumer) {
+            checkNotNull(errorConsumer);
 
-            this.executionMode = CloseExecutionMode.CloseOpened;
-            this.closeOpenedComposer = closeOpenedComposer;
-            this.closeBatchMode = batchMode;
+            this.errorConsumer = errorConsumer;
             return this;
         }
 
-        @Override
-        public MergeForCloseOption closeAllComposer(final OrderEventTransformer closeAllComposer,
-                                                    final BatchMode batchMode) {
-            checkNotNull(closeFilledComposer);
+        public Builder doOnComplete(final InstrumentConsumer completeConsumer) {
+            checkNotNull(completeConsumer);
 
-            this.executionMode = CloseExecutionMode.CloseAll;
-            this.closeAllComposer = closeAllComposer;
-            this.closeBatchMode = batchMode;
+            this.completeConsumer = completeConsumer;
             return this;
         }
 
-        @Override
-        public BuildOption withMergeParams(final ComplexMergeParams maybeMergeParams) {
-            this.maybeMergeParams = Optional.ofNullable(maybeMergeParams);
+        public Builder retryOnReject(final int noOfRetries,
+                                     final long delayInMillis) {
+            this.noOfRetries = noOfRetries;
+            this.delayInMillis = delayInMillis;
             return this;
         }
 
-        @Override
+        public Builder doOnClose(final OrderEventConsumer closeConsumer) {
+            return setEventConsumer(OrderEventType.CLOSE_OK, closeConsumer);
+        }
+
+        public Builder doOnPartialClose(final OrderEventConsumer partialCloseConsumer) {
+            return setEventConsumer(OrderEventType.PARTIAL_CLOSE_OK, partialCloseConsumer);
+        }
+
+        public Builder doOnReject(final OrderEventConsumer rejectConsumer) {
+            return setEventConsumer(OrderEventType.CLOSE_REJECTED, rejectConsumer);
+        }
+
         public ClosePositionParams build() {
             return new ClosePositionParams(this);
         }

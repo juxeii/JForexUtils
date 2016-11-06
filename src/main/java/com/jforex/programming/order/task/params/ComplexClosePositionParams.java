@@ -2,18 +2,20 @@ package com.jforex.programming.order.task.params;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.CloseExecutionMode;
 
 import io.reactivex.functions.Action;
 
-public class MergePositionParams implements RetryParams {
+public class ComplexClosePositionParams implements RetryParams {
 
-    private final String mergeOrderLabel;
+    private final ComplexMergePositionParams complexMergePositionParams;
+    private final ClosePositionParams closePositionParams;
+    private final CloseExecutionMode closeExecutionMode;
     private final Map<OrderEventType, OrderEventConsumer> consumerForEvent;
     private final BiConsumer<Throwable, Instrument> errorConsumer;
     private final InstrumentConsumer startConsumer;
@@ -21,22 +23,39 @@ public class MergePositionParams implements RetryParams {
     private final int noOfRetries;
     private final long delayInMillis;
 
-    private MergePositionParams(final Builder builder) {
-        mergeOrderLabel = builder.mergeOrderLabel;
-        consumerForEvent = builder.consumerForEvent;
+    public interface BuildOption {
+
+        public ClosePositionParams build();
+    }
+
+    private ComplexClosePositionParams(final Builder builder) {
+        complexMergePositionParams = builder.complexMergePositionParams;
+        closePositionParams = builder.closePositionParams;
+        closeExecutionMode = builder.closeExecutionMode;
         errorConsumer = builder.errorConsumer;
         startConsumer = builder.startConsumer;
         completeConsumer = builder.completeConsumer;
         noOfRetries = builder.noOfRetries;
         delayInMillis = builder.delayInMillis;
+
+        consumerForEvent = complexMergePositionParams.consumerForEvent();
+        consumerForEvent.putAll(closePositionParams.consumerForEvent());
     }
 
-    public String mergeOrderLabel() {
-        return mergeOrderLabel;
-    }
-
-    public Map<OrderEventType, OrderEventConsumer> consumerForEvent() {
+    public final Map<OrderEventType, OrderEventConsumer> consumerForEvent() {
         return consumerForEvent;
+    }
+
+    public ComplexMergePositionParams complexMergePositionParams() {
+        return complexMergePositionParams;
+    }
+
+    public ClosePositionParams closePositionParams() {
+        return closePositionParams;
+    }
+
+    public CloseExecutionMode closeExecutionMode() {
+        return closeExecutionMode;
     }
 
     public final Action startAction(final Instrument instrument) {
@@ -51,41 +70,47 @@ public class MergePositionParams implements RetryParams {
         return err -> errorConsumer.accept(err, instrument);
     }
 
-    @Override
     public int noOfRetries() {
         return noOfRetries;
     }
 
-    @Override
     public long delayInMillis() {
         return delayInMillis;
     }
 
-    public static Builder mergeWith(final String mergeOrderLabel) {
-        checkNotNull(mergeOrderLabel);
-
-        return new Builder(mergeOrderLabel);
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static class Builder {
 
-        private final String mergeOrderLabel;
-        private final Map<OrderEventType, OrderEventConsumer> consumerForEvent = new HashMap<>();
+        private ComplexMergePositionParams complexMergePositionParams;
+        private ClosePositionParams closePositionParams;
+        private CloseExecutionMode closeExecutionMode;
         private BiConsumer<Throwable, Instrument> errorConsumer;
         private InstrumentConsumer startConsumer;
         private InstrumentConsumer completeConsumer;
         private int noOfRetries;
         private long delayInMillis;
 
-        public Builder(final String mergeOrderLabel) {
-            this.mergeOrderLabel = mergeOrderLabel;
+        public Builder withMergeParams(final ComplexMergePositionParams complexMergePositionParams) {
+            checkNotNull(complexMergePositionParams);
+
+            this.complexMergePositionParams = complexMergePositionParams;
+            return this;
         }
 
-        private Builder setEventConsumer(final OrderEventType orderEventType,
-                                         final OrderEventConsumer consumer) {
-            checkNotNull(consumer);
+        public Builder withClosePositionParams(final ClosePositionParams closePositionParams) {
+            checkNotNull(closePositionParams);
 
-            consumerForEvent.put(orderEventType, consumer);
+            this.closePositionParams = closePositionParams;
+            return this;
+        }
+
+        public Builder withCloseExecutionMode(final CloseExecutionMode closeExecutionMode) {
+            checkNotNull(closeExecutionMode);
+
+            this.closeExecutionMode = closeExecutionMode;
             return this;
         }
 
@@ -117,20 +142,8 @@ public class MergePositionParams implements RetryParams {
             return this;
         }
 
-        public Builder doOnMerge(final OrderEventConsumer mergeConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_OK, mergeConsumer);
-        }
-
-        public Builder doOnMergeClose(final OrderEventConsumer mergeCloseConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_CLOSE_OK, mergeCloseConsumer);
-        }
-
-        public Builder doOnReject(final OrderEventConsumer rejectConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_REJECTED, rejectConsumer);
-        }
-
-        public MergePositionParams build() {
-            return new MergePositionParams(this);
+        public ComplexClosePositionParams build() {
+            return new ComplexClosePositionParams(this);
         }
     }
 }

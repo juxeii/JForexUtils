@@ -33,7 +33,7 @@ public class SetLabelParams extends BasicTaskParamsBase {
         return new Builder(order, newLabel);
     }
 
-    public static class Builder extends ParamsBuilderBase<Builder> {
+    public static class Builder extends GeneralBuilder<Builder> {
 
         private final IOrder order;
         private final String newLabel;

@@ -10,7 +10,7 @@ import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.MergeExecutionMode;
-import com.jforex.programming.order.task.params.ComplexMergeParams;
+import com.jforex.programming.order.task.params.ComplexMergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
@@ -19,7 +19,7 @@ import io.reactivex.observers.TestObserver;
 
 public class MergeParamsTest extends InstrumentUtilForTest {
 
-    private ComplexMergeParams mergeParams;
+    private ComplexMergePositionParams mergeParams;
 
     private static final String mergeOrderLabel = "mergeOrderLabel";
     private final OrderEvent testEvent = mergeEvent;
@@ -47,7 +47,7 @@ public class MergeParamsTest extends InstrumentUtilForTest {
 
     @Test
     public void defaultParamsValuesAreCorrect() throws Exception {
-        mergeParams = ComplexMergeParams
+        mergeParams = ComplexMergePositionParams
             .newBuilder(mergeOrderLabel)
             .build();
 
@@ -71,7 +71,7 @@ public class MergeParamsTest extends InstrumentUtilForTest {
                 order -> upstream -> upstream
                     .flatMap(orderEvent -> Observable.just(composerEvent));
 
-        mergeParams = ComplexMergeParams
+        mergeParams = ComplexMergePositionParams
             .newBuilder(mergeOrderLabel)
             .composeCancelSLAndTP(testComposer)
             .composeCancelSL(testComposer)

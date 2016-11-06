@@ -7,72 +7,56 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CloseExecutionMode;
-import com.jforex.programming.order.task.MergeTask;
+import com.jforex.programming.order.task.ComplexMergeTask;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
 
 public class ClosePositionParamsHandler {
 
-    private final MergeTask orderMergeTask;
+    private final ComplexMergeTask complexMergeTask;
     private final BatchChangeTask batchChangeTask;
     private final PositionUtil positionUtil;
 
-    public ClosePositionParamsHandler(final MergeTask orderMergeTask,
+    public ClosePositionParamsHandler(final ComplexMergeTask complexMergeTask,
                                       final BatchChangeTask orderChangeBatch,
                                       final PositionUtil positionUtil) {
-        this.orderMergeTask = orderMergeTask;
+        this.complexMergeTask = complexMergeTask;
         this.batchChangeTask = orderChangeBatch;
         this.positionUtil = positionUtil;
     }
 
-    public Observable<OrderEvent> observeMerge(final ClosePositionParams positionParams) {
-        return positionParams.executionMode() == CloseExecutionMode.CloseOpened
+    public Observable<OrderEvent> observeMerge(final Instrument instrument,
+                                               final ComplexClosePositionParams complexClosePositionParams) {
+        return complexClosePositionParams.closeExecutionMode() == CloseExecutionMode.CloseOpened
                 ? Observable.empty()
-                : observeMergeForFilledOrders(positionParams);
+                : observeMergeForFilledOrders(instrument, complexClosePositionParams);
     }
 
-    private Observable<OrderEvent> observeMergeForFilledOrders(final ClosePositionParams positionParams) {
+    private Observable<OrderEvent> observeMergeForFilledOrders(final Instrument instrument,
+                                                               final ComplexClosePositionParams complexClosePositionParams) {
         return Observable.defer(() -> {
-            final Instrument instrument = positionParams.instrument();
             final Collection<IOrder> ordersToMerge = positionUtil.filledOrders(instrument);
-            final ComplexMergeParams mergepositionParams = positionParams.maybeMergeParams().get();
-
-            return orderMergeTask.merge(ordersToMerge, mergepositionParams);
+            return complexMergeTask.merge(ordersToMerge,
+                                          complexClosePositionParams.complexMergePositionParams());
         });
     }
 
-    public Observable<OrderEvent> observeClose(final ClosePositionParams positionParams) {
-        return Observable.defer(() -> {
-            final Collection<IOrder> ordersToClose = ordersToClose(positionParams);
-            final Observable<OrderEvent> batchClose =
-                    batchChangeTask.close(ordersToClose,
-                                          positionParams.closeParamsProvider(),
-                                          positionParams.closeBatchMode(),
-                                          positionParams::singleCloseComposer);
-            return composeBatchClose(batchClose, positionParams);
-        });
+    public Observable<OrderEvent> observeClose(final Instrument instrument,
+                                               final ComplexClosePositionParams complexClosePositionParams) {
+        return Observable.defer(() -> batchChangeTask.close(instrument,
+                                                            ordersToClose(instrument, complexClosePositionParams),
+                                                            complexClosePositionParams.closePositionParams()));
     }
 
-    private Collection<IOrder> ordersToClose(final ClosePositionParams positionParams) {
-        final CloseExecutionMode executionMode = positionParams.executionMode();
-        final Instrument instrument = positionParams.instrument();
+    private Collection<IOrder> ordersToClose(final Instrument instrument,
+                                             final ComplexClosePositionParams complexClosePositionParams) {
+        final CloseExecutionMode closeExecutionMode = complexClosePositionParams.closeExecutionMode();
 
-        if (executionMode == CloseExecutionMode.CloseFilled)
+        if (closeExecutionMode == CloseExecutionMode.CloseFilled)
             return positionUtil.filledOrders(instrument);
-        if (executionMode == CloseExecutionMode.CloseOpened)
+        if (closeExecutionMode == CloseExecutionMode.CloseOpened)
             return positionUtil.openedOrders(instrument);
         return positionUtil.filledOrOpenedOrders(instrument);
-    }
-
-    private Observable<OrderEvent> composeBatchClose(final Observable<OrderEvent> batchClose,
-                                                     final ClosePositionParams positionParams) {
-        final CloseExecutionMode executionMode = positionParams.executionMode();
-
-        if (executionMode == CloseExecutionMode.CloseFilled)
-            return batchClose.compose(positionParams.closeFilledComposer());
-        if (executionMode == CloseExecutionMode.CloseOpened)
-            return batchClose.compose(positionParams.closeOpenedComposer());
-        return batchClose.compose(positionParams.closeAllComposer());
     }
 }

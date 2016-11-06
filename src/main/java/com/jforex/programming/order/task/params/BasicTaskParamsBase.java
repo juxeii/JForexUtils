@@ -4,7 +4,7 @@ public abstract class BasicTaskParamsBase {
 
     private final SubscribeParams subscribeParams;
 
-    protected BasicTaskParamsBase(final ParamsBuilderBase<?> builder) {
+    protected BasicTaskParamsBase(final GeneralBuilder<?> builder) {
         subscribeParams = new SubscribeParams(builder);
     }
 
