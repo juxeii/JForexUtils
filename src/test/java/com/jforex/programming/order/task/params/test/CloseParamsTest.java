@@ -48,7 +48,7 @@ public class CloseParamsTest extends QuoteProviderForTest {
         closeParams = CloseParams
             .closeWith(buyOrderEURUSD)
             .closePartial(amount)
-            .atPrice(askEURUSD)
+            .atPrice(askEURUSD, 5.0)
             .build();
 
         assertThat(closeParams.order(), equalTo(buyOrderEURUSD));
@@ -62,8 +62,7 @@ public class CloseParamsTest extends QuoteProviderForTest {
         closeParams = CloseParams
             .closeWith(buyOrderEURUSD)
             .closePartial(amount)
-            .atPrice(askEURUSD)
-            .withSlippage(-1)
+            .atPrice(askEURUSD, 5.0)
             .build();
 
         assertThat(closeParams.order(), equalTo(buyOrderEURUSD));

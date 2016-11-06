@@ -15,28 +15,6 @@ public class CloseParams extends BasicTaskParamsBase {
     private final Optional<Double> maybePrice;
     private final double slippage;
 
-    public interface CloseOption {
-
-        public CloseOption doOnClose(OrderEventConsumer closeConsumer);
-
-        public CloseOption doOnPartialClose(OrderEventConsumer partialCloseConsumer);
-
-        public CloseOption doOnReject(OrderEventConsumer rejectConsumer);
-
-        public CloseOption closePartial(double partialCloseAmount);
-
-        public SlippageOption atPrice(double price);
-
-        public CloseParams build();
-    }
-
-    public interface SlippageOption {
-
-        public SlippageOption withSlippage(double slippage);
-
-        public CloseParams build();
-    }
-
     private static final double defaultCloseSlippage = StrategyUtil.platformSettings.defaultCloseSlippage();
     private static final double noCloseSlippageValue = Double.NaN;
 
@@ -73,16 +51,13 @@ public class CloseParams extends BasicTaskParamsBase {
         return slippage;
     }
 
-    public static CloseOption closeWith(final IOrder order) {
+    public static Builder closeWith(final IOrder order) {
         checkNotNull(order);
 
         return new Builder(order);
     }
 
-    private static class Builder extends ParamsBuilderBase<Builder>
-                                 implements
-                                 CloseOption,
-                                 SlippageOption {
+    public static class Builder extends ParamsBuilderBase<Builder> {
 
         private final IOrder order;
         private double partialCloseAmount = 0.0;
@@ -93,40 +68,30 @@ public class CloseParams extends BasicTaskParamsBase {
             this.order = order;
         }
 
-        @Override
-        public CloseOption closePartial(final double partialCloseAmount) {
+        public Builder closePartial(final double partialCloseAmount) {
             this.partialCloseAmount = partialCloseAmount;
             return this;
         }
 
-        @Override
-        public SlippageOption atPrice(final double price) {
+        public Builder atPrice(final double price,
+                               final double slippage) {
             maybePrice = Optional.of(price);
-            return this;
-        }
-
-        @Override
-        public SlippageOption withSlippage(final double slippage) {
             this.slippage = slippage;
             return this;
         }
 
-        @Override
         public Builder doOnClose(final OrderEventConsumer closeConsumer) {
             return setEventConsumer(OrderEventType.CLOSE_OK, closeConsumer);
         }
 
-        @Override
         public Builder doOnPartialClose(final OrderEventConsumer partialCloseConsumer) {
             return setEventConsumer(OrderEventType.PARTIAL_CLOSE_OK, partialCloseConsumer);
         }
 
-        @Override
         public Builder doOnReject(final OrderEventConsumer rejectConsumer) {
             return setEventConsumer(OrderEventType.CLOSE_REJECTED, rejectConsumer);
         }
 
-        @Override
         public CloseParams build() {
             return new CloseParams(this);
         }
