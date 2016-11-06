@@ -20,6 +20,7 @@ import com.jforex.programming.order.task.params.SetGTTParams;
 import com.jforex.programming.order.task.params.SetLabelParams;
 import com.jforex.programming.order.task.params.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.SetSLParams;
+import com.jforex.programming.order.task.params.SetTPParams;
 import com.jforex.programming.order.task.params.SubmitParams;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.position.PositionOrders;
@@ -95,38 +96,16 @@ public class OrderUtil {
         subscribe(basicTask.setOpenPrice(setOpenPriceParams), setOpenPriceParams);
     }
 
-    public Observable<OrderEvent> setStopLossPrice(final IOrder order,
-                                                   final double newSL) {
-        checkNotNull(order);
-
-        return basicTask.setStopLossPrice(order, newSL);
-    }
-
-    public Observable<OrderEvent> setStopLossPrice(final SetSLParams setSLParams) {
+    public void setStopLossPrice(final SetSLParams setSLParams) {
         checkNotNull(setSLParams);
 
-        return basicTask.setStopLossPrice(setSLParams);
+        subscribe(basicTask.setStopLossPrice(setSLParams), setSLParams);
     }
 
-    public Observable<OrderEvent> setStopLossForPips(final IOrder order,
-                                                     final double pips) {
-        checkNotNull(order);
+    public void setTakeProfitPrice(final SetTPParams setTPParams) {
+        checkNotNull(setTPParams);
 
-        return basicTask.setStopLossForPips(order, pips);
-    }
-
-    public Observable<OrderEvent> setTakeProfitPrice(final IOrder order,
-                                                     final double newTP) {
-        checkNotNull(order);
-
-        return basicTask.setTakeProfitPrice(order, newTP);
-    }
-
-    public Observable<OrderEvent> setTakeProfitForPips(final IOrder order,
-                                                       final double pips) {
-        checkNotNull(order);
-
-        return basicTask.setTakeProfitForPips(order, pips);
+        subscribe(basicTask.setTakeProfitPrice(setTPParams), setTPParams);
     }
 
     private void subscribe(final Observable<OrderEvent> observable,

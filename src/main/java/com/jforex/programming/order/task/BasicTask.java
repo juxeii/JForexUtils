@@ -23,6 +23,8 @@ import com.jforex.programming.order.task.params.SetGTTParams;
 import com.jforex.programming.order.task.params.SetLabelParams;
 import com.jforex.programming.order.task.params.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.SetSLParams;
+import com.jforex.programming.order.task.params.SetSLTPMode;
+import com.jforex.programming.order.task.params.SetTPParams;
 import com.jforex.programming.order.task.params.SubmitParams;
 
 import io.reactivex.Completable;
@@ -147,49 +149,35 @@ public class BasicTask {
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_PRICE)));
     }
 
-    public Observable<OrderEvent> setStopLossPrice(final IOrder orderToSetSL,
-                                                   final double newSL) {
-        return setStopLossPrice(SetSLParams
-            .newBuilder(orderToSetSL, newSL)
-            .build());
-    }
-
-    public Observable<OrderEvent> setStopLossForPips(final IOrder order,
-                                                     final double pips) {
-        return Observable.defer(() -> {
-            final double slPrice = calculationUtil.slPriceForPips(order, pips);
-            return setStopLossPrice(order, slPrice);
-        });
-    }
-
     public Observable<OrderEvent> setStopLossPrice(final SetSLParams setSLParams) {
+        final IOrder orderToSetSL = setSLParams.order();
+        final double newSL = setSLParams.setSLTPMode() == SetSLTPMode.PRICE
+                ? setSLParams.priceOrPips()
+                : calculationUtil.slPriceForPips(orderToSetSL, setSLParams.priceOrPips());
+
         return Observable
             .just(setSLParams.order())
-            .filter(order -> !isSLSetTo(setSLParams.newSL()).test(order))
+            .filter(order -> !isSLSetTo(newSL).test(order))
             .flatMap(order -> taskExecutor
                 .setStopLossPrice(order,
-                                  setSLParams.newSL(),
+                                  newSL,
                                   setSLParams.offerSide(),
                                   setSLParams.trailingStep())
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_SL)));
     }
 
-    public Observable<OrderEvent> setTakeProfitPrice(final IOrder orderToSetTP,
-                                                     final double newTP) {
+    public Observable<OrderEvent> setTakeProfitPrice(final SetTPParams setTPParams) {
+        final IOrder orderToSetTP = setTPParams.order();
+        final double newTP = setTPParams.setSLTPMode() == SetSLTPMode.PRICE
+                ? setTPParams.priceOrPips()
+                : calculationUtil.tpPriceForPips(orderToSetTP, setTPParams.priceOrPips());
+
         return Observable
             .just(orderToSetTP)
             .filter(order -> !isTPSetTo(newTP).test(order))
             .flatMap(order -> taskExecutor
                 .setTakeProfitPrice(order, newTP)
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_TP)));
-    }
-
-    public Observable<OrderEvent> setTakeProfitForPips(final IOrder order,
-                                                       final double pips) {
-        return Observable.defer(() -> {
-            final double tpPrice = calculationUtil.tpPriceForPips(order, pips);
-            return setTakeProfitPrice(order, tpPrice);
-        });
     }
 
     private final Observable<OrderEvent> orderUtilObservable(final IOrder order,

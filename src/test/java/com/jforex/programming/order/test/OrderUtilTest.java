@@ -27,6 +27,7 @@ import com.jforex.programming.order.task.params.SetGTTParams;
 import com.jforex.programming.order.task.params.SetLabelParams;
 import com.jforex.programming.order.task.params.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.SetSLParams;
+import com.jforex.programming.order.task.params.SetTPParams;
 import com.jforex.programming.order.task.params.SubmitParams;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
@@ -142,67 +143,21 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void setSLDelegatesToOrderTask() {
-        final double newSL = 1.1234;
-        when(basicTaskMock.setStopLossPrice(orderForTest, newSL))
-            .thenReturn(orderEventObservable);
+    public void setSLCallsSubscribeOnSetSLParams() {
+        final SetSLParams setSLParamsMock = mock(SetSLParams.class);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setStopLossPrice(orderForTest, newSL);
+        orderUtil.setStopLossPrice(setSLParamsMock);
 
-        verify(basicTaskMock).setStopLossPrice(orderForTest, newSL);
-        assertThat(actualObservable, equalTo(orderEventObservable));
+        // verify(setTPParamsMock).subscribe(basicTaskMock);
     }
 
     @Test
-    public void setSLForPipsDelegatesToBasicTask() {
-        final double pips = 12.3;
-        when(basicTaskMock.setStopLossForPips(orderForTest, pips))
-            .thenReturn(orderEventObservable);
+    public void setTPCallsSubscribeOnSetTPParams() {
+        final SetTPParams setTPParamsMock = mock(SetTPParams.class);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.setStopLossForPips(orderForTest, pips);
+        orderUtil.setTakeProfitPrice(setTPParamsMock);
 
-        verify(basicTaskMock).setStopLossForPips(orderForTest, pips);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void setSLWithParamsDelegatesToBasicTask() {
-        final double newSL = 1.1234;
-        final SetSLParams setSLParams = SetSLParams
-            .newBuilder(orderForTest, newSL)
-            .build();
-
-        when(basicTaskMock.setStopLossPrice(setSLParams))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.setStopLossPrice(setSLParams);
-
-        verify(basicTaskMock).setStopLossPrice(setSLParams);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void setTPDelegatesToOrderTask() {
-        final double newTP = 1.1234;
-        when(basicTaskMock.setTakeProfitPrice(orderForTest, newTP))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.setTakeProfitPrice(orderForTest, newTP);
-
-        verify(basicTaskMock).setTakeProfitPrice(orderForTest, newTP);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void setTPForPipsDelegatesToBasicTask() {
-        final double pips = 12.3;
-        when(basicTaskMock.setTakeProfitForPips(orderForTest, pips))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.setTakeProfitForPips(orderForTest, pips);
-
-        verify(basicTaskMock).setTakeProfitForPips(orderForTest, pips);
-        assertThat(actualObservable, equalTo(orderEventObservable));
+        // verify(setTPParamsMock).subscribe(basicTaskMock);
     }
 
     @Test
