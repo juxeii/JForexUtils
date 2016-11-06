@@ -17,7 +17,13 @@ import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.CloseParams;
+import com.jforex.programming.order.task.params.MergeParams;
+import com.jforex.programming.order.task.params.SetAmountParams;
+import com.jforex.programming.order.task.params.SetGTTParams;
+import com.jforex.programming.order.task.params.SetLabelParams;
+import com.jforex.programming.order.task.params.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.SetSLParams;
+import com.jforex.programming.order.task.params.SubmitParams;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -36,7 +42,8 @@ public class BasicTask {
         this.calculationUtil = calculationUtil;
     }
 
-    public Observable<OrderEvent> submitOrder(final OrderParams orderParams) {
+    public Observable<OrderEvent> submitOrder(final SubmitParams submitParams) {
+        final OrderParams orderParams = submitParams.orderParams();
         final OrderCallReason callReason = orderParams.orderCommand().isConditional()
                 ? OrderCallReason.SUBMIT_CONDITIONAL
                 : OrderCallReason.SUBMIT;
@@ -45,6 +52,19 @@ public class BasicTask {
             .submitOrder(orderParams)
             .toObservable()
             .flatMap(order -> orderUtilObservable(order, callReason)));
+    }
+
+    public Observable<OrderEvent> mergeOrders(final MergeParams mergeParams) {
+        final String mergeOrderLabel = mergeParams.mergeOrderLabel();
+        final Collection<IOrder> toMergeOrders = mergeParams.toMergeOrders();
+
+        return Observable
+            .just(toMergeOrders)
+            .filter(orders -> orders.size() >= 2)
+            .flatMap(orders -> taskExecutor
+                .mergeOrders(mergeOrderLabel, orders)
+                .toObservable()
+                .flatMap(order -> orderUtilObservable(order, OrderCallReason.MERGE)));
     }
 
     public Observable<OrderEvent> mergeOrders(final String mergeOrderLabel,
@@ -79,18 +99,22 @@ public class BasicTask {
                            closeParams.partialCloseAmount());
     }
 
-    public Observable<OrderEvent> setLabel(final IOrder orderToSetLabel,
-                                           final String label) {
+    public Observable<OrderEvent> setLabel(final SetLabelParams setLabelParams) {
+        final IOrder orderToSetLabel = setLabelParams.order();
+        final String newLabel = setLabelParams.newLabel();
+
         return Observable
             .just(orderToSetLabel)
-            .filter(order -> !isLabelSetTo(label).test(order))
+            .filter(order -> !isLabelSetTo(newLabel).test(order))
             .flatMap(order -> taskExecutor
-                .setLabel(order, label)
+                .setLabel(order, newLabel)
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_LABEL)));
     }
 
-    public Observable<OrderEvent> setGoodTillTime(final IOrder orderToSetGTT,
-                                                  final long newGTT) {
+    public Observable<OrderEvent> setGoodTillTime(final SetGTTParams setGTTParams) {
+        final IOrder orderToSetGTT = setGTTParams.order();
+        final long newGTT = setGTTParams.newGTT();
+
         return Observable
             .just(orderToSetGTT)
             .filter(order -> !isGTTSetTo(newGTT).test(order))
@@ -99,8 +123,10 @@ public class BasicTask {
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_GTT)));
     }
 
-    public Observable<OrderEvent> setRequestedAmount(final IOrder orderToSetAmount,
-                                                     final double newRequestedAmount) {
+    public Observable<OrderEvent> setRequestedAmount(final SetAmountParams setAmountParams) {
+        final IOrder orderToSetAmount = setAmountParams.order();
+        final double newRequestedAmount = setAmountParams.newAmount();
+
         return Observable
             .just(orderToSetAmount)
             .filter(order -> !isAmountSetTo(newRequestedAmount).test(order))
@@ -109,8 +135,10 @@ public class BasicTask {
                 .andThen(orderUtilObservable(order, OrderCallReason.CHANGE_AMOUNT)));
     }
 
-    public Observable<OrderEvent> setOpenPrice(final IOrder orderToSetOpenPrice,
-                                               final double newOpenPrice) {
+    public Observable<OrderEvent> setOpenPrice(final SetOpenPriceParams setOpenPriceParams) {
+        final IOrder orderToSetOpenPrice = setOpenPriceParams.order();
+        final double newOpenPrice = setOpenPriceParams.newOpenPrice();
+
         return Observable
             .just(orderToSetOpenPrice)
             .filter(order -> !isOpenPriceSetTo(newOpenPrice).test(order))

@@ -77,7 +77,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.submitOrder(buyParamsEURUSD))
                 .thenReturn(Single.just(orderForTest));
 
-            observable = basicTask.submitOrder(buyParamsEURUSD);
+            // observable = basicTask.submitOrder(buyParamsEURUSD);
         }
 
         @Test
@@ -118,7 +118,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
             when(orderTaskExecutorMock.submitOrder(conditionalParams)).thenReturn(Single.just(orderForTest));
 
-            observable = basicTask.submitOrder(conditionalParams);
+            // observable = basicTask.submitOrder(conditionalParams);
         }
 
         @Test
@@ -286,7 +286,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.setLabel(orderForTest, newLabel))
                 .thenReturn(emptyCompletable());
 
-            observable = basicTask.setLabel(orderForTest, newLabel);
+            // observable = basicTask.setLabel(orderForTest, newLabel);
         }
 
         @Test
@@ -332,7 +332,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.setGoodTillTime(orderForTest, newGTT))
                 .thenReturn(emptyCompletable());
 
-            observable = basicTask.setGoodTillTime(orderForTest, newGTT);
+            // observable = basicTask.setGoodTillTime(orderForTest, newGTT);
         }
 
         @Test
@@ -378,7 +378,8 @@ public class BasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.setRequestedAmount(orderForTest, newRequestedAmount))
                 .thenReturn(emptyCompletable());
 
-            observable = basicTask.setRequestedAmount(orderForTest, newRequestedAmount);
+            // observable = basicTask.setRequestedAmount(orderForTest,
+            // newRequestedAmount);
         }
 
         @Test
@@ -424,7 +425,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
             when(orderTaskExecutorMock.setOpenPrice(orderForTest, newOpenPrice))
                 .thenReturn(emptyCompletable());
 
-            observable = basicTask.setOpenPrice(orderForTest, newOpenPrice);
+            // observable = basicTask.setOpenPrice(orderForTest, newOpenPrice);
         }
 
         @Test

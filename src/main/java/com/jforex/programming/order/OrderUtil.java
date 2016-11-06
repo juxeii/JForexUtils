@@ -10,6 +10,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CloseTask;
 import com.jforex.programming.order.task.MergeTask;
+import com.jforex.programming.order.task.params.BasicTaskParamsBase;
 import com.jforex.programming.order.task.params.CloseParams;
 import com.jforex.programming.order.task.params.ClosePositionParams;
 import com.jforex.programming.order.task.params.ComplexMergeParams;
@@ -47,16 +48,13 @@ public class OrderUtil {
     public void submitOrder(final SubmitParams submitParams) {
         checkNotNull(submitParams);
 
-        final Observable<OrderEvent> observable = basicTask.submitOrder(submitParams.orderParams());
-        TaskParamsUtil.subscribe(observable, submitParams.subscribeParams());
+        subscribe(basicTask.submitOrder(submitParams), submitParams);
     }
 
     public void mergeOrders(final MergeParams mergeParams) {
         checkNotNull(mergeParams);
 
-        final Observable<OrderEvent> observable = basicTask.mergeOrders(mergeParams.mergeOrderLabel(),
-                                                                        mergeParams.toMergeOrders());
-        TaskParamsUtil.subscribe(observable, mergeParams.subscribeParams());
+        subscribe(basicTask.mergeOrders(mergeParams), mergeParams);
     }
 
     public Observable<OrderEvent> mergeOrders(final Collection<IOrder> toMergeOrders,
@@ -70,40 +68,31 @@ public class OrderUtil {
     public void close(final CloseParams closeParams) {
         checkNotNull(closeParams);
 
-        final Observable<OrderEvent> observable = basicTask.close(closeParams);
-        TaskParamsUtil.subscribe(observable, closeParams.subscribeParams());
+        subscribe(basicTask.close(closeParams), closeParams);
     }
 
     public void setLabel(final SetLabelParams setLabelParams) {
         checkNotNull(setLabelParams);
 
-        final Observable<OrderEvent> observable = basicTask.setLabel(setLabelParams.order(),
-                                                                     setLabelParams.newLabel());
-        TaskParamsUtil.subscribe(observable, setLabelParams.subscribeParams());
+        subscribe(basicTask.setLabel(setLabelParams), setLabelParams);
     }
 
     public void setGoodTillTime(final SetGTTParams setGTTParams) {
         checkNotNull(setGTTParams);
 
-        final Observable<OrderEvent> observable = basicTask.setGoodTillTime(setGTTParams.order(),
-                                                                            setGTTParams.newGTT());
-        TaskParamsUtil.subscribe(observable, setGTTParams.subscribeParams());
+        subscribe(basicTask.setGoodTillTime(setGTTParams), setGTTParams);
     }
 
     public void setRequestedAmount(final SetAmountParams setAmountParams) {
         checkNotNull(setAmountParams);
 
-        final Observable<OrderEvent> observable = basicTask.setRequestedAmount(setAmountParams.order(),
-                                                                               setAmountParams.newAmount());
-        TaskParamsUtil.subscribe(observable, setAmountParams.subscribeParams());
+        subscribe(basicTask.setRequestedAmount(setAmountParams), setAmountParams);
     }
 
     public void setOpenPrice(final SetOpenPriceParams setOpenPriceParams) {
         checkNotNull(setOpenPriceParams);
 
-        final Observable<OrderEvent> observable = basicTask.setOpenPrice(setOpenPriceParams.order(),
-                                                                         setOpenPriceParams.newOpenPrice());
-        TaskParamsUtil.subscribe(observable, setOpenPriceParams.subscribeParams());
+        subscribe(basicTask.setOpenPrice(setOpenPriceParams), setOpenPriceParams);
     }
 
     public Observable<OrderEvent> setStopLossPrice(final IOrder order,
@@ -138,6 +127,11 @@ public class OrderUtil {
         checkNotNull(order);
 
         return basicTask.setTakeProfitForPips(order, pips);
+    }
+
+    private void subscribe(final Observable<OrderEvent> observable,
+                           final BasicTaskParamsBase basicTaskParamsBase) {
+        TaskParamsUtil.subscribe(observable, basicTaskParamsBase.subscribeParams());
     }
 
     public Observable<OrderEvent> mergePosition(final Instrument instrument,
