@@ -7,6 +7,7 @@ import com.dukascopy.api.Instrument;
 import com.google.common.base.Supplier;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.MergeAllPositionParams;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
@@ -38,10 +39,10 @@ public class ComplexMergeTask {
         return Observable.defer(() -> cancelSLTPAndMergeTask.observe(toMergeOrders.get(), mergeParams));
     }
 
-    public Observable<OrderEvent> mergeAll(final ComplexMergePositionParams complexMergePositionParams) {
+    public Observable<OrderEvent> mergeAll(final MergeAllPositionParams mergeAllPositionParams) {
         return Observable.defer(() -> {
             final Function<Instrument, Observable<OrderEvent>> observablesFromFactory =
-                    instrument -> mergePosition(instrument, complexMergePositionParams);
+                    instrument -> mergePosition(instrument, mergeAllPositionParams.complexMergePositionParams());
             return Observable.merge(positionUtil.observablesFromFactory(observablesFromFactory));
         });
     }

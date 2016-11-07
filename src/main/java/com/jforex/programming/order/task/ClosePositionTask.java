@@ -2,6 +2,7 @@ package com.jforex.programming.order.task;
 
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.task.params.position.CloseAllPositionParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
 import com.jforex.programming.order.task.params.position.ComplexClosePositionParams;
 import com.jforex.programming.position.PositionUtil;
@@ -32,10 +33,10 @@ public class ClosePositionTask {
         });
     }
 
-    public Observable<OrderEvent> closeAll(final ComplexClosePositionParams complexClosePositionParams) {
+    public Observable<OrderEvent> closeAll(final CloseAllPositionParams closeAllPositionParams) {
         return Observable.defer(() -> {
             final Function<Instrument, Observable<OrderEvent>> observablesForParams =
-                    instrument -> close(instrument, complexClosePositionParams);
+                    instrument -> close(instrument, closeAllPositionParams.complexClosePositionParams());
             return Observable.merge(positionUtil.observablesFromFactory(observablesForParams));
         });
     }

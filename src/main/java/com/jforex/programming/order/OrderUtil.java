@@ -18,8 +18,10 @@ import com.jforex.programming.order.task.params.basic.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.basic.SetSLParams;
 import com.jforex.programming.order.task.params.basic.SetTPParams;
 import com.jforex.programming.order.task.params.basic.SubmitParams;
+import com.jforex.programming.order.task.params.position.CloseAllPositionParams;
 import com.jforex.programming.order.task.params.position.ComplexClosePositionParams;
 import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.MergeAllPositionParams;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 
@@ -111,13 +113,12 @@ public class OrderUtil {
                                              complexMergePositionParams);
     }
 
-    public void mergeAllPositions(final ComplexMergePositionParams complexMergePositionParams) {
-        checkNotNull(complexMergePositionParams);
+    public void mergeAllPositions(final MergeAllPositionParams mergeAllPositionParams) {
+        checkNotNull(mergeAllPositionParams);
 
-        // TODO: fill handlers
-        mergeTask
-            .mergeAll(complexMergePositionParams)
-            .subscribe();
+        TaskParamsUtil.subscribePositionTask(instrument,
+                                             mergeTask.mergeAll(mergeAllPositionParams),
+                                             mergeAllPositionParams);
     }
 
     public void closePosition(final Instrument instrument,
@@ -129,13 +130,12 @@ public class OrderUtil {
                                              complexClosePositionParams);
     }
 
-    public void closeAllPositions(final ComplexClosePositionParams complexClosePositionParams) {
-        checkNotNull(complexClosePositionParams);
+    public void closeAllPositions(final CloseAllPositionParams closeAllPositionParams) {
+        checkNotNull(closeAllPositionParams);
 
-        // TODO: fill handlers
-        closePositionTask
-            .closeAll(complexClosePositionParams)
-            .subscribe();
+        TaskParamsUtil.subscribePositionTask(instrument,
+                                             closePositionTask.closeAll(closeAllPositionParams),
+                                             closeAllPositionParams);
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {

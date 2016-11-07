@@ -24,10 +24,10 @@ public class TaskParamsUtil {
     }
 
     private static Observable<OrderEvent> composeRetry(final Observable<OrderEvent> observable,
-                                                       final RetryParams retryParams) {
-        final int noOfRetries = retryParams.noOfRetries();
+                                                       final CommonParamsBase commonParamsBase) {
+        final int noOfRetries = commonParamsBase.noOfRetries();
         return noOfRetries > 0
-                ? observable.compose(TaskRetry.onRejectRetryWith(noOfRetries, retryParams.delayInMillis()))
+                ? observable.compose(TaskRetry.onRejectRetryWith(noOfRetries, commonParamsBase.delayInMillis()))
                 : observable;
     }
 

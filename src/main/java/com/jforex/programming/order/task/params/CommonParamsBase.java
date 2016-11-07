@@ -6,7 +6,7 @@ import java.util.function.Consumer;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class CommonParamsBase implements RetryParams {
+public class CommonParamsBase {
 
     protected Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
     protected final int noOfRetries;
@@ -22,12 +22,10 @@ public class CommonParamsBase implements RetryParams {
         return consumerForEvent;
     }
 
-    @Override
     public int noOfRetries() {
         return noOfRetries;
     }
 
-    @Override
     public long delayInMillis() {
         return delayInMillis;
     }
