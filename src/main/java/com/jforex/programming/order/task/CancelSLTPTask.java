@@ -6,8 +6,8 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
-import com.jforex.programming.order.task.params.position.BatchCancelSLAndTPParams;
-import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.BatchCancelSLTPParams;
+import com.jforex.programming.order.task.params.position.MergePositionParams;
 
 import io.reactivex.Observable;
 
@@ -20,15 +20,15 @@ public class CancelSLTPTask {
     }
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelSLTPOrders,
-                                          final ComplexMergePositionParams mergeParams) {
+                                          final MergePositionParams mergeParams) {
         return Observable.defer(() -> toCancelSLTPOrders.size() < 2
                 ? Observable.empty()
                 : createTask(toCancelSLTPOrders, mergeParams));
     }
 
     private Observable<OrderEvent> createTask(final Collection<IOrder> toCancelSLTPOrders,
-                                              final ComplexMergePositionParams complexMergeParams) {
-        final BatchCancelSLAndTPParams batchCancelSLAndTPParams = complexMergeParams.batchCancelSLAndTPParams();
+                                              final MergePositionParams complexMergeParams) {
+        final BatchCancelSLTPParams batchCancelSLAndTPParams = complexMergeParams.batchCancelSLAndTPParams();
         final Instrument instrument = toCancelSLTPOrders.iterator().next().getInstrument();
 
         final Observable<OrderEvent> cancelSL =

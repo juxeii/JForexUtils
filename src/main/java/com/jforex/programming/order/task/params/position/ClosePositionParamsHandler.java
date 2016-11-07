@@ -27,14 +27,14 @@ public class ClosePositionParamsHandler {
     }
 
     public Observable<OrderEvent> observeMerge(final Instrument instrument,
-                                               final ComplexClosePositionParams complexClosePositionParams) {
+                                               final ClosePositionParams complexClosePositionParams) {
         return complexClosePositionParams.closeExecutionMode() == CloseExecutionMode.CloseOpened
                 ? Observable.empty()
                 : observeMergeForFilledOrders(instrument, complexClosePositionParams);
     }
 
     private Observable<OrderEvent> observeMergeForFilledOrders(final Instrument instrument,
-                                                               final ComplexClosePositionParams complexClosePositionParams) {
+                                                               final ClosePositionParams complexClosePositionParams) {
         return Observable.defer(() -> {
             final Collection<IOrder> ordersToMerge = positionUtil.filledOrders(instrument);
             return complexMergeTask.merge(ordersToMerge,
@@ -43,14 +43,14 @@ public class ClosePositionParamsHandler {
     }
 
     public Observable<OrderEvent> observeClose(final Instrument instrument,
-                                               final ComplexClosePositionParams complexClosePositionParams) {
+                                               final ClosePositionParams complexClosePositionParams) {
         return Observable.defer(() -> batchChangeTask.close(instrument,
                                                             ordersToClose(instrument, complexClosePositionParams),
                                                             complexClosePositionParams.closePositionParams()));
     }
 
     private Collection<IOrder> ordersToClose(final Instrument instrument,
-                                             final ComplexClosePositionParams complexClosePositionParams) {
+                                             final ClosePositionParams complexClosePositionParams) {
         final CloseExecutionMode closeExecutionMode = complexClosePositionParams.closeExecutionMode();
 
         if (closeExecutionMode == CloseExecutionMode.CloseFilled)

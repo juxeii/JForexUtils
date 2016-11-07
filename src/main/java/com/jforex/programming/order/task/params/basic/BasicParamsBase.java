@@ -6,13 +6,13 @@ import com.jforex.programming.order.task.params.CommonParamsBase;
 
 import io.reactivex.functions.Action;
 
-public class BasicParamsBase extends CommonParamsBase {
+public abstract class BasicParamsBase extends CommonParamsBase {
 
     private final Consumer<Throwable> errorConsumer;
     private final Action startAction;
     private final Action completeAction;
 
-    public BasicParamsBase(final BasicParamsBuilder<?> builder) {
+    protected BasicParamsBase(final BasicParamsBuilder<?> builder) {
         super(builder);
 
         errorConsumer = builder.errorConsumer;

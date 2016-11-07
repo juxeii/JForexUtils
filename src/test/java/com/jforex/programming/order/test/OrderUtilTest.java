@@ -27,8 +27,8 @@ import com.jforex.programming.order.task.params.basic.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.basic.SetSLParams;
 import com.jforex.programming.order.task.params.basic.SetTPParams;
 import com.jforex.programming.order.task.params.basic.SubmitParams;
-import com.jforex.programming.order.task.params.position.ClosePositionParams;
-import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
+import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -51,11 +51,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private ComplexMergePositionParams mergepositionParamsMock;
+    private MergePositionParams mergepositionParamsMock;
     @Mock
-    private Function<Instrument, ComplexMergePositionParams> mergePositionParamsFactory;
+    private Function<Instrument, MergePositionParams> mergePositionParamsFactory;
     @Mock
-    private Function<Instrument, ClosePositionParams> closePositionParamsFactory;
+    private Function<Instrument, SimpleClosePositionParams> closePositionParamsFactory;
     private final IOrder orderForTest = buyOrderEURUSD;
     private Observable<OrderEvent> orderEventObservable;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
@@ -185,7 +185,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
     @Test
     public void closePositionDelegatesToCloseTask() {
-        final ClosePositionParams positionParams = mock(ClosePositionParams.class);
+        final SimpleClosePositionParams positionParams = mock(SimpleClosePositionParams.class);
 
         when(orderCloseTaskMock.close(positionParams))
             .thenReturn(orderEventObservable);

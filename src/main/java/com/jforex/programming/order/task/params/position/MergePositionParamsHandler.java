@@ -17,20 +17,20 @@ public class MergePositionParamsHandler {
     private final BasicTask basicTask;
 
     public MergePositionParamsHandler(final CancelSLTPTask cancelSLTPTask,
-                              final BasicTask basicTask) {
+                                      final BasicTask basicTask) {
         this.cancelSLTPTask = cancelSLTPTask;
         this.basicTask = basicTask;
     }
 
     public Observable<OrderEvent> observeCancelSLTP(final Collection<IOrder> toMergeOrders,
-                                                    final ComplexMergePositionParams complexMergeParams) {
+                                                    final MergePositionParams complexMergeParams) {
         return cancelSLTPTask.observe(toMergeOrders, complexMergeParams);
     }
 
     public Observable<OrderEvent> observeMerge(final Collection<IOrder> toMergeOrders,
-                                               final MergePositionParams mergePositionParams) {
+                                               final SimpleMergePositionParams mergePositionParams) {
         final Instrument instrument = toMergeOrders.iterator().next().getInstrument();
-        final Observable<OrderEvent> observable = basicTask.mergeOrders(mergePositionParams.mergeOrderLabel(),
+        final Observable<OrderEvent> observable = basicTask.mergeOrders(mergePositionParams.mergeOrderLabel(instrument),
                                                                         toMergeOrders);
         return TaskParamsUtil.composePositionTask(instrument,
                                                   observable,

@@ -6,11 +6,11 @@ import java.util.function.Consumer;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class CommonParamsBase {
+public abstract class CommonParamsBase {
 
     protected Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
-    protected final int noOfRetries;
-    protected final long delayInMillis;
+    private final int noOfRetries;
+    private final long delayInMillis;
 
     protected CommonParamsBase(final CommonParamsBuilder<?> builder) {
         consumerForEvent = builder.consumerForEvent;

@@ -18,9 +18,9 @@ import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.ComplexMergeTask;
 import com.jforex.programming.order.task.params.basic.CloseParams;
-import com.jforex.programming.order.task.params.position.ClosePositionParams;
+import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
-import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -41,11 +41,11 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private ClosePositionParams closeParamsMock;
+    private SimpleClosePositionParams closeParamsMock;
     @Mock
     private Function<IOrder, CloseParams> closeParamsProviderMock;
     @Mock
-    private ComplexMergePositionParams mergeParamsMock;
+    private MergePositionParams mergeParamsMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> filledOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final Set<IOrder> openOrders = Sets.newHashSet(buyOrderEURUSD);

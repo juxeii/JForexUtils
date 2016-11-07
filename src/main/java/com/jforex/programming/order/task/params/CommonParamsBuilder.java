@@ -10,7 +10,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
 @SuppressWarnings("unchecked")
-public class CommonParamsBuilder<T> {
+public abstract class CommonParamsBuilder<T> {
 
     protected Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
     protected int noOfRetries;

@@ -12,7 +12,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.ClosePositionTask;
-import com.jforex.programming.order.task.params.position.ClosePositionParams;
+import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -32,9 +32,9 @@ public class CloseTaskTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private ClosePositionParams closePositionParamsMock;
+    private SimpleClosePositionParams closePositionParamsMock;
     @Mock
-    private Function<Instrument, ClosePositionParams> paramsFactoryMock;
+    private Function<Instrument, SimpleClosePositionParams> paramsFactoryMock;
     private final OrderEvent event = closeEvent;
     private TestObserver<OrderEvent> testObserver;
 

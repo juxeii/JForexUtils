@@ -9,7 +9,7 @@ import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import io.reactivex.functions.Action;
 
 @SuppressWarnings("unchecked")
-public class BasicParamsBuilder<T> extends CommonParamsBuilder<T> {
+public abstract class BasicParamsBuilder<T> extends CommonParamsBuilder<T> {
 
     public Consumer<Throwable> errorConsumer;
     public Action startAction;

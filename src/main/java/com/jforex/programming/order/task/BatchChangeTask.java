@@ -12,7 +12,7 @@ import com.jforex.programming.order.task.params.basic.SetSLParams;
 import com.jforex.programming.order.task.params.basic.SetTPParams;
 import com.jforex.programming.order.task.params.position.CancelSLParams;
 import com.jforex.programming.order.task.params.position.CancelTPParams;
-import com.jforex.programming.order.task.params.position.ClosePositionParams;
+import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.strategy.StrategyUtil;
 
@@ -31,7 +31,7 @@ public class BatchChangeTask {
 
     public Observable<OrderEvent> close(final Instrument instrument,
                                         final Collection<IOrder> orders,
-                                        final ClosePositionParams closePositionParams) {
+                                        final SimpleClosePositionParams closePositionParams) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
                 order -> TaskParamsUtil.composePositionTask(order.getInstrument(),
                                                             basicTask.close(CloseParams

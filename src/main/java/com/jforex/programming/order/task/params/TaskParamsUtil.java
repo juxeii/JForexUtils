@@ -58,4 +58,13 @@ public class TaskParamsUtil {
                        e -> paramsForPosition.errorConsumer(instrument).accept(e),
                        paramsForPosition.completeAction(instrument)::run);
     }
+
+    public static void subscribeToAllPositionTask(final Observable<OrderEvent> observable,
+                                                  final BasicParamsBase basicParamsBase) {
+        composeRetry(observable, basicParamsBase)
+            .doOnSubscribe(d -> basicParamsBase.startAction().run())
+            .subscribe(orderEvent -> handlerOrderEvent(orderEvent, basicParamsBase.consumerForEvent()),
+                       e -> basicParamsBase.errorConsumer().accept(e),
+                       basicParamsBase.completeAction()::run);
+    }
 }

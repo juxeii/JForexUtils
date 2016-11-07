@@ -5,13 +5,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.task.MergeExecutionMode;
 
-public class BatchCancelSLAndTPParams extends PositionParamsBase<Instrument> {
+public class BatchCancelSLTPParams extends PositionParamsBase<Instrument> {
 
     private final BatchCancelSLParams batchCancelSLParams;
     private final BatchCancelTPParams batchCancelTPParams;
     private final MergeExecutionMode mergeExecutionMode;
 
-    private BatchCancelSLAndTPParams(final Builder builder) {
+    private BatchCancelSLTPParams(final Builder builder) {
         super(builder);
 
         batchCancelSLParams = builder.batchCancelSLParams;
@@ -64,8 +64,8 @@ public class BatchCancelSLAndTPParams extends PositionParamsBase<Instrument> {
             return this;
         }
 
-        public BatchCancelSLAndTPParams build() {
-            return new BatchCancelSLAndTPParams(this);
+        public BatchCancelSLTPParams build() {
+            return new BatchCancelSLTPParams(this);
         }
     }
 }

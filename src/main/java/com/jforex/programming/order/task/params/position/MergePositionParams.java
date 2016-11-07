@@ -2,6 +2,7 @@ package com.jforex.programming.order.task.params.position;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 import com.dukascopy.api.Instrument;
@@ -10,42 +11,48 @@ import com.jforex.programming.order.event.OrderEventType;
 
 public class MergePositionParams extends PositionParamsBase<Instrument> {
 
-    private final String mergeOrderLabel;
+    private final BatchCancelSLTPParams batchCancelSLAndTPParams;
+    private final SimpleMergePositionParams mergePositionParams;
+    private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
 
     private MergePositionParams(final Builder builder) {
         super(builder);
 
-        mergeOrderLabel = builder.mergeOrderLabel;
+        batchCancelSLAndTPParams = builder.batchCancelSLAndTPParams;
+        mergePositionParams = builder.mergePositionParams;
+        consumerForEvent = batchCancelSLAndTPParams.consumerForEvent();
+        consumerForEvent.putAll(mergePositionParams.consumerForEvent());
     }
 
-    public String mergeOrderLabel() {
-        return mergeOrderLabel;
+    public BatchCancelSLTPParams batchCancelSLAndTPParams() {
+        return batchCancelSLAndTPParams;
     }
 
-    public static Builder mergeWith(final String mergeOrderLabel) {
-        checkNotNull(mergeOrderLabel);
+    public SimpleMergePositionParams mergePositionParams() {
+        return mergePositionParams;
+    }
 
-        return new Builder(mergeOrderLabel);
+    public static Builder withMergeParams(final SimpleMergePositionParams mergePositionParams) {
+        checkNotNull(mergePositionParams);
+
+        return new Builder(mergePositionParams);
     }
 
     public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
 
-        private final String mergeOrderLabel;
+        private final BatchCancelSLTPParams batchCancelSLAndTPParams =
+                BatchCancelSLTPParams.newBuilder().build();
+        private SimpleMergePositionParams mergePositionParams;
 
-        public Builder(final String mergeOrderLabel) {
-            this.mergeOrderLabel = mergeOrderLabel;
+        public Builder(final SimpleMergePositionParams mergePositionParams) {
+            this.mergePositionParams = mergePositionParams;
         }
 
-        public Builder doOnMerge(final Consumer<OrderEvent> mergeConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_OK, mergeConsumer);
-        }
+        public Builder withMergeParams(final SimpleMergePositionParams mergePositionParams) {
+            checkNotNull(mergePositionParams);
 
-        public Builder doOnMergeClose(final Consumer<OrderEvent> mergeCloseConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_CLOSE_OK, mergeCloseConsumer);
-        }
-
-        public Builder doOnReject(final Consumer<OrderEvent> rejectConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_REJECTED, rejectConsumer);
+            this.mergePositionParams = mergePositionParams;
+            return this;
         }
 
         public MergePositionParams build() {

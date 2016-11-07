@@ -15,8 +15,8 @@ import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.basic.CloseParams;
-import com.jforex.programming.order.task.params.position.ClosePositionParams;
-import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
+import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
@@ -26,10 +26,10 @@ import io.reactivex.observers.TestObserver;
 
 public class ClosePositionParamsTest extends InstrumentUtilForTest {
 
-    private ClosePositionParams positionParams;
+    private SimpleClosePositionParams positionParams;
 
     @Mock
-    private ComplexMergePositionParams mergeParamsMock;
+    private MergePositionParams mergeParamsMock;
     @Mock
     private Function<IOrder, CloseParams> closeParamsPriovderMock;
     private final OrderEvent testEvent = closeEvent;
@@ -64,7 +64,7 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
 
     @Test
     public void defaultParamsValuesAreCorrect() {
-        positionParams = ClosePositionParams
+        positionParams = SimpleClosePositionParams
             .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .closeOpenedComposer(testComposer, BatchMode.MERGE)
             .build();
@@ -81,7 +81,7 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
 
     @Test
     public void definedValuesForCloseFilledAreCorrect() {
-        positionParams = ClosePositionParams
+        positionParams = SimpleClosePositionParams
             .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .singleCloseComposer(testOrderComposer)
             .closeFilledComposer(testComposer, BatchMode.CONCAT)
@@ -101,7 +101,7 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
 
     @Test
     public void definedValuesForCloseFilledOrOpenedAreCorrect() {
-        positionParams = ClosePositionParams
+        positionParams = SimpleClosePositionParams
             .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .singleCloseComposer(testOrderComposer)
             .closeAllComposer(testComposer, BatchMode.MERGE)
@@ -119,7 +119,7 @@ public class ClosePositionParamsTest extends InstrumentUtilForTest {
 
     @Test
     public void definedValuesForCloseOpenedAreCorrect() {
-        positionParams = ClosePositionParams
+        positionParams = SimpleClosePositionParams
             .newBuilder(instrumentEURUSD, closeParamsPriovderMock)
             .singleCloseComposer(testOrderComposer)
             .closeOpenedComposer(testComposer, BatchMode.MERGE)

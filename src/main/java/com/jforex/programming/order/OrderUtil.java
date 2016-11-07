@@ -18,10 +18,10 @@ import com.jforex.programming.order.task.params.basic.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.basic.SetSLParams;
 import com.jforex.programming.order.task.params.basic.SetTPParams;
 import com.jforex.programming.order.task.params.basic.SubmitParams;
-import com.jforex.programming.order.task.params.position.CloseAllPositionParams;
-import com.jforex.programming.order.task.params.position.ComplexClosePositionParams;
-import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
-import com.jforex.programming.order.task.params.position.MergeAllPositionParams;
+import com.jforex.programming.order.task.params.position.CloseAllPositionsParams;
+import com.jforex.programming.order.task.params.position.ClosePositionParams;
+import com.jforex.programming.order.task.params.position.MergePositionParams;
+import com.jforex.programming.order.task.params.position.MergeAllPositionsParams;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 
@@ -104,7 +104,7 @@ public class OrderUtil {
     }
 
     public void mergePosition(final Instrument instrument,
-                              final ComplexMergePositionParams complexMergePositionParams) {
+                              final MergePositionParams complexMergePositionParams) {
         checkNotNull(instrument);
         checkNotNull(complexMergePositionParams);
 
@@ -113,16 +113,15 @@ public class OrderUtil {
                                              complexMergePositionParams);
     }
 
-    public void mergeAllPositions(final MergeAllPositionParams mergeAllPositionParams) {
+    public void mergeAllPositions(final MergeAllPositionsParams mergeAllPositionParams) {
         checkNotNull(mergeAllPositionParams);
 
-        TaskParamsUtil.subscribePositionTask(instrument,
-                                             mergeTask.mergeAll(mergeAllPositionParams),
-                                             mergeAllPositionParams);
+        TaskParamsUtil.subscribeToAllPositionTask(mergeTask.mergeAll(mergeAllPositionParams),
+                                                  mergeAllPositionParams);
     }
 
     public void closePosition(final Instrument instrument,
-                              final ComplexClosePositionParams complexClosePositionParams) {
+                              final ClosePositionParams complexClosePositionParams) {
         checkNotNull(complexClosePositionParams);
 
         TaskParamsUtil.subscribePositionTask(instrument,
@@ -130,12 +129,11 @@ public class OrderUtil {
                                              complexClosePositionParams);
     }
 
-    public void closeAllPositions(final CloseAllPositionParams closeAllPositionParams) {
+    public void closeAllPositions(final CloseAllPositionsParams closeAllPositionParams) {
         checkNotNull(closeAllPositionParams);
 
-        TaskParamsUtil.subscribePositionTask(instrument,
-                                             closePositionTask.closeAll(closeAllPositionParams),
-                                             closeAllPositionParams);
+        TaskParamsUtil.subscribeToAllPositionTask(closePositionTask.closeAll(closeAllPositionParams),
+                                                  closeAllPositionParams);
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
