@@ -1,4 +1,4 @@
-package com.jforex.programming.order.task.params;
+package com.jforex.programming.order.task.params.position;
 
 import java.util.Collection;
 

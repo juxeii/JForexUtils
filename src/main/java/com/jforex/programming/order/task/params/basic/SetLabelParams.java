@@ -1,11 +1,14 @@
-package com.jforex.programming.order.task.params;
+package com.jforex.programming.order.task.params.basic;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Consumer;
+
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class SetLabelParams extends BasicTaskParamsBase {
+public class SetLabelParams extends BasicParamsBase {
 
     private final IOrder order;
     private final String newLabel;
@@ -33,7 +36,7 @@ public class SetLabelParams extends BasicTaskParamsBase {
         return new Builder(order, newLabel);
     }
 
-    public static class Builder extends GeneralBuilder<Builder> {
+    public static class Builder extends BasicParamsBuilder<Builder> {
 
         private final IOrder order;
         private final String newLabel;
@@ -44,11 +47,11 @@ public class SetLabelParams extends BasicTaskParamsBase {
             this.newLabel = newLabel;
         }
 
-        public Builder doOnChangedLabel(final OrderEventConsumer changedLabelConsumer) {
+        public Builder doOnChangedLabel(final Consumer<OrderEvent> changedLabelConsumer) {
             return setEventConsumer(OrderEventType.CHANGED_LABEL, changedLabelConsumer);
         }
 
-        public Builder doOnReject(final OrderEventConsumer changeRejectConsumer) {
+        public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
             return setEventConsumer(OrderEventType.CHANGE_LABEL_REJECTED, changeRejectConsumer);
         }
 

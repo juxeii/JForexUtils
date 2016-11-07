@@ -12,8 +12,8 @@ import org.mockito.Mock;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.ClosePositionTask;
-import com.jforex.programming.order.task.params.ClosePositionParams;
-import com.jforex.programming.order.task.params.ClosePositionParamsHandler;
+import com.jforex.programming.order.task.params.position.ClosePositionParams;
+import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 

@@ -1,11 +1,14 @@
-package com.jforex.programming.order.task.params;
+package com.jforex.programming.order.task.params.basic;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Consumer;
+
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class SetGTTParams extends BasicTaskParamsBase {
+public class SetGTTParams extends BasicParamsBase {
 
     private final IOrder order;
     private final long newGTT;
@@ -32,7 +35,7 @@ public class SetGTTParams extends BasicTaskParamsBase {
         return new Builder(order, newGTT);
     }
 
-    public static class Builder extends GeneralBuilder<Builder> {
+    public static class Builder extends BasicParamsBuilder<Builder> {
 
         private final IOrder order;
         private final long newGTT;
@@ -43,11 +46,11 @@ public class SetGTTParams extends BasicTaskParamsBase {
             this.newGTT = newGTT;
         }
 
-        public Builder doOnChangedGTT(final OrderEventConsumer changedGTTConsumer) {
+        public Builder doOnChangedGTT(final Consumer<OrderEvent> changedGTTConsumer) {
             return setEventConsumer(OrderEventType.CHANGED_GTT, changedGTTConsumer);
         }
 
-        public Builder doOnReject(final OrderEventConsumer changeRejectConsumer) {
+        public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
             return setEventConsumer(OrderEventType.CHANGE_GTT_REJECTED, changeRejectConsumer);
         }
 

@@ -1,13 +1,15 @@
-package com.jforex.programming.order.task.params;
+package com.jforex.programming.order.task.params.basic;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class MergeParams extends BasicTaskParamsBase {
+public class MergeParams extends BasicParamsBase {
 
     private final String mergeOrderLabel;
     private final Collection<IOrder> toMergeOrders;
@@ -35,7 +37,7 @@ public class MergeParams extends BasicTaskParamsBase {
         return new Builder(mergeOrderLabel, toMergeOrders);
     }
 
-    public static class Builder extends GeneralBuilder<Builder> {
+    public static class Builder extends BasicParamsBuilder<Builder> {
 
         private final String mergeOrderLabel;
         private final Collection<IOrder> toMergeOrders;
@@ -46,15 +48,15 @@ public class MergeParams extends BasicTaskParamsBase {
             this.toMergeOrders = toMergeOrders;
         }
 
-        public Builder doOnMerge(final OrderEventConsumer mergeConsumer) {
+        public Builder doOnMerge(final Consumer<OrderEvent> mergeConsumer) {
             return setEventConsumer(OrderEventType.MERGE_OK, mergeConsumer);
         }
 
-        public Builder doOnMergeClose(final OrderEventConsumer mergeCloseConsumer) {
+        public Builder doOnMergeClose(final Consumer<OrderEvent> mergeCloseConsumer) {
             return setEventConsumer(OrderEventType.MERGE_CLOSE_OK, mergeCloseConsumer);
         }
 
-        public Builder doOnReject(final OrderEventConsumer rejectConsumer) {
+        public Builder doOnReject(final Consumer<OrderEvent> rejectConsumer) {
             return setEventConsumer(OrderEventType.MERGE_REJECTED, rejectConsumer);
         }
 

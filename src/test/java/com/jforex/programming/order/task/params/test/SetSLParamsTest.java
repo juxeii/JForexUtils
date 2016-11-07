@@ -6,7 +6,7 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 import com.dukascopy.api.OfferSide;
-import com.jforex.programming.order.task.params.SetSLParams;
+import com.jforex.programming.order.task.params.basic.SetSLParams;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 
 public class SetSLParamsTest extends QuoteProviderForTest {

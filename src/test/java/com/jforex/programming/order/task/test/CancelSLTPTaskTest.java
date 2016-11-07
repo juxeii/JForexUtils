@@ -14,7 +14,7 @@ import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
 import com.jforex.programming.order.task.MergeExecutionMode;
-import com.jforex.programming.order.task.params.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;

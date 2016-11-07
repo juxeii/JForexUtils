@@ -17,10 +17,10 @@ import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.ComplexMergeTask;
-import com.jforex.programming.order.task.params.CloseParams;
-import com.jforex.programming.order.task.params.ClosePositionParams;
-import com.jforex.programming.order.task.params.ClosePositionParamsHandler;
-import com.jforex.programming.order.task.params.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.basic.CloseParams;
+import com.jforex.programming.order.task.params.position.ClosePositionParams;
+import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
+import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 

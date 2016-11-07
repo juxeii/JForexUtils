@@ -1,10 +1,10 @@
-package com.jforex.programming.order.task.params;
+package com.jforex.programming.order.task.params.basic;
 
-public abstract class BasicTaskParamsBase {
+public abstract class BasicParamsBase {
 
     private final SubscribeParams subscribeParams;
 
-    protected BasicTaskParamsBase(final GeneralBuilder<?> builder) {
+    protected BasicParamsBase(final BasicParamsBuilder<?> builder) {
         subscribeParams = new SubscribeParams(builder);
     }
 

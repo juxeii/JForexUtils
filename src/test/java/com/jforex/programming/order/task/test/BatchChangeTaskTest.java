@@ -15,7 +15,7 @@ import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchMode;
-import com.jforex.programming.order.task.params.CloseParams;
+import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;

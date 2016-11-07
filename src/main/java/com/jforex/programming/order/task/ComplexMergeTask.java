@@ -6,7 +6,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.google.common.base.Supplier;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.params.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;

@@ -7,7 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.jforex.programming.order.task.params.CloseParams;
+import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.strategy.StrategyUtil;
 import com.jforex.programming.test.common.QuoteProviderForTest;
 

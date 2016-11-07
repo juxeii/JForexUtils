@@ -5,9 +5,9 @@ import java.util.Collection;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.params.BatchCancelSLAndTPParams;
-import com.jforex.programming.order.task.params.ComplexMergePositionParams;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
+import com.jforex.programming.order.task.params.position.BatchCancelSLAndTPParams;
+import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
 
 import io.reactivex.Observable;
 
@@ -29,23 +29,37 @@ public class CancelSLTPTask {
     private Observable<OrderEvent> createTask(final Collection<IOrder> toCancelSLTPOrders,
                                               final ComplexMergePositionParams complexMergeParams) {
         final BatchCancelSLAndTPParams batchCancelSLAndTPParams = complexMergeParams.batchCancelSLAndTPParams();
+        final Instrument instrument = toCancelSLTPOrders.iterator().next().getInstrument();
 
         final Observable<OrderEvent> cancelSL =
-                Observable.defer(() -> batchChangeTask.cancelSL(toCancelSLTPOrders,
-                                                                batchCancelSLAndTPParams
-                                                                    .batchCancelSLParams()));
+                TaskParamsUtil.composePositionTask(instrument,
+                                                   Observable.defer(() -> batchChangeTask.cancelSL(toCancelSLTPOrders,
+                                                                                                   batchCancelSLAndTPParams
+                                                                                                       .batchCancelSLParams()
+                                                                                                       .cancelSLParams(),
+                                                                                                   batchCancelSLAndTPParams
+                                                                                                       .batchCancelSLParams()
+                                                                                                       .batchMode())),
+                                                   batchCancelSLAndTPParams.batchCancelSLParams());
         final Observable<OrderEvent> cancelTP =
-                Observable.defer(() -> batchChangeTask.cancelTP(toCancelSLTPOrders,
-                                                                batchCancelSLAndTPParams
-                                                                    .batchCancelTPParams()));
+                TaskParamsUtil.composePositionTask(instrument,
+                                                   Observable.defer(() -> batchChangeTask.cancelTP(toCancelSLTPOrders,
+                                                                                                   batchCancelSLAndTPParams
+                                                                                                       .batchCancelTPParams()
+                                                                                                       .cancelTPParams(),
+                                                                                                   batchCancelSLAndTPParams
+                                                                                                       .batchCancelTPParams()
+                                                                                                       .batchMode())),
+                                                   batchCancelSLAndTPParams.batchCancelTPParams());
+
         final Observable<OrderEvent> observable = arrangeObservables(cancelSL,
                                                                      cancelTP,
                                                                      batchCancelSLAndTPParams
                                                                          .mergeExecutionMode());
-        final Instrument instrument = toCancelSLTPOrders.iterator().next().getInstrument();
-        return TaskParamsUtil.composeBatchCancelSLTP(instrument,
-                                                     observable,
-                                                     batchCancelSLAndTPParams);
+
+        return TaskParamsUtil.composePositionTask(instrument,
+                                                  observable,
+                                                  batchCancelSLAndTPParams);
     }
 
     private Observable<OrderEvent> arrangeObservables(final Observable<OrderEvent> cancelSL,

@@ -1,11 +1,14 @@
-package com.jforex.programming.order.task.params;
+package com.jforex.programming.order.task.params.basic;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Consumer;
+
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class SetOpenPriceParams extends BasicTaskParamsBase {
+public class SetOpenPriceParams extends BasicParamsBase {
 
     private final IOrder order;
     private final double newOpenPrice;
@@ -32,7 +35,7 @@ public class SetOpenPriceParams extends BasicTaskParamsBase {
         return new Builder(order, newOpenPrice);
     }
 
-    public static class Builder extends GeneralBuilder<Builder> {
+    public static class Builder extends BasicParamsBuilder<Builder> {
 
         private final IOrder order;
         private final double newOpenPrice;
@@ -43,11 +46,11 @@ public class SetOpenPriceParams extends BasicTaskParamsBase {
             this.newOpenPrice = newOpenPrice;
         }
 
-        public Builder doOnChangedOpenPrice(final OrderEventConsumer changedOpenPriceConsumer) {
+        public Builder doOnChangedOpenPrice(final Consumer<OrderEvent> changedOpenPriceConsumer) {
             return setEventConsumer(OrderEventType.CHANGED_PRICE, changedOpenPriceConsumer);
         }
 
-        public Builder doOnReject(final OrderEventConsumer changeRejectConsumer) {
+        public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
             return setEventConsumer(OrderEventType.CHANGE_PRICE_REJECTED, changeRejectConsumer);
         }
 

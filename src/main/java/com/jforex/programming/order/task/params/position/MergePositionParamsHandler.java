@@ -1,4 +1,4 @@
-package com.jforex.programming.order.task.params;
+package com.jforex.programming.order.task.params.position;
 
 import java.util.Collection;
 
@@ -7,15 +7,16 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
+import com.jforex.programming.order.task.params.TaskParamsUtil;
 
 import io.reactivex.Observable;
 
-public class MergeParamsHandler {
+public class MergePositionParamsHandler {
 
     private final CancelSLTPTask cancelSLTPTask;
     private final BasicTask basicTask;
 
-    public MergeParamsHandler(final CancelSLTPTask cancelSLTPTask,
+    public MergePositionParamsHandler(final CancelSLTPTask cancelSLTPTask,
                               final BasicTask basicTask) {
         this.cancelSLTPTask = cancelSLTPTask;
         this.basicTask = basicTask;
@@ -31,8 +32,8 @@ public class MergeParamsHandler {
         final Instrument instrument = toMergeOrders.iterator().next().getInstrument();
         final Observable<OrderEvent> observable = basicTask.mergeOrders(mergePositionParams.mergeOrderLabel(),
                                                                         toMergeOrders);
-        return TaskParamsUtil.composeMergePosition(instrument,
-                                                   observable,
-                                                   mergePositionParams);
+        return TaskParamsUtil.composePositionTask(instrument,
+                                                  observable,
+                                                  mergePositionParams);
     }
 }

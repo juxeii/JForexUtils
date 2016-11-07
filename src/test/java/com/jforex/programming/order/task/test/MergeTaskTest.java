@@ -16,7 +16,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.ComplexMergeTask;
-import com.jforex.programming.order.task.params.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 

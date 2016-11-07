@@ -1,11 +1,14 @@
-package com.jforex.programming.order.task.params;
+package com.jforex.programming.order.task.params.basic;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Consumer;
+
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class SetAmountParams extends BasicTaskParamsBase {
+public class SetAmountParams extends BasicParamsBase {
 
     private final IOrder order;
     private final double newAmount;
@@ -32,7 +35,7 @@ public class SetAmountParams extends BasicTaskParamsBase {
         return new Builder(order, newAmount);
     }
 
-    public static class Builder extends GeneralBuilder<Builder> {
+    public static class Builder extends BasicParamsBuilder<Builder> {
 
         private final IOrder order;
         private final double newAmount;
@@ -43,11 +46,11 @@ public class SetAmountParams extends BasicTaskParamsBase {
             this.newAmount = newAmount;
         }
 
-        public Builder doOnChangedAmount(final OrderEventConsumer changedAmountConsumer) {
+        public Builder doOnChangedAmount(final Consumer<OrderEvent> changedAmountConsumer) {
             return setEventConsumer(OrderEventType.CHANGED_AMOUNT, changedAmountConsumer);
         }
 
-        public Builder doOnReject(final OrderEventConsumer changeRejectConsumer) {
+        public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
             return setEventConsumer(OrderEventType.CHANGE_AMOUNT_REJECTED, changeRejectConsumer);
         }
 

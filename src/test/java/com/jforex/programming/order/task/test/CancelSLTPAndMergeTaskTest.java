@@ -11,8 +11,8 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
-import com.jforex.programming.order.task.params.ComplexMergePositionParams;
-import com.jforex.programming.order.task.params.MergeParamsHandler;
+import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.MergePositionParamsHandler;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -24,7 +24,7 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     private CancelSLTPAndMergeTask cancelSLTPAndMergeTask;
 
     @Mock
-    private MergeParamsHandler paramsHandlerMock;
+    private MergePositionParamsHandler paramsHandlerMock;
     @Mock
     private ComplexMergePositionParams mergeParamsMock;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);

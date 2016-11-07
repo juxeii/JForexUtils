@@ -1,11 +1,15 @@
-package com.jforex.programming.order.task.params;
+package com.jforex.programming.order.task.params.basic;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.event.OrderEventType;
+import java.util.function.Consumer;
 
-public class SetTPParams extends BasicTaskParamsBase {
+import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.SetSLTPMode;
+
+public class SetTPParams extends BasicParamsBase {
 
     private final IOrder order;
     private final double priceOrPips;
@@ -49,7 +53,7 @@ public class SetTPParams extends BasicTaskParamsBase {
                            SetSLTPMode.PIPS);
     }
 
-    public static class Builder extends GeneralBuilder<Builder> {
+    public static class Builder extends BasicParamsBuilder<Builder> {
 
         private final IOrder order;
         private final double priceOrPips;
@@ -63,11 +67,11 @@ public class SetTPParams extends BasicTaskParamsBase {
             this.setSLTPMode = setSLTPMode;
         }
 
-        public Builder doOnChangedTP(final OrderEventConsumer changedTPConsumer) {
+        public Builder doOnChangedTP(final Consumer<OrderEvent> changedTPConsumer) {
             return setEventConsumer(OrderEventType.CHANGED_TP, changedTPConsumer);
         }
 
-        public Builder doOnReject(final OrderEventConsumer changeRejectConsumer) {
+        public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
             return setEventConsumer(OrderEventType.CHANGE_TP_REJECTED, changeRejectConsumer);
         }
 

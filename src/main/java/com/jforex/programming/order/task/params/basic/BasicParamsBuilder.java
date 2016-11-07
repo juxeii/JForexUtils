@@ -1,19 +1,21 @@
-package com.jforex.programming.order.task.params;
+package com.jforex.programming.order.task.params.basic;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
 import io.reactivex.functions.Action;
 
 @SuppressWarnings("unchecked")
-public class GeneralBuilder<T> {
+public class BasicParamsBuilder<T> {
 
-    public Map<OrderEventType, OrderEventConsumer> consumerForEvent = new HashMap<>();
-    public ErrorConsumer errorConsumer;
+    public Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
+    public Consumer<Throwable> errorConsumer;
     public Action startAction;
     public Action completeAction;
     public int noOfRetries;
@@ -26,7 +28,7 @@ public class GeneralBuilder<T> {
         return (T) this;
     }
 
-    public T doOnException(final ErrorConsumer errorConsumer) {
+    public T doOnException(final Consumer<Throwable> errorConsumer) {
         checkNotNull(errorConsumer);
 
         this.errorConsumer = errorConsumer;
@@ -48,7 +50,7 @@ public class GeneralBuilder<T> {
     }
 
     protected T setEventConsumer(final OrderEventType orderEventType,
-                                 final OrderEventConsumer consumer) {
+                                 final Consumer<OrderEvent> consumer) {
         checkNotNull(consumer);
 
         consumerForEvent.put(orderEventType, consumer);

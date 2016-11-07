@@ -13,8 +13,8 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
-import com.jforex.programming.order.task.params.ComplexMergePositionParams;
-import com.jforex.programming.order.task.params.MergeParamsHandler;
+import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.MergePositionParamsHandler;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -24,7 +24,7 @@ import io.reactivex.observers.TestObserver;
 @RunWith(HierarchicalContextRunner.class)
 public class MergeParamsHandlerTest extends InstrumentUtilForTest {
 
-    private MergeParamsHandler paramsHandler;
+    private MergePositionParamsHandler paramsHandler;
 
     @Mock
     private CancelSLTPTask orderCancelSLAndTPMock;
@@ -44,7 +44,7 @@ public class MergeParamsHandlerTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        paramsHandler = new MergeParamsHandler(orderCancelSLAndTPMock, orderBasicTaskMock);
+        paramsHandler = new MergePositionParamsHandler(orderCancelSLAndTPMock, orderBasicTaskMock);
     }
 
     private void setUpMocks() {

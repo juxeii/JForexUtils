@@ -2,8 +2,8 @@ package com.jforex.programming.order.task;
 
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.params.ClosePositionParamsHandler;
-import com.jforex.programming.order.task.params.ComplexClosePositionParams;
+import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
+import com.jforex.programming.order.task.params.position.ComplexClosePositionParams;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;

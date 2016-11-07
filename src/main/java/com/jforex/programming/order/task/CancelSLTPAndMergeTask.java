@@ -4,16 +4,16 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.params.ComplexMergePositionParams;
-import com.jforex.programming.order.task.params.MergeParamsHandler;
+import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.position.MergePositionParamsHandler;
 
 import io.reactivex.Observable;
 
 public class CancelSLTPAndMergeTask {
 
-    private final MergeParamsHandler mergeParamsHandler;
+    private final MergePositionParamsHandler mergeParamsHandler;
 
-    public CancelSLTPAndMergeTask(final MergeParamsHandler mergeParamsHandler) {
+    public CancelSLTPAndMergeTask(final MergePositionParamsHandler mergeParamsHandler) {
         this.mergeParamsHandler = mergeParamsHandler;
     }
 

@@ -7,19 +7,19 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.ComplexMergeTask;
-import com.jforex.programming.order.task.params.BasicTaskParamsBase;
-import com.jforex.programming.order.task.params.CloseParams;
-import com.jforex.programming.order.task.params.ComplexClosePositionParams;
-import com.jforex.programming.order.task.params.ComplexMergePositionParams;
-import com.jforex.programming.order.task.params.MergeParams;
-import com.jforex.programming.order.task.params.SetAmountParams;
-import com.jforex.programming.order.task.params.SetGTTParams;
-import com.jforex.programming.order.task.params.SetLabelParams;
-import com.jforex.programming.order.task.params.SetOpenPriceParams;
-import com.jforex.programming.order.task.params.SetSLParams;
-import com.jforex.programming.order.task.params.SetTPParams;
-import com.jforex.programming.order.task.params.SubmitParams;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
+import com.jforex.programming.order.task.params.basic.BasicParamsBase;
+import com.jforex.programming.order.task.params.basic.CloseParams;
+import com.jforex.programming.order.task.params.basic.MergeParams;
+import com.jforex.programming.order.task.params.basic.SetAmountParams;
+import com.jforex.programming.order.task.params.basic.SetGTTParams;
+import com.jforex.programming.order.task.params.basic.SetLabelParams;
+import com.jforex.programming.order.task.params.basic.SetOpenPriceParams;
+import com.jforex.programming.order.task.params.basic.SetSLParams;
+import com.jforex.programming.order.task.params.basic.SetTPParams;
+import com.jforex.programming.order.task.params.basic.SubmitParams;
+import com.jforex.programming.order.task.params.position.ComplexClosePositionParams;
+import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 
@@ -97,7 +97,7 @@ public class OrderUtil {
     }
 
     private void subscribe(final Observable<OrderEvent> observable,
-                           final BasicTaskParamsBase basicTaskParamsBase) {
+                           final BasicParamsBase basicTaskParamsBase) {
         TaskParamsUtil.subscribe(observable, basicTaskParamsBase.subscribeParams());
     }
 
@@ -106,9 +106,9 @@ public class OrderUtil {
         checkNotNull(instrument);
         checkNotNull(complexMergePositionParams);
 
-        TaskParamsUtil.subscribePositionMerge(instrument,
-                                              mergeTask.mergePosition(instrument, complexMergePositionParams),
-                                              complexMergePositionParams);
+        TaskParamsUtil.subscribePositionTask(instrument,
+                                             mergeTask.mergePosition(instrument, complexMergePositionParams),
+                                             complexMergePositionParams);
     }
 
     public void mergeAllPositions(final ComplexMergePositionParams complexMergePositionParams) {
@@ -124,9 +124,9 @@ public class OrderUtil {
                               final ComplexClosePositionParams complexClosePositionParams) {
         checkNotNull(complexClosePositionParams);
 
-        TaskParamsUtil.subscribePositionClose(instrument,
-                                              closePositionTask.close(instrument, complexClosePositionParams),
-                                              complexClosePositionParams);
+        TaskParamsUtil.subscribePositionTask(instrument,
+                                             closePositionTask.close(instrument, complexClosePositionParams),
+                                             complexClosePositionParams);
     }
 
     public void closeAllPositions(final ComplexClosePositionParams complexClosePositionParams) {

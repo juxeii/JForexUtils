@@ -14,9 +14,9 @@ import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
-import com.jforex.programming.order.task.params.CloseParams;
-import com.jforex.programming.order.task.params.ClosePositionParams;
-import com.jforex.programming.order.task.params.ComplexMergePositionParams;
+import com.jforex.programming.order.task.params.basic.CloseParams;
+import com.jforex.programming.order.task.params.position.ClosePositionParams;
+import com.jforex.programming.order.task.params.position.ComplexMergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import io.reactivex.Observable;
