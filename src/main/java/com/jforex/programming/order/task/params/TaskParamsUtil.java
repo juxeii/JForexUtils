@@ -7,20 +7,20 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.TaskRetry;
-import com.jforex.programming.order.task.params.basic.SubscribeParams;
+import com.jforex.programming.order.task.params.basic.BasicParamsBase;
 import com.jforex.programming.order.task.params.position.PositionParamsBase;
 
 import io.reactivex.Observable;
 
 public class TaskParamsUtil {
 
-    public static void subscribe(final Observable<OrderEvent> observable,
-                                 final SubscribeParams subscribeParams) {
-        composeRetry(observable, subscribeParams)
-            .doOnSubscribe(d -> subscribeParams.startAction().run())
-            .subscribe(orderEvent -> handlerOrderEvent(orderEvent, subscribeParams.consumerForEvent()),
-                       e -> subscribeParams.errorConsumer().accept(e),
-                       subscribeParams.completeAction());
+    public static void subscribeBasicParams(final Observable<OrderEvent> observable,
+                                            final BasicParamsBase basicParamsBase) {
+        composeRetry(observable, basicParamsBase)
+            .doOnSubscribe(d -> basicParamsBase.startAction().run())
+            .subscribe(orderEvent -> handlerOrderEvent(orderEvent, basicParamsBase.consumerForEvent()),
+                       e -> basicParamsBase.errorConsumer().accept(e),
+                       basicParamsBase.completeAction());
     }
 
     private static Observable<OrderEvent> composeRetry(final Observable<OrderEvent> observable,

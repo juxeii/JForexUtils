@@ -16,7 +16,6 @@ public class MergePositionParams extends PositionParamsBase<Instrument> {
         super(builder);
 
         mergeOrderLabel = builder.mergeOrderLabel;
-        consumerForEvent = builder.consumerForEvent;
     }
 
     public String mergeOrderLabel() {

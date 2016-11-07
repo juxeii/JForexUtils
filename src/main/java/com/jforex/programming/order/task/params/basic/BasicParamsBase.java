@@ -1,14 +1,34 @@
 package com.jforex.programming.order.task.params.basic;
 
-public abstract class BasicParamsBase {
+import java.util.function.Consumer;
 
-    private final SubscribeParams subscribeParams;
+import com.jforex.programming.order.task.params.CommonParamsBase;
 
-    protected BasicParamsBase(final BasicParamsBuilder<?> builder) {
-        subscribeParams = new SubscribeParams(builder);
+import io.reactivex.functions.Action;
+
+public class BasicParamsBase extends CommonParamsBase {
+
+    private final Consumer<Throwable> errorConsumer;
+    private final Action startAction;
+    private final Action completeAction;
+
+    public BasicParamsBase(final BasicParamsBuilder<?> builder) {
+        super(builder);
+
+        errorConsumer = builder.errorConsumer;
+        startAction = builder.startAction;
+        completeAction = builder.completeAction;
     }
 
-    public SubscribeParams subscribeParams() {
-        return subscribeParams;
+    public Consumer<Throwable> errorConsumer() {
+        return errorConsumer;
+    }
+
+    public Action startAction() {
+        return startAction;
+    }
+
+    public Action completeAction() {
+        return completeAction;
     }
 }

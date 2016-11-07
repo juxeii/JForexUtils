@@ -97,8 +97,8 @@ public class OrderUtil {
     }
 
     private void subscribe(final Observable<OrderEvent> observable,
-                           final BasicParamsBase basicTaskParamsBase) {
-        TaskParamsUtil.subscribe(observable, basicTaskParamsBase.subscribeParams());
+                           final BasicParamsBase basicParamsBase) {
+        TaskParamsUtil.subscribeBasicParams(observable, basicParamsBase);
     }
 
     public void mergePosition(final Instrument instrument,
