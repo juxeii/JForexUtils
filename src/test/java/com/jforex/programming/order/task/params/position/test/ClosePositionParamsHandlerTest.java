@@ -16,7 +16,7 @@ import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
-import com.jforex.programming.order.task.ComplexMergeTask;
+import com.jforex.programming.order.task.MergePositionTaskObservable;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
@@ -35,7 +35,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     private ClosePositionParamsHandler paramsHandler;
 
     @Mock
-    private ComplexMergeTask orderMergeTaskMock;
+    private MergePositionTaskObservable orderMergeTaskMock;
     @Mock
     private BatchChangeTask orderChangeBatchMock;
     @Mock

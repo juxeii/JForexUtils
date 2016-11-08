@@ -12,7 +12,7 @@ import com.google.common.collect.Lists;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
 import com.jforex.programming.order.event.OrderToEventTransformer;
-import com.jforex.programming.order.task.BasicTask;
+import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.params.basic.CloseParams;
@@ -28,7 +28,7 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
     private BatchChangeTask batchChangeTask;
 
     @Mock
-    private BasicTask basicTaskMock;
+    private BasicTaskObservable basicTaskMock;
     @Mock
     private Function<IOrder, CloseParams> closeParamsPriovderMock;
     private final CloseParams closeParams = CloseParams

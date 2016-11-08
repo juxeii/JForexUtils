@@ -11,7 +11,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventTransformer;
-import com.jforex.programming.order.task.BasicTask;
+import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.CancelSLTPTask;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParamsHandler;
@@ -29,7 +29,7 @@ public class MergeParamsHandlerTest extends InstrumentUtilForTest {
     @Mock
     private CancelSLTPTask orderCancelSLAndTPMock;
     @Mock
-    private BasicTask orderBasicTaskMock;
+    private BasicTaskObservable orderBasicTaskMock;
     @Mock
     private MergePositionParams mergeParamsMock;
     private TestObserver<OrderEvent> testObserver;

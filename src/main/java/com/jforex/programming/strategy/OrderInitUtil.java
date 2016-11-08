@@ -11,12 +11,12 @@ import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventTypeDataFactory;
-import com.jforex.programming.order.task.BasicTask;
+import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
-import com.jforex.programming.order.task.ClosePositionTask;
-import com.jforex.programming.order.task.ComplexMergeTask;
+import com.jforex.programming.order.task.ClosePositionTaskObservable;
+import com.jforex.programming.order.task.MergePositionTaskObservable;
 import com.jforex.programming.order.task.TaskExecutor;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
@@ -36,10 +36,10 @@ public class OrderInitUtil {
     private final StrategyThreadRunner strategyThreadRunner;
     private final TaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
-    private final BasicTask orderBasicTask;
+    private final BasicTaskObservable orderBasicTask;
     private final BatchChangeTask batchChangeTask;
-    private final ComplexMergeTask orderMergeTask;
-    private final ClosePositionTask orderCloseTask;
+    private final MergePositionTaskObservable orderMergeTask;
+    private final ClosePositionTaskObservable orderCloseTask;
     private final TaskParamsUtil taskParamsUtil = new TaskParamsUtil();
     private final MergePositionParamsHandler mergeParamsHandler;
     private final ClosePositionParamsHandler closePositionParamsHandler;
@@ -63,7 +63,7 @@ public class OrderInitUtil {
                                                 orderEventTypeDataFactory,
                                                 callRequestPublisher);
         orderTaskExecutor = new TaskExecutor(strategyThreadRunner, engine);
-        orderBasicTask = new BasicTask(orderTaskExecutor,
+        orderBasicTask = new BasicTaskObservable(orderTaskExecutor,
                                        orderUtilHandler,
                                        calculationUtil);
         batchChangeTask = new BatchChangeTask(orderBasicTask, taskParamsUtil);
@@ -72,11 +72,11 @@ public class OrderInitUtil {
                                                             orderBasicTask,
                                                             taskParamsUtil);
         cancelSLTPAndMergeTask = new CancelSLTPAndMergeTask(mergeParamsHandler);
-        orderMergeTask = new ComplexMergeTask(cancelSLTPAndMergeTask, positionUtil);
+        orderMergeTask = new MergePositionTaskObservable(cancelSLTPAndMergeTask, positionUtil);
         closePositionParamsHandler = new ClosePositionParamsHandler(orderMergeTask,
                                                                     batchChangeTask,
                                                                     positionUtil);
-        orderCloseTask = new ClosePositionTask(closePositionParamsHandler, positionUtil);
+        orderCloseTask = new ClosePositionTaskObservable(closePositionParamsHandler, positionUtil);
         orderUtil = new OrderUtil(orderBasicTask,
                                   orderMergeTask,
                                   orderCloseTask,

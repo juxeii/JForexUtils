@@ -21,12 +21,12 @@ import io.reactivex.functions.Function;
 
 public class BatchChangeTask {
 
-    private final BasicTask basicTask;
+    private final BasicTaskObservable basicTask;
     private final TaskParamsUtil taskParamsUtil;
 
     private static final PlatformSettings platformSettings = StrategyUtil.platformSettings;
 
-    public BatchChangeTask(final BasicTask orderBasicTask,
+    public BatchChangeTask(final BasicTaskObservable orderBasicTask,
                            final TaskParamsUtil taskParamsUtil) {
         this.basicTask = orderBasicTask;
         this.taskParamsUtil = taskParamsUtil;

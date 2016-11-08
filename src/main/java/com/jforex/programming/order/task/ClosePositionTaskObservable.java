@@ -10,12 +10,12 @@ import com.jforex.programming.position.PositionUtil;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 
-public class ClosePositionTask {
+public class ClosePositionTaskObservable {
 
     private final ClosePositionParamsHandler positionParamsHandler;
     private final PositionUtil positionUtil;
 
-    public ClosePositionTask(final ClosePositionParamsHandler positionParamsHandler,
+    public ClosePositionTaskObservable(final ClosePositionParamsHandler positionParamsHandler,
                              final PositionUtil positionUtil) {
         this.positionParamsHandler = positionParamsHandler;
         this.positionUtil = positionUtil;

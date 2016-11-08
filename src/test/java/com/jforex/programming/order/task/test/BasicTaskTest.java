@@ -16,7 +16,7 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderUtilHandler;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.BasicTask;
+import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.TaskExecutor;
 import com.jforex.programming.order.task.params.basic.SetSLParams;
 import com.jforex.programming.position.Position;
@@ -30,7 +30,7 @@ import io.reactivex.observers.TestObserver;
 @RunWith(HierarchicalContextRunner.class)
 public class BasicTaskTest extends InstrumentUtilForTest {
 
-    private BasicTask basicTask;
+    private BasicTaskObservable basicTask;
 
     @Mock
     private TaskExecutor orderTaskExecutorMock;
@@ -46,7 +46,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() {
-        basicTask = new BasicTask(orderTaskExecutorMock,
+        basicTask = new BasicTaskObservable(orderTaskExecutorMock,
                                   orderUtilHandlerMock,
                                   calculationUtilMock);
     }

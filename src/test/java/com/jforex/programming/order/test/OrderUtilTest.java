@@ -15,9 +15,10 @@ import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.BasicTask;
-import com.jforex.programming.order.task.ClosePositionTask;
-import com.jforex.programming.order.task.ComplexMergeTask;
+import com.jforex.programming.order.task.BasicTaskObservable;
+import com.jforex.programming.order.task.ClosePositionTaskObservable;
+import com.jforex.programming.order.task.MergePositionTaskObservable;
+import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.basic.MergeParams;
 import com.jforex.programming.order.task.params.basic.SetAmountParams;
@@ -27,8 +28,8 @@ import com.jforex.programming.order.task.params.basic.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.basic.SetSLParams;
 import com.jforex.programming.order.task.params.basic.SetTPParams;
 import com.jforex.programming.order.task.params.basic.SubmitParams;
-import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
+import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -43,13 +44,15 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderUtil orderUtil;
 
     @Mock
-    private BasicTask basicTaskMock;
+    private BasicTaskObservable basicTaskMock;
     @Mock
-    private ComplexMergeTask orderMergeTaskMock;
+    private MergePositionTaskObservable orderMergeTaskMock;
     @Mock
-    private ClosePositionTask orderCloseTaskMock;
+    private ClosePositionTaskObservable orderCloseTaskMock;
     @Mock
     private PositionUtil positionUtilMock;
+    @Mock
+    private TaskParamsUtil taskParamsUtilMock;
     @Mock
     private MergePositionParams mergepositionParamsMock;
     @Mock
@@ -65,7 +68,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         orderUtil = new OrderUtil(basicTaskMock,
                                   orderMergeTaskMock,
                                   orderCloseTaskMock,
-                                  positionUtilMock);
+                                  positionUtilMock,
+                                  taskParamsUtilMock);
     }
 
     @Test

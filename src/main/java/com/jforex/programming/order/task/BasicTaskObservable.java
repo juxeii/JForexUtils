@@ -30,13 +30,13 @@ import com.jforex.programming.order.task.params.basic.SubmitParams;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 
-public class BasicTask {
+public class BasicTaskObservable {
 
     private final TaskExecutor taskExecutor;
     private final OrderUtilHandler orderUtilHandler;
     private final CalculationUtil calculationUtil;
 
-    public BasicTask(final TaskExecutor orderTaskExecutor,
+    public BasicTaskObservable(final TaskExecutor orderTaskExecutor,
                      final OrderUtilHandler orderUtilHandler,
                      final CalculationUtil calculationUtil) {
         this.taskExecutor = orderTaskExecutor;

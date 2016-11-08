@@ -13,12 +13,12 @@ import com.jforex.programming.position.PositionUtil;
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
 
-public class ComplexMergeTask {
+public class MergePositionTaskObservable {
 
     private final CancelSLTPAndMergeTask cancelSLTPAndMergeTask;
     private final PositionUtil positionUtil;
 
-    public ComplexMergeTask(final CancelSLTPAndMergeTask cancelSLTPAndMergeTask,
+    public MergePositionTaskObservable(final CancelSLTPAndMergeTask cancelSLTPAndMergeTask,
                             final PositionUtil positionUtil) {
         this.cancelSLTPAndMergeTask = cancelSLTPAndMergeTask;
         this.positionUtil = positionUtil;
