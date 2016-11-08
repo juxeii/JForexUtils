@@ -53,7 +53,7 @@ public class CloseParams extends BasicParamsBase {
         return slippage;
     }
 
-    public static Builder closeWith(final IOrder order) {
+    public static Builder closeOrder(final IOrder order) {
         checkNotNull(order);
 
         return new Builder(order);

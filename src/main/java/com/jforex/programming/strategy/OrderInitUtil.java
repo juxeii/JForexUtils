@@ -18,6 +18,7 @@ import com.jforex.programming.order.task.CancelSLTPTask;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.ComplexMergeTask;
 import com.jforex.programming.order.task.TaskExecutor;
+import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
 import com.jforex.programming.order.task.params.position.MergePositionParamsHandler;
 import com.jforex.programming.position.PositionFactory;
@@ -39,6 +40,7 @@ public class OrderInitUtil {
     private final BatchChangeTask batchChangeTask;
     private final ComplexMergeTask orderMergeTask;
     private final ClosePositionTask orderCloseTask;
+    private final TaskParamsUtil taskParamsUtil = new TaskParamsUtil();
     private final MergePositionParamsHandler mergeParamsHandler;
     private final ClosePositionParamsHandler closePositionParamsHandler;
     private final CancelSLTPAndMergeTask cancelSLTPAndMergeTask;
@@ -64,9 +66,11 @@ public class OrderInitUtil {
         orderBasicTask = new BasicTask(orderTaskExecutor,
                                        orderUtilHandler,
                                        calculationUtil);
-        batchChangeTask = new BatchChangeTask(orderBasicTask);
-        orderCancelSLAndTP = new CancelSLTPTask(batchChangeTask);
-        mergeParamsHandler = new MergePositionParamsHandler(orderCancelSLAndTP, orderBasicTask);
+        batchChangeTask = new BatchChangeTask(orderBasicTask, taskParamsUtil);
+        orderCancelSLAndTP = new CancelSLTPTask(batchChangeTask, taskParamsUtil);
+        mergeParamsHandler = new MergePositionParamsHandler(orderCancelSLAndTP,
+                                                            orderBasicTask,
+                                                            taskParamsUtil);
         cancelSLTPAndMergeTask = new CancelSLTPAndMergeTask(mergeParamsHandler);
         orderMergeTask = new ComplexMergeTask(cancelSLTPAndMergeTask, positionUtil);
         closePositionParamsHandler = new ClosePositionParamsHandler(orderMergeTask,
@@ -76,7 +80,8 @@ public class OrderInitUtil {
         orderUtil = new OrderUtil(orderBasicTask,
                                   orderMergeTask,
                                   orderCloseTask,
-                                  positionUtil);
+                                  positionUtil,
+                                  taskParamsUtil);
     }
 
     public OrderUtil orderUtil() {

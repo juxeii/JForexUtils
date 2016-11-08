@@ -32,7 +32,7 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
     @Mock
     private Function<IOrder, CloseParams> closeParamsPriovderMock;
     private final CloseParams closeParams = CloseParams
-        .closeWith(buyOrderEURUSD)
+        .closeOrder(buyOrderEURUSD)
         .build();
     private final List<IOrder> ordersForBatch = Lists.newArrayList(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = submitEvent;

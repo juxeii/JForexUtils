@@ -27,7 +27,7 @@ public class BasicParamsBaseTest extends InstrumentUtilForTest {
     @Test
     public void basicParamsAreCorrect() {
         closeParams = CloseParams
-            .closeWith(buyOrderEURUSD)
+            .closeOrder(buyOrderEURUSD)
             .doOnStart(startActionMock)
             .doOnComplete(completeActionMock)
             .doOnException(errorConsumerMock)

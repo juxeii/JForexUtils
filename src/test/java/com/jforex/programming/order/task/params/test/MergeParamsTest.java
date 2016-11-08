@@ -3,95 +3,55 @@ package com.jforex.programming.order.task.params.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Set;
+import java.util.function.Consumer;
+
 import org.junit.Test;
+import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventTransformer;
-import com.jforex.programming.order.event.OrderToEventTransformer;
-import com.jforex.programming.order.task.BatchMode;
-import com.jforex.programming.order.task.MergeExecutionMode;
-import com.jforex.programming.order.task.params.position.MergePositionParams;
-import com.jforex.programming.test.common.InstrumentUtilForTest;
+import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.basic.MergeParams;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
-import io.reactivex.observers.TestObserver;
+public class MergeParamsTest extends CommonParamsForTest {
 
-public class MergeParamsTest extends InstrumentUtilForTest {
+    private MergeParams mergeParams;
 
-    private MergePositionParams mergeParams;
-
-    private static final String mergeOrderLabel = "mergeOrderLabel";
-    private final OrderEvent testEvent = mergeEvent;
-    private final OrderEvent composerEvent = changedLabelEvent;
-
-    private void assertComposerIsNeutral(final ObservableTransformer<OrderEvent, OrderEvent> composer) {
-        final TestObserver<OrderEvent> testObserver = Observable
-            .just(testEvent)
-            .compose(composer)
-            .test();
-
-        testObserver.assertComplete();
-        testObserver.assertValue(testEvent);
-    }
-
-    private void assertComposerEmitsComposerEvent(final ObservableTransformer<OrderEvent, OrderEvent> composer) {
-        final TestObserver<OrderEvent> testObserver = Observable
-            .just(testEvent)
-            .compose(composer)
-            .test();
-
-        testObserver.assertComplete();
-        testObserver.assertValue(composerEvent);
-    }
+    @Mock
+    public Consumer<OrderEvent> mergeConsumerMock;
+    @Mock
+    public Consumer<OrderEvent> mergeCloseConsumerMock;
+    @Mock
+    public Consumer<OrderEvent> rejectConsumerMock;
+    private final String mergeOrderLabel = "mergeOrderLabel";
+    private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Test
-    public void defaultParamsValuesAreCorrect() throws Exception {
-        mergeParams = MergePositionParams
-            .newBuilder(mergeOrderLabel)
+    public void defaultValuesAreCorrect() {
+        mergeParams = MergeParams
+            .mergeWith(mergeOrderLabel, toMergeOrders)
             .build();
 
         assertThat(mergeParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
-        assertThat(mergeParams.executionMode(), equalTo(MergeExecutionMode.MergeCancelSLAndTP));
-        assertThat(mergeParams.orderCancelSLMode(), equalTo(BatchMode.MERGE));
-        assertThat(mergeParams.orderCancelTPMode(), equalTo(BatchMode.MERGE));
-        assertComposerIsNeutral(mergeParams.cancelSLTPComposer());
-        assertComposerIsNeutral(mergeParams.cancelSLComposer());
-        assertComposerIsNeutral(mergeParams.cancelTPComposer());
-        assertComposerIsNeutral(mergeParams.orderCancelSLComposer(buyOrderEURUSD));
-        assertComposerIsNeutral(mergeParams.orderCancelTPComposer(buyOrderEURUSD));
-        assertComposerIsNeutral(mergeParams.mergeComposer());
+        assertThat(mergeParams.toMergeOrders(), equalTo(toMergeOrders));
     }
 
     @Test
-    public void definedValuesAreCorrect() throws Exception {
-        final OrderEventTransformer testComposer =
-                upstream -> upstream.flatMap(orderEvent -> Observable.just(composerEvent));
-        final OrderToEventTransformer testOrderComposer =
-                order -> upstream -> upstream
-                    .flatMap(orderEvent -> Observable.just(composerEvent));
-
-        mergeParams = MergePositionParams
-            .newBuilder(mergeOrderLabel)
-            .composeCancelSLAndTP(testComposer)
-            .composeCancelSL(testComposer)
-            .composeCancelTP(testComposer)
-            .composeOrderCancelSL(testOrderComposer, BatchMode.MERGE)
-            .composeOrderCancelTP(testOrderComposer, BatchMode.CONCAT)
-            .withExecutionMode(MergeExecutionMode.ConcatCancelSLAndTP)
-            .done()
-            .composeMerge(testComposer)
+    public void handlersAreCorrect() {
+        mergeParams = MergeParams
+            .mergeWith(mergeOrderLabel, toMergeOrders)
+            .doOnMerge(mergeConsumerMock)
+            .doOnMergeClose(mergeCloseConsumerMock)
+            .doOnReject(rejectConsumerMock)
             .build();
 
-        assertThat(mergeParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
-        assertThat(mergeParams.executionMode(), equalTo(MergeExecutionMode.ConcatCancelSLAndTP));
-        assertThat(mergeParams.orderCancelSLMode(), equalTo(BatchMode.MERGE));
-        assertThat(mergeParams.orderCancelTPMode(), equalTo(BatchMode.CONCAT));
-        assertComposerEmitsComposerEvent(mergeParams.cancelSLTPComposer());
-        assertComposerEmitsComposerEvent(mergeParams.cancelSLComposer());
-        assertComposerEmitsComposerEvent(mergeParams.cancelTPComposer());
-        assertComposerEmitsComposerEvent(mergeParams.orderCancelSLComposer(buyOrderEURUSD));
-        assertComposerEmitsComposerEvent(mergeParams.orderCancelTPComposer(buyOrderEURUSD));
-        assertComposerEmitsComposerEvent(mergeParams.mergeComposer());
+        consumerForEvent = mergeParams.consumerForEvent();
+
+        assertThat(consumerForEvent.size(), equalTo(3));
+        assertEventConsumer(OrderEventType.MERGE_OK, mergeConsumerMock);
+        assertEventConsumer(OrderEventType.MERGE_CLOSE_OK, mergeCloseConsumerMock);
+        assertEventConsumer(OrderEventType.MERGE_REJECTED, rejectConsumerMock);
     }
 }

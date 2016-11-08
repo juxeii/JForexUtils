@@ -14,9 +14,12 @@ import io.reactivex.Observable;
 public class CancelSLTPTask {
 
     private final BatchChangeTask batchChangeTask;
+    private final TaskParamsUtil taskParamsUtil;
 
-    public CancelSLTPTask(final BatchChangeTask batchChangeTask) {
+    public CancelSLTPTask(final BatchChangeTask batchChangeTask,
+                          final TaskParamsUtil taskParamsUtil) {
         this.batchChangeTask = batchChangeTask;
+        this.taskParamsUtil = taskParamsUtil;
     }
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelSLTPOrders,
@@ -32,7 +35,7 @@ public class CancelSLTPTask {
         final Instrument instrument = toCancelSLTPOrders.iterator().next().getInstrument();
 
         final Observable<OrderEvent> cancelSL =
-                TaskParamsUtil.composePositionTask(instrument,
+                taskParamsUtil.composePositionTask(instrument,
                                                    Observable.defer(() -> batchChangeTask.cancelSL(toCancelSLTPOrders,
                                                                                                    batchCancelSLAndTPParams
                                                                                                        .batchCancelSLParams()
@@ -42,7 +45,7 @@ public class CancelSLTPTask {
                                                                                                        .batchMode())),
                                                    batchCancelSLAndTPParams.batchCancelSLParams());
         final Observable<OrderEvent> cancelTP =
-                TaskParamsUtil.composePositionTask(instrument,
+                taskParamsUtil.composePositionTask(instrument,
                                                    Observable.defer(() -> batchChangeTask.cancelTP(toCancelSLTPOrders,
                                                                                                    batchCancelSLAndTPParams
                                                                                                        .batchCancelTPParams()
@@ -57,7 +60,7 @@ public class CancelSLTPTask {
                                                                      batchCancelSLAndTPParams
                                                                          .mergeExecutionMode());
 
-        return TaskParamsUtil.composePositionTask(instrument,
+        return taskParamsUtil.composePositionTask(instrument,
                                                   observable,
                                                   batchCancelSLAndTPParams);
     }

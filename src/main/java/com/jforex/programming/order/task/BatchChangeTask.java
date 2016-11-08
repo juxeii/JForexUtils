@@ -22,20 +22,23 @@ import io.reactivex.functions.Function;
 public class BatchChangeTask {
 
     private final BasicTask basicTask;
+    private final TaskParamsUtil taskParamsUtil;
 
     private static final PlatformSettings platformSettings = StrategyUtil.platformSettings;
 
-    public BatchChangeTask(final BasicTask orderBasicTask) {
+    public BatchChangeTask(final BasicTask orderBasicTask,
+                           final TaskParamsUtil taskParamsUtil) {
         this.basicTask = orderBasicTask;
+        this.taskParamsUtil = taskParamsUtil;
     }
 
     public Observable<OrderEvent> close(final Instrument instrument,
                                         final Collection<IOrder> orders,
                                         final SimpleClosePositionParams closePositionParams) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> TaskParamsUtil.composePositionTask(order.getInstrument(),
+                order -> taskParamsUtil.composePositionTask(order.getInstrument(),
                                                             basicTask.close(CloseParams
-                                                                .closeWith(order)
+                                                                .closeOrder(order)
                                                                 .build()),
                                                             closePositionParams);
         return forBasicTask(orders,
@@ -47,7 +50,7 @@ public class BatchChangeTask {
                                            final CancelSLParams cancelSLParams,
                                            final BatchMode batchMode) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> TaskParamsUtil.composePositionTask(order,
+                order -> taskParamsUtil.composePositionTask(order,
                                                             basicTask.setStopLossPrice(SetSLParams
                                                                 .setSLAtPrice(order, platformSettings.noSLPrice())
                                                                 .build()),
@@ -61,7 +64,7 @@ public class BatchChangeTask {
                                            final CancelTPParams cancelTPParams,
                                            final BatchMode batchMode) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> TaskParamsUtil.composePositionTask(order,
+                order -> taskParamsUtil.composePositionTask(order,
                                                             basicTask.setTakeProfitPrice(SetTPParams
                                                                 .setTPAtPrice(order, platformSettings.noTPPrice())
                                                                 .build()),

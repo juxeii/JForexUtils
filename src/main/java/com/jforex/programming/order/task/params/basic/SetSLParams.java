@@ -93,7 +93,7 @@ public class SetSLParams extends BasicParamsBase {
             this.setSLTPMode = setSLTPMode;
         }
 
-        public Builder doOnChangedTP(final Consumer<OrderEvent> changedSLConsumer) {
+        public Builder doOnChangedSL(final Consumer<OrderEvent> changedSLConsumer) {
             return setEventConsumer(OrderEventType.CHANGED_SL, changedSLConsumer);
         }
 
