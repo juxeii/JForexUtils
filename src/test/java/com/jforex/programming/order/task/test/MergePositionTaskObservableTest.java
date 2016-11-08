@@ -35,7 +35,7 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
-    private MergePositionParams mergeParamsMock;
+    private MergePositionParams mergePositionParams;
     @Mock
     private Function<Instrument, MergePositionParams> paramsFactoryMock;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
@@ -56,7 +56,7 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
     }
 
     private void setUpSplitterObservable(final Observable<OrderEvent> splitterObservable) {
-        when(splitterMock.observe(toMergeOrders, mergeParamsMock))
+        when(splitterMock.observe(toMergeOrders, mergePositionParams))
             .thenReturn(splitterObservable);
     }
 
@@ -64,7 +64,7 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            testObservable = mergeTask.merge(toMergeOrders, mergeParamsMock);
+            testObservable = mergeTask.merge(toMergeOrders, mergePositionParams);
         }
 
         @Test
@@ -81,7 +81,7 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
                 .test()
                 .assertValue(testEvent);
 
-            verify(splitterMock).observe(toMergeOrders, mergeParamsMock);
+            verify(splitterMock).observe(toMergeOrders, mergePositionParams);
         }
     }
 
@@ -89,7 +89,7 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            testObservable = mergeTask.mergePosition(instrumentEURUSD, mergeParamsMock);
+            testObservable = mergeTask.mergePosition(instrumentEURUSD, mergePositionParams);
         }
 
         @Test
@@ -106,7 +106,7 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
                 .test()
                 .assertValue(testEvent);
 
-            verify(splitterMock).observe(toMergeOrders, mergeParamsMock);
+            verify(splitterMock).observe(toMergeOrders, mergePositionParams);
             verify(positionUtilMock).filledOrders(instrumentEURUSD);
         }
     }
@@ -117,7 +117,7 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() throws Exception {
-            when(paramsFactoryMock.apply(instrumentEURUSD)).thenReturn(mergeParamsMock);
+            when(paramsFactoryMock.apply(instrumentEURUSD)).thenReturn(mergePositionParams);
         }
 
         private void mergeAllSubscribe() {
@@ -154,7 +154,7 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
             mergeAllSubscribe();
 
             verify(paramsFactoryMock).apply(instrumentEURUSD);
-            verify(splitterMock).observe(toMergeOrders, mergeParamsMock);
+            verify(splitterMock).observe(toMergeOrders, mergePositionParams);
         }
 
         @Test

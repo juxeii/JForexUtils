@@ -13,6 +13,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParamsHandler;
+import com.jforex.programming.order.task.params.position.SimpleMergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -26,7 +27,9 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     @Mock
     private MergePositionParamsHandler paramsHandlerMock;
     @Mock
-    private MergePositionParams mergeParamsMock;
+    private MergePositionParams mergePositionParamsMock;
+    @Mock
+    private SimpleMergePositionParams simpleMergePositionParamsMock;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = mergeEvent;
 
@@ -38,15 +41,18 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(paramsHandlerMock.observeCancelSLTP(toMergeOrders, mergeParamsMock))
+        when(mergePositionParamsMock.simpleMergePositionParams())
+            .thenReturn(simpleMergePositionParamsMock);
+
+        when(paramsHandlerMock.observeCancelSLTP(toMergeOrders, mergePositionParamsMock))
             .thenReturn(neverObservable());
-        when(paramsHandlerMock.observeMerge(toMergeOrders, mergeParamsMock))
+        when(paramsHandlerMock.observeMerge(toMergeOrders, simpleMergePositionParamsMock))
             .thenReturn(eventObservable(testEvent));
     }
 
     private TestObserver<OrderEvent> testSubscribeSplitter() {
         return cancelSLTPAndMergeTask
-            .observe(toMergeOrders, mergeParamsMock)
+            .observe(toMergeOrders, mergePositionParamsMock)
             .test();
     }
 
@@ -61,13 +67,13 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     public void cancelSLTPIsCalledOnHandler() {
         testSubscribeSplitter();
 
-        verify(paramsHandlerMock).observeCancelSLTP(toMergeOrders, mergeParamsMock);
+        verify(paramsHandlerMock).observeCancelSLTP(toMergeOrders, mergePositionParamsMock);
     }
 
     @Test
     public void mergeIsCalledOnHandler() {
         testSubscribeSplitter();
 
-        verify(paramsHandlerMock).observeMerge(toMergeOrders, mergeParamsMock);
+        verify(paramsHandlerMock).observeMerge(toMergeOrders, simpleMergePositionParamsMock);
     }
 }

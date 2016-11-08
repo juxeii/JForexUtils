@@ -19,6 +19,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.TaskExecutor;
 import com.jforex.programming.order.task.params.basic.SetSLParams;
+import com.jforex.programming.order.task.params.basic.SetTPParams;
 import com.jforex.programming.position.Position;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -47,8 +48,8 @@ public class BasicTaskTest extends InstrumentUtilForTest {
     @Before
     public void setUp() {
         basicTask = new BasicTaskObservable(orderTaskExecutorMock,
-                                  orderUtilHandlerMock,
-                                  calculationUtilMock);
+                                            orderUtilHandlerMock,
+                                            calculationUtilMock);
     }
 
     private void setUpOrderUtilHandlerMock(final Observable<OrderEvent> observable,
@@ -467,7 +468,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         private final double newSL = 1.1234;
         private final double trailingStep = 1.1234;
         private final SetSLParams setSLParams = SetSLParams
-            .newBuilder(orderForTest, newSL)
+            .setSLAtPrice(orderForTest, newSL)
             .withOfferSide(OfferSide.ASK)
             .withTrailingStep(trailingStep)
             .build();
@@ -526,16 +527,23 @@ public class BasicTaskTest extends InstrumentUtilForTest {
         }
     }
 
-    public class SetTPSetup {
+    public class SetTPWithParamsSetup {
 
         private final double newTP = 1.1234;
+        private final double trailingStep = 1.1234;
+        private final SetTPParams setTPParams = SetTPParams
+            .setTPAtPrice(orderForTest, newTP)
+            .build();
 
         @Before
         public void setUp() {
-            when(orderTaskExecutorMock.setTakeProfitPrice(orderForTest, newTP))
-                .thenReturn(emptyCompletable());
+            when(orderTaskExecutorMock.setStopLossPrice(orderForTest,
+                                                        newTP,
+                                                        OfferSide.ASK,
+                                                        trailingStep))
+                                                            .thenReturn(emptyCompletable());
 
-            observable = basicTask.setTakeProfitPrice(orderForTest, newTP);
+            observable = basicTask.setTakeProfitPrice(setTPParams);
         }
 
         @Test
@@ -569,6 +577,11 @@ public class BasicTaskTest extends InstrumentUtilForTest {
             @Test
             public void subscriberCompletes() {
                 testObserver.assertComplete();
+            }
+
+            @Test
+            public void verifyTaskExecutorCall() {
+                verify(orderTaskExecutorMock).setTakeProfitPrice(orderForTest, newTP);
             }
         }
     }

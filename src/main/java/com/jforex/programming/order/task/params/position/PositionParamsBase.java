@@ -21,15 +21,15 @@ public abstract class PositionParamsBase<T> extends CommonParamsBase {
         completeConsumer = builder.completeConsumer;
     }
 
-    public final Action startAction(final T instrument) {
-        return () -> startConsumer.accept(instrument);
+    public final Action startAction(final T param) {
+        return () -> startConsumer.accept(param);
     }
 
-    public final Action completeAction(final T instrument) {
-        return () -> completeConsumer.accept(instrument);
+    public final Action completeAction(final T param) {
+        return () -> completeConsumer.accept(param);
     }
 
-    public final Consumer<Throwable> errorConsumer(final T instrument) {
-        return err -> errorConsumer.accept(err, instrument);
+    public final Consumer<Throwable> errorConsumer(final T param) {
+        return err -> errorConsumer.accept(err, param);
     }
 }

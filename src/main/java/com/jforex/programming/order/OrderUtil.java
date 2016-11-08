@@ -107,13 +107,13 @@ public class OrderUtil {
     }
 
     public void mergePosition(final Instrument instrument,
-                              final MergePositionParams complexMergePositionParams) {
+                              final MergePositionParams mergePositionParams) {
         checkNotNull(instrument);
-        checkNotNull(complexMergePositionParams);
+        checkNotNull(mergePositionParams);
 
         taskParamsUtil.subscribePositionTask(instrument,
-                                             mergeTask.mergePosition(instrument, complexMergePositionParams),
-                                             complexMergePositionParams);
+                                             mergeTask.mergePosition(instrument, mergePositionParams),
+                                             mergePositionParams);
     }
 
     public void mergeAllPositions(final MergeAllPositionsParams mergeAllPositionParams) {
@@ -124,12 +124,12 @@ public class OrderUtil {
     }
 
     public void closePosition(final Instrument instrument,
-                              final ClosePositionParams complexClosePositionParams) {
-        checkNotNull(complexClosePositionParams);
+                              final ClosePositionParams closePositionParams) {
+        checkNotNull(closePositionParams);
 
         taskParamsUtil.subscribePositionTask(instrument,
-                                             closePositionTask.close(instrument, complexClosePositionParams),
-                                             complexClosePositionParams);
+                                             closePositionTask.close(instrument, closePositionParams),
+                                             closePositionParams);
     }
 
     public void closeAllPositions(final CloseAllPositionsParams closeAllPositionParams) {

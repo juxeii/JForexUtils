@@ -21,7 +21,7 @@ public class PositionParamsBuilder<T, V> extends CommonParamsBuilder<T> {
         return (T) this;
     }
 
-    public T doOnException(final BiConsumer<Throwable, V> errorConsumer) {
+    public T doOnError(final BiConsumer<Throwable, V> errorConsumer) {
         checkNotNull(errorConsumer);
 
         this.errorConsumer = errorConsumer;

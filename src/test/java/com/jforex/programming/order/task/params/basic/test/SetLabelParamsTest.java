@@ -1,4 +1,4 @@
-package com.jforex.programming.order.task.params.test;
+package com.jforex.programming.order.task.params.basic.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.basic.SetLabelParams;
+import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
 public class SetLabelParamsTest extends CommonParamsForTest {
 

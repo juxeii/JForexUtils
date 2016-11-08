@@ -1,4 +1,4 @@
-package com.jforex.programming.order.task.params.test;
+package com.jforex.programming.order.task.params.basic.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -30,7 +30,7 @@ public class BasicParamsBaseTest extends InstrumentUtilForTest {
             .closeOrder(buyOrderEURUSD)
             .doOnStart(startActionMock)
             .doOnComplete(completeActionMock)
-            .doOnException(errorConsumerMock)
+            .doOnError(errorConsumerMock)
             .build();
 
         assertThat(closeParams.startAction(), equalTo(startActionMock));

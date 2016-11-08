@@ -28,7 +28,7 @@ public class MergePositionParams extends PositionParamsBase<Instrument> {
         return batchCancelSLAndTPParams;
     }
 
-    public SimpleMergePositionParams mergePositionParams() {
+    public SimpleMergePositionParams simpleMergePositionParams() {
         return mergePositionParams;
     }
 

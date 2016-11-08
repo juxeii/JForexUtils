@@ -15,12 +15,15 @@ import com.jforex.programming.order.event.OrderToEventTransformer;
 import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchMode;
+import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
+import com.jforex.programming.order.task.params.position.CancelSLParams;
+import com.jforex.programming.order.task.params.position.CancelTPParams;
+import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
 
 @RunWith(HierarchicalContextRunner.class)
 public class BatchChangeTaskTest extends InstrumentUtilForTest {
@@ -30,7 +33,14 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
     @Mock
     private BasicTaskObservable basicTaskMock;
     @Mock
-    private Function<IOrder, CloseParams> closeParamsPriovderMock;
+    private TaskParamsUtil taskParamsUtilMock;
+    @Mock
+    private SimpleClosePositionParams simpleClosePositionParams;
+    @Mock
+    private CancelSLParams cancelSLParamsMock;
+    @Mock
+    private CancelTPParams cancelTPParamsMock;
+
     private final CloseParams closeParams = CloseParams
         .closeOrder(buyOrderEURUSD)
         .build();
@@ -43,9 +53,7 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() throws Exception {
-        batchChangeTask = new BatchChangeTask(basicTaskMock);
-
-        when(closeParamsPriovderMock.apply(any())).thenReturn(closeParams);
+        batchChangeTask = new BatchChangeTask(basicTaskMock, taskParamsUtilMock);
     }
 
     public class CloseBatch {
@@ -60,10 +68,9 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         @Test
         public void forMergeIsNotConcatenated() {
             batchChangeTask
-                .close(ordersForBatch,
-                       closeParamsPriovderMock,
-                       BatchMode.MERGE,
-                       testOrderComposer)
+                .close(instrumentEURUSD,
+                       ordersForBatch,
+                       simpleClosePositionParams)
                 .test()
                 .assertNotComplete()
                 .assertValue(composerEvent);
@@ -72,10 +79,9 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         @Test
         public void forConcatIsNotMerged() {
             batchChangeTask
-                .close(ordersForBatch,
-                       closeParamsPriovderMock,
-                       BatchMode.CONCAT,
-                       testOrderComposer)
+                .close(instrumentEURUSD,
+                       ordersForBatch,
+                       simpleClosePositionParams)
                 .test()
                 .assertNotComplete()
                 .assertNoValues();
@@ -86,9 +92,9 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(basicTaskMock.setStopLossPrice(buyOrderEURUSD, noSL))
+            when(basicTaskMock.setStopLossPrice(any()))
                 .thenReturn(neverObservable());
-            when(basicTaskMock.setStopLossPrice(sellOrderEURUSD, noSL))
+            when(basicTaskMock.setStopLossPrice(any()))
                 .thenReturn(eventObservable(testEvent));
         }
 
@@ -96,8 +102,8 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         public void forMergeIsNotConcatenated() {
             batchChangeTask
                 .cancelSL(ordersForBatch,
-                          BatchMode.MERGE,
-                          testOrderComposer)
+                          cancelSLParamsMock,
+                          BatchMode.MERGE)
                 .test()
                 .assertNotComplete()
                 .assertValue(composerEvent);
@@ -107,8 +113,8 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         public void forConcatIsNotMerged() {
             batchChangeTask
                 .cancelSL(ordersForBatch,
-                          BatchMode.CONCAT,
-                          testOrderComposer)
+                          cancelSLParamsMock,
+                          BatchMode.CONCAT)
                 .test()
                 .assertNotComplete()
                 .assertNoValues();
@@ -119,18 +125,18 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(basicTaskMock.setTakeProfitPrice(buyOrderEURUSD, noTP))
+            when(basicTaskMock.setTakeProfitPrice(any()))
                 .thenReturn(neverObservable());
-            when(basicTaskMock.setTakeProfitPrice(sellOrderEURUSD, noTP))
+            when(basicTaskMock.setTakeProfitPrice(any()))
                 .thenReturn(eventObservable(testEvent));
         }
 
         @Test
         public void forMergeIsNotConcatenated() {
             batchChangeTask
-                .cancelTP(ordersForBatch,
-                          BatchMode.MERGE,
-                          testOrderComposer)
+                .cancelSL(ordersForBatch,
+                          cancelSLParamsMock,
+                          BatchMode.MERGE)
                 .test()
                 .assertNotComplete()
                 .assertValue(composerEvent);
@@ -139,9 +145,9 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         @Test
         public void forConcatIsNotMerged() {
             batchChangeTask
-                .cancelTP(ordersForBatch,
-                          BatchMode.CONCAT,
-                          testOrderComposer)
+                .cancelSL(ordersForBatch,
+                          cancelSLParamsMock,
+                          BatchMode.CONCAT)
                 .test()
                 .assertNotComplete()
                 .assertNoValues();

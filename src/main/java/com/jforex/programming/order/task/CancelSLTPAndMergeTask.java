@@ -18,11 +18,12 @@ public class CancelSLTPAndMergeTask {
     }
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toMergeOrders,
-                                          final MergePositionParams complexMergeParams) {
+                                          final MergePositionParams mergePositionParams) {
         final Observable<OrderEvent> cancelSLTP = mergeParamsHandler.observeCancelSLTP(toMergeOrders,
-                                                                                       complexMergeParams);
-        final Observable<OrderEvent> merge = mergeParamsHandler.observeMerge(toMergeOrders,
-                                                                             complexMergeParams.mergePositionParams());
+                                                                                       mergePositionParams);
+        final Observable<OrderEvent> merge =
+                mergeParamsHandler.observeMerge(toMergeOrders,
+                                                mergePositionParams.simpleMergePositionParams());
 
         return cancelSLTP.concatWith(merge);
     }
