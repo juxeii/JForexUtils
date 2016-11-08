@@ -28,8 +28,8 @@ public class SetGTTParams extends BasicParamsBase {
         return newGTT;
     }
 
-    public static Builder setOpenPriceWith(final IOrder order,
-                                           final long newGTT) {
+    public static Builder setGTTWith(final IOrder order,
+                                     final long newGTT) {
         checkNotNull(order);
 
         return new Builder(order, newGTT);

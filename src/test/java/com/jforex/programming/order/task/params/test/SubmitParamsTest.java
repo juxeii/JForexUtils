@@ -1,5 +1,8 @@
 package com.jforex.programming.order.task.params.test;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -40,7 +43,10 @@ public class SubmitParamsTest extends CommonParamsForTest {
     }
 
     @Test
-    public void paramsAreCorrect() {
+    public void handlersAreCorrect() {
+        assertThat(submitParams.orderParams(), equalTo(buyParamsEURUSD));
+
+        assertThat(consumerForEvent.size(), equalTo(5));
         assertEventConsumer(OrderEventType.SUBMIT_OK, submitConsumerMock);
         assertEventConsumer(OrderEventType.PARTIAL_FILL_OK, partialFillConsumerMock);
         assertEventConsumer(OrderEventType.FULLY_FILLED, fullFillConsumerMock);

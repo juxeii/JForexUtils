@@ -1,4 +1,4 @@
-package com.jforex.programming.order.task.params.test;
+package com.jforex.programming.order.task.params.position.test;
 
 import java.util.Collection;
 import java.util.Optional;

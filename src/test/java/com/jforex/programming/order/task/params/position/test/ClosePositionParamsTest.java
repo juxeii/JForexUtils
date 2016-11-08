@@ -1,4 +1,4 @@
-package com.jforex.programming.order.task.params.test;
+package com.jforex.programming.order.task.params.position.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
