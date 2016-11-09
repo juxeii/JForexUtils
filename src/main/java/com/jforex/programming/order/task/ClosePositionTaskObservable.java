@@ -24,10 +24,11 @@ public class ClosePositionTaskObservable {
     public Observable<OrderEvent> close(final Instrument instrument,
                                         final ClosePositionParams closePositionParams) {
         return Observable.defer(() -> {
-            final Observable<OrderEvent> merge = closePositionParamsHandler.observeMerge(instrument,
-                                                                                         closePositionParams);
-            final Observable<OrderEvent> close = closePositionParamsHandler.observeClose(instrument,
-                                                                                         closePositionParams);
+            final Observable<OrderEvent> merge =
+                    closePositionParamsHandler.observeMerge(instrument, closePositionParams);
+            final Observable<OrderEvent> close =
+                    closePositionParamsHandler.observeClose(instrument, closePositionParams);
+
             return merge.concatWith(close);
         });
     }

@@ -17,7 +17,6 @@ import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
@@ -32,22 +31,24 @@ public class CancelSLTPTaskTest extends InstrumentUtilForTest {
     @Mock
     private MergePositionParams mergeCommandMock;
     private TestObserver<OrderEvent> testObserver;
-    private final Set<IOrder> toCancelSLTPOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
-    private final OrderEvent testEvent = mergeEvent;
-    private final OrderEvent composerEvent = closeEvent;
+    // private final Set<IOrder> toCancelSLTPOrders =
+    // Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+    // private final OrderEvent testEvent = mergeEvent;
+    // private final OrderEvent composerEvent = closeEvent;
 
     @Before
     public void setUp() {
         cancelSLTPTask = new CancelSLTPTask(batchChangeTaskMock, taskParamsUtilMock);
     }
 
-    private void setUpCommandObservables(final Observable<OrderEvent> cancelSLObservable,
-                                         final Observable<OrderEvent> cancelTPObservable) {
-        when(batchChangeTaskMock.cancelSL(eq(toCancelSLTPOrders), any(), any()))
-            .thenReturn(cancelSLObservable);
-        when(batchChangeTaskMock.cancelTP(eq(toCancelSLTPOrders), any(), any()))
-            .thenReturn(cancelTPObservable);
-    }
+    // private void setUpCommandObservables(final Observable<OrderEvent>
+    // cancelSLObservable,
+    // final Observable<OrderEvent> cancelTPObservable) {
+    // when(batchChangeTaskMock.cancelSL(eq(toCancelSLTPOrders), any(), any()))
+    // .thenReturn(cancelSLObservable);
+    // when(batchChangeTaskMock.cancelTP(eq(toCancelSLTPOrders), any(), any()))
+    // .thenReturn(cancelTPObservable);
+    // }
 
     private void subscribeWithOrders(final Set<IOrder> orders) {
         testObserver = cancelSLTPTask

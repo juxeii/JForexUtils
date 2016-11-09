@@ -22,17 +22,17 @@ public abstract class BasicParamsBuilder<T> extends CommonParamsBuilder<T> {
         return (T) this;
     }
 
-    public T doOnError(final Consumer<Throwable> errorConsumer) {
-        checkNotNull(errorConsumer);
-
-        this.errorConsumer = errorConsumer;
-        return (T) this;
-    }
-
     public T doOnComplete(final Action completeAction) {
         checkNotNull(completeAction);
 
         this.completeAction = completeAction;
+        return (T) this;
+    }
+
+    public T doOnError(final Consumer<Throwable> errorConsumer) {
+        checkNotNull(errorConsumer);
+
+        this.errorConsumer = errorConsumer;
         return (T) this;
     }
 }
