@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.jforex.programming.order.OrderUtil;
@@ -30,9 +29,6 @@ import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
-import de.bechte.junit.runners.context.HierarchicalContextRunner;
-
-@RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {
 
     private OrderUtil orderUtil;

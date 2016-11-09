@@ -33,11 +33,9 @@ public class TaskParamsUtil {
 
     private void handlerOrderEvent(final OrderEvent orderEvent,
                                    final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent) {
-        consumerForEvent.computeIfPresent(orderEvent.type(),
-                                          (type, consumer) -> {
-                                              consumer.accept(orderEvent);
-                                              return consumer;
-                                          });
+        final OrderEventType type = orderEvent.type();
+        if (consumerForEvent.containsKey(type))
+            consumerForEvent.get(type).accept(orderEvent);
     }
 
     public <T> Observable<OrderEvent> composePositionTask(final T item,
