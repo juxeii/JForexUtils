@@ -70,27 +70,27 @@ public class MergeParamsHandlerTest extends InstrumentUtilForTest {
         testObserver.assertValue(testEvent);
     }
 
-    public class ObserveMerge {
-
-        @Before
-        public void setUp() {
-            when(basicTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
-                .thenReturn(eventObservable(testEvent));
-
-            testObserver = paramsHandler
-                .observeMerge(toMergeOrders, simpleMergePositionParamsMock)
-                .test();
-        }
-
-        @Test
-        public void observeMergeCallsBasicTaskMockCorrect() {
-            verify(basicTaskMock).mergeOrders(mergeOrderLabel, toMergeOrders);
-        }
-
-        @Test
-        public void returnedObservableIsCorrectComposed() {
-            testObserver.assertComplete();
-            testObserver.assertValue(composerEvent);
-        }
-    }
+    // public class ObserveMerge {
+    //
+    // @Before
+    // public void setUp() {
+    // when(basicTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
+    // .thenReturn(eventObservable(testEvent));
+    //
+    // testObserver = paramsHandler
+    // .observeMerge(toMergeOrders, simpleMergePositionParamsMock)
+    // .test();
+    // }
+    //
+    // @Test
+    // public void observeMergeCallsBasicTaskMockCorrect() {
+    // verify(basicTaskMock).mergeOrders(mergeOrderLabel, toMergeOrders);
+    // }
+    //
+    // @Test
+    // public void returnedObservableIsCorrectComposed() {
+    // testObserver.assertComplete();
+    // testObserver.assertValue(composerEvent);
+    // }
+    // }
 }

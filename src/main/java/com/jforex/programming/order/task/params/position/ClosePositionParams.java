@@ -7,31 +7,26 @@ import com.jforex.programming.order.task.CloseExecutionMode;
 
 public class ClosePositionParams extends PositionParamsBase<Instrument> {
 
-    private final MergePositionParams complexMergePositionParams;
-    private final SimpleClosePositionParams closePositionParams;
+    private final MergePositionParams mergePositionParams;
+    private final SimpleClosePositionParams simpleClosePositionParams;
     private final CloseExecutionMode closeExecutionMode;
-
-    public interface BuildOption {
-
-        public SimpleClosePositionParams build();
-    }
 
     private ClosePositionParams(final Builder builder) {
         super(builder);
 
-        complexMergePositionParams = builder.complexMergePositionParams;
-        closePositionParams = builder.closePositionParams;
+        mergePositionParams = builder.mergePositionParams;
+        simpleClosePositionParams = builder.simpleClosePositionParams;
         closeExecutionMode = builder.closeExecutionMode;
-        consumerForEvent = complexMergePositionParams.consumerForEvent();
-        consumerForEvent.putAll(closePositionParams.consumerForEvent());
+        consumerForEvent = mergePositionParams.consumerForEvent();
+        consumerForEvent.putAll(simpleClosePositionParams.consumerForEvent());
     }
 
-    public MergePositionParams complexMergePositionParams() {
-        return complexMergePositionParams;
+    public MergePositionParams mergePositionParams() {
+        return mergePositionParams;
     }
 
-    public SimpleClosePositionParams closePositionParams() {
-        return closePositionParams;
+    public SimpleClosePositionParams simpleClosePositionParams() {
+        return simpleClosePositionParams;
     }
 
     public CloseExecutionMode closeExecutionMode() {
@@ -44,21 +39,21 @@ public class ClosePositionParams extends PositionParamsBase<Instrument> {
 
     public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
 
-        private MergePositionParams complexMergePositionParams;
-        private SimpleClosePositionParams closePositionParams;
-        private CloseExecutionMode closeExecutionMode;
+        private MergePositionParams mergePositionParams = MergePositionParams.newBuilder().build();
+        private SimpleClosePositionParams simpleClosePositionParams = SimpleClosePositionParams.newBuilder().build();
+        private CloseExecutionMode closeExecutionMode = CloseExecutionMode.CloseAll;
 
-        public Builder withMergeParams(final MergePositionParams complexMergePositionParams) {
-            checkNotNull(complexMergePositionParams);
+        public Builder withMergePositionParams(final MergePositionParams mergePositionParams) {
+            checkNotNull(mergePositionParams);
 
-            this.complexMergePositionParams = complexMergePositionParams;
+            this.mergePositionParams = mergePositionParams;
             return this;
         }
 
-        public Builder withClosePositionParams(final SimpleClosePositionParams closePositionParams) {
-            checkNotNull(closePositionParams);
+        public Builder withClosePositionParams(final SimpleClosePositionParams simpleClosePositionParams) {
+            checkNotNull(simpleClosePositionParams);
 
-            this.closePositionParams = closePositionParams;
+            this.simpleClosePositionParams = simpleClosePositionParams;
             return this;
         }
 

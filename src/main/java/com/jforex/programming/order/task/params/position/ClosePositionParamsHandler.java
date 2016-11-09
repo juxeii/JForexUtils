@@ -38,7 +38,7 @@ public class ClosePositionParamsHandler {
         return Observable.defer(() -> {
             final Collection<IOrder> ordersToMerge = positionUtil.filledOrders(instrument);
             return complexMergeTask.merge(ordersToMerge,
-                                          complexClosePositionParams.complexMergePositionParams());
+                                          complexClosePositionParams.mergePositionParams());
         });
     }
 
@@ -46,7 +46,7 @@ public class ClosePositionParamsHandler {
                                                final ClosePositionParams complexClosePositionParams) {
         return Observable.defer(() -> batchChangeTask.close(instrument,
                                                             ordersToClose(instrument, complexClosePositionParams),
-                                                            complexClosePositionParams.closePositionParams()));
+                                                            complexClosePositionParams.simpleClosePositionParams()));
     }
 
     private Collection<IOrder> ordersToClose(final Instrument instrument,

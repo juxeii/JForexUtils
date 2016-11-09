@@ -11,47 +11,49 @@ import com.jforex.programming.order.event.OrderEventType;
 
 public class MergePositionParams extends PositionParamsBase<Instrument> {
 
-    private final BatchCancelSLTPParams batchCancelSLAndTPParams;
-    private final SimpleMergePositionParams mergePositionParams;
+    private final BatchCancelSLTPParams batchCancelSLTPParams;
+    private final SimpleMergePositionParams simpleMergePositionParams;
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
 
     private MergePositionParams(final Builder builder) {
         super(builder);
 
-        batchCancelSLAndTPParams = builder.batchCancelSLAndTPParams;
-        mergePositionParams = builder.mergePositionParams;
-        consumerForEvent = batchCancelSLAndTPParams.consumerForEvent();
-        consumerForEvent.putAll(mergePositionParams.consumerForEvent());
+        batchCancelSLTPParams = builder.batchCancelSLTPParams;
+        simpleMergePositionParams = builder.simpleMergePositionParams;
+        consumerForEvent = batchCancelSLTPParams.consumerForEvent();
+        consumerForEvent.putAll(simpleMergePositionParams.consumerForEvent());
     }
 
-    public BatchCancelSLTPParams batchCancelSLAndTPParams() {
-        return batchCancelSLAndTPParams;
+    public BatchCancelSLTPParams batchCancelSLTPParams() {
+        return batchCancelSLTPParams;
     }
 
     public SimpleMergePositionParams simpleMergePositionParams() {
-        return mergePositionParams;
+        return simpleMergePositionParams;
     }
 
-    public static Builder withMergeParams(final SimpleMergePositionParams mergePositionParams) {
-        checkNotNull(mergePositionParams);
-
-        return new Builder(mergePositionParams);
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
 
-        private final BatchCancelSLTPParams batchCancelSLAndTPParams =
+        private BatchCancelSLTPParams batchCancelSLTPParams =
                 BatchCancelSLTPParams.newBuilder().build();
-        private SimpleMergePositionParams mergePositionParams;
+        private SimpleMergePositionParams simpleMergePositionParams =
+                SimpleMergePositionParams.mergeWithLabel(inst -> "").build();
 
-        public Builder(final SimpleMergePositionParams mergePositionParams) {
-            this.mergePositionParams = mergePositionParams;
+        public Builder withBatchCancelSLTPParams(final BatchCancelSLTPParams batchCancelSLTPParams) {
+            checkNotNull(batchCancelSLTPParams);
+
+            this.batchCancelSLTPParams = batchCancelSLTPParams;
+            return this;
         }
 
-        public Builder withMergeParams(final SimpleMergePositionParams mergePositionParams) {
-            checkNotNull(mergePositionParams);
+        public Builder withSimpleMergePositionParams(final SimpleMergePositionParams simpleMergePositionParams) {
+            checkNotNull(simpleMergePositionParams);
 
-            this.mergePositionParams = mergePositionParams;
+            this.simpleMergePositionParams = simpleMergePositionParams;
             return this;
         }
 

@@ -31,7 +31,7 @@ public class CancelSLTPTask {
 
     private Observable<OrderEvent> createTask(final Collection<IOrder> toCancelSLTPOrders,
                                               final MergePositionParams complexMergeParams) {
-        final BatchCancelSLTPParams batchCancelSLAndTPParams = complexMergeParams.batchCancelSLAndTPParams();
+        final BatchCancelSLTPParams batchCancelSLAndTPParams = complexMergeParams.batchCancelSLTPParams();
         final Instrument instrument = toCancelSLTPOrders.iterator().next().getInstrument();
 
         final Observable<OrderEvent> cancelSL =

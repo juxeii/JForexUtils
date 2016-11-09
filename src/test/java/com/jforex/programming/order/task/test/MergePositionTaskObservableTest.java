@@ -1,9 +1,6 @@
 package com.jforex.programming.order.task.test;
 
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -111,65 +108,69 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
         }
     }
 
-    public class MergeAllCallSetup {
-
-        private List<Observable<OrderEvent>> closeObservables;
-
-        @Before
-        public void setUp() throws Exception {
-            when(paramsFactoryMock.apply(instrumentEURUSD)).thenReturn(mergePositionParams);
-        }
-
-        private void mergeAllSubscribe() {
-            testObserver = mergeTask
-                .mergeAll(paramsFactoryMock)
-                .test();
-        }
-
-        private void setUpPositionUtilObservables(final Observable<OrderEvent> firstObservable,
-                                                  final Observable<OrderEvent> secondObservable) {
-            closeObservables = Stream
-                .of(firstObservable, secondObservable)
-                .collect(Collectors.toList());
-            when(positionUtilMock.observablesFromFactory(any())).thenReturn(closeObservables);
-
-            mergeAllSubscribe();
-        }
-
-        @Test
-        public void mergePositionCallIsDeferred() {
-            verifyZeroInteractions(splitterMock);
-            verifyZeroInteractions(positionUtilMock);
-        }
-
-        @SuppressWarnings("unchecked")
-        @Test
-        public void verifyThatPositionUtilIsCalledWithCorrectFactory() throws Exception {
-            doAnswer(invocation -> ((Function<Instrument, Observable<OrderEvent>>) invocation.getArgument(0))
-                .apply(instrumentEURUSD)
-                .subscribe())
-                    .when(positionUtilMock).observablesFromFactory(any());
-
-            setUpSplitterObservable(emptyObservable());
-            mergeAllSubscribe();
-
-            verify(paramsFactoryMock).apply(instrumentEURUSD);
-            verify(splitterMock).observe(toMergeOrders, mergePositionParams);
-        }
-
-        @Test
-        public void verifyThatMergeCommandsAreMerged() {
-            setUpPositionUtilObservables(neverObservable(), eventObservable(testEvent));
-
-            testObserver.assertValue(testEvent);
-            testObserver.assertNotComplete();
-        }
-
-        @Test
-        public void completesWhenAllSingleCommandsComplete() {
-            setUpPositionUtilObservables(emptyObservable(), emptyObservable());
-
-            testObserver.assertComplete();
-        }
-    }
+    // public class MergeAllCallSetup {
+    //
+    // private List<Observable<OrderEvent>> closeObservables;
+    //
+    // @Before
+    // public void setUp() throws Exception {
+    // when(paramsFactoryMock.apply(instrumentEURUSD)).thenReturn(mergePositionParams);
+    // }
+    //
+    // private void mergeAllSubscribe() {
+    // testObserver = mergeTask
+    // .mergeAll(paramsFactoryMock)
+    // .test();
+    // }
+    //
+    // private void setUpPositionUtilObservables(final Observable<OrderEvent>
+    // firstObservable,
+    // final Observable<OrderEvent> secondObservable) {
+    // closeObservables = Stream
+    // .of(firstObservable, secondObservable)
+    // .collect(Collectors.toList());
+    // when(positionUtilMock.observablesFromFactory(any())).thenReturn(closeObservables);
+    //
+    // mergeAllSubscribe();
+    // }
+    //
+    // @Test
+    // public void mergePositionCallIsDeferred() {
+    // verifyZeroInteractions(splitterMock);
+    // verifyZeroInteractions(positionUtilMock);
+    // }
+    //
+    // @SuppressWarnings("unchecked")
+    // @Test
+    // public void verifyThatPositionUtilIsCalledWithCorrectFactory() throws
+    // Exception {
+    // doAnswer(invocation -> ((Function<Instrument, Observable<OrderEvent>>)
+    // invocation.getArgument(0))
+    // .apply(instrumentEURUSD)
+    // .subscribe())
+    // .when(positionUtilMock).observablesFromFactory(any());
+    //
+    // setUpSplitterObservable(emptyObservable());
+    // mergeAllSubscribe();
+    //
+    // verify(paramsFactoryMock).apply(instrumentEURUSD);
+    // verify(splitterMock).observe(toMergeOrders, mergePositionParams);
+    // }
+    //
+    // @Test
+    // public void verifyThatMergeCommandsAreMerged() {
+    // setUpPositionUtilObservables(neverObservable(),
+    // eventObservable(testEvent));
+    //
+    // testObserver.assertValue(testEvent);
+    // testObserver.assertNotComplete();
+    // }
+    //
+    // @Test
+    // public void completesWhenAllSingleCommandsComplete() {
+    // setUpPositionUtilObservables(emptyObservable(), emptyObservable());
+    //
+    // testObserver.assertComplete();
+    // }
+    // }
 }

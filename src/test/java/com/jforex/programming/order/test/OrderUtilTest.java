@@ -73,41 +73,33 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void submitOrderCallsSubscribeOnSubmitParams() {
+    public void submitOrderCallsSubscribeOnTaskParams() {
         final SubmitParams submitParamsMock = mock(SubmitParams.class);
 
         orderUtil.submitOrder(submitParamsMock);
 
-        // verify(submitParamsMock).subscribe(basicTaskMock);
+        verify(taskParamsUtilMock).subscribeBasicParams(basicTaskMock.submitOrder(submitParamsMock),
+                                                        submitParamsMock);
     }
 
     @Test
-    public void mergeOrdersCallsSubscribeOnMergeParams() {
+    public void mergeOrdersCallsSubscribeOnTaskParams() {
         final MergeParams mergeParamsMock = mock(MergeParams.class);
 
         orderUtil.mergeOrders(mergeParamsMock);
 
-        // verify(mergeParamsMock).subscribe(basicTaskMock);
+        verify(taskParamsUtilMock).subscribeBasicParams(basicTaskMock.mergeOrders(mergeParamsMock),
+                                                        mergeParamsMock);
     }
 
     @Test
-    public void mergeOrdersWithpositionParamsDelegatesToMergeTask() {
-        when(orderMergeTaskMock.merge(toMergeOrders, mergepositionParamsMock))
-            .thenReturn(orderEventObservable);
+    public void closeCallsSubscribeOnTaskParams() {
+        final CloseParams closeParamsMock = mock(CloseParams.class);
 
-        final Observable<OrderEvent> actualObservable = orderUtil.mergeOrders(toMergeOrders, mergepositionParamsMock);
+        orderUtil.close(closeParamsMock);
 
-        verify(orderMergeTaskMock).merge(toMergeOrders, mergepositionParamsMock);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void closeCallsSubscribeOnCloseParams() {
-        final CloseParams closeParams = mock(CloseParams.class);
-
-        orderUtil.close(closeParams);
-
-        // verify(closeParams).subscribe(basicTaskMock);
+        verify(taskParamsUtilMock).subscribeBasicParams(basicTaskMock.close(closeParamsMock),
+                                                        closeParamsMock);
     }
 
     @Test
@@ -116,7 +108,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil.setLabel(setLabelParamsMock);
 
-        // verify(setLabelParamsMock).subscribe(basicTaskMock);
+        verify(taskParamsUtilMock).subscribeBasicParams(basicTaskMock.setLabel(setLabelParamsMock),
+                                                        setLabelParamsMock);
     }
 
     @Test
@@ -125,7 +118,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil.setGoodTillTime(setGTTParamsMock);
 
-        // verify(setGTTParamsMock).subscribe(basicTaskMock);
+        verify(taskParamsUtilMock).subscribeBasicParams(basicTaskMock.setGoodTillTime(setGTTParamsMock),
+                                                        setGTTParamsMock);
     }
 
     @Test
@@ -134,7 +128,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil.setRequestedAmount(setAmountParamsMock);
 
-        // verify(setAmountParamsMock).subscribe(basicTaskMock);
+        verify(taskParamsUtilMock).subscribeBasicParams(basicTaskMock.setRequestedAmount(setAmountParamsMock),
+                                                        setAmountParamsMock);
     }
 
     @Test
@@ -143,7 +138,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil.setOpenPrice(setOpenPriceParamsMock);
 
-        // verify(setOpenPriceParamsMock).subscribe(basicTaskMock);
+        verify(taskParamsUtilMock).subscribeBasicParams(basicTaskMock.setOpenPrice(setOpenPriceParamsMock),
+                                                        setOpenPriceParamsMock);
     }
 
     @Test
@@ -152,7 +148,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil.setStopLossPrice(setSLParamsMock);
 
-        // verify(setTPParamsMock).subscribe(basicTaskMock);
+        verify(taskParamsUtilMock).subscribeBasicParams(basicTaskMock.setStopLossPrice(setSLParamsMock),
+                                                        setSLParamsMock);
     }
 
     @Test
@@ -161,55 +158,62 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         orderUtil.setTakeProfitPrice(setTPParamsMock);
 
-        // verify(setTPParamsMock).subscribe(basicTaskMock);
+        verify(taskParamsUtilMock).subscribeBasicParams(basicTaskMock.setTakeProfitPrice(setTPParamsMock),
+                                                        setTPParamsMock);
     }
 
-    @Test
-    public void mergePositionDelegatesToMergeTask() {
-        when(orderMergeTaskMock.mergePosition(instrumentEURUSD, mergepositionParamsMock))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable =
-                orderUtil.mergePosition(instrumentEURUSD, mergepositionParamsMock);
-
-        verify(orderMergeTaskMock).mergePosition(instrumentEURUSD, mergepositionParamsMock);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void mergeAllPositionsDelegatesToMergeTask() {
-        when(orderMergeTaskMock.mergeAll(mergePositionParamsFactory))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.mergeAllPositions(mergePositionParamsFactory);
-
-        verify(orderMergeTaskMock).mergeAll(mergePositionParamsFactory);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void closePositionDelegatesToCloseTask() {
-        final SimpleClosePositionParams positionParams = mock(SimpleClosePositionParams.class);
-
-        when(orderCloseTaskMock.close(positionParams))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.closePosition(positionParams);
-
-        verify(orderCloseTaskMock).close(positionParams);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
-
-    @Test
-    public void closeAllPositionsDelegatesToCloseTask() {
-        when(orderCloseTaskMock.closeAll(closePositionParamsFactory))
-            .thenReturn(orderEventObservable);
-
-        final Observable<OrderEvent> actualObservable = orderUtil.closeAll(closePositionParamsFactory);
-
-        verify(orderCloseTaskMock).closeAll(closePositionParamsFactory);
-        assertThat(actualObservable, equalTo(orderEventObservable));
-    }
+    // @Test
+    // public void mergePositionDelegatesToMergeTask() {
+    // when(orderMergeTaskMock.mergePosition(instrumentEURUSD,
+    // mergepositionParamsMock))
+    // .thenReturn(orderEventObservable);
+    //
+    // final Observable<OrderEvent> actualObservable =
+    // orderUtil.mergePosition(instrumentEURUSD, mergepositionParamsMock);
+    //
+    // verify(orderMergeTaskMock).mergePosition(instrumentEURUSD,
+    // mergepositionParamsMock);
+    // assertThat(actualObservable, equalTo(orderEventObservable));
+    // }
+    //
+    // @Test
+    // public void mergeAllPositionsDelegatesToMergeTask() {
+    // when(orderMergeTaskMock.mergeAll(mergePositionParamsFactory))
+    // .thenReturn(orderEventObservable);
+    //
+    // final Observable<OrderEvent> actualObservable =
+    // orderUtil.mergeAllPositions(mergePositionParamsFactory);
+    //
+    // verify(orderMergeTaskMock).mergeAll(mergePositionParamsFactory);
+    // assertThat(actualObservable, equalTo(orderEventObservable));
+    // }
+    //
+    // @Test
+    // public void closePositionDelegatesToCloseTask() {
+    // final SimpleClosePositionParams positionParams =
+    // mock(SimpleClosePositionParams.class);
+    //
+    // when(orderCloseTaskMock.close(positionParams))
+    // .thenReturn(orderEventObservable);
+    //
+    // final Observable<OrderEvent> actualObservable =
+    // orderUtil.closePosition(positionParams);
+    //
+    // verify(orderCloseTaskMock).close(positionParams);
+    // assertThat(actualObservable, equalTo(orderEventObservable));
+    // }
+    //
+    // @Test
+    // public void closeAllPositionsDelegatesToCloseTask() {
+    // when(orderCloseTaskMock.closeAll(closePositionParamsFactory))
+    // .thenReturn(orderEventObservable);
+    //
+    // final Observable<OrderEvent> actualObservable =
+    // orderUtil.closeAll(closePositionParamsFactory);
+    //
+    // verify(orderCloseTaskMock).closeAll(closePositionParamsFactory);
+    // assertThat(actualObservable, equalTo(orderEventObservable));
+    // }
 
     @Test
     public void positionOrdersDelegatesToPositionTask() {
