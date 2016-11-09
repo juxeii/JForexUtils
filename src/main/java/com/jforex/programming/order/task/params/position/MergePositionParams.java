@@ -38,8 +38,9 @@ public class MergePositionParams extends PositionParamsBase<Instrument> {
 
     public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
 
-        private BatchCancelSLTPParams batchCancelSLTPParams =
-                BatchCancelSLTPParams.newBuilder().build();
+        private BatchCancelSLTPParams batchCancelSLTPParams = BatchCancelSLTPParams
+            .newBuilder()
+            .build();
         private SimpleMergePositionParams simpleMergePositionParams =
                 SimpleMergePositionParams.mergeWithLabel(inst -> "").build();
 

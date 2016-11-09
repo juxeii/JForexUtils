@@ -39,8 +39,12 @@ public class BatchCancelSLTPParams extends PositionParamsBase<Instrument> {
 
     public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
 
-        private BatchCancelSLParams batchCancelSLParams = BatchCancelSLParams.newBuilder().build();
-        private BatchCancelTPParams batchCancelTPParams = BatchCancelTPParams.newBuilder().build();
+        private BatchCancelSLParams batchCancelSLParams = BatchCancelSLParams
+            .newBuilder()
+            .build();
+        private BatchCancelTPParams batchCancelTPParams = BatchCancelTPParams
+            .newBuilder()
+            .build();
         private MergeExecutionMode mergeExecutionMode = MergeExecutionMode.MergeCancelSLAndTP;
 
         public Builder withBatchCancelSLParams(final BatchCancelSLParams batchCancelSLParams) {

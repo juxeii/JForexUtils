@@ -32,7 +32,9 @@ public class BatchCancelTPParams extends PositionParamsBase<Instrument> {
 
     public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
 
-        private CancelTPParams cancelTPParams = CancelTPParams.newBuilder().build();
+        private CancelTPParams cancelTPParams = CancelTPParams
+            .newBuilder()
+            .build();
         private BatchMode batchMode = BatchMode.MERGE;
 
         public Builder withCancelTPParams(final CancelTPParams cancelTPParams) {

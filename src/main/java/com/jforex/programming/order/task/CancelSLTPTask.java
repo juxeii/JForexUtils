@@ -30,39 +30,62 @@ public class CancelSLTPTask {
     }
 
     private Observable<OrderEvent> createTask(final Collection<IOrder> toCancelSLTPOrders,
-                                              final MergePositionParams complexMergeParams) {
-        final BatchCancelSLTPParams batchCancelSLAndTPParams = complexMergeParams.batchCancelSLTPParams();
+                                              final MergePositionParams mergePositionParams) {
+        final BatchCancelSLTPParams batchCancelSLAndTPParams = mergePositionParams.batchCancelSLTPParams();
         final Instrument instrument = toCancelSLTPOrders.iterator().next().getInstrument();
 
-        final Observable<OrderEvent> cancelSL =
-                taskParamsUtil.composePositionTask(instrument,
-                                                   Observable.defer(() -> batchChangeTask.cancelSL(toCancelSLTPOrders,
-                                                                                                   batchCancelSLAndTPParams
-                                                                                                       .batchCancelSLParams()
-                                                                                                       .cancelSLParams(),
-                                                                                                   batchCancelSLAndTPParams
-                                                                                                       .batchCancelSLParams()
-                                                                                                       .batchMode())),
-                                                   batchCancelSLAndTPParams.batchCancelSLParams());
-        final Observable<OrderEvent> cancelTP =
-                taskParamsUtil.composePositionTask(instrument,
-                                                   Observable.defer(() -> batchChangeTask.cancelTP(toCancelSLTPOrders,
-                                                                                                   batchCancelSLAndTPParams
-                                                                                                       .batchCancelTPParams()
-                                                                                                       .cancelTPParams(),
-                                                                                                   batchCancelSLAndTPParams
-                                                                                                       .batchCancelTPParams()
-                                                                                                       .batchMode())),
-                                                   batchCancelSLAndTPParams.batchCancelTPParams());
-
-        final Observable<OrderEvent> observable = arrangeObservables(cancelSL,
-                                                                     cancelTP,
-                                                                     batchCancelSLAndTPParams
-                                                                         .mergeExecutionMode());
+        final Observable<OrderEvent> cancelSL = composeBatchCancelSL(instrument,
+                                                                     toCancelSLTPOrders,
+                                                                     batchCancelSLAndTPParams);
+        final Observable<OrderEvent> cancelTP = composeBatchCancelTP(instrument,
+                                                                     toCancelSLTPOrders,
+                                                                     batchCancelSLAndTPParams);
+        final Observable<OrderEvent> batchObservables =
+                arrangeObservables(cancelSL,
+                                   cancelTP,
+                                   batchCancelSLAndTPParams.mergeExecutionMode());
 
         return taskParamsUtil.composePositionTask(instrument,
-                                                  observable,
+                                                  batchObservables,
                                                   batchCancelSLAndTPParams);
+    }
+
+    private Observable<OrderEvent> composeBatchCancelSL(final Instrument instrument,
+                                                        final Collection<IOrder> toCancelSLTPOrders,
+                                                        final BatchCancelSLTPParams batchCancelSLAndTPParams) {
+        return taskParamsUtil.composePositionTask(instrument,
+                                                  batchCancelSL(toCancelSLTPOrders, batchCancelSLAndTPParams),
+                                                  batchCancelSLAndTPParams.batchCancelSLParams());
+    }
+
+    private Observable<OrderEvent> composeBatchCancelTP(final Instrument instrument,
+                                                        final Collection<IOrder> toCancelSLTPOrders,
+                                                        final BatchCancelSLTPParams batchCancelSLAndTPParams) {
+        return taskParamsUtil.composePositionTask(instrument,
+                                                  batchCancelTP(toCancelSLTPOrders, batchCancelSLAndTPParams),
+                                                  batchCancelSLAndTPParams.batchCancelTPParams());
+    }
+
+    private Observable<OrderEvent> batchCancelSL(final Collection<IOrder> toCancelSLTPOrders,
+                                                 final BatchCancelSLTPParams batchCancelSLAndTPParams) {
+        return Observable.defer(() -> batchChangeTask.cancelSL(toCancelSLTPOrders,
+                                                               batchCancelSLAndTPParams
+                                                                   .batchCancelSLParams()
+                                                                   .cancelSLParams(),
+                                                               batchCancelSLAndTPParams
+                                                                   .batchCancelSLParams()
+                                                                   .batchMode()));
+    }
+
+    private Observable<OrderEvent> batchCancelTP(final Collection<IOrder> toCancelSLTPOrders,
+                                                 final BatchCancelSLTPParams batchCancelSLAndTPParams) {
+        return Observable.defer(() -> batchChangeTask.cancelTP(toCancelSLTPOrders,
+                                                               batchCancelSLAndTPParams
+                                                                   .batchCancelTPParams()
+                                                                   .cancelTPParams(),
+                                                               batchCancelSLAndTPParams
+                                                                   .batchCancelTPParams()
+                                                                   .batchMode()));
     }
 
     private Observable<OrderEvent> arrangeObservables(final Observable<OrderEvent> cancelSL,

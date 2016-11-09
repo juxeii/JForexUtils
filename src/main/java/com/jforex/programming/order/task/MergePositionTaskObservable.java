@@ -25,8 +25,8 @@ public class MergePositionTaskObservable {
     }
 
     public Observable<OrderEvent> merge(final Collection<IOrder> toMergeOrders,
-                                        final MergePositionParams complexMergeParams) {
-        return observeSplit(() -> toMergeOrders, complexMergeParams);
+                                        final MergePositionParams mergePositionParams) {
+        return observeSplit(() -> toMergeOrders, mergePositionParams);
     }
 
     public Observable<OrderEvent> merge(final Instrument instrument,

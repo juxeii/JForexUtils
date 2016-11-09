@@ -39,8 +39,12 @@ public class ClosePositionParams extends PositionParamsBase<Instrument> {
 
     public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
 
-        private MergePositionParams mergePositionParams = MergePositionParams.newBuilder().build();
-        private SimpleClosePositionParams simpleClosePositionParams = SimpleClosePositionParams.newBuilder().build();
+        private MergePositionParams mergePositionParams = MergePositionParams
+            .newBuilder()
+            .build();
+        private SimpleClosePositionParams simpleClosePositionParams = SimpleClosePositionParams
+            .newBuilder()
+            .build();
         private CloseExecutionMode closeExecutionMode = CloseExecutionMode.CloseAll;
 
         public Builder withMergePositionParams(final MergePositionParams mergePositionParams) {

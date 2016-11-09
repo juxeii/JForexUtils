@@ -32,7 +32,9 @@ public class BatchCancelSLParams extends PositionParamsBase<Instrument> {
 
     public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
 
-        private CancelSLParams cancelSLParams = CancelSLParams.newBuilder().build();
+        private CancelSLParams cancelSLParams = CancelSLParams
+            .newBuilder()
+            .build();
         private BatchMode batchMode = BatchMode.MERGE;
 
         public Builder withCancelSLParams(final CancelSLParams cancelSLParams) {
