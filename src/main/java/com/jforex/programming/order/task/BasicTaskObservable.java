@@ -149,6 +149,10 @@ public class BasicTaskObservable {
                 ? setSLParams.priceOrPips()
                 : calculationUtil.slPriceForPips(orderToSetSL, setSLParams.priceOrPips());
 
+        if (setSLParams.setSLTPMode() == SetSLTPMode.PIPS) {
+            System.out.println("UUUUUUUUUUUUU " + newSL);
+        }
+
         return Observable
             .just(setSLParams.order())
             .filter(order -> !isSLSetTo(newSL).test(order))

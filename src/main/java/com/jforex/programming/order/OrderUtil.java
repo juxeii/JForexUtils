@@ -119,7 +119,7 @@ public class OrderUtil {
     public void mergeAllPositions(final MergeAllPositionsParams mergeAllPositionParams) {
         checkNotNull(mergeAllPositionParams);
 
-        taskParamsUtil.subscribeToAllPositionTask(mergePositionTask.mergeAll(mergeAllPositionParams),
+        taskParamsUtil.subscribeToAllPositionsTask(mergePositionTask.mergeAll(mergeAllPositionParams),
                                                   mergeAllPositionParams);
     }
 
@@ -135,7 +135,7 @@ public class OrderUtil {
     public void closeAllPositions(final CloseAllPositionsParams closeAllPositionParams) {
         checkNotNull(closeAllPositionParams);
 
-        taskParamsUtil.subscribeToAllPositionTask(closePositionTask.closeAll(closeAllPositionParams),
+        taskParamsUtil.subscribeToAllPositionsTask(closePositionTask.closeAll(closeAllPositionParams),
                                                   closeAllPositionParams);
     }
 

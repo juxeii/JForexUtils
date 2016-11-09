@@ -10,9 +10,9 @@ import com.jforex.programming.order.task.params.CommonParamsBuilder;
 @SuppressWarnings("unchecked")
 public class PositionParamsBuilder<T, V> extends CommonParamsBuilder<T> {
 
-    protected BiConsumer<Throwable, V> errorConsumer;
-    protected Consumer<V> startConsumer;
-    protected Consumer<V> completeConsumer;
+    protected BiConsumer<Throwable, V> errorConsumer = (t, v) -> {};
+    protected Consumer<V> startConsumer = v -> {};
+    protected Consumer<V> completeConsumer = v -> {};
 
     public T doOnStart(final Consumer<V> startConsumer) {
         checkNotNull(startConsumer);

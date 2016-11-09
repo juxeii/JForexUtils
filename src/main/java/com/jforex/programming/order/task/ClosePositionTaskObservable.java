@@ -12,22 +12,22 @@ import io.reactivex.functions.Function;
 
 public class ClosePositionTaskObservable {
 
-    private final ClosePositionParamsHandler positionParamsHandler;
+    private final ClosePositionParamsHandler closePositionParamsHandler;
     private final PositionUtil positionUtil;
 
-    public ClosePositionTaskObservable(final ClosePositionParamsHandler positionParamsHandler,
+    public ClosePositionTaskObservable(final ClosePositionParamsHandler closePositionParamsHandler,
                                        final PositionUtil positionUtil) {
-        this.positionParamsHandler = positionParamsHandler;
+        this.closePositionParamsHandler = closePositionParamsHandler;
         this.positionUtil = positionUtil;
     }
 
     public Observable<OrderEvent> close(final Instrument instrument,
                                         final ClosePositionParams closePositionParams) {
         return Observable.defer(() -> {
-            final Observable<OrderEvent> merge = positionParamsHandler.observeMerge(instrument,
-                                                                                    closePositionParams);
-            final Observable<OrderEvent> close = positionParamsHandler.observeClose(instrument,
-                                                                                    closePositionParams);
+            final Observable<OrderEvent> merge = closePositionParamsHandler.observeMerge(instrument,
+                                                                                         closePositionParams);
+            final Observable<OrderEvent> close = closePositionParamsHandler.observeClose(instrument,
+                                                                                         closePositionParams);
             return merge.concatWith(close);
         });
     }

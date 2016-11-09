@@ -14,11 +14,13 @@ import io.reactivex.Observable;
 
 public class TaskParamsUtil {
 
-    public void subscribeBasicParams(final Observable<OrderEvent> observable,
+    public void subscribeBasicParams(Observable<OrderEvent> observable,
                                      final BasicParamsBase basicParamsBase) {
+        observable = observable
+            .doOnNext(orderEvent -> handlerOrderEvent(orderEvent, basicParamsBase.consumerForEvent()));
         composeRetry(observable, basicParamsBase)
             .doOnSubscribe(d -> basicParamsBase.startAction().run())
-            .subscribe(orderEvent -> handlerOrderEvent(orderEvent, basicParamsBase.consumerForEvent()),
+            .subscribe(orderEvent -> {},
                        e -> basicParamsBase.errorConsumer().accept(e),
                        basicParamsBase.completeAction());
     }
@@ -48,20 +50,24 @@ public class TaskParamsUtil {
     }
 
     public void subscribePositionTask(final Instrument instrument,
-                                      final Observable<OrderEvent> observable,
+                                      Observable<OrderEvent> observable,
                                       final PositionParamsBase<Instrument> paramsForPosition) {
+        observable = observable
+            .doOnNext(orderEvent -> handlerOrderEvent(orderEvent, paramsForPosition.consumerForEvent()));
         composeRetry(observable, paramsForPosition)
             .doOnSubscribe(d -> paramsForPosition.startAction(instrument).run())
-            .subscribe(orderEvent -> handlerOrderEvent(orderEvent, paramsForPosition.consumerForEvent()),
+            .subscribe(orderEvent -> {},
                        e -> paramsForPosition.errorConsumer(instrument).accept(e),
                        paramsForPosition.completeAction(instrument)::run);
     }
 
-    public void subscribeToAllPositionTask(final Observable<OrderEvent> observable,
-                                           final BasicParamsBase basicParamsBase) {
+    public void subscribeToAllPositionsTask(Observable<OrderEvent> observable,
+                                            final BasicParamsBase basicParamsBase) {
+        observable = observable
+            .doOnNext(orderEvent -> handlerOrderEvent(orderEvent, basicParamsBase.consumerForEvent()));
         composeRetry(observable, basicParamsBase)
             .doOnSubscribe(d -> basicParamsBase.startAction().run())
-            .subscribe(orderEvent -> handlerOrderEvent(orderEvent, basicParamsBase.consumerForEvent()),
+            .subscribe(orderEvent -> {},
                        e -> basicParamsBase.errorConsumer().accept(e),
                        basicParamsBase.completeAction()::run);
     }
