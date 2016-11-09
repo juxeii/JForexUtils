@@ -6,9 +6,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
-import com.jforex.programming.order.task.params.position.BatchCancelSLTPParams;
-import com.jforex.programming.order.task.params.position.CancelTPParams;
-import com.jforex.programming.order.task.params.position.MergePositionParams;
+import com.jforex.programming.order.task.params.position.BatchCancelTPParams;
 
 import io.reactivex.Observable;
 
@@ -24,25 +22,18 @@ public class CancelTPTask {
     }
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelTPTPOrders,
-                                          final MergePositionParams mergePositionParams) {
-        final BatchCancelSLTPParams batchCancelSLTPParams = mergePositionParams.batchCancelSLTPParams();
+                                          final BatchCancelTPParams batchCancelTPParams) {
         final Instrument instrument = toCancelTPTPOrders.iterator().next().getInstrument();
 
         return taskParamsUtil.composePositionTask(instrument,
-                                                  batchCancelTP(toCancelTPTPOrders, batchCancelSLTPParams),
-                                                  batchCancelSLTPParams.batchCancelTPParams());
+                                                  batchCancelTP(toCancelTPTPOrders, batchCancelTPParams),
+                                                  batchCancelTPParams);
     }
 
     private Observable<OrderEvent> batchCancelTP(final Collection<IOrder> toCancelTPTPOrders,
-                                                 final BatchCancelSLTPParams batchCancelSLTPParams) {
-        final CancelTPParams cancelTPParams = batchCancelSLTPParams
-            .batchCancelTPParams()
-            .cancelTPParams();
-        final BatchMode batchMode = batchCancelSLTPParams
-            .batchCancelTPParams()
-            .batchMode();
+                                                 final BatchCancelTPParams batchCancelTPParams) {
         return Observable.defer(() -> batchChangeTask.cancelTP(toCancelTPTPOrders,
-                                                               cancelTPParams,
-                                                               batchMode));
+                                                               batchCancelTPParams.cancelTPParams(),
+                                                               batchCancelTPParams.batchMode()));
     }
 }

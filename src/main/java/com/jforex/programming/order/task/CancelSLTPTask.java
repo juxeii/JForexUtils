@@ -33,19 +33,21 @@ public class CancelSLTPTask {
 
     private Observable<OrderEvent> createTask(final Collection<IOrder> toCancelSLTPOrders,
                                               final MergePositionParams mergePositionParams) {
-        final BatchCancelSLTPParams batchCancelSLAndTPParams = mergePositionParams.batchCancelSLTPParams();
+        final BatchCancelSLTPParams batchCancelSLTPParams = mergePositionParams.batchCancelSLTPParams();
 
-        final Observable<OrderEvent> cancelSL = cancelSLTask.observe(toCancelSLTPOrders, mergePositionParams);
-        final Observable<OrderEvent> cancelTP = cancelTPTask.observe(toCancelSLTPOrders, mergePositionParams);
+        final Observable<OrderEvent> cancelSL = cancelSLTask.observe(toCancelSLTPOrders,
+                                                                     batchCancelSLTPParams.batchCancelSLParams());
+        final Observable<OrderEvent> cancelTP = cancelTPTask.observe(toCancelSLTPOrders,
+                                                                     batchCancelSLTPParams.batchCancelTPParams());
 
         final Observable<OrderEvent> batchObservables =
                 arrangeObservables(cancelSL,
                                    cancelTP,
-                                   batchCancelSLAndTPParams.mergeExecutionMode());
+                                   batchCancelSLTPParams.mergeExecutionMode());
 
         return taskParamsUtil.composePositionTask(toCancelSLTPOrders.iterator().next().getInstrument(),
                                                   batchObservables,
-                                                  batchCancelSLAndTPParams);
+                                                  batchCancelSLTPParams);
     }
 
     private Observable<OrderEvent> arrangeObservables(final Observable<OrderEvent> cancelSL,
