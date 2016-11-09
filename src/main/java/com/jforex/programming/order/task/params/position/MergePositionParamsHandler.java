@@ -34,8 +34,7 @@ public class MergePositionParamsHandler {
                                                final SimpleMergePositionParams simpleMergePositionParams) {
         final Instrument instrument = toMergeOrders.iterator().next().getInstrument();
         final Observable<OrderEvent> observable =
-                basicTask.mergeOrders(simpleMergePositionParams.mergeOrderLabel(instrument),
-                                      toMergeOrders);
+                basicTask.mergeOrders(simpleMergePositionParams.mergeOrderLabel(instrument), toMergeOrders);
         return taskParamsUtil.composePositionTask(instrument,
                                                   observable,
                                                   simpleMergePositionParams);

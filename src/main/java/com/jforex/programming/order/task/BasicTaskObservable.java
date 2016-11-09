@@ -36,10 +36,10 @@ public class BasicTaskObservable {
     private final OrderUtilHandler orderUtilHandler;
     private final CalculationUtil calculationUtil;
 
-    public BasicTaskObservable(final TaskExecutor orderTaskExecutor,
-                     final OrderUtilHandler orderUtilHandler,
-                     final CalculationUtil calculationUtil) {
-        this.taskExecutor = orderTaskExecutor;
+    public BasicTaskObservable(final TaskExecutor taskExecutor,
+                               final OrderUtilHandler orderUtilHandler,
+                               final CalculationUtil calculationUtil) {
+        this.taskExecutor = taskExecutor;
         this.orderUtilHandler = orderUtilHandler;
         this.calculationUtil = calculationUtil;
     }

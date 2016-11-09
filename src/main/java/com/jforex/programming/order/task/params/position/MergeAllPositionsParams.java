@@ -7,17 +7,17 @@ import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 
 public class MergeAllPositionsParams extends BasicParamsBase {
 
-    private final MergePositionParams complexMergePositionParams;
+    private final MergePositionParams mergePositionParams;
 
     private MergeAllPositionsParams(final Builder builder) {
         super(builder);
 
-        complexMergePositionParams = builder.complexMergePositionParams;
-        consumerForEvent = complexMergePositionParams.consumerForEvent();
+        mergePositionParams = builder.mergePositionParams;
+        consumerForEvent = mergePositionParams.consumerForEvent();
     }
 
-    public MergePositionParams complexMergePositionParams() {
-        return complexMergePositionParams;
+    public MergePositionParams mergePositionParams() {
+        return mergePositionParams;
     }
 
     public static Builder newBuilder() {
@@ -26,12 +26,12 @@ public class MergeAllPositionsParams extends BasicParamsBase {
 
     public static class Builder extends BasicParamsBuilder<Builder> {
 
-        private MergePositionParams complexMergePositionParams;
+        private MergePositionParams mergePositionParams = MergePositionParams.newBuilder().build();
 
-        public Builder withClosePositionParams(final MergePositionParams complexMergePositionParams) {
-            checkNotNull(complexMergePositionParams);
+        public Builder withMergePositionParams(final MergePositionParams mergePositionParams) {
+            checkNotNull(mergePositionParams);
 
-            this.complexMergePositionParams = complexMergePositionParams;
+            this.mergePositionParams = mergePositionParams;
             return this;
         }
 

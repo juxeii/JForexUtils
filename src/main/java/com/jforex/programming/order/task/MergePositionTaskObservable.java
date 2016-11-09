@@ -6,8 +6,8 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.google.common.base.Supplier;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.position.MergeAllPositionsParams;
+import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
@@ -19,7 +19,7 @@ public class MergePositionTaskObservable {
     private final PositionUtil positionUtil;
 
     public MergePositionTaskObservable(final CancelSLTPAndMergeTask cancelSLTPAndMergeTask,
-                            final PositionUtil positionUtil) {
+                                       final PositionUtil positionUtil) {
         this.cancelSLTPAndMergeTask = cancelSLTPAndMergeTask;
         this.positionUtil = positionUtil;
     }
@@ -29,8 +29,8 @@ public class MergePositionTaskObservable {
         return observeSplit(() -> toMergeOrders, complexMergeParams);
     }
 
-    public Observable<OrderEvent> mergePosition(final Instrument instrument,
-                                                final MergePositionParams mergeParams) {
+    public Observable<OrderEvent> merge(final Instrument instrument,
+                                        final MergePositionParams mergeParams) {
         return observeSplit(() -> positionUtil.filledOrders(instrument), mergeParams);
     }
 
@@ -42,7 +42,7 @@ public class MergePositionTaskObservable {
     public Observable<OrderEvent> mergeAll(final MergeAllPositionsParams mergeAllPositionParams) {
         return Observable.defer(() -> {
             final Function<Instrument, Observable<OrderEvent>> observablesFromFactory =
-                    instrument -> mergePosition(instrument, mergeAllPositionParams.complexMergePositionParams());
+                    instrument -> merge(instrument, mergeAllPositionParams.mergePositionParams());
             return Observable.merge(positionUtil.observablesFromFactory(observablesFromFactory));
         });
     }

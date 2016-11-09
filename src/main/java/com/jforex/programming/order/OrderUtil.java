@@ -30,7 +30,7 @@ import io.reactivex.Observable;
 public class OrderUtil {
 
     private final BasicTaskObservable basicTask;
-    private final MergePositionTaskObservable mergeTask;
+    private final MergePositionTaskObservable mergePositionTask;
     private final ClosePositionTaskObservable closePositionTask;
     private final PositionUtil positionUtil;
     private final TaskParamsUtil taskParamsUtil;
@@ -41,7 +41,7 @@ public class OrderUtil {
                      final PositionUtil positionUtil,
                      final TaskParamsUtil taskParamsUtil) {
         this.basicTask = basicTask;
-        this.mergeTask = mergeTask;
+        this.mergePositionTask = mergeTask;
         this.closePositionTask = closePositionTask;
         this.positionUtil = positionUtil;
         this.taskParamsUtil = taskParamsUtil;
@@ -112,14 +112,14 @@ public class OrderUtil {
         checkNotNull(mergePositionParams);
 
         taskParamsUtil.subscribePositionTask(instrument,
-                                             mergeTask.mergePosition(instrument, mergePositionParams),
+                                             mergePositionTask.merge(instrument, mergePositionParams),
                                              mergePositionParams);
     }
 
     public void mergeAllPositions(final MergeAllPositionsParams mergeAllPositionParams) {
         checkNotNull(mergeAllPositionParams);
 
-        taskParamsUtil.subscribeToAllPositionTask(mergeTask.mergeAll(mergeAllPositionParams),
+        taskParamsUtil.subscribeToAllPositionTask(mergePositionTask.mergeAll(mergeAllPositionParams),
                                                   mergeAllPositionParams);
     }
 

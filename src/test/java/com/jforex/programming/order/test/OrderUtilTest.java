@@ -3,18 +3,12 @@ package com.jforex.programming.order.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.Set;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
-import com.google.common.collect.Sets;
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.ClosePositionTaskObservable;
 import com.jforex.programming.order.task.MergePositionTaskObservable;
@@ -28,15 +22,15 @@ import com.jforex.programming.order.task.params.basic.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.basic.SetSLParams;
 import com.jforex.programming.order.task.params.basic.SetTPParams;
 import com.jforex.programming.order.task.params.basic.SubmitParams;
+import com.jforex.programming.order.task.params.position.CloseAllPositionsParams;
+import com.jforex.programming.order.task.params.position.ClosePositionParams;
+import com.jforex.programming.order.task.params.position.MergeAllPositionsParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
-import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
-import io.reactivex.Observable;
-import io.reactivex.functions.Function;
 
 @RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {
@@ -46,28 +40,19 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private BasicTaskObservable basicTaskMock;
     @Mock
-    private MergePositionTaskObservable orderMergeTaskMock;
+    private MergePositionTaskObservable mergePositionTaskMock;
     @Mock
-    private ClosePositionTaskObservable orderCloseTaskMock;
+    private ClosePositionTaskObservable closePositionTaskMock;
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
     private TaskParamsUtil taskParamsUtilMock;
-    @Mock
-    private MergePositionParams mergepositionParamsMock;
-    @Mock
-    private Function<Instrument, MergePositionParams> mergePositionParamsFactory;
-    @Mock
-    private Function<Instrument, SimpleClosePositionParams> closePositionParamsFactory;
-    private final IOrder orderForTest = buyOrderEURUSD;
-    private Observable<OrderEvent> orderEventObservable;
-    private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
     @Before
     public void setUp() {
         orderUtil = new OrderUtil(basicTaskMock,
-                                  orderMergeTaskMock,
-                                  orderCloseTaskMock,
+                                  mergePositionTaskMock,
+                                  closePositionTaskMock,
                                   positionUtilMock,
                                   taskParamsUtilMock);
     }
@@ -103,7 +88,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void setLabelDelegatesToOrderTask() {
+    public void setLabelCallsSubscribeOnTaskParams() {
         final SetLabelParams setLabelParamsMock = mock(SetLabelParams.class);
 
         orderUtil.setLabel(setLabelParamsMock);
@@ -113,7 +98,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void setGTTCallsSubscribeOnSetGTTParams() {
+    public void setGTTCallsSubscribeOnTaskParams() {
         final SetGTTParams setGTTParamsMock = mock(SetGTTParams.class);
 
         orderUtil.setGoodTillTime(setGTTParamsMock);
@@ -123,7 +108,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void setRequestedAmountCallsSubscribeOnSetAmountParams() {
+    public void setRequestedAmountCallsSubscribeOnTaskParams() {
         final SetAmountParams setAmountParamsMock = mock(SetAmountParams.class);
 
         orderUtil.setRequestedAmount(setAmountParamsMock);
@@ -133,7 +118,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void setOpenPriceCallsSubscribeOnSetOpenPriceParams() {
+    public void setOpenPriceCallsSubscribeOnTaskParams() {
         final SetOpenPriceParams setOpenPriceParamsMock = mock(SetOpenPriceParams.class);
 
         orderUtil.setOpenPrice(setOpenPriceParamsMock);
@@ -143,7 +128,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void setSLCallsSubscribeOnSetSLParams() {
+    public void setSLCallsSubscribeOnTaskParams() {
         final SetSLParams setSLParamsMock = mock(SetSLParams.class);
 
         orderUtil.setStopLossPrice(setSLParamsMock);
@@ -153,7 +138,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void setTPCallsSubscribeOnSetTPParams() {
+    public void setTPCallsSubscribeOnTaskParams() {
         final SetTPParams setTPParamsMock = mock(SetTPParams.class);
 
         orderUtil.setTakeProfitPrice(setTPParamsMock);
@@ -162,58 +147,51 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                                                         setTPParamsMock);
     }
 
-    // @Test
-    // public void mergePositionDelegatesToMergeTask() {
-    // when(orderMergeTaskMock.mergePosition(instrumentEURUSD,
-    // mergepositionParamsMock))
-    // .thenReturn(orderEventObservable);
-    //
-    // final Observable<OrderEvent> actualObservable =
-    // orderUtil.mergePosition(instrumentEURUSD, mergepositionParamsMock);
-    //
-    // verify(orderMergeTaskMock).mergePosition(instrumentEURUSD,
-    // mergepositionParamsMock);
-    // assertThat(actualObservable, equalTo(orderEventObservable));
-    // }
-    //
-    // @Test
-    // public void mergeAllPositionsDelegatesToMergeTask() {
-    // when(orderMergeTaskMock.mergeAll(mergePositionParamsFactory))
-    // .thenReturn(orderEventObservable);
-    //
-    // final Observable<OrderEvent> actualObservable =
-    // orderUtil.mergeAllPositions(mergePositionParamsFactory);
-    //
-    // verify(orderMergeTaskMock).mergeAll(mergePositionParamsFactory);
-    // assertThat(actualObservable, equalTo(orderEventObservable));
-    // }
-    //
-    // @Test
-    // public void closePositionDelegatesToCloseTask() {
-    // final SimpleClosePositionParams positionParams =
-    // mock(SimpleClosePositionParams.class);
-    //
-    // when(orderCloseTaskMock.close(positionParams))
-    // .thenReturn(orderEventObservable);
-    //
-    // final Observable<OrderEvent> actualObservable =
-    // orderUtil.closePosition(positionParams);
-    //
-    // verify(orderCloseTaskMock).close(positionParams);
-    // assertThat(actualObservable, equalTo(orderEventObservable));
-    // }
-    //
-    // @Test
-    // public void closeAllPositionsDelegatesToCloseTask() {
-    // when(orderCloseTaskMock.closeAll(closePositionParamsFactory))
-    // .thenReturn(orderEventObservable);
-    //
-    // final Observable<OrderEvent> actualObservable =
-    // orderUtil.closeAll(closePositionParamsFactory);
-    //
-    // verify(orderCloseTaskMock).closeAll(closePositionParamsFactory);
-    // assertThat(actualObservable, equalTo(orderEventObservable));
-    // }
+    @Test
+    public void mergePositionCallsSubscribeOnTaskParams() {
+        final MergePositionParams mergePositionParamsMock = mock(MergePositionParams.class);
+
+        orderUtil.mergePosition(instrumentEURUSD, mergePositionParamsMock);
+
+        verify(taskParamsUtilMock)
+            .subscribePositionTask(instrumentEURUSD,
+                                   mergePositionTaskMock.merge(instrumentEURUSD, mergePositionParamsMock),
+                                   mergePositionParamsMock);
+    }
+
+    @Test
+    public void mergeAllPositionsCallsSubscribeOnTaskParams() {
+        final MergeAllPositionsParams mergeAllPositionsParamsMock = mock(MergeAllPositionsParams.class);
+
+        orderUtil.mergeAllPositions(mergeAllPositionsParamsMock);
+
+        verify(taskParamsUtilMock)
+            .subscribeToAllPositionTask(mergePositionTaskMock.mergeAll(mergeAllPositionsParamsMock),
+                                        mergeAllPositionsParamsMock);
+    }
+
+    @Test
+    public void closePositionCallsSubscribeOnTaskParams() {
+        final ClosePositionParams closePositionParamsMock = mock(ClosePositionParams.class);
+
+        orderUtil.closePosition(instrumentEURUSD, closePositionParamsMock);
+
+        verify(taskParamsUtilMock)
+            .subscribePositionTask(instrumentEURUSD,
+                                   closePositionTaskMock.close(instrumentEURUSD, closePositionParamsMock),
+                                   closePositionParamsMock);
+    }
+
+    @Test
+    public void closeAllPositionsCallsSubscribeOnTaskParams() {
+        final CloseAllPositionsParams closeAllPositionsParamsMock = mock(CloseAllPositionsParams.class);
+
+        orderUtil.closeAllPositions(closeAllPositionsParamsMock);
+
+        verify(taskParamsUtilMock)
+            .subscribeToAllPositionTask(closePositionTaskMock.closeAll(closeAllPositionsParamsMock),
+                                        closeAllPositionsParamsMock);
+    }
 
     @Test
     public void positionOrdersDelegatesToPositionTask() {

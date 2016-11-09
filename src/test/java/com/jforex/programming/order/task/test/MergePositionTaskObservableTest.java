@@ -86,7 +86,7 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            testObservable = mergeTask.mergePosition(instrumentEURUSD, mergePositionParams);
+            testObservable = mergeTask.merge(instrumentEURUSD, mergePositionParams);
         }
 
         @Test
