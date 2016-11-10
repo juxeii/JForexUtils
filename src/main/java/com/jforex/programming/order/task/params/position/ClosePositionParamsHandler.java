@@ -26,31 +26,26 @@ public class ClosePositionParamsHandler {
         this.positionUtil = positionUtil;
     }
 
-    public Observable<OrderEvent> observeMerge(final Instrument instrument,
-                                               final ClosePositionParams closePositionParams) {
+    public Observable<OrderEvent> observeMerge(final ClosePositionParams closePositionParams) {
         return closePositionParams.closeExecutionMode() == CloseExecutionMode.CloseOpened
                 ? Observable.empty()
-                : observeMergeForFilledOrders(instrument, closePositionParams);
+                : observeMergeForFilledOrders(closePositionParams);
     }
 
-    private Observable<OrderEvent> observeMergeForFilledOrders(final Instrument instrument,
-                                                               final ClosePositionParams closePositionParams) {
+    private Observable<OrderEvent> observeMergeForFilledOrders(final ClosePositionParams closePositionParams) {
         return Observable.defer(() -> {
-            final Collection<IOrder> ordersToMerge = positionUtil.filledOrders(instrument);
-            return mergePositionTask.merge(ordersToMerge,
-                                           closePositionParams.mergePositionParams());
+            final Collection<IOrder> ordersToMerge = positionUtil.filledOrders(closePositionParams.instrument());
+            return mergePositionTask.merge(ordersToMerge, closePositionParams.mergePositionParams());
         });
     }
 
-    public Observable<OrderEvent> observeClose(final Instrument instrument,
-                                               final ClosePositionParams closePositionParams) {
-        return Observable.defer(() -> batchChangeTask.close(instrument,
-                                                            ordersToClose(instrument, closePositionParams),
+    public Observable<OrderEvent> observeClose(final ClosePositionParams closePositionParams) {
+        return Observable.defer(() -> batchChangeTask.close(ordersToClose(closePositionParams),
                                                             closePositionParams.simpleClosePositionParams()));
     }
 
-    private Collection<IOrder> ordersToClose(final Instrument instrument,
-                                             final ClosePositionParams closePositionParams) {
+    private Collection<IOrder> ordersToClose(final ClosePositionParams closePositionParams) {
+        final Instrument instrument = closePositionParams.instrument();
         final CloseExecutionMode closeExecutionMode = closePositionParams.closeExecutionMode();
 
         if (closeExecutionMode == CloseExecutionMode.CloseFilled)

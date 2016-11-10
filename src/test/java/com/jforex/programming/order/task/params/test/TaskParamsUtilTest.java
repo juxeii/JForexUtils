@@ -14,6 +14,7 @@ import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.BatchCancelSLParams;
 import com.jforex.programming.order.task.params.position.CloseAllPositionsParams;
+import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -43,6 +44,8 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
     private Consumer<OrderEvent> consumerMockA;
     @Mock
     private Consumer<OrderEvent> consumerMockB;
+    @Mock
+    private ClosePositionParams closePositionParamsMock;
     private final Subject<OrderEvent> orderEventSubject = PublishSubject.create();
     private static final int noOfRetries = 3;
     private static final long delayInMillis = 1500L;
@@ -215,7 +218,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
         @Before
         public void setUp() {
             final CloseAllPositionsParams closeParams = CloseAllPositionsParams
-                .newBuilder()
+                .newBuilder(closePositionParamsMock)
                 .doOnStart(startActionMock)
                 .doOnComplete(completeActionMock)
                 .doOnError(errorConsumerMock)

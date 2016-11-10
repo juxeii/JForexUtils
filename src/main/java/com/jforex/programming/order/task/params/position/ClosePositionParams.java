@@ -4,8 +4,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.task.CloseExecutionMode;
+import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 
-public class ClosePositionParams extends PositionParamsBase<Instrument> {
+public class ClosePositionParams extends PositionParamsBase {
 
     private final MergePositionParams mergePositionParams;
     private final SimpleClosePositionParams simpleClosePositionParams;
@@ -14,6 +15,7 @@ public class ClosePositionParams extends PositionParamsBase<Instrument> {
     private ClosePositionParams(final Builder builder) {
         super(builder);
 
+        instrument = builder.instrument;
         mergePositionParams = builder.mergePositionParams;
         simpleClosePositionParams = builder.simpleClosePositionParams;
         closeExecutionMode = builder.closeExecutionMode;
@@ -33,25 +35,27 @@ public class ClosePositionParams extends PositionParamsBase<Instrument> {
         return closeExecutionMode;
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
+    public static Builder newBuilder(final Instrument instrument,
+                                     final MergePositionParams mergePositionParams) {
+        checkNotNull(instrument);
+        checkNotNull(mergePositionParams);
+
+        return new Builder(instrument, mergePositionParams);
     }
 
-    public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
+    public static class Builder extends BasicParamsBuilder<Builder> {
 
-        private MergePositionParams mergePositionParams = MergePositionParams
-            .newBuilder()
-            .build();
+        private final Instrument instrument;
         private SimpleClosePositionParams simpleClosePositionParams = SimpleClosePositionParams
             .newBuilder()
             .build();
+        private final MergePositionParams mergePositionParams;
         private CloseExecutionMode closeExecutionMode = CloseExecutionMode.CloseAll;
 
-        public Builder withMergePositionParams(final MergePositionParams mergePositionParams) {
-            checkNotNull(mergePositionParams);
-
+        public Builder(final Instrument instrument,
+                       final MergePositionParams mergePositionParams) {
+            this.instrument = instrument;
             this.mergePositionParams = mergePositionParams;
-            return this;
         }
 
         public Builder withClosePositionParams(final SimpleClosePositionParams simpleClosePositionParams) {

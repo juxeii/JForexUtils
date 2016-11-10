@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
@@ -32,14 +31,12 @@ public class BatchChangeTask {
         this.taskParamsUtil = taskParamsUtil;
     }
 
-    public Observable<OrderEvent> close(final Instrument instrument,
-                                        final Collection<IOrder> orders,
+    public Observable<OrderEvent> close(final Collection<IOrder> orders,
                                         final SimpleClosePositionParams closePositionParams) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> taskParamsUtil.composePositionTask(order.getInstrument(),
-                                                            basicTask.close(CloseParams
-                                                                .closeOrder(order)
-                                                                .build()),
+                order -> taskParamsUtil.composePositionTask(basicTask.close(CloseParams
+                    .closeOrder(order)
+                    .build()),
                                                             closePositionParams);
         return forBasicTask(orders,
                             BatchMode.MERGE,
@@ -50,11 +47,11 @@ public class BatchChangeTask {
                                            final CancelSLParams cancelSLParams,
                                            final BatchMode batchMode) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> taskParamsUtil.composePositionTask(order,
-                                                            basicTask.setStopLossPrice(SetSLParams
-                                                                .setSLAtPrice(order, platformSettings.noSLPrice())
-                                                                .build()),
-                                                            cancelSLParams);
+                order -> taskParamsUtil.composeCancelTask(order,
+                                                          basicTask.setStopLossPrice(SetSLParams
+                                                              .setSLAtPrice(order, platformSettings.noSLPrice())
+                                                              .build()),
+                                                          cancelSLParams);
         return forBasicTask(orders,
                             batchMode,
                             taskCall);
@@ -64,11 +61,11 @@ public class BatchChangeTask {
                                            final CancelTPParams cancelTPParams,
                                            final BatchMode batchMode) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> taskParamsUtil.composePositionTask(order,
-                                                            basicTask.setTakeProfitPrice(SetTPParams
-                                                                .setTPAtPrice(order, platformSettings.noTPPrice())
-                                                                .build()),
-                                                            cancelTPParams);
+                order -> taskParamsUtil.composeCancelTask(order,
+                                                          basicTask.setTakeProfitPrice(SetTPParams
+                                                              .setTPAtPrice(order, platformSettings.noTPPrice())
+                                                              .build()),
+                                                          cancelTPParams);
         return forBasicTask(orders,
                             batchMode,
                             taskCall);

@@ -1,7 +1,6 @@
 package com.jforex.programming.order.task.params.position.test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.HashMap;
@@ -36,18 +35,8 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
     }
 
     @Test
-    public void defaultValuesAreCorrect() {
-        mergeAllPositionsParams = MergeAllPositionsParams
-            .newBuilder()
-            .build();
-
-        assertNotNull(mergeAllPositionsParams.mergePositionParams());
-    }
-
-    @Test
     public void valuesAreCorrect() {
         mergeAllPositionsParams = MergeAllPositionsParams
-            .newBuilder()
             .withMergePositionParams(mergePositionParamsMock)
             .build();
 

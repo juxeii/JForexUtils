@@ -11,19 +11,18 @@ import io.reactivex.Observable;
 
 public class CancelSLTPAndMergeTask {
 
-    private final MergePositionParamsHandler mergeParamsHandler;
+    private final MergePositionParamsHandler mergePositionParamsHandler;
 
-    public CancelSLTPAndMergeTask(final MergePositionParamsHandler mergeParamsHandler) {
-        this.mergeParamsHandler = mergeParamsHandler;
+    public CancelSLTPAndMergeTask(final MergePositionParamsHandler mergePositionParamsHandler) {
+        this.mergePositionParamsHandler = mergePositionParamsHandler;
     }
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toMergeOrders,
                                           final MergePositionParams mergePositionParams) {
-        final Observable<OrderEvent> cancelSLTP = mergeParamsHandler.observeCancelSLTP(toMergeOrders,
-                                                                                       mergePositionParams);
-        final Observable<OrderEvent> merge =
-                mergeParamsHandler.observeMerge(toMergeOrders,
-                                                mergePositionParams.simpleMergePositionParams());
+        final Observable<OrderEvent> cancelSLTP = mergePositionParamsHandler
+            .observeCancelSLTP(toMergeOrders, mergePositionParams);
+        final Observable<OrderEvent> merge = mergePositionParamsHandler
+            .observeMerge(toMergeOrders, mergePositionParams.simpleMergePositionParams());
 
         return cancelSLTP.concatWith(merge);
     }

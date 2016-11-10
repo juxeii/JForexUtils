@@ -3,7 +3,6 @@ package com.jforex.programming.order.task.params.position;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.CancelSLTPTask;
@@ -32,11 +31,8 @@ public class MergePositionParamsHandler {
 
     public Observable<OrderEvent> observeMerge(final Collection<IOrder> toMergeOrders,
                                                final SimpleMergePositionParams simpleMergePositionParams) {
-        final Instrument instrument = toMergeOrders.iterator().next().getInstrument();
         final Observable<OrderEvent> observable =
-                basicTask.mergeOrders(simpleMergePositionParams.mergeOrderLabel(instrument), toMergeOrders);
-        return taskParamsUtil.composePositionTask(instrument,
-                                                  observable,
-                                                  simpleMergePositionParams);
+                basicTask.mergeOrders(simpleMergePositionParams.mergeOrderLabel(), toMergeOrders);
+        return taskParamsUtil.composePositionTask(observable, simpleMergePositionParams);
     }
 }

@@ -8,8 +8,9 @@ import java.util.function.Consumer;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 
-public class MergePositionParams extends PositionParamsBase<Instrument> {
+public class MergePositionParams extends PositionParamsBase {
 
     private final BatchCancelSLTPParams batchCancelSLTPParams;
     private final SimpleMergePositionParams simpleMergePositionParams;
@@ -18,6 +19,7 @@ public class MergePositionParams extends PositionParamsBase<Instrument> {
     private MergePositionParams(final Builder builder) {
         super(builder);
 
+        instrument = builder.instrument;
         batchCancelSLTPParams = builder.batchCancelSLTPParams;
         simpleMergePositionParams = builder.simpleMergePositionParams;
         consumerForEvent = batchCancelSLTPParams.consumerForEvent();
@@ -32,29 +34,32 @@ public class MergePositionParams extends PositionParamsBase<Instrument> {
         return simpleMergePositionParams;
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
+    public static Builder newBuilder(final Instrument instrument,
+                                     final SimpleMergePositionParams simpleMergePositionParams) {
+        checkNotNull(instrument);
+        checkNotNull(simpleMergePositionParams);
+
+        return new Builder(instrument, simpleMergePositionParams);
     }
 
-    public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
+    public static class Builder extends BasicParamsBuilder<Builder> {
 
         private BatchCancelSLTPParams batchCancelSLTPParams = BatchCancelSLTPParams
             .newBuilder()
             .build();
-        private SimpleMergePositionParams simpleMergePositionParams =
-                SimpleMergePositionParams.mergeWithLabel(inst -> "").build();
+        private final Instrument instrument;
+        private final SimpleMergePositionParams simpleMergePositionParams;
+
+        public Builder(final Instrument instrument,
+                       final SimpleMergePositionParams simpleMergePositionParams) {
+            this.instrument = instrument;
+            this.simpleMergePositionParams = simpleMergePositionParams;
+        }
 
         public Builder withBatchCancelSLTPParams(final BatchCancelSLTPParams batchCancelSLTPParams) {
             checkNotNull(batchCancelSLTPParams);
 
             this.batchCancelSLTPParams = batchCancelSLTPParams;
-            return this;
-        }
-
-        public Builder withSimpleMergePositionParams(final SimpleMergePositionParams simpleMergePositionParams) {
-            checkNotNull(simpleMergePositionParams);
-
-            this.simpleMergePositionParams = simpleMergePositionParams;
             return this;
         }
 

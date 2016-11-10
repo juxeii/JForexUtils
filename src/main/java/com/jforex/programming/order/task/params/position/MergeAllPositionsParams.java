@@ -2,37 +2,38 @@ package com.jforex.programming.order.task.params.position;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Function;
+
+import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.task.params.basic.BasicParamsBase;
 import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 
 public class MergeAllPositionsParams extends BasicParamsBase {
 
-    private final MergePositionParams mergePositionParams;
+    private final Function<Instrument, MergePositionParams> paramsFactory;
 
     private MergeAllPositionsParams(final Builder builder) {
         super(builder);
 
-        mergePositionParams = builder.mergePositionParams;
-        consumerForEvent = mergePositionParams.consumerForEvent();
+        paramsFactory = builder.paramsFactory;
     }
 
-    public MergePositionParams mergePositionParams() {
-        return mergePositionParams;
+    public MergePositionParams mergePositionParams(final Instrument instrument) {
+        return paramsFactory.apply(instrument);
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
+    public static Builder withMergePositionParams(final Function<Instrument, MergePositionParams> paramsFactory) {
+        checkNotNull(paramsFactory);
+
+        return new Builder(paramsFactory);
     }
 
     public static class Builder extends BasicParamsBuilder<Builder> {
 
-        private MergePositionParams mergePositionParams = MergePositionParams.newBuilder().build();
+        private final Function<Instrument, MergePositionParams> paramsFactory;
 
-        public Builder withMergePositionParams(final MergePositionParams mergePositionParams) {
-            checkNotNull(mergePositionParams);
-
-            this.mergePositionParams = mergePositionParams;
-            return this;
+        public Builder(final Function<Instrument, MergePositionParams> paramsFactory) {
+            this.paramsFactory = paramsFactory;
         }
 
         public MergeAllPositionsParams build() {

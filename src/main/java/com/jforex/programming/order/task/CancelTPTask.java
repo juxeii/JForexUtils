@@ -3,7 +3,6 @@ package com.jforex.programming.order.task;
 import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.position.BatchCancelTPParams;
@@ -23,10 +22,7 @@ public class CancelTPTask {
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelTPTPOrders,
                                           final BatchCancelTPParams batchCancelTPParams) {
-        final Instrument instrument = toCancelTPTPOrders.iterator().next().getInstrument();
-
-        return taskParamsUtil.composePositionTask(instrument,
-                                                  batchCancelTP(toCancelTPTPOrders, batchCancelTPParams),
+        return taskParamsUtil.composePositionTask(batchCancelTP(toCancelTPTPOrders, batchCancelTPParams),
                                                   batchCancelTPParams);
     }
 

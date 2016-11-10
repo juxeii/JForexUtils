@@ -106,13 +106,10 @@ public class OrderUtil {
         taskParamsUtil.subscribeBasicParams(observable, basicParamsBase);
     }
 
-    public void mergePosition(final Instrument instrument,
-                              final MergePositionParams mergePositionParams) {
-        checkNotNull(instrument);
+    public void mergePosition(final MergePositionParams mergePositionParams) {
         checkNotNull(mergePositionParams);
 
-        taskParamsUtil.subscribePositionTask(instrument,
-                                             mergePositionTask.merge(instrument, mergePositionParams),
+        taskParamsUtil.subscribePositionTask(mergePositionTask.merge(mergePositionParams),
                                              mergePositionParams);
     }
 
@@ -120,15 +117,13 @@ public class OrderUtil {
         checkNotNull(mergeAllPositionParams);
 
         taskParamsUtil.subscribeToAllPositionsTask(mergePositionTask.mergeAll(mergeAllPositionParams),
-                                                  mergeAllPositionParams);
+                                                   mergeAllPositionParams);
     }
 
-    public void closePosition(final Instrument instrument,
-                              final ClosePositionParams closePositionParams) {
+    public void closePosition(final ClosePositionParams closePositionParams) {
         checkNotNull(closePositionParams);
 
-        taskParamsUtil.subscribePositionTask(instrument,
-                                             closePositionTask.close(instrument, closePositionParams),
+        taskParamsUtil.subscribePositionTask(closePositionTask.close(closePositionParams),
                                              closePositionParams);
     }
 
@@ -136,7 +131,7 @@ public class OrderUtil {
         checkNotNull(closeAllPositionParams);
 
         taskParamsUtil.subscribeToAllPositionsTask(closePositionTask.closeAll(closeAllPositionParams),
-                                                  closeAllPositionParams);
+                                                   closeAllPositionParams);
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {

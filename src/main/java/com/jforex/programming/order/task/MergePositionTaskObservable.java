@@ -29,9 +29,8 @@ public class MergePositionTaskObservable {
         return observeSplit(() -> toMergeOrders, mergePositionParams);
     }
 
-    public Observable<OrderEvent> merge(final Instrument instrument,
-                                        final MergePositionParams mergePositionParams) {
-        return observeSplit(() -> positionUtil.filledOrders(instrument), mergePositionParams);
+    public Observable<OrderEvent> merge(final MergePositionParams mergePositionParams) {
+        return observeSplit(() -> positionUtil.filledOrders(mergePositionParams.instrument()), mergePositionParams);
     }
 
     private final Observable<OrderEvent> observeSplit(final Supplier<Collection<IOrder>> toMergeOrders,
@@ -42,7 +41,7 @@ public class MergePositionTaskObservable {
     public Observable<OrderEvent> mergeAll(final MergeAllPositionsParams mergeAllPositionParams) {
         return Observable.defer(() -> {
             final Function<Instrument, Observable<OrderEvent>> observablesFromFactory =
-                    instrument -> merge(instrument, mergeAllPositionParams.mergePositionParams());
+                    instrument -> merge(mergeAllPositionParams.mergePositionParams(instrument));
             return Observable.merge(positionUtil.observablesFromFactory(observablesFromFactory));
         });
     }

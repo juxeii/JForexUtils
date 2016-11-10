@@ -5,30 +5,31 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
 
 @SuppressWarnings("unchecked")
-public class PositionParamsBuilder<T, V> extends CommonParamsBuilder<T> {
+public class ParamsBuilderForCancel<T> extends CommonParamsBuilder<T> {
 
-    protected BiConsumer<Throwable, V> errorConsumer = (t, v) -> {};
-    protected Consumer<V> startConsumer = v -> {};
-    protected Consumer<V> completeConsumer = v -> {};
+    protected BiConsumer<Throwable, IOrder> errorConsumer = (t, o) -> {};
+    protected Consumer<IOrder> startConsumer = o -> {};
+    protected Consumer<IOrder> completeConsumer = o -> {};
 
-    public T doOnStart(final Consumer<V> startConsumer) {
+    public T doOnStart(final Consumer<IOrder> startConsumer) {
         checkNotNull(startConsumer);
 
         this.startConsumer = startConsumer;
         return (T) this;
     }
 
-    public T doOnError(final BiConsumer<Throwable, V> errorConsumer) {
+    public T doOnError(final BiConsumer<Throwable, IOrder> errorConsumer) {
         checkNotNull(errorConsumer);
 
         this.errorConsumer = errorConsumer;
         return (T) this;
     }
 
-    public T doOnComplete(final Consumer<V> completeConsumer) {
+    public T doOnComplete(final Consumer<IOrder> completeConsumer) {
         checkNotNull(completeConsumer);
 
         this.completeConsumer = completeConsumer;

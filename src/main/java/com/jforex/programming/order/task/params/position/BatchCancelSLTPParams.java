@@ -2,10 +2,10 @@ package com.jforex.programming.order.task.params.position;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.task.MergeExecutionMode;
+import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 
-public class BatchCancelSLTPParams extends PositionParamsBase<Instrument> {
+public class BatchCancelSLTPParams extends PositionParamsBase {
 
     private final BatchCancelSLParams batchCancelSLParams;
     private final BatchCancelTPParams batchCancelTPParams;
@@ -37,7 +37,7 @@ public class BatchCancelSLTPParams extends PositionParamsBase<Instrument> {
         return new Builder();
     }
 
-    public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
+    public static class Builder extends BasicParamsBuilder<Builder> {
 
         private BatchCancelSLParams batchCancelSLParams = BatchCancelSLParams
             .newBuilder()

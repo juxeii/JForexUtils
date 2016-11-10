@@ -1,7 +1,6 @@
 package com.jforex.programming.order.task.params.position.test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.HashMap;
@@ -36,19 +35,9 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
     }
 
     @Test
-    public void defaultValuesAreCorrect() {
-        closeAllPositionsParams = CloseAllPositionsParams
-            .newBuilder()
-            .build();
-
-        assertNotNull(closeAllPositionsParams.closePositionParams());
-    }
-
-    @Test
     public void valuesAreCorrect() {
         closeAllPositionsParams = CloseAllPositionsParams
-            .newBuilder()
-            .withClosePositionParams(closePositionParamsMock)
+            .newBuilder(closePositionParamsMock)
             .build();
 
         consumerForEvent = closeAllPositionsParams.consumerForEvent();

@@ -2,11 +2,11 @@ package com.jforex.programming.order.task.params.position;
 
 import java.util.function.Consumer;
 
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 
-public class SimpleClosePositionParams extends PositionParamsBase<Instrument> {
+public class SimpleClosePositionParams extends PositionParamsBase {
 
     private SimpleClosePositionParams(final Builder builder) {
         super(builder);
@@ -16,7 +16,7 @@ public class SimpleClosePositionParams extends PositionParamsBase<Instrument> {
         return new Builder();
     }
 
-    public static class Builder extends PositionParamsBuilder<Builder, Instrument> {
+    public static class Builder extends BasicParamsBuilder<Builder> {
 
         public Builder doOnClose(final Consumer<OrderEvent> closeConsumer) {
             return setEventConsumer(OrderEventType.CLOSE_OK, closeConsumer);

@@ -3,11 +3,12 @@ package com.jforex.programming.order.task.params;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import com.dukascopy.api.Instrument;
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.TaskRetry;
 import com.jforex.programming.order.task.params.basic.BasicParamsBase;
+import com.jforex.programming.order.task.params.position.ParamsBaseForCancel;
 import com.jforex.programming.order.task.params.position.PositionParamsBase;
 
 import io.reactivex.Observable;
@@ -40,25 +41,32 @@ public class TaskParamsUtil {
             consumerForEvent.get(type).accept(orderEvent);
     }
 
-    public <T> Observable<OrderEvent> composePositionTask(final T item,
-                                                          final Observable<OrderEvent> observable,
-                                                          final PositionParamsBase<T> paramsForPosition) {
-        return composeRetry(observable, paramsForPosition)
-            .doOnSubscribe(d -> paramsForPosition.startAction(item).run())
-            .doOnComplete(paramsForPosition.completeAction(item))
-            .doOnError(paramsForPosition.errorConsumer(item)::accept);
+    public Observable<OrderEvent> composeCancelTask(final IOrder order,
+                                                    final Observable<OrderEvent> observable,
+                                                    final ParamsBaseForCancel paramsBaseForCancel) {
+        return composeRetry(observable, paramsBaseForCancel)
+            .doOnSubscribe(d -> paramsBaseForCancel.startAction(order).run())
+            .doOnComplete(paramsBaseForCancel.completeAction(order))
+            .doOnError(err -> paramsBaseForCancel.errorConsumer(order).accept(err));
     }
 
-    public void subscribePositionTask(final Instrument instrument,
-                                      Observable<OrderEvent> observable,
-                                      final PositionParamsBase<Instrument> paramsForPosition) {
+    public Observable<OrderEvent> composePositionTask(final Observable<OrderEvent> observable,
+                                                      final PositionParamsBase positionParamsBase) {
+        return composeRetry(observable, positionParamsBase)
+            .doOnSubscribe(d -> positionParamsBase.startAction().run())
+            .doOnComplete(positionParamsBase::completeAction)
+            .doOnError(positionParamsBase.errorConsumer()::accept);
+    }
+
+    public void subscribePositionTask(Observable<OrderEvent> observable,
+                                      final PositionParamsBase positionParamsBase) {
         observable = observable
-            .doOnNext(orderEvent -> handlerOrderEvent(orderEvent, paramsForPosition.consumerForEvent()));
-        composeRetry(observable, paramsForPosition)
-            .doOnSubscribe(d -> paramsForPosition.startAction(instrument).run())
+            .doOnNext(orderEvent -> handlerOrderEvent(orderEvent, positionParamsBase.consumerForEvent()));
+        composeRetry(observable, positionParamsBase)
+            .doOnSubscribe(d -> positionParamsBase.startAction().run())
             .subscribe(orderEvent -> {},
-                       e -> paramsForPosition.errorConsumer(instrument).accept(e),
-                       paramsForPosition.completeAction(instrument)::run);
+                       positionParamsBase.errorConsumer()::accept,
+                       positionParamsBase.completeAction()::run);
     }
 
     public void subscribeToAllPositionsTask(Observable<OrderEvent> observable,
