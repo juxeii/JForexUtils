@@ -161,8 +161,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         orderUtil.mergeAllPositions(mergeAllPositionsParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribeToAllPositionsTask(mergePositionTaskMock.mergeAll(mergeAllPositionsParamsMock),
-                                         mergeAllPositionsParamsMock);
+            .subscribePositionTask(mergePositionTaskMock.mergeAll(mergeAllPositionsParamsMock),
+                                   mergeAllPositionsParamsMock);
     }
 
     @Test
@@ -183,8 +183,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         orderUtil.closeAllPositions(closeAllPositionsParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribeToAllPositionsTask(closePositionTaskMock.closeAll(closeAllPositionsParamsMock),
-                                         closeAllPositionsParamsMock);
+            .subscribePositionTask(closePositionTaskMock.closeAll(closeAllPositionsParamsMock),
+                                   closeAllPositionsParamsMock);
     }
 
     @Test

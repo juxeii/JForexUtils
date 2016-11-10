@@ -23,8 +23,7 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
             .withClosePositionParams(instrument -> closePositionParamsMock)
             .build();
 
-        consumerForEvent = closeAllPositionsParams.consumerForEvent();
-
-        assertThat(closeAllPositionsParams.closePositionParams(instrumentEURUSD), equalTo(closePositionParamsMock));
+        assertThat(closeAllPositionsParams.closePositionParamsFactory().apply(instrumentEURUSD),
+                   equalTo(closePositionParamsMock));
     }
 }

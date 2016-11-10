@@ -116,8 +116,8 @@ public class OrderUtil {
     public void mergeAllPositions(final MergeAllPositionsParams mergeAllPositionParams) {
         checkNotNull(mergeAllPositionParams);
 
-        taskParamsUtil.subscribeToAllPositionsTask(mergePositionTask.mergeAll(mergeAllPositionParams),
-                                                   mergeAllPositionParams);
+        taskParamsUtil.subscribePositionTask(mergePositionTask.mergeAll(mergeAllPositionParams),
+                                             mergeAllPositionParams);
     }
 
     public void closePosition(final ClosePositionParams closePositionParams) {
@@ -130,8 +130,8 @@ public class OrderUtil {
     public void closeAllPositions(final CloseAllPositionsParams closeAllPositionParams) {
         checkNotNull(closeAllPositionParams);
 
-        taskParamsUtil.subscribeToAllPositionsTask(closePositionTask.closeAll(closeAllPositionParams),
-                                                   closeAllPositionParams);
+        taskParamsUtil.subscribePositionTask(closePositionTask.closeAll(closeAllPositionParams),
+                                             closeAllPositionParams);
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {

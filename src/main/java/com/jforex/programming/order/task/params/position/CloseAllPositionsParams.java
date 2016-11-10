@@ -20,8 +20,8 @@ public class CloseAllPositionsParams extends BasicParamsBase {
         consumerForEvent = new HashMap<>();
     }
 
-    public ClosePositionParams closePositionParams(final Instrument instrument) {
-        return paramsFactory.apply(instrument);
+    public Function<Instrument, ClosePositionParams> closePositionParamsFactory() {
+        return paramsFactory;
     }
 
     public static Builder withClosePositionParams(final Function<Instrument, ClosePositionParams> paramsFactory) {

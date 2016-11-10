@@ -11,9 +11,9 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.BatchCancelSLParams;
-import com.jforex.programming.order.task.params.position.CloseAllPositionsParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
-import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
+import com.jforex.programming.order.task.params.position.MergePositionParams;
+import com.jforex.programming.order.task.params.position.SimpleMergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -38,6 +38,8 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
     private Consumer<OrderEvent> consumerMockB;
     @Mock
     private ClosePositionParams closePositionParamsMock;
+    @Mock
+    private SimpleMergePositionParams simpleMergePositionParamsMock;
     private final Subject<OrderEvent> orderEventSubject = PublishSubject.create();
     private static final int noOfRetries = 3;
     private static final long delayInMillis = 1500L;
@@ -159,12 +161,11 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            final SimpleClosePositionParams closeParams = SimpleClosePositionParams
-                .newBuilder()
+            final MergePositionParams closeParams = MergePositionParams
+                .newBuilder(instrumentEURUSD, simpleMergePositionParamsMock)
                 .doOnStart(startActionMock)
                 .doOnComplete(completeActionMock)
                 .doOnError(errorConsumerMock)
-                .doOnClose(consumerMockA)
                 .retryOnReject(noOfRetries, delayInMillis)
                 .build();
 
@@ -178,51 +179,6 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
 
         @Test
         public void completeActionIsCalledWhenCompleted() throws Exception {
-            orderEventSubject.onComplete();
-            verify(completeActionMock).run();
-        }
-
-        @Test
-        public void errorConsumerIsCalledOnError() {
-            orderEventSubject.onError(jfException);
-            verify(errorConsumerMock).accept(jfException);
-        }
-
-        @Test
-        public void retryIsEstablished() throws Exception {
-            orderEventSubject.onNext(closeRejectEvent);
-            verify(startActionMock, timeout(2)).run();
-        }
-
-        @Test
-        public void closeEventIsDispatched() {
-            orderEventSubject.onNext(closeEvent);
-            verify(consumerMockA).accept(closeEvent);
-        }
-    }
-
-    public class SubscribeAllPositionsTask {
-
-        @Before
-        public void setUp() {
-            final CloseAllPositionsParams closeParams = CloseAllPositionsParams
-                .withClosePositionParams(instrument -> closePositionParamsMock)
-                .doOnStart(startActionMock)
-                .doOnComplete(completeActionMock)
-                .doOnError(errorConsumerMock)
-                .retryOnReject(noOfRetries, delayInMillis)
-                .build();
-
-            taskParamsUtil.subscribeToAllPositionsTask(orderEventSubject, closeParams);
-        }
-
-        @Test
-        public void startConsumerIsCalled() throws Exception {
-            verify(startActionMock).run();
-        }
-
-        @Test
-        public void completeConsumerIsCalledWhenCompleted() throws Exception {
             orderEventSubject.onComplete();
             verify(completeActionMock).run();
         }

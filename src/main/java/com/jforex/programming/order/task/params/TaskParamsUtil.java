@@ -7,21 +7,24 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.TaskRetry;
 import com.jforex.programming.order.task.params.basic.BasicParamsBase;
-import com.jforex.programming.order.task.params.position.PositionParamsBase;
 
 import io.reactivex.Observable;
 
 public class TaskParamsUtil {
 
-    public void subscribeBasicParams(Observable<OrderEvent> observable,
+    public void subscribeBasicParams(final Observable<OrderEvent> observable,
                                      final BasicParamsBase basicParamsBase) {
-        observable = observable
-            .doOnNext(orderEvent -> handlerOrderEvent(orderEvent, basicParamsBase.consumerForEvent()));
-        composeRetry(observable, basicParamsBase)
+        composeRetry(composeEventHandling(observable, basicParamsBase), basicParamsBase)
             .doOnSubscribe(d -> basicParamsBase.startAction().run())
             .subscribe(orderEvent -> {},
-                       e -> basicParamsBase.errorConsumer().accept(e),
-                       basicParamsBase.completeAction());
+                       basicParamsBase.errorConsumer()::accept,
+                       basicParamsBase.completeAction()::run);
+    }
+
+    public Observable<OrderEvent> composeEventHandling(final Observable<OrderEvent> observable,
+                                                       final BasicParamsBase basicParamsBase) {
+        return observable
+            .doOnNext(orderEvent -> handlerOrderEvent(orderEvent, basicParamsBase.consumerForEvent()));
     }
 
     private Observable<OrderEvent> composeRetry(final Observable<OrderEvent> observable,
@@ -49,23 +52,12 @@ public class TaskParamsUtil {
 
     public Observable<OrderEvent> composeTaskWithEventHandling(final Observable<OrderEvent> observable,
                                                                final BasicParamsBase basicParamsBase) {
-        return composeTask(observable.doOnNext(orderEvent -> handlerOrderEvent(orderEvent,
-                                                                               basicParamsBase
-                                                                                   .consumerForEvent())),
+        return composeTask(composeEventHandling(observable, basicParamsBase),
                            basicParamsBase);
     }
 
     public void subscribePositionTask(final Observable<OrderEvent> observable,
-                                      final PositionParamsBase positionParamsBase) {
-        composeRetry(observable, positionParamsBase)
-            .doOnSubscribe(d -> positionParamsBase.startAction().run())
-            .subscribe(orderEvent -> {},
-                       positionParamsBase.errorConsumer()::accept,
-                       positionParamsBase.completeAction()::run);
-    }
-
-    public void subscribeToAllPositionsTask(final Observable<OrderEvent> observable,
-                                            final BasicParamsBase basicParamsBase) {
+                                      final BasicParamsBase basicParamsBase) {
         composeRetry(observable, basicParamsBase)
             .doOnSubscribe(d -> basicParamsBase.startAction().run())
             .subscribe(orderEvent -> {},

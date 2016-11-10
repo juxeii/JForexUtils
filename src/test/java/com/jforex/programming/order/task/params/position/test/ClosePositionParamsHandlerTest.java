@@ -1,18 +1,21 @@
 package com.jforex.programming.order.task.params.position.test;
 
+import java.util.function.Function;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.MergePositionTaskObservable;
+import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
-import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -34,11 +37,13 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     @Mock
     private ClosePositionParams closePositionParamsMock;
     @Mock
-    private SimpleClosePositionParams simpleClosePositionParamsMock;
+    private CloseParams closeParamsMock;
     @Mock
     private MergePositionParams mergePositionParamsMock;
     private TestObserver<OrderEvent> testObserver;
     private final OrderEvent testEvent = closeEvent;
+    private final Function<IOrder, CloseParams> closeParamsFactory =
+            order -> closeParamsMock;
 
     @Before
     public void setUp() {
@@ -50,8 +55,8 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(closePositionParamsMock.simpleClosePositionParams())
-            .thenReturn(simpleClosePositionParamsMock);
+        when(closePositionParamsMock.closeParamsFactory())
+            .thenReturn(closeParamsFactory);
         when(closePositionParamsMock.mergePositionParams())
             .thenReturn(mergePositionParamsMock);
     }
@@ -90,7 +95,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
         public void setUp() {
             returnedObservable = eventObservable(testEvent);
 
-            when(batchChangeTaskMock.close(any(), eq(simpleClosePositionParamsMock)))
+            when(batchChangeTaskMock.close(anyCollection(), any()))
                 .thenReturn(returnedObservable);
 
             testObserver = closePositionParamsHandler
@@ -100,7 +105,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
 
         @Test
         public void observeCloseCallsBatchTaskMockCorrect() {
-            verify(batchChangeTaskMock).close(any(), eq(simpleClosePositionParamsMock));
+            verify(batchChangeTaskMock).close(anyCollection(), any());
         }
 
         @Test

@@ -12,7 +12,6 @@ import com.jforex.programming.order.task.params.basic.CancelTPParams;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.basic.SetSLParams;
 import com.jforex.programming.order.task.params.basic.SetTPParams;
-import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.strategy.StrategyUtil;
 
@@ -32,38 +31,55 @@ public class BatchChangeTask {
     }
 
     public Observable<OrderEvent> close(final Collection<IOrder> orders,
-                                        final SimpleClosePositionParams closePositionParams) {
-        final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> taskParamsUtil.composeTaskWithEventHandling(basicTask.close(CloseParams
-                    .withOrder(order)
-                    .build()), closePositionParams);
+                                        final Function<IOrder, CloseParams> closeParamsFactory) {
         return forBasicTask(orders,
                             BatchMode.MERGE,
-                            taskCall);
+                            order -> closeOrderConsumer(order, closeParamsFactory));
+    }
+
+    private Observable<OrderEvent> closeOrderConsumer(final IOrder order,
+                                                      final Function<IOrder, CloseParams> closeParamsFactory) {
+        final CloseParams closeParams = closeParamsFactory.apply(order);
+        final Observable<OrderEvent> closeObservable = basicTask.close(closeParams);
+        return taskParamsUtil.composeTaskWithEventHandling(closeObservable, closeParams);
     }
 
     public Observable<OrderEvent> cancelSL(final Collection<IOrder> orders,
-                                           final Function<IOrder, CancelSLParams> paramsFactory,
+                                           final Function<IOrder, CancelSLParams> cancelSLParamsFactory,
                                            final BatchMode batchMode) {
-        final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> taskParamsUtil.composeTaskWithEventHandling(basicTask.setStopLossPrice(SetSLParams
-                    .setSLAtPrice(order, platformSettings.noSLPrice())
-                    .build()), paramsFactory.apply(order));
         return forBasicTask(orders,
                             batchMode,
-                            taskCall);
+                            order -> cancelSLConsumer(order, cancelSLParamsFactory));
+    }
+
+    private Observable<OrderEvent> cancelSLConsumer(final IOrder order,
+                                                    final Function<IOrder, CancelSLParams> cancelSLParamsFactory) {
+        final CancelSLParams cancelSLParams = cancelSLParamsFactory.apply(order);
+        final SetSLParams setSLParams =
+                SetSLParams
+                    .setSLAtPrice(order, platformSettings.noSLPrice())
+                    .build();
+        final Observable<OrderEvent> cancelSLObservable = basicTask.setStopLossPrice(setSLParams);
+        return taskParamsUtil.composeTaskWithEventHandling(cancelSLObservable, cancelSLParams);
     }
 
     public Observable<OrderEvent> cancelTP(final Collection<IOrder> orders,
-                                           final Function<IOrder, CancelTPParams> paramsFactory,
+                                           final Function<IOrder, CancelTPParams> cancelTPParamsFactory,
                                            final BatchMode batchMode) {
-        final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> taskParamsUtil.composeTaskWithEventHandling(basicTask.setTakeProfitPrice(SetTPParams
-                    .setTPAtPrice(order, platformSettings.noTPPrice())
-                    .build()), paramsFactory.apply(order));
         return forBasicTask(orders,
                             batchMode,
-                            taskCall);
+                            order -> cancelTPConsumer(order, cancelTPParamsFactory));
+    }
+
+    private Observable<OrderEvent> cancelTPConsumer(final IOrder order,
+                                                    final Function<IOrder, CancelTPParams> cancelTPParamsFactory) {
+        final CancelTPParams cancelTPParams = cancelTPParamsFactory.apply(order);
+        final SetTPParams setTPParams =
+                SetTPParams
+                    .setTPAtPrice(order, platformSettings.noTPPrice())
+                    .build();
+        final Observable<OrderEvent> cancelTPObservable = basicTask.setTakeProfitPrice(setTPParams);
+        return taskParamsUtil.composeTaskWithEventHandling(cancelTPObservable, cancelTPParams);
     }
 
     private Observable<OrderEvent> forBasicTask(final Collection<IOrder> orders,

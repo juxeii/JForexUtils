@@ -23,8 +23,7 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
             .withMergePositionParams(instrument -> mergePositionParamsMock)
             .build();
 
-        consumerForEvent = mergeAllPositionsParams.consumerForEvent();
-
-        assertThat(mergeAllPositionsParams.mergePositionParams(instrumentEURUSD), equalTo(mergePositionParamsMock));
+        assertThat(mergeAllPositionsParams.mergePositionParams(instrumentEURUSD),
+                   equalTo(mergePositionParamsMock));
     }
 }

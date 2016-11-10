@@ -38,6 +38,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.MergeExecutionMode;
+import com.jforex.programming.order.task.params.SetSLTPMode;
 import com.jforex.programming.position.PositionDirection;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuoteProvider;
@@ -104,6 +105,8 @@ public class CommonUtilForTest extends BDDMockito {
     protected OrderEvent mergeEvent = createEvent(OrderEventType.MERGE_OK);
     protected OrderEvent changedLabelEvent = createEvent(OrderEventType.CHANGED_LABEL);
     protected OrderEvent changedRejectEvent = createEvent(OrderEventType.CHANGED_REJECTED);
+    protected OrderEvent changedSLEvent = createEvent(OrderEventType.CHANGED_SL);
+    protected OrderEvent changedTPEvent = createEvent(OrderEventType.CHANGED_TP);
 
     protected static final RxTestUtil rxTestUtil = RxTestUtil.get();
     protected static final PlatformSettings platformSettings = StrategyUtil.platformSettings;
@@ -189,6 +192,8 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(CloseExecutionMode.CloseAll.toString());
         BatchMode
             .valueOf(BatchMode.CONCAT.toString());
+        SetSLTPMode
+            .valueOf(SetSLTPMode.PIPS.toString());
     }
 
     protected final Completable emptyCompletable() {
