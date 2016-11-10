@@ -34,8 +34,8 @@ public class BatchChangeTask {
     public Observable<OrderEvent> close(final Collection<IOrder> orders,
                                         final SimpleClosePositionParams closePositionParams) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> taskParamsUtil.composePositionTask(basicTask.close(CloseParams
-                    .closeOrder(order)
+                order -> taskParamsUtil.composeTaskWithEventHandling(basicTask.close(CloseParams
+                    .withOrder(order)
                     .build()), closePositionParams);
         return forBasicTask(orders,
                             BatchMode.MERGE,
@@ -46,7 +46,7 @@ public class BatchChangeTask {
                                            final Function<IOrder, CancelSLParams> paramsFactory,
                                            final BatchMode batchMode) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> taskParamsUtil.composeBasicTask(basicTask.setStopLossPrice(SetSLParams
+                order -> taskParamsUtil.composeTaskWithEventHandling(basicTask.setStopLossPrice(SetSLParams
                     .setSLAtPrice(order, platformSettings.noSLPrice())
                     .build()), paramsFactory.apply(order));
         return forBasicTask(orders,
@@ -58,7 +58,7 @@ public class BatchChangeTask {
                                            final Function<IOrder, CancelTPParams> paramsFactory,
                                            final BatchMode batchMode) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> taskParamsUtil.composeBasicTask(basicTask.setTakeProfitPrice(SetTPParams
+                order -> taskParamsUtil.composeTaskWithEventHandling(basicTask.setTakeProfitPrice(SetTPParams
                     .setTPAtPrice(order, platformSettings.noTPPrice())
                     .build()), paramsFactory.apply(order));
         return forBasicTask(orders,

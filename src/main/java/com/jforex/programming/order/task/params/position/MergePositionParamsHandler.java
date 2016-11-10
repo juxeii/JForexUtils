@@ -33,6 +33,6 @@ public class MergePositionParamsHandler {
                                                final SimpleMergePositionParams simpleMergePositionParams) {
         final Observable<OrderEvent> observable =
                 basicTask.mergeOrders(simpleMergePositionParams.mergeOrderLabel(), toMergeOrders);
-        return taskParamsUtil.composePositionTask(observable, simpleMergePositionParams);
+        return taskParamsUtil.composeTask(observable, simpleMergePositionParams);
     }
 }

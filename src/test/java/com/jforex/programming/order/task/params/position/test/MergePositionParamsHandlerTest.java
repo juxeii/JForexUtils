@@ -80,7 +80,7 @@ public class MergePositionParamsHandlerTest extends InstrumentUtilForTest {
         public void setUp() {
             returnedObservable = eventObservable(testEvent);
 
-            when(taskParamsUtilMock.composePositionTask(any(), eq(simpleMergePositionParamsMock)))
+            when(taskParamsUtilMock.composeTask(any(), eq(simpleMergePositionParamsMock)))
                 .thenReturn(returnedObservable);
 
             when(basicTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))

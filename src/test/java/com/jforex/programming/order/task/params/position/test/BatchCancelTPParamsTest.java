@@ -6,9 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.function.Function;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.task.BatchMode;
@@ -20,14 +18,6 @@ public class BatchCancelTPParamsTest extends CommonParamsForTest {
 
     private BatchCancelTPParams batchCancelTPParams;
 
-    @Mock
-    public CancelTPParams cancelTPParamsMock;
-
-    @Before
-    public void setUp() {
-        when(cancelTPParamsMock.consumerForEvent()).thenReturn(consumerForEvent);
-    }
-
     @Test
     public void defaultValuesAreCorrect() {
         batchCancelTPParams = BatchCancelTPParams
@@ -35,7 +25,7 @@ public class BatchCancelTPParamsTest extends CommonParamsForTest {
             .build();
 
         assertThat(batchCancelTPParams.batchMode(), equalTo(BatchMode.MERGE));
-        assertNotNull(batchCancelTPParams.cancelTPParamsFactory());
+        assertNotNull(batchCancelTPParams.cancelTPParamsFactory().apply(buyOrderEURUSD));
     }
 
     @Test

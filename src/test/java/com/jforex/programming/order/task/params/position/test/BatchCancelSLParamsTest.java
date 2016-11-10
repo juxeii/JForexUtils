@@ -6,9 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.function.Function;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.task.BatchMode;
@@ -20,14 +18,6 @@ public class BatchCancelSLParamsTest extends CommonParamsForTest {
 
     private BatchCancelSLParams batchCancelSLParams;
 
-    @Mock
-    public CancelSLParams cancelSLParamsMock;
-
-    @Before
-    public void setUp() {
-        when(cancelSLParamsMock.consumerForEvent()).thenReturn(consumerForEvent);
-    }
-
     @Test
     public void defaultValuesAreCorrect() {
         batchCancelSLParams = BatchCancelSLParams
@@ -35,7 +25,7 @@ public class BatchCancelSLParamsTest extends CommonParamsForTest {
             .build();
 
         assertThat(batchCancelSLParams.batchMode(), equalTo(BatchMode.MERGE));
-        assertNotNull(batchCancelSLParams.cancelSLParamsFactory());
+        assertNotNull(batchCancelSLParams.cancelSLParamsFactory().apply(buyOrderEURUSD));
     }
 
     @Test

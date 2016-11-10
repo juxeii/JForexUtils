@@ -50,7 +50,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
     @Test
     public void subscribeBasicParamsNoRetryIsDoneWhenNotSpecified() throws Exception {
         final CloseParams closeParams = CloseParams
-            .closeOrder(buyOrderEURUSD)
+            .withOrder(buyOrderEURUSD)
             .doOnStart(startActionMock)
             .build();
 
@@ -65,7 +65,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
         @Before
         public void setUp() {
             final CloseParams closeParams = CloseParams
-                .closeOrder(buyOrderEURUSD)
+                .withOrder(buyOrderEURUSD)
                 .doOnStart(startActionMock)
                 .doOnComplete(completeActionMock)
                 .doOnError(errorConsumerMock)
@@ -126,7 +126,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
                 .build();
 
             taskParamsUtil
-                .composePositionTask(orderEventSubject, batchCancelSLParams)
+                .composeTask(orderEventSubject, batchCancelSLParams)
                 .subscribe(i -> {},
                            e -> {});
         }

@@ -22,8 +22,8 @@ public class CancelTPTask {
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelTPTPOrders,
                                           final BatchCancelTPParams batchCancelTPParams) {
-        return taskParamsUtil.composePositionTask(batchCancelTP(toCancelTPTPOrders, batchCancelTPParams),
-                                                  batchCancelTPParams);
+        return taskParamsUtil.composeTask(batchCancelTP(toCancelTPTPOrders, batchCancelTPParams),
+                                          batchCancelTPParams);
     }
 
     private Observable<OrderEvent> batchCancelTP(final Collection<IOrder> toCancelTPTPOrders,

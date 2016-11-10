@@ -39,26 +39,24 @@ public class TaskParamsUtil {
             consumerForEvent.get(type).accept(orderEvent);
     }
 
-    public Observable<OrderEvent> composeBasicTask(final Observable<OrderEvent> observable,
-                                                   final BasicParamsBase basicParamsBase) {
+    public Observable<OrderEvent> composeTask(final Observable<OrderEvent> observable,
+                                              final BasicParamsBase basicParamsBase) {
         return composeRetry(observable, basicParamsBase)
             .doOnSubscribe(d -> basicParamsBase.startAction().run())
             .doOnComplete(() -> basicParamsBase.completeAction().run())
             .doOnError(basicParamsBase.errorConsumer()::accept);
     }
 
-    public Observable<OrderEvent> composePositionTask(final Observable<OrderEvent> observable,
-                                                      final PositionParamsBase positionParamsBase) {
-        return composeRetry(observable, positionParamsBase)
-            .doOnSubscribe(d -> positionParamsBase.startAction().run())
-            .doOnComplete(() -> positionParamsBase.completeAction().run())
-            .doOnError(positionParamsBase.errorConsumer()::accept);
+    public Observable<OrderEvent> composeTaskWithEventHandling(final Observable<OrderEvent> observable,
+                                                               final BasicParamsBase basicParamsBase) {
+        return composeTask(observable.doOnNext(orderEvent -> handlerOrderEvent(orderEvent,
+                                                                               basicParamsBase
+                                                                                   .consumerForEvent())),
+                           basicParamsBase);
     }
 
-    public void subscribePositionTask(Observable<OrderEvent> observable,
+    public void subscribePositionTask(final Observable<OrderEvent> observable,
                                       final PositionParamsBase positionParamsBase) {
-        observable = observable
-            .doOnNext(orderEvent -> handlerOrderEvent(orderEvent, positionParamsBase.consumerForEvent()));
         composeRetry(observable, positionParamsBase)
             .doOnSubscribe(d -> positionParamsBase.startAction().run())
             .subscribe(orderEvent -> {},

@@ -22,8 +22,8 @@ public class CancelSLTask {
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelSLSLOrders,
                                           final BatchCancelSLParams batchCancelSLParams) {
-        return taskParamsUtil.composePositionTask(batchCancelSL(toCancelSLSLOrders, batchCancelSLParams),
-                                                  batchCancelSLParams);
+        return taskParamsUtil.composeTask(batchCancelSL(toCancelSLSLOrders, batchCancelSLParams),
+                                          batchCancelSLParams);
     }
 
     private Observable<OrderEvent> batchCancelSL(final Collection<IOrder> toCancelSLSLOrders,

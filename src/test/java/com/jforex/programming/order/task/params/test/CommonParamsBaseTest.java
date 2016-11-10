@@ -25,7 +25,7 @@ public class CommonParamsBaseTest extends InstrumentUtilForTest {
     @Test
     public void commonParamsAreCorrect() {
         closeParams = CloseParams
-            .closeOrder(buyOrderEURUSD)
+            .withOrder(buyOrderEURUSD)
             .doOnClose(consumer)
             .retryOnReject(noOfRetries, delayInMillis)
             .build();

@@ -28,7 +28,7 @@ public class CloseParamsTest extends CommonParamsForTest {
     @Test
     public void handlersAreCorrect() {
         closeParams = CloseParams
-            .closeOrder(buyOrderEURUSD)
+            .withOrder(buyOrderEURUSD)
             .doOnClose(closeConsumerMock)
             .doOnPartialClose(partialCloseConsumerMock)
             .doOnReject(rejectConsumerMock)
@@ -45,7 +45,7 @@ public class CloseParamsTest extends CommonParamsForTest {
     @Test
     public void defaultValuesAreCorrect() {
         closeParams = CloseParams
-            .closeOrder(buyOrderEURUSD)
+            .withOrder(buyOrderEURUSD)
             .build();
 
         assertThat(closeParams.order(), equalTo(buyOrderEURUSD));
@@ -59,7 +59,7 @@ public class CloseParamsTest extends CommonParamsForTest {
         final double partialCloseAmount = 0.13;
 
         closeParams = CloseParams
-            .closeOrder(buyOrderEURUSD)
+            .withOrder(buyOrderEURUSD)
             .closePartial(partialCloseAmount)
             .build();
 
@@ -71,7 +71,7 @@ public class CloseParamsTest extends CommonParamsForTest {
         final double price = 1.1234;
 
         closeParams = CloseParams
-            .closeOrder(buyOrderEURUSD)
+            .withOrder(buyOrderEURUSD)
             .atPrice(price, -1.0)
             .build();
 
@@ -84,7 +84,7 @@ public class CloseParamsTest extends CommonParamsForTest {
         final double slippage = 3.2;
 
         closeParams = CloseParams
-            .closeOrder(buyOrderEURUSD)
+            .withOrder(buyOrderEURUSD)
             .atPrice(1.1234, slippage)
             .build();
 

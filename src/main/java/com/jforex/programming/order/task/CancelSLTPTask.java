@@ -45,7 +45,7 @@ public class CancelSLTPTask {
                                    cancelTP,
                                    batchCancelSLTPParams.mergeExecutionMode());
 
-        return taskParamsUtil.composePositionTask(batchObservables, batchCancelSLTPParams);
+        return taskParamsUtil.composeTask(batchObservables, batchCancelSLTPParams);
     }
 
     private Observable<OrderEvent> arrangeObservables(final Observable<OrderEvent> cancelSL,

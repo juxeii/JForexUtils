@@ -277,7 +277,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
                     .thenReturn(emptyCompletable());
 
                 observable = basicTask.close(CloseParams
-                    .closeOrder(orderForTest)
+                    .withOrder(orderForTest)
                     .build());
             }
 
@@ -336,7 +336,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
                                                      .thenReturn(emptyCompletable());
 
                 observable = basicTask.close(CloseParams
-                    .closeOrder(orderForTest)
+                    .withOrder(orderForTest)
                     .closePartial(closeAmount)
                     .atPrice(closePrice, closeSlippage)
                     .build());
