@@ -147,11 +147,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void mergePositionCallsSubscribeOnTaskParams() {
         final MergePositionParams mergePositionParamsMock = mock(MergePositionParams.class);
 
-        orderUtil.mergePosition(instrumentEURUSD, mergePositionParamsMock);
+        orderUtil.mergePosition(mergePositionParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribePositionTask(instrumentEURUSD,
-                                   mergePositionTaskMock.merge(instrumentEURUSD, mergePositionParamsMock),
+            .subscribePositionTask(mergePositionTaskMock.merge(mergePositionParamsMock),
                                    mergePositionParamsMock);
     }
 
@@ -163,18 +162,17 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         verify(taskParamsUtilMock)
             .subscribeToAllPositionsTask(mergePositionTaskMock.mergeAll(mergeAllPositionsParamsMock),
-                                        mergeAllPositionsParamsMock);
+                                         mergeAllPositionsParamsMock);
     }
 
     @Test
     public void closePositionCallsSubscribeOnTaskParams() {
         final ClosePositionParams closePositionParamsMock = mock(ClosePositionParams.class);
 
-        orderUtil.closePosition(instrumentEURUSD, closePositionParamsMock);
+        orderUtil.closePosition(closePositionParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribePositionTask(instrumentEURUSD,
-                                   closePositionTaskMock.close(instrumentEURUSD, closePositionParamsMock),
+            .subscribePositionTask(closePositionTaskMock.close(closePositionParamsMock),
                                    closePositionParamsMock);
     }
 
@@ -186,7 +184,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         verify(taskParamsUtilMock)
             .subscribeToAllPositionsTask(closePositionTaskMock.closeAll(closeAllPositionsParamsMock),
-                                        closeAllPositionsParamsMock);
+                                         closeAllPositionsParamsMock);
     }
 
     @Test

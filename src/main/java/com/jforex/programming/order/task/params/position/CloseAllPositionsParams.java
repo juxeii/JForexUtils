@@ -2,6 +2,7 @@ package com.jforex.programming.order.task.params.position;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.HashMap;
 import java.util.function.Function;
 
 import com.dukascopy.api.Instrument;
@@ -16,6 +17,7 @@ public class CloseAllPositionsParams extends BasicParamsBase {
         super(builder);
 
         paramsFactory = builder.paramsFactory;
+        consumerForEvent = new HashMap<>();
     }
 
     public ClosePositionParams closePositionParams(final Instrument instrument) {

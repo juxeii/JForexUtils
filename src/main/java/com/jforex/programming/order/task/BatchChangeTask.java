@@ -2,21 +2,21 @@ package com.jforex.programming.order.task;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
+import com.jforex.programming.order.task.params.basic.CancelSLParams;
+import com.jforex.programming.order.task.params.basic.CancelTPParams;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.basic.SetSLParams;
 import com.jforex.programming.order.task.params.basic.SetTPParams;
-import com.jforex.programming.order.task.params.position.CancelSLParams;
-import com.jforex.programming.order.task.params.position.CancelTPParams;
 import com.jforex.programming.order.task.params.position.SimpleClosePositionParams;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.strategy.StrategyUtil;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
 
 public class BatchChangeTask {
 
@@ -36,36 +36,31 @@ public class BatchChangeTask {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
                 order -> taskParamsUtil.composePositionTask(basicTask.close(CloseParams
                     .closeOrder(order)
-                    .build()),
-                                                            closePositionParams);
+                    .build()), closePositionParams);
         return forBasicTask(orders,
                             BatchMode.MERGE,
                             taskCall);
     }
 
     public Observable<OrderEvent> cancelSL(final Collection<IOrder> orders,
-                                           final CancelSLParams cancelSLParams,
+                                           final Function<IOrder, CancelSLParams> paramsFactory,
                                            final BatchMode batchMode) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> taskParamsUtil.composeCancelTask(order,
-                                                          basicTask.setStopLossPrice(SetSLParams
-                                                              .setSLAtPrice(order, platformSettings.noSLPrice())
-                                                              .build()),
-                                                          cancelSLParams);
+                order -> taskParamsUtil.composeBasicTask(basicTask.setStopLossPrice(SetSLParams
+                    .setSLAtPrice(order, platformSettings.noSLPrice())
+                    .build()), paramsFactory.apply(order));
         return forBasicTask(orders,
                             batchMode,
                             taskCall);
     }
 
     public Observable<OrderEvent> cancelTP(final Collection<IOrder> orders,
-                                           final CancelTPParams cancelTPParams,
+                                           final Function<IOrder, CancelTPParams> paramsFactory,
                                            final BatchMode batchMode) {
         final Function<IOrder, Observable<OrderEvent>> taskCall =
-                order -> taskParamsUtil.composeCancelTask(order,
-                                                          basicTask.setTakeProfitPrice(SetTPParams
-                                                              .setTPAtPrice(order, platformSettings.noTPPrice())
-                                                              .build()),
-                                                          cancelTPParams);
+                order -> taskParamsUtil.composeBasicTask(basicTask.setTakeProfitPrice(SetTPParams
+                    .setTPAtPrice(order, platformSettings.noTPPrice())
+                    .build()), paramsFactory.apply(order));
         return forBasicTask(orders,
                             batchMode,
                             taskCall);

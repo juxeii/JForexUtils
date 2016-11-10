@@ -29,7 +29,7 @@ public class CancelTPTask {
     private Observable<OrderEvent> batchCancelTP(final Collection<IOrder> toCancelTPTPOrders,
                                                  final BatchCancelTPParams batchCancelTPParams) {
         return Observable.defer(() -> batchChangeTask.cancelTP(toCancelTPTPOrders,
-                                                               batchCancelTPParams.cancelTPParams(),
+                                                               batchCancelTPParams.cancelTPParamsFactory(),
                                                                batchCancelTPParams.batchMode()));
     }
 }

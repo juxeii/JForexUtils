@@ -1,4 +1,4 @@
-package com.jforex.programming.order.task.params.position.test;
+package com.jforex.programming.order.task.params.basic.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -11,7 +11,7 @@ import org.mockito.Mock;
 
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.position.CancelSLParams;
+import com.jforex.programming.order.task.params.basic.CancelSLParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
 public class CancelSLParamsTest extends CommonParamsForTest {
@@ -26,7 +26,7 @@ public class CancelSLParamsTest extends CommonParamsForTest {
     @Before
     public void setUp() {
         cancelSLParams = CancelSLParams
-            .newBuilder()
+            .withOrder(buyOrderEURUSD)
             .doOnCancelSL(cancelledSLConsumerMock)
             .doOnReject(cancelSLRejectConsumerMock)
             .build();
@@ -35,7 +35,8 @@ public class CancelSLParamsTest extends CommonParamsForTest {
     }
 
     @Test
-    public void handlersAreCorrect() {
+    public void valuesAreCorrect() {
+        assertThat(cancelSLParams.order(), equalTo(buyOrderEURUSD));
         assertThat(consumerForEvent.size(), equalTo(2));
         assertEventConsumer(OrderEventType.CHANGED_SL, cancelledSLConsumerMock);
         assertEventConsumer(OrderEventType.CHANGE_SL_REJECTED, cancelSLRejectConsumerMock);

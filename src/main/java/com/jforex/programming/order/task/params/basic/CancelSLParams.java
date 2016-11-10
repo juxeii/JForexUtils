@@ -1,21 +1,40 @@
-package com.jforex.programming.order.task.params.position;
+package com.jforex.programming.order.task.params.basic;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.function.Consumer;
 
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 
-public class CancelSLParams extends ParamsBaseForCancel {
+public class CancelSLParams extends BasicParamsBase {
+
+    private final IOrder order;
 
     private CancelSLParams(final Builder builder) {
         super(builder);
+
+        this.order = builder.order;
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
+    public IOrder order() {
+        return order;
     }
 
-    public static class Builder extends ParamsBuilderForCancel<Builder> {
+    public static Builder withOrder(final IOrder order) {
+        checkNotNull(order);
+
+        return new Builder(order);
+    }
+
+    public static class Builder extends BasicParamsBuilder<Builder> {
+
+        private final IOrder order;
+
+        public Builder(final IOrder order) {
+            this.order = order;
+        }
 
         public Builder doOnCancelSL(final Consumer<OrderEvent> cancelSLConsumer) {
             return setEventConsumer(OrderEventType.CHANGED_SL, cancelSLConsumer);

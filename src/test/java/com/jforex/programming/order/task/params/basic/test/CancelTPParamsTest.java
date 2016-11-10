@@ -1,4 +1,4 @@
-package com.jforex.programming.order.task.params.position.test;
+package com.jforex.programming.order.task.params.basic.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -11,7 +11,7 @@ import org.mockito.Mock;
 
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.position.CancelTPParams;
+import com.jforex.programming.order.task.params.basic.CancelTPParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
 public class CancelTPParamsTest extends CommonParamsForTest {
@@ -26,7 +26,7 @@ public class CancelTPParamsTest extends CommonParamsForTest {
     @Before
     public void setUp() {
         cancelTPParams = CancelTPParams
-            .newBuilder()
+            .withOrder(buyOrderEURUSD)
             .doOnCancelTP(cancelledTPConsumerMock)
             .doOnReject(cancelTPRejectConsumerMock)
             .build();
@@ -36,6 +36,7 @@ public class CancelTPParamsTest extends CommonParamsForTest {
 
     @Test
     public void handlersAreCorrect() {
+        assertThat(cancelTPParams.order(), equalTo(buyOrderEURUSD));
         assertThat(consumerForEvent.size(), equalTo(2));
         assertEventConsumer(OrderEventType.CHANGED_TP, cancelledTPConsumerMock);
         assertEventConsumer(OrderEventType.CHANGE_TP_REJECTED, cancelTPRejectConsumerMock);

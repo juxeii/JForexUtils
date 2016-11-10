@@ -29,7 +29,7 @@ public class CancelSLTask {
     private Observable<OrderEvent> batchCancelSL(final Collection<IOrder> toCancelSLSLOrders,
                                                  final BatchCancelSLParams batchCancelSLParams) {
         return Observable.defer(() -> batchChangeTask.cancelSL(toCancelSLSLOrders,
-                                                               batchCancelSLParams.cancelSLParams(),
+                                                               batchCancelSLParams.cancelSLParamsFactory(),
                                                                batchCancelSLParams.batchMode()));
     }
 }

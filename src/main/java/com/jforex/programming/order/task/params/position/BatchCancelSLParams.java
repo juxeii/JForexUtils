@@ -2,24 +2,27 @@ package com.jforex.programming.order.task.params.position;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.function.Function;
+
+import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
+import com.jforex.programming.order.task.params.basic.CancelSLParams;
 
 public class BatchCancelSLParams extends PositionParamsBase {
 
-    private final CancelSLParams cancelSLParams;
+    private final Function<IOrder, CancelSLParams> cancelSLFactory;
     private final BatchMode batchMode;
 
     private BatchCancelSLParams(final Builder builder) {
         super(builder);
 
-        cancelSLParams = builder.cancelSLParams;
+        cancelSLFactory = builder.cancelSLFactory;
         batchMode = builder.batchMode;
-        consumerForEvent = cancelSLParams.consumerForEvent();
     }
 
-    public final CancelSLParams cancelSLParams() {
-        return cancelSLParams;
+    public final Function<IOrder, CancelSLParams> cancelSLParamsFactory() {
+        return cancelSLFactory;
     }
 
     public final BatchMode batchMode() {
@@ -32,15 +35,14 @@ public class BatchCancelSLParams extends PositionParamsBase {
 
     public static class Builder extends BasicParamsBuilder<Builder> {
 
-        private CancelSLParams cancelSLParams = CancelSLParams
-            .newBuilder()
-            .build();
+        private Function<IOrder, CancelSLParams> cancelSLFactory =
+                order -> CancelSLParams.withOrder(order).build();
         private BatchMode batchMode = BatchMode.MERGE;
 
-        public Builder withCancelSLParams(final CancelSLParams cancelSLParams) {
-            checkNotNull(cancelSLParams);
+        public Builder withCancelSLParams(final Function<IOrder, CancelSLParams> cancelSLFactory) {
+            checkNotNull(cancelSLFactory);
 
-            this.cancelSLParams = cancelSLParams;
+            this.cancelSLFactory = cancelSLFactory;
             return this;
         }
 

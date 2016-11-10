@@ -55,7 +55,7 @@ public class MergePositionParamsHandlerTest extends InstrumentUtilForTest {
         when(mergePositionParamsMock.simpleMergePositionParams())
             .thenReturn(simpleMergePositionParamsMock);
 
-        when(simpleMergePositionParamsMock.mergeOrderLabel(instrumentEURUSD))
+        when(simpleMergePositionParamsMock.mergeOrderLabel())
             .thenReturn(mergeOrderLabel);
 
         when(cancelSLTPTaskMock.observe(toMergeOrders, mergePositionParamsMock))
@@ -80,7 +80,7 @@ public class MergePositionParamsHandlerTest extends InstrumentUtilForTest {
         public void setUp() {
             returnedObservable = eventObservable(testEvent);
 
-            when(taskParamsUtilMock.composePositionTask(eq(instrumentEURUSD), any(), eq(simpleMergePositionParamsMock)))
+            when(taskParamsUtilMock.composePositionTask(any(), eq(simpleMergePositionParamsMock)))
                 .thenReturn(returnedObservable);
 
             when(basicTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))

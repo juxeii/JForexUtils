@@ -1,6 +1,5 @@
 package com.jforex.programming.order.task.params.test;
 
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -8,7 +7,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
@@ -34,12 +32,6 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
     private Action completeActionMock;
     @Mock
     private Consumer<Throwable> errorConsumerMock;
-    @Mock
-    private Consumer<Instrument> startConsumerMock;
-    @Mock
-    private Consumer<Instrument> completeConsumerMock;
-    @Mock
-    private BiConsumer<Throwable, Instrument> errorBiConsumerMock;
     @Mock
     private Consumer<OrderEvent> consumerMockA;
     @Mock
@@ -127,41 +119,39 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
         public void setUp() {
             final BatchCancelSLParams batchCancelSLParams = BatchCancelSLParams
                 .newBuilder()
-                .doOnStart(startConsumerMock)
-                .doOnComplete(completeConsumerMock)
-                .doOnError(errorBiConsumerMock)
+                .doOnStart(startActionMock)
+                .doOnComplete(completeActionMock)
+                .doOnError(errorConsumerMock)
                 .retryOnReject(noOfRetries, delayInMillis)
                 .build();
 
             taskParamsUtil
-                .composePositionTask(instrumentEURUSD,
-                                     orderEventSubject,
-                                     batchCancelSLParams)
+                .composePositionTask(orderEventSubject, batchCancelSLParams)
                 .subscribe(i -> {},
                            e -> {});
         }
 
         @Test
-        public void startConsumerIsCalled() {
-            verify(startConsumerMock).accept(instrumentEURUSD);
+        public void startActionIsCalled() throws Exception {
+            verify(startActionMock).run();
         }
 
         @Test
-        public void completeConsumerIsCalledWhenCompleted() {
+        public void completeActionIsCalledWhenCompleted() throws Exception {
             orderEventSubject.onComplete();
-            verify(completeConsumerMock).accept(instrumentEURUSD);
+            verify(completeActionMock).run();
         }
 
         @Test
-        public void errorBiConsumerIsCalledOnError() {
+        public void errorConsumerIsCalledOnError() {
             orderEventSubject.onError(jfException);
-            verify(errorBiConsumerMock).accept(jfException, instrumentEURUSD);
+            verify(errorConsumerMock).accept(jfException);
         }
 
         @Test
         public void retryIsEstablished() throws Exception {
             orderEventSubject.onNext(closeRejectEvent);
-            verify(startConsumerMock, timeout(2)).accept(instrumentEURUSD);
+            verify(startActionMock, timeout(2)).run();
         }
     }
 
@@ -171,45 +161,43 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
         public void setUp() {
             final SimpleClosePositionParams closeParams = SimpleClosePositionParams
                 .newBuilder()
-                .doOnStart(startConsumerMock)
-                .doOnComplete(completeConsumerMock)
-                .doOnError(errorBiConsumerMock)
+                .doOnStart(startActionMock)
+                .doOnComplete(completeActionMock)
+                .doOnError(errorConsumerMock)
                 .doOnClose(consumerMockA)
                 .retryOnReject(noOfRetries, delayInMillis)
                 .build();
 
-            taskParamsUtil.subscribePositionTask(instrumentEURUSD,
-                                                 orderEventSubject,
-                                                 closeParams);
+            taskParamsUtil.subscribePositionTask(orderEventSubject, closeParams);
         }
 
         @Test
-        public void startConsumerIsCalled() {
-            verify(startConsumerMock).accept(instrumentEURUSD);
+        public void startActionIsCalled() throws Exception {
+            verify(startActionMock).run();
         }
 
         @Test
-        public void completeConsumerIsCalledWhenCompleted() {
+        public void completeActionIsCalledWhenCompleted() throws Exception {
             orderEventSubject.onComplete();
-            verify(completeConsumerMock).accept(instrumentEURUSD);
+            verify(completeActionMock).run();
+        }
+
+        @Test
+        public void errorConsumerIsCalledOnError() {
+            orderEventSubject.onError(jfException);
+            verify(errorConsumerMock).accept(jfException);
+        }
+
+        @Test
+        public void retryIsEstablished() throws Exception {
+            orderEventSubject.onNext(closeRejectEvent);
+            verify(startActionMock, timeout(2)).run();
         }
 
         @Test
         public void closeEventIsDispatched() {
             orderEventSubject.onNext(closeEvent);
             verify(consumerMockA).accept(closeEvent);
-        }
-
-        @Test
-        public void errorBiConsumerIsCalledOnError() {
-            orderEventSubject.onError(jfException);
-            verify(errorBiConsumerMock).accept(jfException, instrumentEURUSD);
-        }
-
-        @Test
-        public void retryIsEstablished() throws Exception {
-            orderEventSubject.onNext(closeRejectEvent);
-            verify(startConsumerMock, timeout(2)).accept(instrumentEURUSD);
         }
     }
 
@@ -218,7 +206,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
         @Before
         public void setUp() {
             final CloseAllPositionsParams closeParams = CloseAllPositionsParams
-                .newBuilder(closePositionParamsMock)
+                .withClosePositionParams(instrument -> closePositionParamsMock)
                 .doOnStart(startActionMock)
                 .doOnComplete(completeActionMock)
                 .doOnError(errorConsumerMock)

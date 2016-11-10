@@ -23,10 +23,11 @@ public class MergePositionParamsTest extends CommonParamsForTest {
     @Test
     public void valuesAreCorrect() {
         mergePositionParams = MergePositionParams
-            .newBuilder(simpleMergePositionParamsMock)
+            .newBuilder(instrumentEURUSD, simpleMergePositionParamsMock)
             .withBatchCancelSLTPParams(batchCancelSLTPParamsMock)
             .build();
 
+        assertThat(mergePositionParams.instrument(), equalTo(instrumentEURUSD));
         assertThat(mergePositionParams.simpleMergePositionParams(), equalTo(simpleMergePositionParamsMock));
         assertThat(mergePositionParams.batchCancelSLTPParams(), equalTo(batchCancelSLTPParamsMock));
 

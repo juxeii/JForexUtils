@@ -25,9 +25,10 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
     @Test
     public void defaultValuesAreCorrect() {
         closePositionParams = ClosePositionParams
-            .newBuilder(mergePositionParamsMock)
+            .newBuilder(instrumentEURUSD, mergePositionParamsMock)
             .build();
 
+        assertThat(closePositionParams.instrument(), equalTo(instrumentEURUSD));
         assertThat(closePositionParams.closeExecutionMode(), equalTo(CloseExecutionMode.CloseAll));
         assertNotNull(closePositionParams.mergePositionParams());
         assertNotNull(closePositionParams.simpleClosePositionParams());
@@ -36,11 +37,12 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
     @Test
     public void vluesAreCorrect() {
         closePositionParams = ClosePositionParams
-            .newBuilder(mergePositionParamsMock)
+            .newBuilder(instrumentEURUSD, mergePositionParamsMock)
             .withCloseExecutionMode(CloseExecutionMode.CloseFilled)
             .withClosePositionParams(simpleClosePositionParamsMock)
             .build();
 
+        assertThat(closePositionParams.instrument(), equalTo(instrumentEURUSD));
         assertThat(closePositionParams.closeExecutionMode(), equalTo(CloseExecutionMode.CloseFilled));
         assertThat(closePositionParams.simpleClosePositionParams(), equalTo(simpleClosePositionParamsMock));
         assertThat(closePositionParams.mergePositionParams(), equalTo(mergePositionParamsMock));

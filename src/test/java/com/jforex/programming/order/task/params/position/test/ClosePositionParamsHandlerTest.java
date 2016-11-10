@@ -62,7 +62,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
             .thenReturn(eventObservable(testEvent));
 
         testObserver = closePositionParamsHandler
-            .observeMerge(instrumentEURUSD, closePositionParamsMock)
+            .observeMerge(closePositionParamsMock)
             .test();
 
         testObserver.assertComplete();
@@ -75,7 +75,7 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
             .thenReturn(CloseExecutionMode.CloseOpened);
 
         testObserver = closePositionParamsHandler
-            .observeMerge(instrumentEURUSD, closePositionParamsMock)
+            .observeMerge(closePositionParamsMock)
             .test();
 
         testObserver.assertComplete();
@@ -90,19 +90,17 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
         public void setUp() {
             returnedObservable = eventObservable(testEvent);
 
-            when(batchChangeTaskMock.close(eq(instrumentEURUSD), any(), eq(simpleClosePositionParamsMock)))
+            when(batchChangeTaskMock.close(any(), eq(simpleClosePositionParamsMock)))
                 .thenReturn(returnedObservable);
 
             testObserver = closePositionParamsHandler
-                .observeClose(instrumentEURUSD, closePositionParamsMock)
+                .observeClose(closePositionParamsMock)
                 .test();
         }
 
         @Test
         public void observeCloseCallsBatchTaskMockCorrect() {
-            verify(batchChangeTaskMock).close(eq(instrumentEURUSD),
-                                              any(),
-                                              eq(simpleClosePositionParamsMock));
+            verify(batchChangeTaskMock).close(any(), eq(simpleClosePositionParamsMock));
         }
 
         @Test

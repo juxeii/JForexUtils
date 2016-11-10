@@ -3,12 +3,10 @@ package com.jforex.programming.order.task.params;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.TaskRetry;
 import com.jforex.programming.order.task.params.basic.BasicParamsBase;
-import com.jforex.programming.order.task.params.position.ParamsBaseForCancel;
 import com.jforex.programming.order.task.params.position.PositionParamsBase;
 
 import io.reactivex.Observable;
@@ -41,20 +39,19 @@ public class TaskParamsUtil {
             consumerForEvent.get(type).accept(orderEvent);
     }
 
-    public Observable<OrderEvent> composeCancelTask(final IOrder order,
-                                                    final Observable<OrderEvent> observable,
-                                                    final ParamsBaseForCancel paramsBaseForCancel) {
-        return composeRetry(observable, paramsBaseForCancel)
-            .doOnSubscribe(d -> paramsBaseForCancel.startAction(order).run())
-            .doOnComplete(paramsBaseForCancel.completeAction(order))
-            .doOnError(err -> paramsBaseForCancel.errorConsumer(order).accept(err));
+    public Observable<OrderEvent> composeBasicTask(final Observable<OrderEvent> observable,
+                                                   final BasicParamsBase basicParamsBase) {
+        return composeRetry(observable, basicParamsBase)
+            .doOnSubscribe(d -> basicParamsBase.startAction().run())
+            .doOnComplete(() -> basicParamsBase.completeAction().run())
+            .doOnError(basicParamsBase.errorConsumer()::accept);
     }
 
     public Observable<OrderEvent> composePositionTask(final Observable<OrderEvent> observable,
                                                       final PositionParamsBase positionParamsBase) {
         return composeRetry(observable, positionParamsBase)
             .doOnSubscribe(d -> positionParamsBase.startAction().run())
-            .doOnComplete(positionParamsBase::completeAction)
+            .doOnComplete(() -> positionParamsBase.completeAction().run())
             .doOnError(positionParamsBase.errorConsumer()::accept);
     }
 
@@ -69,14 +66,12 @@ public class TaskParamsUtil {
                        positionParamsBase.completeAction()::run);
     }
 
-    public void subscribeToAllPositionsTask(Observable<OrderEvent> observable,
+    public void subscribeToAllPositionsTask(final Observable<OrderEvent> observable,
                                             final BasicParamsBase basicParamsBase) {
-        observable = observable
-            .doOnNext(orderEvent -> handlerOrderEvent(orderEvent, basicParamsBase.consumerForEvent()));
         composeRetry(observable, basicParamsBase)
             .doOnSubscribe(d -> basicParamsBase.startAction().run())
             .subscribe(orderEvent -> {},
-                       e -> basicParamsBase.errorConsumer().accept(e),
+                       basicParamsBase.errorConsumer()::accept,
                        basicParamsBase.completeAction()::run);
     }
 }
