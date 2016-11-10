@@ -5,19 +5,18 @@ import java.util.Collection;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
-import com.jforex.programming.order.task.params.position.BatchCancelSLTPParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 
 import io.reactivex.Observable;
 
 public class CancelSLTPTask {
 
-    private final CancelSLTask cancelSLTask;
-    private final CancelTPTask cancelTPTask;
+    private final BatchCancelSLTask cancelSLTask;
+    private final BatchCancelTPTask cancelTPTask;
     private final TaskParamsUtil taskParamsUtil;
 
-    public CancelSLTPTask(final CancelSLTask cancelSLTask,
-                          final CancelTPTask cancelTPTask,
+    public CancelSLTPTask(final BatchCancelSLTask cancelSLTask,
+                          final BatchCancelTPTask cancelTPTask,
                           final TaskParamsUtil taskParamsUtil) {
         this.cancelSLTask = cancelSLTask;
         this.cancelTPTask = cancelTPTask;
@@ -33,19 +32,14 @@ public class CancelSLTPTask {
 
     private Observable<OrderEvent> createTask(final Collection<IOrder> toCancelSLTPOrders,
                                               final MergePositionParams mergePositionParams) {
-        final BatchCancelSLTPParams batchCancelSLTPParams = mergePositionParams.batchCancelSLTPParams();
-
         final Observable<OrderEvent> cancelSL = cancelSLTask.observe(toCancelSLTPOrders,
-                                                                     batchCancelSLTPParams.batchCancelSLParams());
+                                                                     mergePositionParams);
         final Observable<OrderEvent> cancelTP = cancelTPTask.observe(toCancelSLTPOrders,
-                                                                     batchCancelSLTPParams.batchCancelTPParams());
+                                                                     mergePositionParams);
 
-        final Observable<OrderEvent> batchObservables =
-                arrangeObservables(cancelSL,
-                                   cancelTP,
-                                   batchCancelSLTPParams.mergeExecutionMode());
-
-        return taskParamsUtil.composeTask(batchObservables, batchCancelSLTPParams);
+        return arrangeObservables(cancelSL,
+                                  cancelTP,
+                                  mergePositionParams.mergeExecutionMode());
     }
 
     private Observable<OrderEvent> arrangeObservables(final Observable<OrderEvent> cancelSL,

@@ -7,6 +7,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.TaskRetry;
 import com.jforex.programming.order.task.params.basic.BasicParamsBase;
+import com.jforex.programming.order.task.params.position.RetryParams;
 
 import io.reactivex.Observable;
 
@@ -14,7 +15,7 @@ public class TaskParamsUtil {
 
     public void subscribeBasicParams(final Observable<OrderEvent> observable,
                                      final BasicParamsBase basicParamsBase) {
-        composeRetry(composeEventHandling(observable, basicParamsBase), basicParamsBase)
+        composeRetry(composeEventHandling(observable, basicParamsBase.consumerForEvent()), basicParamsBase)
             .doOnSubscribe(d -> basicParamsBase.startAction().run())
             .subscribe(orderEvent -> {},
                        basicParamsBase.errorConsumer()::accept,
@@ -22,9 +23,9 @@ public class TaskParamsUtil {
     }
 
     public Observable<OrderEvent> composeEventHandling(final Observable<OrderEvent> observable,
-                                                       final BasicParamsBase basicParamsBase) {
-        return observable
-            .doOnNext(orderEvent -> handlerOrderEvent(orderEvent, basicParamsBase.consumerForEvent()));
+                                                       final Map<OrderEventType,
+                                                                 Consumer<OrderEvent>> consumerForEvent) {
+        return observable.doOnNext(orderEvent -> handlerOrderEvent(orderEvent, consumerForEvent));
     }
 
     private Observable<OrderEvent> composeRetry(final Observable<OrderEvent> observable,
@@ -32,6 +33,14 @@ public class TaskParamsUtil {
         final int noOfRetries = commonParamsBase.noOfRetries();
         return noOfRetries > 0
                 ? observable.compose(TaskRetry.onRejectRetryWith(noOfRetries, commonParamsBase.delayInMillis()))
+                : observable;
+    }
+
+    public Observable<OrderEvent> composeRetry(final Observable<OrderEvent> observable,
+                                               final RetryParams retryParams) {
+        final int noOfRetries = retryParams.noOfRetries();
+        return noOfRetries > 0
+                ? observable.compose(TaskRetry.onRejectRetryWith(noOfRetries, retryParams.delayInMillis()))
                 : observable;
     }
 
@@ -52,7 +61,7 @@ public class TaskParamsUtil {
 
     public Observable<OrderEvent> composeTaskWithEventHandling(final Observable<OrderEvent> observable,
                                                                final BasicParamsBase basicParamsBase) {
-        return composeTask(composeEventHandling(observable, basicParamsBase),
+        return composeTask(composeEventHandling(observable, basicParamsBase.consumerForEvent()),
                            basicParamsBase);
     }
 

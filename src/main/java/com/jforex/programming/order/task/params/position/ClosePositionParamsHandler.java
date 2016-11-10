@@ -40,8 +40,7 @@ public class ClosePositionParamsHandler {
     }
 
     public Observable<OrderEvent> observeClose(final ClosePositionParams closePositionParams) {
-        return Observable.defer(() -> batchChangeTask.close(ordersToClose(closePositionParams),
-                                                            closePositionParams.closeParamsFactory()));
+        return Observable.defer(() -> batchChangeTask.close(ordersToClose(closePositionParams), closePositionParams));
     }
 
     private Collection<IOrder> ordersToClose(final ClosePositionParams closePositionParams) {

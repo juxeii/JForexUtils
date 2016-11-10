@@ -109,8 +109,13 @@ public class OrderUtil {
     public void mergePosition(final MergePositionParams mergePositionParams) {
         checkNotNull(mergePositionParams);
 
-        taskParamsUtil.subscribePositionTask(mergePositionTask.merge(mergePositionParams),
-                                             mergePositionParams);
+        final Observable<OrderEvent> observable = mergePositionTask.merge(mergePositionParams);
+        taskParamsUtil
+            .composeRetry(observable, mergePositionParams.mergePositionRetryParams())
+            .doOnSubscribe(d -> mergePositionParams.mergePositionStartAction().run())
+            .subscribe(orderEvent -> {},
+                       mergePositionParams.mergePositionErrorConsumer()::accept,
+                       mergePositionParams.mergePositionCompleteAction()::run);
     }
 
     public void mergeAllPositions(final MergeAllPositionsParams mergeAllPositionParams) {
@@ -123,8 +128,13 @@ public class OrderUtil {
     public void closePosition(final ClosePositionParams closePositionParams) {
         checkNotNull(closePositionParams);
 
-        taskParamsUtil.subscribePositionTask(closePositionTask.close(closePositionParams),
-                                             closePositionParams);
+        final Observable<OrderEvent> observable = closePositionTask.close(closePositionParams);
+        taskParamsUtil
+            .composeRetry(observable, closePositionParams.closePositionRetryParams())
+            .doOnSubscribe(d -> closePositionParams.closePositionStartAction().run())
+            .subscribe(orderEvent -> {},
+                       closePositionParams.closePositionErrorConsumer()::accept,
+                       closePositionParams.closePositionCompleteAction()::run);
     }
 
     public void closeAllPositions(final CloseAllPositionsParams closeAllPositionParams) {

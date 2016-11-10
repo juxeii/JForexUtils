@@ -12,11 +12,11 @@ import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventTypeDataFactory;
 import com.jforex.programming.order.task.BasicTaskObservable;
+import com.jforex.programming.order.task.BatchCancelSLTask;
+import com.jforex.programming.order.task.BatchCancelTPTask;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
-import com.jforex.programming.order.task.CancelSLTask;
-import com.jforex.programming.order.task.CancelTPTask;
 import com.jforex.programming.order.task.ClosePositionTaskObservable;
 import com.jforex.programming.order.task.MergePositionTaskObservable;
 import com.jforex.programming.order.task.TaskExecutor;
@@ -46,8 +46,8 @@ public class OrderInitUtil {
     private final MergePositionParamsHandler mergeParamsHandler;
     private final ClosePositionParamsHandler closePositionParamsHandler;
     private final CancelSLTPAndMergeTask cancelSLTPAndMergeTask;
-    private final CancelSLTask cancelSLTask;
-    private final CancelTPTask cancelTPTask;
+    private final BatchCancelSLTask cancelSLTask;
+    private final BatchCancelTPTask cancelTPTask;
     private final CancelSLTPTask cancelSLTPTask;
     private final OrderUtil orderUtil;
     private final OrderEventFactory orderEventFactory;
@@ -71,8 +71,8 @@ public class OrderInitUtil {
                                                  orderUtilHandler,
                                                  calculationUtil);
         batchChangeTask = new BatchChangeTask(orderBasicTask, taskParamsUtil);
-        cancelSLTask = new CancelSLTask(batchChangeTask, taskParamsUtil);
-        cancelTPTask = new CancelTPTask(batchChangeTask, taskParamsUtil);
+        cancelSLTask = new BatchCancelSLTask(batchChangeTask, taskParamsUtil);
+        cancelTPTask = new BatchCancelTPTask(batchChangeTask, taskParamsUtil);
         cancelSLTPTask = new CancelSLTPTask(cancelSLTask,
                                             cancelTPTask,
                                             taskParamsUtil);

@@ -11,9 +11,18 @@ import io.reactivex.functions.Action;
 @SuppressWarnings("unchecked")
 public abstract class BasicParamsBuilder<T> extends CommonParamsBuilder<T> {
 
+    public int noOfRetries;
+    public long delayInMillis;
     protected Consumer<Throwable> errorConsumer = err -> {};
     protected Action startAction = () -> {};
     protected Action completeAction = () -> {};
+
+    public T retryOnReject(final int noOfRetries,
+                           final long delayInMillis) {
+        this.noOfRetries = noOfRetries;
+        this.delayInMillis = delayInMillis;
+        return (T) this;
+    }
 
     public T doOnStart(final Action startAction) {
         checkNotNull(startAction);

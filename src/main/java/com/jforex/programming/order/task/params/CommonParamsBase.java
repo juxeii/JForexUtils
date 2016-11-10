@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 
 public abstract class CommonParamsBase {
 
@@ -12,7 +13,7 @@ public abstract class CommonParamsBase {
     private final int noOfRetries;
     private final long delayInMillis;
 
-    protected CommonParamsBase(final CommonParamsBuilder<?> builder) {
+    protected CommonParamsBase(final BasicParamsBuilder<?> builder) {
         consumerForEvent = builder.consumerForEvent;
         noOfRetries = builder.noOfRetries;
         delayInMillis = builder.delayInMillis;
