@@ -11,9 +11,9 @@ import io.reactivex.functions.Action;
 @SuppressWarnings("unchecked")
 public abstract class BasicParamsBuilder<T> extends CommonParamsBuilder<T> {
 
-    public Consumer<Throwable> errorConsumer = err -> {};
-    public Action startAction = () -> {};
-    public Action completeAction = () -> {};
+    protected Consumer<Throwable> errorConsumer = err -> {};
+    protected Action startAction = () -> {};
+    protected Action completeAction = () -> {};
 
     public T doOnStart(final Action startAction) {
         checkNotNull(startAction);
