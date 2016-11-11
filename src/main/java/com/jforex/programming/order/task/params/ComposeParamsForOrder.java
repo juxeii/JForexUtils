@@ -8,27 +8,42 @@ import com.dukascopy.api.IOrder;
 
 import io.reactivex.functions.Action;
 
-public class ComposeParamsForOrder {
+public class ComposeParamsForOrder implements ComposeDataForOrder {
 
     private Function<IOrder, Action> startAction = o -> () -> {};
     private Function<IOrder, Action> completeAction = o -> () -> {};
     private BiConsumer<Throwable, IOrder> errorConsumer = (t, o) -> {};
     private RetryParams retryParams = new RetryParams(0, 0L);
 
+    @Override
     public Action startAction(final IOrder order) {
         return startAction.apply(order);
     }
 
+    @Override
     public Action completeAction(final IOrder order) {
         return completeAction.apply(order);
     }
 
+    @Override
     public Consumer<Throwable> errorConsumer(final IOrder order) {
         return err -> errorConsumer.accept(err, order);
     }
 
+    @Override
     public RetryParams retryParams() {
         return retryParams;
+    }
+
+    @Override
+    public ComposeParams convertWithOrder(final IOrder order) {
+        final ComposeParams composeParams = new ComposeParams();
+        composeParams.setStartAction(startAction(order));
+        composeParams.setCompleteAction(completeAction(order));
+        composeParams.setErrorConsumer(errorConsumer(order));
+        composeParams.setRetryParams(retryParams);
+
+        return composeParams;
     }
 
     public void setStartAction(final Function<IOrder, Action> startAction) {
@@ -45,15 +60,5 @@ public class ComposeParamsForOrder {
 
     public void setRetryParams(final RetryParams retryParams) {
         this.retryParams = retryParams;
-    }
-
-    public ComposeParams convertWithOrder(final IOrder order) {
-        final ComposeParams composeParams = new ComposeParams();
-        composeParams.setStartAction(startAction(order));
-        composeParams.setCompleteAction(completeAction(order));
-        composeParams.setErrorConsumer(errorConsumer(order));
-        composeParams.setRetryParams(retryParams);
-
-        return composeParams;
     }
 }

@@ -19,12 +19,12 @@ public class TaskParamsUtil {
     }
 
     public void subscribeComposeParams(final Observable<OrderEvent> observable,
-                                       final ComposeParams composeParams) {
-        composeRetry(observable, composeParams.retryParams())
-            .doOnSubscribe(d -> composeParams.startAction().run())
+                                       final ComposeData composeData) {
+        composeRetry(observable, composeData.retryParams())
+            .doOnSubscribe(d -> composeData.startAction().run())
             .subscribe(orderEvent -> {},
-                       composeParams.errorConsumer()::accept,
-                       composeParams.completeAction());
+                       composeData.errorConsumer()::accept,
+                       composeData.completeAction());
     }
 
     public Observable<OrderEvent> composeEvents(final Observable<OrderEvent> observable,
@@ -48,19 +48,19 @@ public class TaskParamsUtil {
     }
 
     public Observable<OrderEvent> composeParams(final Observable<OrderEvent> observable,
-                                                final ComposeParams composeParams) {
-        return composeRetry(observable, composeParams.retryParams())
-            .doOnSubscribe(d -> composeParams.startAction().run())
-            .doOnComplete(composeParams.completeAction()::run)
-            .doOnError(composeParams.errorConsumer()::accept);
+                                                final ComposeData composeData) {
+        return composeRetry(observable, composeData.retryParams())
+            .doOnSubscribe(d -> composeData.startAction().run())
+            .doOnComplete(composeData.completeAction()::run)
+            .doOnError(composeData.errorConsumer()::accept);
     }
 
     public Observable<OrderEvent> composeParamsForOrder(final IOrder order,
                                                         final Observable<OrderEvent> observable,
-                                                        final ComposeParamsForOrder composeParamsForOrder,
+                                                        final ComposeDataForOrder composeDataForOrder,
                                                         final Map<OrderEventType,
                                                                   Consumer<OrderEvent>> consumerForEvent) {
         return composeParams(composeEvents(observable, consumerForEvent),
-                             composeParamsForOrder.convertWithOrder(order));
+                             composeDataForOrder.convertWithOrder(order));
     }
 }

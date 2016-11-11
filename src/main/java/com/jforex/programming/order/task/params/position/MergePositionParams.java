@@ -14,6 +14,8 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.MergeExecutionMode;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
+import com.jforex.programming.order.task.params.ComposeData;
+import com.jforex.programming.order.task.params.ComposeDataForOrder;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.ComposeParamsForOrder;
 import com.jforex.programming.order.task.params.RetryParams;
@@ -26,13 +28,13 @@ public class MergePositionParams {
     private final String mergeOrderLabel;
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
 
-    private final ComposeParams mergePositionComposeParams;
-    private final ComposeParams cancelSLTPComposeParams;
-    private final ComposeParams batchCancelSLComposeParams;
-    private final ComposeParams batchCancelTPComposeParams;
-    private final ComposeParamsForOrder cancelSLComposeParams;
-    private final ComposeParamsForOrder cancelTPComposeParams;
-    private final ComposeParams mergeComposeParams;
+    private final ComposeData mergePositionComposeParams;
+    private final ComposeData cancelSLTPComposeParams;
+    private final ComposeData batchCancelSLComposeParams;
+    private final ComposeData batchCancelTPComposeParams;
+    private final ComposeDataForOrder cancelSLComposeParams;
+    private final ComposeDataForOrder cancelTPComposeParams;
+    private final ComposeData mergeComposeParams;
 
     private final MergeExecutionMode mergeExecutionMode;
     private final BatchMode batchCancelSLMode;
@@ -68,31 +70,31 @@ public class MergePositionParams {
         return consumerForEvent;
     }
 
-    public ComposeParams mergePositionComposeParams() {
+    public ComposeData mergePositionComposeParams() {
         return mergePositionComposeParams;
     }
 
-    public ComposeParams cancelSLTPComposeParams() {
+    public ComposeData cancelSLTPComposeParams() {
         return cancelSLTPComposeParams;
     }
 
-    public ComposeParams batchCancelSLComposeParams() {
+    public ComposeData batchCancelSLComposeParams() {
         return batchCancelSLComposeParams;
     }
 
-    public ComposeParams batchCancelTPComposeParams() {
+    public ComposeData batchCancelTPComposeParams() {
         return batchCancelTPComposeParams;
     }
 
-    public ComposeParamsForOrder cancelSLComposeParams() {
+    public ComposeDataForOrder cancelSLComposeParams() {
         return cancelSLComposeParams;
     }
 
-    public ComposeParamsForOrder cancelTPComposeParams() {
+    public ComposeDataForOrder cancelTPComposeParams() {
         return cancelTPComposeParams;
     }
 
-    public ComposeParams mergeComposeParams() {
+    public ComposeData mergeComposeParams() {
         return mergeComposeParams;
     }
 

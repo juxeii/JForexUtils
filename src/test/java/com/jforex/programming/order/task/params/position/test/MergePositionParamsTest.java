@@ -16,8 +16,8 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.MergeExecutionMode;
-import com.jforex.programming.order.task.params.ComposeParams;
-import com.jforex.programming.order.task.params.ComposeParamsForOrder;
+import com.jforex.programming.order.task.params.ComposeData;
+import com.jforex.programming.order.task.params.ComposeDataForOrder;
 import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
@@ -100,26 +100,31 @@ public class MergePositionParamsTest extends CommonParamsForTest {
             .build();
     }
 
-    private void assertComposeParams(final ComposeParams composeParams) {
-        assertActions(composeParams);
-        assertErrorConsumer(composeParams.errorConsumer());
-        assertRetries(composeParams.retryParams());
+    private void assertComposeData(final ComposeData composeData) {
+        assertActions(composeData);
+        assertErrorConsumer(composeData.errorConsumer());
+        assertRetries(composeData.retryParams());
     }
 
-    private void assertComposeParams(final ComposeParamsForOrder composeParams) throws Exception {
-        assertActions(composeParams);
-        assertErrorConsumer(composeParams);
-        assertRetries(composeParams.retryParams());
+    private void assertComposeData(final ComposeDataForOrder composeDataForOrder) throws Exception {
+        assertActions(composeDataForOrder);
+        assertErrorConsumer(composeDataForOrder);
+        assertRetries(composeDataForOrder.retryParams());
     }
 
-    private void assertActions(final ComposeParams composeParams) {
-        assertThat(composeParams.startAction(), equalTo(actionMock));
-        assertThat(composeParams.completeAction(), equalTo(actionMock));
+    private void assertActions(final ComposeData composeData) {
+        assertThat(composeData.startAction(), equalTo(actionMock));
+        assertThat(composeData.completeAction(), equalTo(actionMock));
     }
 
-    private void assertActions(final ComposeParamsForOrder composeParams) throws Exception {
-        composeParams.startAction(orderForTest).run();
-        composeParams.completeAction(orderForTest).run();
+    private void assertActions(final ComposeDataForOrder composeDataForOrder) throws Exception {
+        composeDataForOrder
+            .startAction(orderForTest)
+            .run();
+
+        composeDataForOrder
+            .completeAction(orderForTest)
+            .run();
 
         verify(actionConsumerMock, times(2)).apply(buyOrderEURUSD);
     }
@@ -128,8 +133,10 @@ public class MergePositionParamsTest extends CommonParamsForTest {
         assertThat(errorConsumer, equalTo(errorConsumerMock));
     }
 
-    private void assertErrorConsumer(final ComposeParamsForOrder composeParams) {
-        composeParams.errorConsumer(orderForTest).accept(jfException);
+    private void assertErrorConsumer(final ComposeDataForOrder composeDataForOrder) {
+        composeDataForOrder
+            .errorConsumer(orderForTest)
+            .accept(jfException);
         verify(biErrorConsumerMock).accept(jfException, orderForTest);
     }
 
@@ -167,37 +174,37 @@ public class MergePositionParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertMergePositionValues() {
-        assertComposeParams(mergePositionParams.mergePositionComposeParams());
+        assertComposeData(mergePositionParams.mergePositionComposeParams());
     }
 
     @Test
     public void assertCancelSLTPValues() {
-        assertComposeParams(mergePositionParams.cancelSLTPComposeParams());
+        assertComposeData(mergePositionParams.cancelSLTPComposeParams());
     }
 
     @Test
     public void assertBatchCancelSLValues() {
-        assertComposeParams(mergePositionParams.batchCancelSLComposeParams());
+        assertComposeData(mergePositionParams.batchCancelSLComposeParams());
     }
 
     @Test
     public void assertBatchCancelTPValues() {
-        assertComposeParams(mergePositionParams.batchCancelTPComposeParams());
+        assertComposeData(mergePositionParams.batchCancelTPComposeParams());
     }
 
     @Test
     public void assertCancelSLValues() throws Exception {
-        assertComposeParams(mergePositionParams.cancelSLComposeParams());
+        assertComposeData(mergePositionParams.cancelSLComposeParams());
     }
 
     @Test
     public void assertCancelTPValues() throws Exception {
-        assertComposeParams(mergePositionParams.cancelTPComposeParams());
+        assertComposeData(mergePositionParams.cancelTPComposeParams());
     }
 
     @Test
     public void assertMergeValues() {
-        assertComposeParams(mergePositionParams.mergeComposeParams());
+        assertComposeData(mergePositionParams.mergeComposeParams());
     }
 
     @Test

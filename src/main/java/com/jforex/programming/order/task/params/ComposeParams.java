@@ -4,25 +4,29 @@ import java.util.function.Consumer;
 
 import io.reactivex.functions.Action;
 
-public class ComposeParams {
+public class ComposeParams implements ComposeData {
 
     private Action startAction = () -> {};
     private Action completeAction = () -> {};
     private Consumer<Throwable> errorConsumer = t -> {};
     private RetryParams retryParams = new RetryParams(0, 0L);
 
+    @Override
     public Action startAction() {
         return startAction;
     }
 
+    @Override
     public Action completeAction() {
         return completeAction;
     }
 
+    @Override
     public Consumer<Throwable> errorConsumer() {
         return errorConsumer;
     }
 
+    @Override
     public RetryParams retryParams() {
         return retryParams;
     }
