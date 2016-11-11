@@ -69,8 +69,11 @@ public class TaskParamsUtil {
 
     public Observable<OrderEvent> composeParamsForOrder(final IOrder order,
                                                         final Observable<OrderEvent> observable,
-                                                        final ComposeParamsForOrder composeParams) {
-        return composeRetry(observable, composeParams.retryParams())
+                                                        final ComposeParamsForOrder composeParams,
+                                                        final Map<OrderEventType,
+                                                                  Consumer<OrderEvent>> consumerForEvent) {
+        final Observable<OrderEvent> withEventObservable = composeEventHandling(observable, consumerForEvent);
+        return composeRetry(withEventObservable, composeParams.retryParams())
             .doOnSubscribe(d -> composeParams.startAction(order).run())
             .doOnComplete(() -> composeParams.completeAction(order).run())
             .doOnError(composeParams.errorConsumer(order)::accept);

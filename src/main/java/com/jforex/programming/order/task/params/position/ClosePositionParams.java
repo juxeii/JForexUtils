@@ -12,40 +12,40 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.CloseExecutionMode;
+import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.ComposeParamsForOrder;
 import com.jforex.programming.order.task.params.RetryParams;
-import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 
 import io.reactivex.functions.Action;
 
 public class ClosePositionParams {
 
     private final Instrument instrument;
-    private final MergePositionParams mergePositionParams;
+    private final String mergeOrderLabel;
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
-    private final CloseExecutionMode closeExecutionMode;
-
+    private final MergePositionParams mergePositionParams;
     private final ComposeParams closePositionComposeParams;
     private final ComposeParamsForOrder closeComposeParams;
+    private final CloseExecutionMode closeExecutionMode;
 
     private ClosePositionParams(final Builder builder) {
         instrument = builder.instrument;
-        mergePositionParams = builder.mergePositionParams;
+        mergeOrderLabel = builder.mergeOrderLabel;
         closeExecutionMode = builder.closeExecutionMode;
-        consumerForEvent = builder.consumerForEvent;
-        consumerForEvent.putAll(mergePositionParams.consumerForEvent());
-
+        mergePositionParams = builder.mergePositionParams;
         closePositionComposeParams = builder.closePositionComposeParams;
         closeComposeParams = builder.closeComposeParams;
+        consumerForEvent = builder.consumerForEvent;
+        consumerForEvent.putAll(mergePositionParams.consumerForEvent());
     }
 
     public Instrument instrument() {
         return instrument;
     }
 
-    public MergePositionParams mergePositionParams() {
-        return mergePositionParams;
+    public String mergeOrderLabel() {
+        return mergeOrderLabel;
     }
 
     public Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent() {
@@ -64,24 +64,48 @@ public class ClosePositionParams {
         return closeComposeParams;
     }
 
-    public static Builder newBuilder(final MergePositionParams mergePositionParams) {
-        checkNotNull(mergePositionParams);
-
-        return new Builder(mergePositionParams);
+    public MergePositionParams mergePositionParams() {
+        return mergePositionParams;
     }
 
-    public static class Builder extends BasicParamsBuilder<Builder> {
+    public static Builder newBuilder(final Instrument instrument,
+                                     final String mergeOrderLabel) {
+        checkNotNull(instrument);
+        checkNotNull(mergeOrderLabel);
+
+        return new Builder(instrument, mergeOrderLabel);
+    }
+
+    public static class Builder extends CommonParamsBuilder<Builder> {
 
         private final Instrument instrument;
-        private final MergePositionParams mergePositionParams;
-        private CloseExecutionMode closeExecutionMode = CloseExecutionMode.CloseAll;
-
+        private final String mergeOrderLabel;
+        private MergePositionParams mergePositionParams;
         private final ComposeParams closePositionComposeParams = new ComposeParams();
         private final ComposeParamsForOrder closeComposeParams = new ComposeParamsForOrder();
+        private CloseExecutionMode closeExecutionMode = CloseExecutionMode.CloseAll;
 
-        public Builder(final MergePositionParams mergePositionParams) {
-            this.instrument = mergePositionParams.instrument();
+        public Builder(final Instrument instrument,
+                       final String mergeOrderLabel) {
+            this.instrument = instrument;
+            this.mergeOrderLabel = mergeOrderLabel;
+            mergePositionParams = MergePositionParams
+                .newBuilder(instrument, mergeOrderLabel)
+                .build();
+        }
+
+        public Builder withMergePositionParams(final MergePositionParams mergePositionParams) {
+            checkNotNull(mergePositionParams);
+
             this.mergePositionParams = mergePositionParams;
+            return this;
+        }
+
+        public Builder withCloseExecutionMode(final CloseExecutionMode closeExecutionMode) {
+            checkNotNull(closeExecutionMode);
+
+            this.closeExecutionMode = closeExecutionMode;
+            return this;
         }
 
         public Builder doOnclosePositionStart(final Action closePositionStartAction) {
@@ -150,11 +174,16 @@ public class ClosePositionParams {
             return setEventConsumer(OrderEventType.CLOSE_REJECTED, rejectConsumer);
         }
 
-        public Builder withCloseExecutionMode(final CloseExecutionMode closeExecutionMode) {
-            checkNotNull(closeExecutionMode);
+        public Builder doOnMerge(final Consumer<OrderEvent> mergeConsumer) {
+            return setEventConsumer(OrderEventType.MERGE_OK, mergeConsumer);
+        }
 
-            this.closeExecutionMode = closeExecutionMode;
-            return this;
+        public Builder doOnMergeClose(final Consumer<OrderEvent> mergeCloseConsumer) {
+            return setEventConsumer(OrderEventType.MERGE_CLOSE_OK, mergeCloseConsumer);
+        }
+
+        public Builder doOnMergeReject(final Consumer<OrderEvent> rejectConsumer) {
+            return setEventConsumer(OrderEventType.MERGE_REJECTED, rejectConsumer);
         }
 
         public ClosePositionParams build() {

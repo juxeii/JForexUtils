@@ -43,12 +43,10 @@ public class BatchChangeTask {
                 CloseParams
                     .withOrder(order)
                     .build();
-        Observable<OrderEvent> closeObservable = basicTask.close(closeParams);
-        closeObservable = taskParamsUtil.composeEventHandling(closeObservable,
-                                                              closePositionParams.consumerForEvent());
         return taskParamsUtil.composeParamsForOrder(order,
-                                                    closeObservable,
-                                                    closePositionParams.closeComposeParams());
+                                                    basicTask.close(closeParams),
+                                                    closePositionParams.closeComposeParams(),
+                                                    closePositionParams.consumerForEvent());
     }
 
     public Observable<OrderEvent> cancelSL(final Collection<IOrder> orders,
@@ -64,12 +62,10 @@ public class BatchChangeTask {
                 SetSLParams
                     .setSLAtPrice(order, platformSettings.noSLPrice())
                     .build();
-        Observable<OrderEvent> cancelSLObservable = basicTask.setStopLossPrice(setSLParams);
-        cancelSLObservable = taskParamsUtil.composeEventHandling(cancelSLObservable,
-                                                                 mergePositionParams.consumerForEvent());
         return taskParamsUtil.composeParamsForOrder(order,
-                                                    cancelSLObservable,
-                                                    mergePositionParams.cancelSLComposeParams());
+                                                    basicTask.setStopLossPrice(setSLParams),
+                                                    mergePositionParams.cancelSLComposeParams(),
+                                                    mergePositionParams.consumerForEvent());
     }
 
     public Observable<OrderEvent> cancelTP(final Collection<IOrder> orders,
@@ -85,12 +81,10 @@ public class BatchChangeTask {
                 SetTPParams
                     .setTPAtPrice(order, platformSettings.noTPPrice())
                     .build();
-        Observable<OrderEvent> cancelTPObservable = basicTask.setTakeProfitPrice(setTPParams);
-        cancelTPObservable = taskParamsUtil.composeEventHandling(cancelTPObservable,
-                                                                 mergePositionParams.consumerForEvent());
         return taskParamsUtil.composeParamsForOrder(order,
-                                                    cancelTPObservable,
-                                                    mergePositionParams.cancelTPComposeParams());
+                                                    basicTask.setTakeProfitPrice(setTPParams),
+                                                    mergePositionParams.cancelTPComposeParams(),
+                                                    mergePositionParams.consumerForEvent());
     }
 
     private Observable<OrderEvent> forBasicTask(final Collection<IOrder> orders,
