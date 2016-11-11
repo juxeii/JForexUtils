@@ -3,27 +3,99 @@ package com.jforex.programming.order.task.params.position.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.task.params.ComposeParams;
+import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.position.CloseAllPositionsParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
+
+import io.reactivex.functions.Action;
 
 public class CloseAllPositionsParamsTest extends CommonParamsForTest {
 
     private CloseAllPositionsParams closeAllPositionsParams;
 
     @Mock
-    public ClosePositionParams closePositionParamsMock;
+    private ClosePositionParams closePositionParamsMock;
+    @Mock
+    private Action actionMock;
+    @Mock
+    private Function<IOrder, Action> actionConsumerMock;
+    @Mock
+    private Consumer<Throwable> errorConsumerMock;
+    @Mock
+    private BiConsumer<Throwable, IOrder> biErrorConsumerMock;
+    @Mock
+    private Consumer<OrderEvent> eventConsumerMock;
+    private final IOrder orderForTest = buyOrderEURUSD;
+    private static final int noOfRetries = 3;
+    private static final long delayInMillis = 1500L;
+
+    private final Function<Instrument, ClosePositionParams> paramsFactory =
+            instrument -> closePositionParamsMock;
+
+    @Before
+    public void setUp() {
+        when(actionConsumerMock.apply(orderForTest)).thenReturn(actionMock);
+
+        closeAllPositionsParams = CloseAllPositionsParams
+            .newBuilder(paramsFactory)
+
+            .doOnCloseAllPositionsStart(actionMock)
+            .doOnCloseAllPositionsComplete(actionMock)
+            .doOnCloseAllPositionsError(errorConsumerMock)
+            .retryOnCloseAllPositionsReject(noOfRetries, delayInMillis)
+
+            .build();
+    }
+
+    private void assertComposeParams(final ComposeParams composeParams) {
+        assertActions(composeParams);
+        assertErrorConsumer(composeParams.errorConsumer());
+        assertRetries(composeParams.retryParams());
+    }
+
+    private void assertActions(final ComposeParams composeParams) {
+        assertThat(composeParams.startAction(), equalTo(actionMock));
+        assertThat(composeParams.completeAction(), equalTo(actionMock));
+    }
+
+    private void assertErrorConsumer(final Consumer<Throwable> errorConsumer) {
+        assertThat(errorConsumer, equalTo(errorConsumerMock));
+    }
+
+    private void assertRetries(final RetryParams retryParams) {
+        assertThat(retryParams.noOfRetries(), equalTo(noOfRetries));
+        assertThat(retryParams.delayInMillis(), equalTo(delayInMillis));
+    }
 
     @Test
-    public void valuesAreCorrect() {
+    public void defaultValuesAreCorrect() {
         closeAllPositionsParams = CloseAllPositionsParams
-            .newBuilder(instrument -> closePositionParamsMock)
+            .newBuilder(paramsFactory)
             .build();
 
-        assertThat(closeAllPositionsParams.paramsFactory().apply(instrumentEURUSD),
-                   equalTo(closePositionParamsMock));
+        assertThat(closeAllPositionsParams.paramsFactory(), equalTo(paramsFactory));
+    }
+
+    @Test
+    public void assertSpecifiedValues() {
+        assertThat(closeAllPositionsParams.paramsFactory(), equalTo(paramsFactory));
+    }
+
+    @Test
+    public void assertMergeAllPositionsValues() {
+        assertComposeParams(closeAllPositionsParams.closeAllPositionsComposeParams());
     }
 }

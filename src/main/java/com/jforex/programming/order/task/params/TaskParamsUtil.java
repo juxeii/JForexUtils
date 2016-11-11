@@ -44,15 +44,6 @@ public class TaskParamsUtil {
             consumerForEvent.get(type).accept(orderEvent);
     }
 
-    public Observable<OrderEvent> composeTask(final Observable<OrderEvent> observable,
-                                              final CommonParamsBase commonParamsBase) {
-        final ComposeParams composeParams = commonParamsBase.composeParams();
-        return composeRetry(observable, composeParams.retryParams())
-            .doOnSubscribe(d -> composeParams.startAction().run())
-            .doOnComplete(composeParams.completeAction()::run)
-            .doOnError(composeParams.errorConsumer()::accept);
-    }
-
     public Observable<OrderEvent> composeParams(final Observable<OrderEvent> observable,
                                                 final ComposeParams composeParams) {
         return composeRetry(observable, composeParams.retryParams())
@@ -75,8 +66,8 @@ public class TaskParamsUtil {
 
     public Observable<OrderEvent> composeEventHandling(final Observable<OrderEvent> observable,
                                                        final CommonParamsBase commonParamsBase) {
-        return composeTask(composeEventHandling(observable, commonParamsBase.consumerForEvent()),
-                           commonParamsBase);
+        return composeParams(composeEventHandling(observable, commonParamsBase.consumerForEvent()),
+                             commonParamsBase.composeParams());
     }
 
     public void subscribeComposeParams(final Observable<OrderEvent> observable,
