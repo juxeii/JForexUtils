@@ -46,4 +46,13 @@ public class ComposeParamsForOrder {
     public void setRetryParams(final RetryParams retryParams) {
         this.retryParams = retryParams;
     }
+
+    public ComposeParams convertWithOrder(final IOrder order) {
+        final ComposeParams composeParams = new ComposeParams();
+        composeParams.setStartAction(startAction(order));
+        composeParams.setCompleteAction(completeAction(order));
+        composeParams.setErrorConsumer(errorConsumer(order));
+
+        return composeParams;
+    }
 }
