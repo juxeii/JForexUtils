@@ -1,5 +1,7 @@
 package com.jforex.programming.order.task;
 
+import java.util.function.Function;
+
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.position.CloseAllPositionsParams;
@@ -8,7 +10,6 @@ import com.jforex.programming.order.task.params.position.ClosePositionParamsHand
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
 
 public class ClosePositionTaskObservable {
 

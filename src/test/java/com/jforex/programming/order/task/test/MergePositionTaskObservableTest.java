@@ -9,6 +9,8 @@ import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
@@ -39,8 +41,10 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
     private MergePositionParams mergePositionParamsMock;
     @Mock
     private MergeAllPositionsParams mergeAllPositionsParamsMock;
-    private final Function<Instrument, MergePositionParams> paramsFactoryMock =
-            instrument -> mergePositionParamsMock;
+    @Mock
+    private Function<Instrument, MergePositionParams> factoryMock;
+    @Captor
+    private ArgumentCaptor<Function<Instrument, Observable<OrderEvent>>> factoryCaptor;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = mergeEvent;
     private Observable<OrderEvent> testObservable;
@@ -58,8 +62,6 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
             .thenReturn(toMergeOrders);
         when(mergePositionParamsMock.instrument())
             .thenReturn(instrumentEURUSD);
-        when(mergeAllPositionsParamsMock.paramsFactory())
-            .thenReturn(paramsFactoryMock);
     }
 
     private void setUpSplitterObservable(final Observable<OrderEvent> splitterObservable) {
@@ -134,7 +136,8 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
                 .of(firstObservable, secondObservable)
                 .collect(Collectors.toList());
 
-            when(positionUtilMock.observablesFromFactory(any())).thenReturn(closeObservables);
+            when(positionUtilMock.observablesFromFactory(factoryCaptor.capture()))
+                .thenReturn(closeObservables);
 
             mergeAllSubscribe();
         }
@@ -147,11 +150,16 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
 
         @Test
         public void verifyThatMergeCommandsAreMerged() {
+            when(mergeAllPositionsParamsMock.paramsFactory())
+                .thenReturn(factoryMock);
+
             setUpPositionUtilObservables(neverObservable(),
                                          eventObservable(testEvent));
 
             testObserver.assertValue(testEvent);
             testObserver.assertNotComplete();
+
+            factoryCaptor.getValue().apply(instrumentEURUSD);
         }
 
         @Test

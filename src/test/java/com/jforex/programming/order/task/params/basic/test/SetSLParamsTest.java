@@ -2,7 +2,6 @@ package com.jforex.programming.order.task.params.basic.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.util.function.Consumer;
 
@@ -55,7 +54,7 @@ public class SetSLParamsTest extends CommonParamsForTest {
             .setSLAtPrice(buyOrderEURUSD, newSL)
             .build();
 
-        assertTrue(setSLParams.trailingStep() < 0);
+        assertThat(setSLParams.trailingStep(), equalTo(-1.0));
     }
 
     @Test

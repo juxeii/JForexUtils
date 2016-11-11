@@ -103,6 +103,7 @@ public class CommonUtilForTest extends BDDMockito {
     protected OrderEvent closeEvent = createEvent(OrderEventType.CLOSE_OK);
     protected OrderEvent closeRejectEvent = createEvent(OrderEventType.CLOSE_REJECTED);
     protected OrderEvent mergeEvent = createEvent(OrderEventType.MERGE_OK);
+    protected OrderEvent mergeRejectEvent = createEvent(OrderEventType.MERGE_REJECTED);
     protected OrderEvent changedLabelEvent = createEvent(OrderEventType.CHANGED_LABEL);
     protected OrderEvent changedRejectEvent = createEvent(OrderEventType.CHANGED_REJECTED);
     protected OrderEvent changedSLEvent = createEvent(OrderEventType.CHANGED_SL);

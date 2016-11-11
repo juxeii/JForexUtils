@@ -108,28 +108,28 @@ public class ClosePositionParams {
             return this;
         }
 
-        public Builder doOnclosePositionStart(final Action closePositionStartAction) {
+        public Builder doOnClosePositionStart(final Action closePositionStartAction) {
             checkNotNull(closePositionStartAction);
 
             closePositionComposeParams.setStartAction(closePositionStartAction);
             return this;
         }
 
-        public Builder doOnclosePositionComplete(final Action closePositionCompleteAction) {
+        public Builder doOnClosePositionComplete(final Action closePositionCompleteAction) {
             checkNotNull(closePositionCompleteAction);
 
             closePositionComposeParams.setCompleteAction(closePositionCompleteAction);
             return this;
         }
 
-        public Builder doOnclosePositionError(final Consumer<Throwable> closePositionErrorConsumer) {
+        public Builder doOnClosePositionError(final Consumer<Throwable> closePositionErrorConsumer) {
             checkNotNull(closePositionErrorConsumer);
 
             closePositionComposeParams.setErrorConsumer(closePositionErrorConsumer);
             return this;
         }
 
-        public Builder retryOnclosePositionReject(final int noOfRetries,
+        public Builder retryOnClosePositionReject(final int noOfRetries,
                                                   final long delayInMillis) {
             closePositionComposeParams.setRetryParams(new RetryParams(noOfRetries, delayInMillis));
             return this;
@@ -172,18 +172,6 @@ public class ClosePositionParams {
 
         public Builder doOnCloseReject(final Consumer<OrderEvent> rejectConsumer) {
             return setEventConsumer(OrderEventType.CLOSE_REJECTED, rejectConsumer);
-        }
-
-        public Builder doOnMerge(final Consumer<OrderEvent> mergeConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_OK, mergeConsumer);
-        }
-
-        public Builder doOnMergeClose(final Consumer<OrderEvent> mergeCloseConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_CLOSE_OK, mergeCloseConsumer);
-        }
-
-        public Builder doOnMergeReject(final Consumer<OrderEvent> rejectConsumer) {
-            return setEventConsumer(OrderEventType.MERGE_REJECTED, rejectConsumer);
         }
 
         public ClosePositionParams build() {

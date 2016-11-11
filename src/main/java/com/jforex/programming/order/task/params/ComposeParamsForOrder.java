@@ -52,6 +52,7 @@ public class ComposeParamsForOrder {
         composeParams.setStartAction(startAction(order));
         composeParams.setCompleteAction(completeAction(order));
         composeParams.setErrorConsumer(errorConsumer(order));
+        composeParams.setRetryParams(retryParams);
 
         return composeParams;
     }

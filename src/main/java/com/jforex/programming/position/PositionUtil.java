@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -11,7 +12,6 @@ import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
 
 public class PositionUtil {
 

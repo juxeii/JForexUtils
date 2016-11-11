@@ -61,10 +61,10 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
             .withCloseExecutionMode(CloseExecutionMode.CloseFilled)
             .withMergePositionParams(mergePositionParamsMock)
 
-            .doOnclosePositionStart(actionMock)
-            .doOnclosePositionComplete(actionMock)
-            .doOnclosePositionError(errorConsumerMock)
-            .retryOnclosePositionReject(noOfRetries, delayInMillis)
+            .doOnClosePositionStart(actionMock)
+            .doOnClosePositionComplete(actionMock)
+            .doOnClosePositionError(errorConsumerMock)
+            .retryOnClosePositionReject(noOfRetries, delayInMillis)
 
             .doOnCloseStart(actionConsumerMock)
             .doOnCloseComplete(actionConsumerMock)
@@ -72,6 +72,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
             .retryOnCloseReject(noOfRetries, delayInMillis)
 
             .doOnClose(eventConsumerMock)
+            .doOnPartialClose(eventConsumerMock)
             .doOnCloseReject(eventConsumerMock)
             .build();
     }
@@ -150,8 +151,9 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
 
     @Test
     public void orderEventHandlersAreCorrect() {
-        assertThat(closePositionParams.consumerForEvent().size(), equalTo(4));
+        assertThat(closePositionParams.consumerForEvent().size(), equalTo(5));
         assertEventHandler(OrderEventType.CLOSE_OK);
+        assertEventHandler(OrderEventType.PARTIAL_CLOSE_OK);
         assertEventHandler(OrderEventType.CLOSE_REJECTED);
         assertEventHandler(OrderEventType.MERGE_OK);
         assertEventHandler(OrderEventType.MERGE_REJECTED);

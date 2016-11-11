@@ -1,27 +1,30 @@
 package com.jforex.programming.order.task.params.position.test;
 
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
+import com.dukascopy.api.IOrder;
+import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.MergePositionTaskObservable;
-import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.position.PositionUtil;
-import com.jforex.programming.test.common.InstrumentUtilForTest;
+import com.jforex.programming.test.common.QuoteProviderForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
+public class ClosePositionParamsHandlerTest extends QuoteProviderForTest {
 
     private ClosePositionParamsHandler closePositionParamsHandler;
 
@@ -34,11 +37,8 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     @Mock
     private ClosePositionParams closePositionParamsMock;
     @Mock
-    private CloseParams closeParamsMock;
-    @Mock
     private MergePositionParams mergePositionParamsMock;
     private TestObserver<OrderEvent> testObserver;
-    private final OrderEvent testEvent = closeEvent;
 
     @Before
     public void setUp() {
@@ -50,6 +50,8 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
+        when(closePositionParamsMock.instrument())
+            .thenReturn(instrumentEURUSD);
         when(closePositionParamsMock.mergePositionParams())
             .thenReturn(mergePositionParamsMock);
     }
@@ -57,14 +59,14 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     @Test
     public void observeMergeDelegatesToMergePositionTaskMock() {
         when(mergePositionTaskObservableMock.merge(anyCollection(), eq(mergePositionParamsMock)))
-            .thenReturn(eventObservable(testEvent));
+            .thenReturn(eventObservable(closeEvent));
 
         testObserver = closePositionParamsHandler
             .observeMerge(closePositionParamsMock)
             .test();
 
         testObserver.assertComplete();
-        testObserver.assertValue(testEvent);
+        testObserver.assertValue(closeEvent);
     }
 
     @Test
@@ -82,29 +84,98 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
 
     public class ObserveClose {
 
-        private Observable<OrderEvent> returnedObservable;
+        private final Set<IOrder> filledOrders = Sets.newHashSet(buyOrderEURUSD);
+        private final Set<IOrder> openedOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
+        private final Observable<OrderEvent> returnedObservable = eventObservable(closeEvent);
 
-        @Before
-        public void setUp() {
-            returnedObservable = eventObservable(testEvent);
+        public class ForFilledOrders {
 
-            when(batchChangeTaskMock.close(anyCollection(), any()))
-                .thenReturn(returnedObservable);
+            @Before
+            public void setUp() {
+                when(closePositionParamsMock.closeExecutionMode())
+                    .thenReturn(CloseExecutionMode.CloseFilled);
 
-            testObserver = closePositionParamsHandler
-                .observeClose(closePositionParamsMock)
-                .test();
+                when(positionUtilMock.filledOrders(instrumentEURUSD))
+                    .thenReturn(filledOrders);
+
+                when(batchChangeTaskMock.close(filledOrders, closePositionParamsMock))
+                    .thenReturn(returnedObservable);
+
+                testObserver = closePositionParamsHandler
+                    .observeClose(closePositionParamsMock)
+                    .test();
+            }
+
+            @Test
+            public void observeCloseCallsBatchTaskMockCorrect() {
+                verify(batchChangeTaskMock).close(filledOrders, closePositionParamsMock);
+            }
+
+            @Test
+            public void emittedEventIsCorrect() {
+                testObserver.assertComplete();
+                testObserver.assertValue(closeEvent);
+            }
         }
 
-        @Test
-        public void observeCloseCallsBatchTaskMockCorrect() {
-            verify(batchChangeTaskMock).close(anyCollection(), any());
+        public class ForOpenedOrders {
+
+            @Before
+            public void setUp() {
+                when(closePositionParamsMock.closeExecutionMode())
+                    .thenReturn(CloseExecutionMode.CloseOpened);
+
+                when(positionUtilMock.openedOrders(instrumentEURUSD))
+                    .thenReturn(openedOrders);
+
+                when(batchChangeTaskMock.close(openedOrders, closePositionParamsMock))
+                    .thenReturn(returnedObservable);
+
+                testObserver = closePositionParamsHandler
+                    .observeClose(closePositionParamsMock)
+                    .test();
+            }
+
+            @Test
+            public void observeCloseCallsBatchTaskMockCorrect() {
+                verify(batchChangeTaskMock).close(openedOrders, closePositionParamsMock);
+            }
+
+            @Test
+            public void emittedEventIsCorrect() {
+                testObserver.assertComplete();
+                testObserver.assertValue(closeEvent);
+            }
         }
 
-        @Test
-        public void returnedObservableIsCorrectComposed() {
-            testObserver.assertComplete();
-            testObserver.assertValue(testEvent);
+        public class ForAllOrders {
+
+            @Before
+            public void setUp() {
+                when(closePositionParamsMock.closeExecutionMode())
+                    .thenReturn(CloseExecutionMode.CloseAll);
+
+                when(positionUtilMock.filledOrOpenedOrders(instrumentEURUSD))
+                    .thenReturn(openedOrders);
+
+                when(batchChangeTaskMock.close(openedOrders, closePositionParamsMock))
+                    .thenReturn(returnedObservable);
+
+                testObserver = closePositionParamsHandler
+                    .observeClose(closePositionParamsMock)
+                    .test();
+            }
+
+            @Test
+            public void observeCloseCallsBatchTaskMockCorrect() {
+                verify(batchChangeTaskMock).close(openedOrders, closePositionParamsMock);
+            }
+
+            @Test
+            public void emittedEventIsCorrect() {
+                testObserver.assertComplete();
+                testObserver.assertValue(closeEvent);
+            }
         }
     }
 }

@@ -38,19 +38,19 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
     private BiConsumer<Throwable, IOrder> biErrorConsumerMock;
     @Mock
     private Consumer<OrderEvent> eventConsumerMock;
+    @Mock
+    private Function<Instrument, ClosePositionParams> paramsFactoryMock;
     private final IOrder orderForTest = buyOrderEURUSD;
     private static final int noOfRetries = 3;
     private static final long delayInMillis = 1500L;
 
-    private final Function<Instrument, ClosePositionParams> paramsFactory =
-            instrument -> closePositionParamsMock;
-
     @Before
     public void setUp() {
         when(actionConsumerMock.apply(orderForTest)).thenReturn(actionMock);
+        when(paramsFactoryMock.apply(instrumentEURUSD)).thenReturn(closePositionParamsMock);
 
         closeAllPositionsParams = CloseAllPositionsParams
-            .newBuilder(paramsFactory)
+            .newBuilder(paramsFactoryMock)
 
             .doOnCloseAllPositionsStart(actionMock)
             .doOnCloseAllPositionsComplete(actionMock)
@@ -83,15 +83,15 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
     @Test
     public void defaultValuesAreCorrect() {
         closeAllPositionsParams = CloseAllPositionsParams
-            .newBuilder(paramsFactory)
+            .newBuilder(paramsFactoryMock)
             .build();
 
-        assertThat(closeAllPositionsParams.paramsFactory(), equalTo(paramsFactory));
+        assertThat(closeAllPositionsParams.paramsFactory(), equalTo(paramsFactoryMock));
     }
 
     @Test
     public void assertSpecifiedValues() {
-        assertThat(closeAllPositionsParams.paramsFactory(), equalTo(paramsFactory));
+        assertThat(closeAllPositionsParams.paramsFactory(), equalTo(paramsFactoryMock));
     }
 
     @Test

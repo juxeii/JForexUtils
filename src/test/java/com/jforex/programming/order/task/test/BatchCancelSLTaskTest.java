@@ -30,21 +30,24 @@ public class BatchCancelSLTaskTest extends InstrumentUtilForTest {
     private BatchChangeTask batchChangeTaskMock;
     @Mock
     private MergePositionParams mergePositionParamsMock;
-    private final TaskParamsUtil taskParamsUtil = spy(new TaskParamsUtil());
+    @Mock
+    private TaskParamsUtil taskParamsUtilMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> toCancelSLTPOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final ComposeParams composeParams = new ComposeParams();
-    private final Observable<OrderEvent> observable = eventObservable(changedSLEvent);
+    private final Observable<OrderEvent> observableFromBatch = eventObservable(changedSLEvent);
+    private final Observable<OrderEvent> observableFromTaskParamsUtil = eventObservable(changedRejectEvent);
 
     @Before
     public void setUp() {
+        when(batchChangeTaskMock.cancelSL(toCancelSLTPOrders, mergePositionParamsMock))
+            .thenReturn(observableFromBatch);
+        when(taskParamsUtilMock.composeParams(observableFromBatch, composeParams))
+            .thenReturn(observableFromTaskParamsUtil);
         when(mergePositionParamsMock.batchCancelSLComposeParams())
             .thenReturn(composeParams);
 
-        when(batchChangeTaskMock.cancelSL(toCancelSLTPOrders, mergePositionParamsMock))
-            .thenReturn(observable);
-
-        batchCancelSLTask = new BatchCancelSLTask(batchChangeTaskMock, taskParamsUtil);
+        batchCancelSLTask = new BatchCancelSLTask(batchChangeTaskMock, taskParamsUtilMock);
     }
 
     @Test
@@ -70,13 +73,13 @@ public class BatchCancelSLTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void composeOnTaskParamsIsCalled() {
-            verify(taskParamsUtil).composeParams(any(), eq(composeParams));
+            verify(taskParamsUtilMock).composeParams(any(), eq(composeParams));
         }
 
         @Test
-        public void eventIsEmitted() {
+        public void eventFromTaskParamsUtilIsEmitted() {
             testObserver.assertComplete();
-            testObserver.assertValue(changedSLEvent);
+            testObserver.assertValue(changedRejectEvent);
         }
     }
 }

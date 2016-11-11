@@ -22,13 +22,11 @@ public class BatchCancelSLTask {
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelSLOrders,
                                           final MergePositionParams mergePositionParams) {
-        final Observable<OrderEvent> batchCancelSL = batchCancelSL(toCancelSLOrders, mergePositionParams);
-        return taskParamsUtil.composeParams(batchCancelSL,
-                                            mergePositionParams.batchCancelSLComposeParams());
-    }
-
-    private Observable<OrderEvent> batchCancelSL(final Collection<IOrder> toCancelSLOrders,
-                                                 final MergePositionParams mergePositionParams) {
-        return Observable.defer(() -> batchChangeTask.cancelSL(toCancelSLOrders, mergePositionParams));
+        return Observable.defer(() -> {
+            final Observable<OrderEvent> batchCancelSL =
+                    batchChangeTask.cancelSL(toCancelSLOrders, mergePositionParams);
+            return taskParamsUtil.composeParams(batchCancelSL,
+                                                mergePositionParams.batchCancelSLComposeParams());
+        });
     }
 }

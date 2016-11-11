@@ -8,6 +8,8 @@ import java.util.stream.Stream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.dukascopy.api.Instrument;
@@ -36,6 +38,10 @@ public class ClosePositionTaskObservableTest extends InstrumentUtilForTest {
     private ClosePositionParams closePositionParamsMock;
     @Mock
     private CloseAllPositionsParams closeAllPositionsParamsMock;
+    @Mock
+    private Function<Instrument, ClosePositionParams> factoryMock;
+    @Captor
+    private ArgumentCaptor<Function<Instrument, Observable<OrderEvent>>> factoryCaptor;
     private final OrderEvent event = closeEvent;
     private TestObserver<OrderEvent> testObserver;
 
@@ -109,16 +115,6 @@ public class ClosePositionTaskObservableTest extends InstrumentUtilForTest {
     public class WhenSubscribedCloseAllTests {
 
         private List<Observable<OrderEvent>> closeObservables;
-        private Function<Instrument, ClosePositionParams> closePositionParamsFactory;
-
-        @Before
-        public void setUp() throws Exception {
-            closePositionParamsFactory =
-                    instrument -> closePositionParamsMock;
-
-            when(closeAllPositionsParamsMock.paramsFactory())
-                .thenReturn(closePositionParamsFactory);
-        }
 
         private void closeAllSubscribe() {
             testObserver = closeTask
@@ -131,33 +127,23 @@ public class ClosePositionTaskObservableTest extends InstrumentUtilForTest {
             closeObservables = Stream
                 .of(firstObservable, secondObservable)
                 .collect(Collectors.toList());
-            when(positionUtilMock.observablesFromFactory(any())).thenReturn(closeObservables);
+            when(positionUtilMock.observablesFromFactory(factoryCaptor.capture()))
+                .thenReturn(closeObservables);
 
             closeAllSubscribe();
         }
 
-        @SuppressWarnings("unchecked")
         @Test
-        public void verifyThatPositionUtilIsCalledWithCorrectFactory() throws Exception {
-            doAnswer(invocation -> ((Function<Instrument, Observable<OrderEvent>>) invocation.getArgument(0))
-                .apply(instrumentEURUSD)
-                .subscribe())
-                    .when(positionUtilMock)
-                    .observablesFromFactory(any());
+        public void verifyThatCloseCommandsAreMerged() throws Exception {
+            when(closeAllPositionsParamsMock.paramsFactory())
+                .thenReturn(factoryMock);
 
-            setUpCommandObservables(emptyObservable(), emptyObservable());
-            closeAllSubscribe();
-
-//            verify(paramsHandlerMock).observeMerge(closePositionParamsMock);
-//            verify(paramsHandlerMock).observeClose(closePositionParamsMock);
-        }
-
-        @Test
-        public void verifyThatCloseCommandsAreMerged() {
             setUpPositionUtilObservables(neverObservable(), eventObservable(event));
 
             testObserver.assertValue(event);
             testObserver.assertNotComplete();
+
+            factoryCaptor.getValue().apply(instrumentEURUSD);
         }
 
         @Test

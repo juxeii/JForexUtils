@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +26,6 @@ import com.jforex.programming.test.common.InstrumentUtilForTest;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
 import io.reactivex.functions.Action;
-import io.reactivex.functions.Function;
 
 @RunWith(HierarchicalContextRunner.class)
 public class PositionUtilTest extends InstrumentUtilForTest {

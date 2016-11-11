@@ -22,14 +22,11 @@ public class BatchCancelTPTask {
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelTPOrders,
                                           final MergePositionParams mergePositionParams) {
-        final Observable<OrderEvent> batchCancelTP = batchCancelTP(toCancelTPOrders, mergePositionParams);
-
-        return taskParamsUtil.composeParams(batchCancelTP,
-                                            mergePositionParams.batchCancelTPComposeParams());
-    }
-
-    private Observable<OrderEvent> batchCancelTP(final Collection<IOrder> toCancelTPOrders,
-                                                 final MergePositionParams mergePositionParams) {
-        return Observable.defer(() -> batchChangeTask.cancelTP(toCancelTPOrders, mergePositionParams));
+        return Observable.defer(() -> {
+            final Observable<OrderEvent> batchCancelTP =
+                    batchChangeTask.cancelTP(toCancelTPOrders, mergePositionParams);
+            return taskParamsUtil.composeParams(batchCancelTP,
+                                                mergePositionParams.batchCancelTPComposeParams());
+        });
     }
 }

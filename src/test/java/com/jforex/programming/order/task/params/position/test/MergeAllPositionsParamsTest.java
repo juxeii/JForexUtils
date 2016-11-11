@@ -38,19 +38,19 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
     private BiConsumer<Throwable, IOrder> biErrorConsumerMock;
     @Mock
     private Consumer<OrderEvent> eventConsumerMock;
+    @Mock
+    private Function<Instrument, MergePositionParams> paramsFactoryMock;
     private final IOrder orderForTest = buyOrderEURUSD;
     private static final int noOfRetries = 3;
     private static final long delayInMillis = 1500L;
 
-    private final Function<Instrument, MergePositionParams> paramsFactory =
-            instrument -> mergePositionParamsMock;
-
     @Before
     public void setUp() {
         when(actionConsumerMock.apply(orderForTest)).thenReturn(actionMock);
+        when(paramsFactoryMock.apply(instrumentEURUSD)).thenReturn(mergePositionParamsMock);
 
         mergeAllPositionsParams = MergeAllPositionsParams
-            .newBuilder(paramsFactory)
+            .newBuilder(paramsFactoryMock)
 
             .doOnMergeAllPositionsStart(actionMock)
             .doOnMergeAllPositionsComplete(actionMock)
@@ -83,15 +83,15 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
     @Test
     public void defaultValuesAreCorrect() {
         mergeAllPositionsParams = MergeAllPositionsParams
-            .newBuilder(paramsFactory)
+            .newBuilder(paramsFactoryMock)
             .build();
 
-        assertThat(mergeAllPositionsParams.paramsFactory(), equalTo(paramsFactory));
+        assertThat(mergeAllPositionsParams.paramsFactory(), equalTo(paramsFactoryMock));
     }
 
     @Test
     public void assertSpecifiedValues() {
-        assertThat(mergeAllPositionsParams.paramsFactory(), equalTo(paramsFactory));
+        assertThat(mergeAllPositionsParams.paramsFactory(), equalTo(paramsFactoryMock));
     }
 
     @Test

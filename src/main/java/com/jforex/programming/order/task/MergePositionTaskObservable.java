@@ -1,6 +1,7 @@
 package com.jforex.programming.order.task;
 
 import java.util.Collection;
+import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
@@ -11,7 +12,6 @@ import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
 
 public class MergePositionTaskObservable {
 

@@ -30,21 +30,24 @@ public class BatchCancelTPTaskTest extends InstrumentUtilForTest {
     private BatchChangeTask batchChangeTaskMock;
     @Mock
     private MergePositionParams mergePositionParamsMock;
-    private final TaskParamsUtil taskParamsUtil = spy(new TaskParamsUtil());
+    @Mock
+    private TaskParamsUtil taskParamsUtilMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> toCancelTPTPOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final ComposeParams composeParams = new ComposeParams();
-    private final Observable<OrderEvent> observable = eventObservable(changedTPEvent);
+    private final Observable<OrderEvent> observableFromBatch = eventObservable(changedTPEvent);
+    private final Observable<OrderEvent> observableFromTaskParamsUtil = eventObservable(changedRejectEvent);
 
     @Before
     public void setUp() {
+        when(batchChangeTaskMock.cancelTP(toCancelTPTPOrders, mergePositionParamsMock))
+            .thenReturn(observableFromBatch);
+        when(taskParamsUtilMock.composeParams(observableFromBatch, composeParams))
+            .thenReturn(observableFromTaskParamsUtil);
         when(mergePositionParamsMock.batchCancelTPComposeParams())
             .thenReturn(composeParams);
 
-        when(batchChangeTaskMock.cancelTP(toCancelTPTPOrders, mergePositionParamsMock))
-            .thenReturn(observable);
-
-        batchCancelTPTask = new BatchCancelTPTask(batchChangeTaskMock, taskParamsUtil);
+        batchCancelTPTask = new BatchCancelTPTask(batchChangeTaskMock, taskParamsUtilMock);
     }
 
     @Test
@@ -70,13 +73,13 @@ public class BatchCancelTPTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void composeOnTaskParamsIsCalled() {
-            verify(taskParamsUtil).composeParams(any(), eq(composeParams));
+            verify(taskParamsUtilMock).composeParams(any(), eq(composeParams));
         }
 
         @Test
-        public void eventIsEmitted() {
+        public void eventFromTaskParamsUtilIsEmitted() {
             testObserver.assertComplete();
-            testObserver.assertValue(changedTPEvent);
+            testObserver.assertValue(changedRejectEvent);
         }
     }
 }

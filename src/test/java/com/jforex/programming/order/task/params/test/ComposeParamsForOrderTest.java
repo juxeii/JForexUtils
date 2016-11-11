@@ -9,15 +9,19 @@ import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
+import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.ComposeParamsForOrder;
 import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
+import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.functions.Action;
 
+@RunWith(HierarchicalContextRunner.class)
 public class ComposeParamsForOrderTest extends CommonUtilForTest {
 
     private ComposeParamsForOrder composeParamsForOrder;
@@ -57,17 +61,34 @@ public class ComposeParamsForOrderTest extends CommonUtilForTest {
         assertThat(retryParams.delayInMillis(), equalTo(0L));
     }
 
-    @Test
-    public void settersAreCorrect() throws Exception {
-        composeParamsForOrder.setStartAction(startConsumerMock);
-        composeParamsForOrder.setCompleteAction(completeConsumerMock);
-        composeParamsForOrder.setErrorConsumer(biErrorConsumerMock);
-        composeParamsForOrder.setRetryParams(retryParamsMock);
+    public class FillParams {
 
-        assertThat(composeParamsForOrder.startAction(orderForTest), equalTo(startActionMock));
-        assertThat(composeParamsForOrder.completeAction(orderForTest), equalTo(completeActionMock));
-        composeParamsForOrder.errorConsumer(orderForTest).accept(jfException);
-        verify(biErrorConsumerMock).accept(jfException, orderForTest);
-        assertThat(composeParamsForOrder.retryParams(), equalTo(retryParamsMock));
+        @Before
+        public void setUp() {
+            composeParamsForOrder.setStartAction(startConsumerMock);
+            composeParamsForOrder.setCompleteAction(completeConsumerMock);
+            composeParamsForOrder.setErrorConsumer(biErrorConsumerMock);
+            composeParamsForOrder.setRetryParams(retryParamsMock);
+        }
+
+        @Test
+        public void settersAreCorrect() throws Exception {
+            assertThat(composeParamsForOrder.startAction(orderForTest), equalTo(startActionMock));
+            assertThat(composeParamsForOrder.completeAction(orderForTest), equalTo(completeActionMock));
+            composeParamsForOrder.errorConsumer(orderForTest).accept(jfException);
+            verify(biErrorConsumerMock).accept(jfException, orderForTest);
+            assertThat(composeParamsForOrder.retryParams(), equalTo(retryParamsMock));
+        }
+
+        @Test
+        public void convertToComposeParamsIsCorrect() throws Exception {
+            final ComposeParams composeParams = composeParamsForOrder.convertWithOrder(orderForTest);
+
+            assertThat(composeParams.startAction(), equalTo(startActionMock));
+            assertThat(composeParams.completeAction(), equalTo(completeActionMock));
+            composeParams.errorConsumer().accept(jfException);
+            verify(biErrorConsumerMock).accept(jfException, orderForTest);
+            assertThat(composeParams.retryParams(), equalTo(composeParamsForOrder.retryParams()));
+        }
     }
 }
