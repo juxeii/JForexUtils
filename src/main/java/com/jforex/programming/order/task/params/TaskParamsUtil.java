@@ -7,33 +7,26 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.TaskRetry;
-import com.jforex.programming.order.task.params.basic.BasicParamsBase;
 
 import io.reactivex.Observable;
 
 public class TaskParamsUtil {
 
     public void subscribeBasicParams(final Observable<OrderEvent> observable,
-                                     final BasicParamsBase basicParamsBase) {
-        composeRetry(composeEventHandling(observable, basicParamsBase.consumerForEvent()), basicParamsBase)
-            .doOnSubscribe(d -> basicParamsBase.startAction().run())
-            .subscribe(orderEvent -> {},
-                       basicParamsBase.errorConsumer()::accept,
-                       basicParamsBase.completeAction()::run);
+                                     final CommonParamsBase commonParamsBase) {
+        final ComposeParams composeParams = commonParamsBase.composeParams();
+        composeRetry(composeEventHandling(observable, commonParamsBase.consumerForEvent()),
+                     composeParams.retryParams())
+                         .doOnSubscribe(d -> composeParams.startAction().run())
+                         .subscribe(orderEvent -> {},
+                                    composeParams.errorConsumer()::accept,
+                                    composeParams.completeAction()::run);
     }
 
     public Observable<OrderEvent> composeEventHandling(final Observable<OrderEvent> observable,
                                                        final Map<OrderEventType,
                                                                  Consumer<OrderEvent>> consumerForEvent) {
         return observable.doOnNext(orderEvent -> handlerOrderEvent(orderEvent, consumerForEvent));
-    }
-
-    private Observable<OrderEvent> composeRetry(final Observable<OrderEvent> observable,
-                                                final CommonParamsBase commonParamsBase) {
-        final int noOfRetries = commonParamsBase.noOfRetries();
-        return noOfRetries > 0
-                ? observable.compose(TaskRetry.onRejectRetryWith(noOfRetries, commonParamsBase.delayInMillis()))
-                : observable;
     }
 
     public Observable<OrderEvent> composeRetry(final Observable<OrderEvent> observable,
@@ -52,11 +45,12 @@ public class TaskParamsUtil {
     }
 
     public Observable<OrderEvent> composeTask(final Observable<OrderEvent> observable,
-                                              final BasicParamsBase basicParamsBase) {
-        return composeRetry(observable, basicParamsBase)
-            .doOnSubscribe(d -> basicParamsBase.startAction().run())
-            .doOnComplete(() -> basicParamsBase.completeAction().run())
-            .doOnError(basicParamsBase.errorConsumer()::accept);
+                                              final CommonParamsBase commonParamsBase) {
+        final ComposeParams composeParams = commonParamsBase.composeParams();
+        return composeRetry(observable, composeParams.retryParams())
+            .doOnSubscribe(d -> composeParams.startAction().run())
+            .doOnComplete(composeParams.completeAction()::run)
+            .doOnError(composeParams.errorConsumer()::accept);
     }
 
     public Observable<OrderEvent> composeParams(final Observable<OrderEvent> observable,
@@ -79,6 +73,12 @@ public class TaskParamsUtil {
             .doOnError(composeParams.errorConsumer(order)::accept);
     }
 
+    public Observable<OrderEvent> composeEventHandling(final Observable<OrderEvent> observable,
+                                                       final CommonParamsBase commonParamsBase) {
+        return composeTask(composeEventHandling(observable, commonParamsBase.consumerForEvent()),
+                           commonParamsBase);
+    }
+
     public void subscribeComposeParams(final Observable<OrderEvent> observable,
                                        final ComposeParams composeParams) {
         composeRetry(observable, composeParams.retryParams())
@@ -86,20 +86,5 @@ public class TaskParamsUtil {
             .subscribe(orderEvent -> {},
                        composeParams.errorConsumer()::accept,
                        composeParams.completeAction());
-    }
-
-    public Observable<OrderEvent> composeEventHandling(final Observable<OrderEvent> observable,
-                                                       final BasicParamsBase basicParamsBase) {
-        return composeTask(composeEventHandling(observable, basicParamsBase.consumerForEvent()),
-                           basicParamsBase);
-    }
-
-    public void subscribePositionTask(final Observable<OrderEvent> observable,
-                                      final BasicParamsBase basicParamsBase) {
-        composeRetry(observable, basicParamsBase)
-            .doOnSubscribe(d -> basicParamsBase.startAction().run())
-            .subscribe(orderEvent -> {},
-                       basicParamsBase.errorConsumer()::accept,
-                       basicParamsBase.completeAction()::run);
     }
 }

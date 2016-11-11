@@ -1,6 +1,7 @@
 package com.jforex.programming.order.task.params.test;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.function.Consumer;
@@ -32,7 +33,6 @@ public class CommonParamsBaseTest extends InstrumentUtilForTest {
 
         assertThat(closeParams.consumerForEvent().size(), equalTo(1));
         assertThat(closeParams.consumerForEvent().get(OrderEventType.CLOSE_OK), equalTo(consumer));
-        assertThat(closeParams.noOfRetries(), equalTo(noOfRetries));
-        assertThat(closeParams.delayInMillis(), equalTo(delayInMillis));
+        assertNotNull(closeParams.composeParams());
     }
 }

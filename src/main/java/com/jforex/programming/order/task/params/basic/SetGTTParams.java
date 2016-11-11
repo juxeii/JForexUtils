@@ -7,8 +7,9 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.CommonParamsBase;
 
-public class SetGTTParams extends BasicParamsBase {
+public class SetGTTParams extends CommonParamsBase {
 
     private final IOrder order;
     private final long newGTT;

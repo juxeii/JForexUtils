@@ -7,8 +7,9 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.CommonParamsBase;
 
-public class SetAmountParams extends BasicParamsBase {
+public class SetAmountParams extends CommonParamsBase {
 
     private final IOrder order;
     private final double newAmount;

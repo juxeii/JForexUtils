@@ -7,8 +7,8 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.ClosePositionTaskObservable;
 import com.jforex.programming.order.task.MergePositionTaskObservable;
+import com.jforex.programming.order.task.params.CommonParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
-import com.jforex.programming.order.task.params.basic.BasicParamsBase;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.basic.MergeParams;
 import com.jforex.programming.order.task.params.basic.SetAmountParams;
@@ -102,8 +102,8 @@ public class OrderUtil {
     }
 
     private void subscribe(final Observable<OrderEvent> observable,
-                           final BasicParamsBase basicParamsBase) {
-        taskParamsUtil.subscribeBasicParams(observable, basicParamsBase);
+                           final CommonParamsBase commonParamsBase) {
+        taskParamsUtil.subscribeBasicParams(observable, commonParamsBase);
     }
 
     public void mergePosition(final MergePositionParams mergePositionParams) {

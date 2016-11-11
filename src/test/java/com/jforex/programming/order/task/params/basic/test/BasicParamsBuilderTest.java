@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -18,16 +19,8 @@ public class BasicParamsBuilderTest extends InstrumentUtilForTest {
 
     private class BuilderForTest extends BasicParamsBuilder<BuilderForTest> {
 
-        public Action startAction() {
-            return startAction;
-        }
-
-        public Action completeAction() {
-            return completeAction;
-        }
-
-        public Consumer<Throwable> errorConsumer() {
-            return errorConsumer;
+        public ComposeParams composeParams() {
+            return composeParams;
         }
     }
 
@@ -41,14 +34,8 @@ public class BasicParamsBuilderTest extends InstrumentUtilForTest {
     private Consumer<Throwable> errorConsumerMock;
 
     @Test
-    public void handlersAreNotNull() throws Exception {
-        assertNotNull(builderForTest.startAction());
-        assertNotNull(builderForTest.completeAction());
-        assertNotNull(builderForTest.errorConsumer());
-
-        builderForTest.startAction().run();
-        builderForTest.completeAction().run();
-        builderForTest.errorConsumer().accept(jfException);
+    public void composeParamsAreNotNull() {
+        assertNotNull(builderForTest.composeParams());
     }
 
     @Test
@@ -57,8 +44,10 @@ public class BasicParamsBuilderTest extends InstrumentUtilForTest {
         builderForTest.doOnComplete(completeActionMock);
         builderForTest.doOnError(errorConsumerMock);
 
-        assertThat(builderForTest.startAction(), equalTo(startActionMock));
-        assertThat(builderForTest.completeAction(), equalTo(completeActionMock));
-        assertThat(builderForTest.errorConsumer(), equalTo(errorConsumerMock));
+        final ComposeParams composeParams = builderForTest.composeParams();
+
+        assertThat(composeParams.startAction(), equalTo(startActionMock));
+        assertThat(composeParams.completeAction(), equalTo(completeActionMock));
+        assertThat(composeParams.errorConsumer(), equalTo(errorConsumerMock));
     }
 }
