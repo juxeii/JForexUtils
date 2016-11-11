@@ -49,9 +49,6 @@ public class TaskParamsUtil {
 
     public Observable<OrderEvent> composeParams(final Observable<OrderEvent> observable,
                                                 final ComposeParams composeParams) {
-        if (observable == null)
-            System.out.println("1111");
-
         return composeRetry(observable, composeParams.retryParams())
             .doOnSubscribe(d -> composeParams.startAction().run())
             .doOnComplete(composeParams.completeAction()::run)

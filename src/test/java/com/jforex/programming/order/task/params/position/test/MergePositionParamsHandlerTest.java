@@ -1,5 +1,26 @@
-package com.jforex.programming.order.task.params.position.test;
-
+//package com.jforex.programming.order.task.params.position.test;
+//
+//import java.util.Set;
+//
+//import org.junit.Before;
+//import org.junit.Test;
+//import org.junit.runner.RunWith;
+//import org.mockito.Mock;
+//
+//import com.dukascopy.api.IOrder;
+//import com.google.common.collect.Sets;
+//import com.jforex.programming.order.event.OrderEvent;
+//import com.jforex.programming.order.task.BasicTaskObservable;
+//import com.jforex.programming.order.task.CancelSLTPTask;
+//import com.jforex.programming.order.task.params.TaskParamsUtil;
+//import com.jforex.programming.order.task.params.position.MergePositionParams;
+//import com.jforex.programming.order.task.params.position.MergePositionParamsHandler;
+//import com.jforex.programming.test.common.InstrumentUtilForTest;
+//
+//import de.bechte.junit.runners.context.HierarchicalContextRunner;
+//import io.reactivex.Observable;
+//import io.reactivex.observers.TestObserver;
+//
 //@RunWith(HierarchicalContextRunner.class)
 //public class MergePositionParamsHandlerTest extends InstrumentUtilForTest {
 //
@@ -28,12 +49,6 @@ package com.jforex.programming.order.task.params.position.test;
 //    }
 //
 //    private void setUpMocks() {
-//        when(mergePositionParamsMock.simpleMergePositionParams())
-//            .thenReturn(simpleMergePositionParamsMock);
-//
-//        when(simpleMergePositionParamsMock.mergeOrderLabel())
-//            .thenReturn(mergeOrderLabel);
-//
 //        when(cancelSLTPTaskMock.observe(toMergeOrders, mergePositionParamsMock))
 //            .thenReturn(eventObservable(testEvent));
 //    }
@@ -56,14 +71,11 @@ package com.jforex.programming.order.task.params.position.test;
 //        public void setUp() {
 //            returnedObservable = eventObservable(testEvent);
 //
-//            when(taskParamsUtilMock.composeTask(any(), eq(simpleMergePositionParamsMock)))
-//                .thenReturn(returnedObservable);
-//
 //            when(basicTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
 //                .thenReturn(eventObservable(testEvent));
 //
 //            testObserver = mergePositionParamsHandler
-//                .observeMerge(toMergeOrders, simpleMergePositionParamsMock)
+//                .observeMerge(toMergeOrders, mergePositionParamsMock)
 //                .test();
 //        }
 //
