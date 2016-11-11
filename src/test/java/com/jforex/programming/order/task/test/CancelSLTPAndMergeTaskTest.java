@@ -13,7 +13,6 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParamsHandler;
-import com.jforex.programming.order.task.params.position.SimpleMergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -28,8 +27,6 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     private MergePositionParamsHandler paramsHandlerMock;
     @Mock
     private MergePositionParams mergePositionParamsMock;
-    @Mock
-    private SimpleMergePositionParams simpleMergePositionParamsMock;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final OrderEvent testEvent = mergeEvent;
 
@@ -41,12 +38,9 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(mergePositionParamsMock.simpleMergePositionParams())
-            .thenReturn(simpleMergePositionParamsMock);
-
         when(paramsHandlerMock.observeCancelSLTP(toMergeOrders, mergePositionParamsMock))
             .thenReturn(neverObservable());
-        when(paramsHandlerMock.observeMerge(toMergeOrders, simpleMergePositionParamsMock))
+        when(paramsHandlerMock.observeMerge(toMergeOrders, mergePositionParamsMock))
             .thenReturn(eventObservable(testEvent));
     }
 
@@ -74,6 +68,6 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     public void mergeIsCalledOnHandler() {
         testSubscribeSplitter();
 
-        verify(paramsHandlerMock).observeMerge(toMergeOrders, simpleMergePositionParamsMock);
+        verify(paramsHandlerMock).observeMerge(toMergeOrders, mergePositionParamsMock);
     }
 }

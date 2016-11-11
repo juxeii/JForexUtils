@@ -39,15 +39,16 @@ public class BatchChangeTask {
 
     private Observable<OrderEvent> closeOrderConsumer(final IOrder order,
                                                       final ClosePositionParams closePositionParams) {
-        final Observable<OrderEvent> closeObservable = basicTask.close(CloseParams.withOrder(order).build());
-
-        return taskParamsUtil
-            .composeEventHandling(taskParamsUtil.composeRetry(closeObservable,
-                                                              closePositionParams.closeRetryParams()),
-                                  closePositionParams.consumerForEvent())
-            .doOnSubscribe(d -> closePositionParams.closeStartAction(order))
-            .doOnComplete(() -> closePositionParams.closeCompleteAction(order))
-            .doOnError(closePositionParams.closeErrorConsumer(order)::accept);
+        final CloseParams closeParams =
+                CloseParams
+                    .withOrder(order)
+                    .build();
+        Observable<OrderEvent> closeObservable = basicTask.close(closeParams);
+        closeObservable = taskParamsUtil.composeEventHandling(closeObservable,
+                                                              closePositionParams.consumerForEvent());
+        return taskParamsUtil.composeParamsForOrder(order,
+                                                    closeObservable,
+                                                    closePositionParams.closeComposeParams());
     }
 
     public Observable<OrderEvent> cancelSL(final Collection<IOrder> orders,
@@ -63,14 +64,12 @@ public class BatchChangeTask {
                 SetSLParams
                     .setSLAtPrice(order, platformSettings.noSLPrice())
                     .build();
-        final Observable<OrderEvent> cancelSLObservable = basicTask.setStopLossPrice(setSLParams);
-        return taskParamsUtil
-            .composeEventHandling(taskParamsUtil.composeRetry(cancelSLObservable,
-                                                              mergePositionParams.cancelSLRetryParams()),
-                                  mergePositionParams.consumerForEvent())
-            .doOnSubscribe(d -> mergePositionParams.cancelSLStartAction(order))
-            .doOnComplete(() -> mergePositionParams.cancelSLCompleteAction(order))
-            .doOnError(mergePositionParams.cancelSLErrorConsumer(order)::accept);
+        Observable<OrderEvent> cancelSLObservable = basicTask.setStopLossPrice(setSLParams);
+        cancelSLObservable = taskParamsUtil.composeEventHandling(cancelSLObservable,
+                                                                 mergePositionParams.consumerForEvent());
+        return taskParamsUtil.composeParamsForOrder(order,
+                                                    cancelSLObservable,
+                                                    mergePositionParams.cancelSLComposeParams());
     }
 
     public Observable<OrderEvent> cancelTP(final Collection<IOrder> orders,
@@ -86,14 +85,12 @@ public class BatchChangeTask {
                 SetTPParams
                     .setTPAtPrice(order, platformSettings.noTPPrice())
                     .build();
-        final Observable<OrderEvent> cancelTPObservable = basicTask.setTakeProfitPrice(setTPParams);
-        return taskParamsUtil
-            .composeEventHandling(taskParamsUtil.composeRetry(cancelTPObservable,
-                                                              mergePositionParams.cancelTPRetryParams()),
-                                  mergePositionParams.consumerForEvent())
-            .doOnSubscribe(d -> mergePositionParams.cancelTPStartAction(order))
-            .doOnComplete(() -> mergePositionParams.cancelTPCompleteAction(order))
-            .doOnError(mergePositionParams.cancelTPErrorConsumer(order)::accept);
+        Observable<OrderEvent> cancelTPObservable = basicTask.setTakeProfitPrice(setTPParams);
+        cancelTPObservable = taskParamsUtil.composeEventHandling(cancelTPObservable,
+                                                                 mergePositionParams.consumerForEvent());
+        return taskParamsUtil.composeParamsForOrder(order,
+                                                    cancelTPObservable,
+                                                    mergePositionParams.cancelTPComposeParams());
     }
 
     private Observable<OrderEvent> forBasicTask(final Collection<IOrder> orders,

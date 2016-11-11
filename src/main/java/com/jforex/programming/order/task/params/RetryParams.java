@@ -1,4 +1,4 @@
-package com.jforex.programming.order.task.params.position;
+package com.jforex.programming.order.task.params;
 
 public class RetryParams {
 

@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 
 import io.reactivex.Observable;
@@ -13,14 +12,11 @@ public class CancelSLTPTask {
 
     private final BatchCancelSLTask cancelSLTask;
     private final BatchCancelTPTask cancelTPTask;
-    private final TaskParamsUtil taskParamsUtil;
 
     public CancelSLTPTask(final BatchCancelSLTask cancelSLTask,
-                          final BatchCancelTPTask cancelTPTask,
-                          final TaskParamsUtil taskParamsUtil) {
+                          final BatchCancelTPTask cancelTPTask) {
         this.cancelSLTask = cancelSLTask;
         this.cancelTPTask = cancelTPTask;
-        this.taskParamsUtil = taskParamsUtil;
     }
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelSLTPOrders,
@@ -36,7 +32,6 @@ public class CancelSLTPTask {
                                                                      mergePositionParams);
         final Observable<OrderEvent> cancelTP = cancelTPTask.observe(toCancelSLTPOrders,
                                                                      mergePositionParams);
-
         return arrangeObservables(cancelSL,
                                   cancelTP,
                                   mergePositionParams.mergeExecutionMode());

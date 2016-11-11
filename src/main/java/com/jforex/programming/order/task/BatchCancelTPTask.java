@@ -24,10 +24,8 @@ public class BatchCancelTPTask {
                                           final MergePositionParams mergePositionParams) {
         final Observable<OrderEvent> batchCancelTP = batchCancelTP(toCancelTPOrders, mergePositionParams);
 
-        return taskParamsUtil.composeRetry(batchCancelTP, mergePositionParams.cancelTPRetryParams())
-            .doOnSubscribe(d -> mergePositionParams.batchCancelTPStartAction().run())
-            .doOnComplete(() -> mergePositionParams.batchCancelTPCompleteAction().run())
-            .doOnError(mergePositionParams.batchCancelTPErrorConsumer()::accept);
+        return taskParamsUtil.composeParams(batchCancelTP,
+                                            mergePositionParams.batchCancelTPComposeParams());
     }
 
     private Observable<OrderEvent> batchCancelTP(final Collection<IOrder> toCancelTPOrders,

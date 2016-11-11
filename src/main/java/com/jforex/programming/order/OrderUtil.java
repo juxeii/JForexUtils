@@ -110,38 +110,30 @@ public class OrderUtil {
         checkNotNull(mergePositionParams);
 
         final Observable<OrderEvent> observable = mergePositionTask.merge(mergePositionParams);
-        taskParamsUtil
-            .composeRetry(observable, mergePositionParams.mergePositionRetryParams())
-            .doOnSubscribe(d -> mergePositionParams.mergePositionStartAction().run())
-            .subscribe(orderEvent -> {},
-                       mergePositionParams.mergePositionErrorConsumer()::accept,
-                       mergePositionParams.mergePositionCompleteAction()::run);
+        taskParamsUtil.subscribeComposeParams(observable,
+                                              mergePositionParams.mergePositionComposeParams());
     }
 
     public void mergeAllPositions(final MergeAllPositionsParams mergeAllPositionParams) {
         checkNotNull(mergeAllPositionParams);
 
-        taskParamsUtil.subscribePositionTask(mergePositionTask.mergeAll(mergeAllPositionParams),
-                                             mergeAllPositionParams);
+        taskParamsUtil.subscribeComposeParams(mergePositionTask.mergeAll(mergeAllPositionParams),
+                                              mergeAllPositionParams.mergeAllPositionsComposeParams());
     }
 
     public void closePosition(final ClosePositionParams closePositionParams) {
         checkNotNull(closePositionParams);
 
         final Observable<OrderEvent> observable = closePositionTask.close(closePositionParams);
-        taskParamsUtil
-            .composeRetry(observable, closePositionParams.closePositionRetryParams())
-            .doOnSubscribe(d -> closePositionParams.closePositionStartAction().run())
-            .subscribe(orderEvent -> {},
-                       closePositionParams.closePositionErrorConsumer()::accept,
-                       closePositionParams.closePositionCompleteAction()::run);
+        taskParamsUtil.subscribeComposeParams(observable,
+                                              closePositionParams.closePositionComposeParams());
     }
 
     public void closeAllPositions(final CloseAllPositionsParams closeAllPositionParams) {
         checkNotNull(closeAllPositionParams);
 
-        taskParamsUtil.subscribePositionTask(closePositionTask.closeAll(closeAllPositionParams),
-                                             closeAllPositionParams);
+        taskParamsUtil.subscribeComposeParams(closePositionTask.closeAll(closeAllPositionParams),
+                                              closeAllPositionParams.closeAllPositionsComposeParams());
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {

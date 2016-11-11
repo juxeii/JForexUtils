@@ -73,9 +73,7 @@ public class OrderInitUtil {
         batchChangeTask = new BatchChangeTask(orderBasicTask, taskParamsUtil);
         cancelSLTask = new BatchCancelSLTask(batchChangeTask, taskParamsUtil);
         cancelTPTask = new BatchCancelTPTask(batchChangeTask, taskParamsUtil);
-        cancelSLTPTask = new CancelSLTPTask(cancelSLTask,
-                                            cancelTPTask,
-                                            taskParamsUtil);
+        cancelSLTPTask = new CancelSLTPTask(cancelSLTask, cancelTPTask);
         mergeParamsHandler = new MergePositionParamsHandler(cancelSLTPTask,
                                                             orderBasicTask,
                                                             taskParamsUtil);

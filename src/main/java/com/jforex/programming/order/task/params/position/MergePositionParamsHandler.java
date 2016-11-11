@@ -29,11 +29,8 @@ public class MergePositionParamsHandler {
         final Observable<OrderEvent> observable =
                 cancelSLTPTask.observe(toMergeOrders, mergePositionParams);
 
-        return taskParamsUtil
-            .composeRetry(observable, mergePositionParams.cancelSLTPRetryParams())
-            .doOnSubscribe(d -> mergePositionParams.cancelSLTPStartAction().run())
-            .doOnComplete(() -> mergePositionParams.cancelSLTPCompleteAction().run())
-            .doOnError(mergePositionParams.cancelSLTPErrorConsumer()::accept);
+        return taskParamsUtil.composeParams(observable,
+                                            mergePositionParams.cancelSLTPComposeParams());
     }
 
     public Observable<OrderEvent> observeMerge(final Collection<IOrder> toMergeOrders,
@@ -41,10 +38,7 @@ public class MergePositionParamsHandler {
         final Observable<OrderEvent> observable =
                 basicTask.mergeOrders(mergePositionParams.mergeOrderLabel(), toMergeOrders);
 
-        return taskParamsUtil
-            .composeRetry(observable, mergePositionParams.mergeRetryParams())
-            .doOnSubscribe(d -> mergePositionParams.mergeStartAction().run())
-            .doOnComplete(() -> mergePositionParams.mergeCompleteAction().run())
-            .doOnError(mergePositionParams.mergeErrorConsumer()::accept);
+        return taskParamsUtil.composeParams(observable,
+                                            mergePositionParams.mergeComposeParams());
     }
 }

@@ -1,13 +1,10 @@
 package com.jforex.programming.order.task.params.position.test;
 
-import java.util.function.Function;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CloseExecutionMode;
@@ -42,8 +39,6 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     private MergePositionParams mergePositionParamsMock;
     private TestObserver<OrderEvent> testObserver;
     private final OrderEvent testEvent = closeEvent;
-    private final Function<IOrder, CloseParams> closeParamsFactory =
-            order -> closeParamsMock;
 
     @Before
     public void setUp() {
@@ -55,8 +50,6 @@ public class ClosePositionParamsHandlerTest extends InstrumentUtilForTest {
     }
 
     private void setUpMocks() {
-        when(closePositionParamsMock.closeParamsFactory())
-            .thenReturn(closeParamsFactory);
         when(closePositionParamsMock.mergePositionParams())
             .thenReturn(mergePositionParamsMock);
     }

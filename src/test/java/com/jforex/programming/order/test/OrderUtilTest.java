@@ -11,6 +11,7 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.ClosePositionTaskObservable;
 import com.jforex.programming.order.task.MergePositionTaskObservable;
+import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.basic.MergeParams;
@@ -43,6 +44,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private PositionUtil positionUtilMock;
     @Mock
     private TaskParamsUtil taskParamsUtilMock;
+    @Mock
+    private ComposeParams composeParamsMock;
 
     @Before
     public void setUp() {
@@ -146,45 +149,54 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Test
     public void mergePositionCallsSubscribeOnTaskParams() {
         final MergePositionParams mergePositionParamsMock = mock(MergePositionParams.class);
+        when(mergePositionParamsMock.mergePositionComposeParams())
+            .thenReturn(composeParamsMock);
 
         orderUtil.mergePosition(mergePositionParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribePositionTask(mergePositionTaskMock.merge(mergePositionParamsMock),
-                                   mergePositionParamsMock);
+            .subscribeComposeParams(mergePositionTaskMock.merge(mergePositionParamsMock),
+                                    composeParamsMock);
     }
 
     @Test
     public void mergeAllPositionsCallsSubscribeOnTaskParams() {
         final MergeAllPositionsParams mergeAllPositionsParamsMock = mock(MergeAllPositionsParams.class);
+        when(mergeAllPositionsParamsMock.mergeAllPositionsComposeParams())
+            .thenReturn(composeParamsMock);
 
         orderUtil.mergeAllPositions(mergeAllPositionsParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribePositionTask(mergePositionTaskMock.mergeAll(mergeAllPositionsParamsMock),
-                                   mergeAllPositionsParamsMock);
+            .subscribeComposeParams(mergePositionTaskMock.mergeAll(mergeAllPositionsParamsMock),
+                                    composeParamsMock);
     }
 
     @Test
     public void closePositionCallsSubscribeOnTaskParams() {
         final ClosePositionParams closePositionParamsMock = mock(ClosePositionParams.class);
+        when(closePositionParamsMock.closePositionComposeParams())
+            .thenReturn(composeParamsMock);
 
         orderUtil.closePosition(closePositionParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribePositionTask(closePositionTaskMock.close(closePositionParamsMock),
-                                   closePositionParamsMock);
+            .subscribeComposeParams(closePositionTaskMock.close(closePositionParamsMock),
+                                    composeParamsMock);
     }
 
     @Test
     public void closeAllPositionsCallsSubscribeOnTaskParams() {
         final CloseAllPositionsParams closeAllPositionsParamsMock = mock(CloseAllPositionsParams.class);
+        when(closeAllPositionsParamsMock.closeAllPositionsComposeParams())
+            .thenReturn(composeParamsMock);
 
         orderUtil.closeAllPositions(closeAllPositionsParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribePositionTask(closePositionTaskMock.closeAll(closeAllPositionsParamsMock),
-                                   closeAllPositionsParamsMock);
+            .subscribeComposeParams(closePositionTaskMock.closeAll(closeAllPositionsParamsMock),
+                                    composeParamsMock);
+
     }
 
     @Test

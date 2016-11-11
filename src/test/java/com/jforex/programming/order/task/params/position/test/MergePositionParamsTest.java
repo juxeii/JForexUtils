@@ -4,32 +4,24 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
-import org.mockito.Mock;
 
-import com.jforex.programming.order.task.params.position.BatchCancelSLTPParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
-import com.jforex.programming.order.task.params.position.SimpleMergePositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
 public class MergePositionParamsTest extends CommonParamsForTest {
 
     private MergePositionParams mergePositionParams;
 
-    @Mock
-    private BatchCancelSLTPParams batchCancelSLTPParamsMock;
-    @Mock
-    private SimpleMergePositionParams simpleMergePositionParamsMock;
+    private static final String mergeOrderLabel = "mergeOrderLabel";
 
     @Test
     public void valuesAreCorrect() {
         mergePositionParams = MergePositionParams
-            .newBuilder(instrumentEURUSD, simpleMergePositionParamsMock)
-            .withBatchCancelSLTPParams(batchCancelSLTPParamsMock)
+            .newBuilder(instrumentEURUSD, mergeOrderLabel)
             .build();
 
         assertThat(mergePositionParams.instrument(), equalTo(instrumentEURUSD));
-        assertThat(mergePositionParams.simpleMergePositionParams(), equalTo(simpleMergePositionParamsMock));
-        assertThat(mergePositionParams.batchCancelSLTPParams(), equalTo(batchCancelSLTPParamsMock));
+        assertThat(mergePositionParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
 
         // TODO: add tests for consumerForEvents
     }

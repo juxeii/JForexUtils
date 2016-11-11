@@ -20,10 +20,10 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
     @Test
     public void valuesAreCorrect() {
         closeAllPositionsParams = CloseAllPositionsParams
-            .withClosePositionParams(instrument -> closePositionParamsMock)
+            .newBuilder(instrument -> closePositionParamsMock)
             .build();
 
-        assertThat(closeAllPositionsParams.closePositionParamsFactory().apply(instrumentEURUSD),
+        assertThat(closeAllPositionsParams.paramsFactory().apply(instrumentEURUSD),
                    equalTo(closePositionParamsMock));
     }
 }

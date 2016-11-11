@@ -24,10 +24,8 @@ public class BatchCancelSLTask {
                                           final MergePositionParams mergePositionParams) {
         final Observable<OrderEvent> batchCancelSL = batchCancelSL(toCancelSLOrders, mergePositionParams);
 
-        return taskParamsUtil.composeRetry(batchCancelSL, mergePositionParams.cancelSLRetryParams())
-            .doOnSubscribe(d -> mergePositionParams.batchCancelSLStartAction().run())
-            .doOnComplete(() -> mergePositionParams.batchCancelSLCompleteAction().run())
-            .doOnError(mergePositionParams.batchCancelSLErrorConsumer()::accept);
+        return taskParamsUtil.composeParams(batchCancelSL,
+                                            mergePositionParams.batchCancelSLComposeParams());
     }
 
     private Observable<OrderEvent> batchCancelSL(final Collection<IOrder> toCancelSLOrders,

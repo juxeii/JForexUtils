@@ -20,10 +20,10 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
     @Test
     public void valuesAreCorrect() {
         mergeAllPositionsParams = MergeAllPositionsParams
-            .withMergePositionParams(instrument -> mergePositionParamsMock)
+            .newBuilder(instrument -> mergePositionParamsMock)
             .build();
 
-        assertThat(mergeAllPositionsParams.mergePositionParams(instrumentEURUSD),
+        assertThat(mergeAllPositionsParams.paramsFactory().apply(instrumentEURUSD),
                    equalTo(mergePositionParamsMock));
     }
 }

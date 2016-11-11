@@ -2,40 +2,74 @@ package com.jforex.programming.order.task.params.position;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.HashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.task.params.basic.BasicParamsBase;
-import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
+import com.jforex.programming.order.task.params.CommonParamsBuilder;
+import com.jforex.programming.order.task.params.ComposeParams;
+import com.jforex.programming.order.task.params.RetryParams;
 
-public class MergeAllPositionsParams extends BasicParamsBase {
+import io.reactivex.functions.Action;
+
+public class MergeAllPositionsParams {
 
     private final Function<Instrument, MergePositionParams> paramsFactory;
+    private final ComposeParams mergeAllPositionsComposeParams;
 
     private MergeAllPositionsParams(final Builder builder) {
-        super(builder);
-
         paramsFactory = builder.paramsFactory;
-        consumerForEvent = new HashMap<>();
+        mergeAllPositionsComposeParams = builder.mergeAllPositionsComposeParams;
     }
 
-    public MergePositionParams mergePositionParams(final Instrument instrument) {
-        return paramsFactory.apply(instrument);
+    public Function<Instrument, MergePositionParams> paramsFactory() {
+        return paramsFactory;
     }
 
-    public static Builder withMergePositionParams(final Function<Instrument, MergePositionParams> paramsFactory) {
+    public ComposeParams mergeAllPositionsComposeParams() {
+        return mergeAllPositionsComposeParams;
+    }
+
+    public static Builder newBuilder(final Function<Instrument, MergePositionParams> paramsFactory) {
         checkNotNull(paramsFactory);
 
         return new Builder(paramsFactory);
     }
 
-    public static class Builder extends BasicParamsBuilder<Builder> {
+    public static class Builder extends CommonParamsBuilder<Builder> {
 
         private final Function<Instrument, MergePositionParams> paramsFactory;
+        private final ComposeParams mergeAllPositionsComposeParams = new ComposeParams();
 
         public Builder(final Function<Instrument, MergePositionParams> paramsFactory) {
             this.paramsFactory = paramsFactory;
+        }
+
+        public Builder doOnMergeAllPositionsStart(final Action mergeAllPositionsStartAction) {
+            checkNotNull(mergeAllPositionsStartAction);
+
+            mergeAllPositionsComposeParams.setStartAction(mergeAllPositionsStartAction);
+            return this;
+        }
+
+        public Builder doOnMergeAllPositionsComplete(final Action mergeAllPositionsCompleteAction) {
+            checkNotNull(mergeAllPositionsCompleteAction);
+
+            mergeAllPositionsComposeParams.setCompleteAction(mergeAllPositionsCompleteAction);
+            return this;
+        }
+
+        public Builder doOnMergeAllPositionsError(final Consumer<Throwable> mergeAllPositionsErrorConsumer) {
+            checkNotNull(mergeAllPositionsErrorConsumer);
+
+            mergeAllPositionsComposeParams.setErrorConsumer(mergeAllPositionsErrorConsumer);
+            return this;
+        }
+
+        public Builder retryOnMergeAllPositionsReject(final int noOfRetries,
+                                                      final long delayInMillis) {
+            mergeAllPositionsComposeParams.setRetryParams(new RetryParams(noOfRetries, delayInMillis));
+            return this;
         }
 
         public MergeAllPositionsParams build() {

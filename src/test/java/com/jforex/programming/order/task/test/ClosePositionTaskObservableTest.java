@@ -116,7 +116,7 @@ public class ClosePositionTaskObservableTest extends InstrumentUtilForTest {
             closePositionParamsFactory =
                     instrument -> closePositionParamsMock;
 
-            when(closeAllPositionsParamsMock.closePositionParamsFactory())
+            when(closeAllPositionsParamsMock.paramsFactory())
                 .thenReturn(closePositionParamsFactory);
         }
 
