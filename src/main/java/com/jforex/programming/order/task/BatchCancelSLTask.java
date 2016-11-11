@@ -23,7 +23,6 @@ public class BatchCancelSLTask {
     public Observable<OrderEvent> observe(final Collection<IOrder> toCancelSLOrders,
                                           final MergePositionParams mergePositionParams) {
         final Observable<OrderEvent> batchCancelSL = batchCancelSL(toCancelSLOrders, mergePositionParams);
-
         return taskParamsUtil.composeParams(batchCancelSL,
                                             mergePositionParams.batchCancelSLComposeParams());
     }
