@@ -13,6 +13,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
+import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.ComposeParamsForOrder;
 import com.jforex.programming.order.task.params.RetryParams;
@@ -56,12 +57,12 @@ public class ClosePositionParams {
         return closeExecutionMode;
     }
 
-    public ComposeParams closePositionComposeParams() {
+    public ComposeData closePositionComposeParams() {
         return closePositionComposeParams;
     }
 
-    public ComposeParamsForOrder closeComposeParams() {
-        return closeComposeParams;
+    public ComposeData closeComposeParams(final IOrder order) {
+        return closeComposeParams.convertWithOrder(order);
     }
 
     public MergePositionParams mergePositionParams() {

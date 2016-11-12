@@ -86,12 +86,12 @@ public class MergePositionParams {
         return batchCancelTPComposeParams;
     }
 
-    public ComposeDataForOrder cancelSLComposeParams() {
-        return cancelSLComposeParams;
+    public ComposeData cancelSLComposeParams(final IOrder order) {
+        return cancelSLComposeParams.convertWithOrder(order);
     }
 
-    public ComposeDataForOrder cancelTPComposeParams() {
-        return cancelTPComposeParams;
+    public ComposeData cancelTPComposeParams(final IOrder order) {
+        return cancelTPComposeParams.convertWithOrder(order);
     }
 
     public ComposeData mergeComposeParams() {

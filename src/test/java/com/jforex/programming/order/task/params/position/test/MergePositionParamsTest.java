@@ -17,7 +17,6 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.MergeExecutionMode;
 import com.jforex.programming.order.task.params.ComposeData;
-import com.jforex.programming.order.task.params.ComposeDataForOrder;
 import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
@@ -106,38 +105,15 @@ public class MergePositionParamsTest extends CommonParamsForTest {
         assertRetries(composeData.retryParams());
     }
 
-    private void assertComposeData(final ComposeDataForOrder composeDataForOrder) throws Exception {
-        assertActions(composeDataForOrder);
-        assertErrorConsumer(composeDataForOrder);
-        assertRetries(composeDataForOrder.retryParams());
-    }
-
     private void assertActions(final ComposeData composeData) {
         assertThat(composeData.startAction(), equalTo(actionMock));
         assertThat(composeData.completeAction(), equalTo(actionMock));
     }
 
-    private void assertActions(final ComposeDataForOrder composeDataForOrder) throws Exception {
-        composeDataForOrder
-            .startAction(orderForTest)
-            .run();
-
-        composeDataForOrder
-            .completeAction(orderForTest)
-            .run();
-
-        verify(actionConsumerMock, times(2)).apply(buyOrderEURUSD);
-    }
-
     private void assertErrorConsumer(final Consumer<Throwable> errorConsumer) {
-        assertThat(errorConsumer, equalTo(errorConsumerMock));
-    }
+        errorConsumer.accept(jfException);
 
-    private void assertErrorConsumer(final ComposeDataForOrder composeDataForOrder) {
-        composeDataForOrder
-            .errorConsumer(orderForTest)
-            .accept(jfException);
-        verify(biErrorConsumerMock).accept(jfException, orderForTest);
+        verify(errorConsumerMock).accept(any());
     }
 
     private void assertRetries(final RetryParams retryParams) {
@@ -147,6 +123,17 @@ public class MergePositionParamsTest extends CommonParamsForTest {
 
     private void assertEventHandler(final OrderEventType type) {
         assertThat(mergePositionParams.consumerForEvent().get(type), equalTo(eventConsumerMock));
+    }
+
+    private void assertComposeDataWithOrder(final ComposeData composeData) throws Exception {
+        composeData.startAction().run();
+        verify(actionMock).run();
+
+        composeData.completeAction().run();
+        verify(actionMock, times(2)).run();
+
+        composeData.errorConsumer().accept(jfException);
+        verify(biErrorConsumerMock).accept(jfException, orderForTest);
     }
 
     @Test
@@ -194,12 +181,14 @@ public class MergePositionParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertCancelSLValues() throws Exception {
-        assertComposeData(mergePositionParams.cancelSLComposeParams());
+        final ComposeData composeData = mergePositionParams.cancelSLComposeParams(orderForTest);
+        assertComposeDataWithOrder(composeData);
     }
 
     @Test
     public void assertCancelTPValues() throws Exception {
-        assertComposeData(mergePositionParams.cancelTPComposeParams());
+        final ComposeData composeData = mergePositionParams.cancelTPComposeParams(orderForTest);
+        assertComposeDataWithOrder(composeData);
     }
 
     @Test

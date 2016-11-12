@@ -17,8 +17,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.CloseExecutionMode;
-import com.jforex.programming.order.task.params.ComposeParams;
-import com.jforex.programming.order.task.params.ComposeParamsForOrder;
+import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
@@ -77,37 +76,19 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
             .build();
     }
 
-    private void assertComposeParams(final ComposeParams composeParams) {
-        assertActions(composeParams);
-        assertErrorConsumer(composeParams.errorConsumer());
-        assertRetries(composeParams.retryParams());
+    private void assertComposeParams(final ComposeData composeData) {
+        assertActions(composeData);
+        assertErrorConsumer(composeData.errorConsumer());
+        assertRetries(composeData.retryParams());
     }
 
-    private void assertComposeParams(final ComposeParamsForOrder composeParams) throws Exception {
-        assertActions(composeParams);
-        assertErrorConsumer(composeParams);
-        assertRetries(composeParams.retryParams());
-    }
-
-    private void assertActions(final ComposeParams composeParams) {
-        assertThat(composeParams.startAction(), equalTo(actionMock));
-        assertThat(composeParams.completeAction(), equalTo(actionMock));
-    }
-
-    private void assertActions(final ComposeParamsForOrder composeParams) throws Exception {
-        composeParams.startAction(orderForTest).run();
-        composeParams.completeAction(orderForTest).run();
-
-        verify(actionConsumerMock, times(2)).apply(buyOrderEURUSD);
+    private void assertActions(final ComposeData composeData) {
+        assertThat(composeData.startAction(), equalTo(actionMock));
+        assertThat(composeData.completeAction(), equalTo(actionMock));
     }
 
     private void assertErrorConsumer(final Consumer<Throwable> errorConsumer) {
         assertThat(errorConsumer, equalTo(errorConsumerMock));
-    }
-
-    private void assertErrorConsumer(final ComposeParamsForOrder composeParams) {
-        composeParams.errorConsumer(orderForTest).accept(jfException);
-        verify(biErrorConsumerMock).accept(jfException, orderForTest);
     }
 
     private void assertRetries(final RetryParams retryParams) {
@@ -117,6 +98,17 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
 
     private void assertEventHandler(final OrderEventType type) {
         assertThat(closePositionParams.consumerForEvent().get(type), equalTo(eventConsumerMock));
+    }
+
+    private void assertComposeDataWithOrder(final ComposeData composeData) throws Exception {
+        composeData.startAction().run();
+        verify(actionMock).run();
+
+        composeData.completeAction().run();
+        verify(actionMock, times(2)).run();
+
+        composeData.errorConsumer().accept(jfException);
+        verify(biErrorConsumerMock).accept(jfException, orderForTest);
     }
 
     @Test
@@ -146,7 +138,8 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertCloseValues() throws Exception {
-        assertComposeParams(closePositionParams.closeComposeParams());
+        final ComposeData composeData = closePositionParams.closeComposeParams(orderForTest);
+        assertComposeDataWithOrder(composeData);
     }
 
     @Test

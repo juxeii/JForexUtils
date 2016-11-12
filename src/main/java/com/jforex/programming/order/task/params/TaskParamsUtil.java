@@ -55,12 +55,12 @@ public class TaskParamsUtil {
             .doOnError(composeData.errorConsumer()::accept);
     }
 
-    public Observable<OrderEvent> composeParamsForOrder(final IOrder order,
-                                                        final Observable<OrderEvent> observable,
-                                                        final ComposeDataForOrder composeDataForOrder,
-                                                        final Map<OrderEventType,
-                                                                  Consumer<OrderEvent>> consumerForEvent) {
+    public Observable<OrderEvent> composeParamsWithEvents(final IOrder order,
+                                                          final Observable<OrderEvent> observable,
+                                                          final ComposeData composeData,
+                                                          final Map<OrderEventType,
+                                                                    Consumer<OrderEvent>> consumerForEvent) {
         return composeParams(composeEvents(observable, consumerForEvent),
-                             composeDataForOrder.convertWithOrder(order));
+                             composeData);
     }
 }

@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.ComposeParams;
-import com.jforex.programming.order.task.params.ComposeParamsForOrder;
 import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
@@ -42,8 +41,6 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
     private Consumer<OrderEvent> consumerMockB;
     @Mock
     private ClosePositionParams closePositionParamsMock;
-    @Mock
-    private ComposeParamsForOrder composeParamsForOrderMock;
     private final Subject<OrderEvent> orderEventSubject = PublishSubject.create();
     private static final int noOfRetries = 3;
     private static final long delayInMillis = 1500L;
@@ -172,8 +169,6 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
         @Before
         public void setUp() {
             consumerForEvent.put(OrderEventType.CLOSE_OK, consumerMockA);
-            when(composeParamsForOrderMock.convertWithOrder(buyOrderEURUSD))
-                .thenReturn(composeParams);
 
             composeParams.setStartAction(startActionMock);
             composeParams.setCompleteAction(completeActionMock);
@@ -181,10 +176,10 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             composeParams.setRetryParams(new RetryParams(noOfRetries, delayInMillis));
 
             testObserver = taskParamsUtil
-                .composeParamsForOrder(buyOrderEURUSD,
-                                       orderEventSubject,
-                                       composeParamsForOrderMock,
-                                       consumerForEvent)
+                .composeParamsWithEvents(buyOrderEURUSD,
+                                         orderEventSubject,
+                                         composeParams,
+                                         consumerForEvent)
 
                 .test();
         }

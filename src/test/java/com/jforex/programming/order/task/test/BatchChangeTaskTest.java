@@ -17,7 +17,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchMode;
-import com.jforex.programming.order.task.params.ComposeParamsForOrder;
+import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
@@ -39,9 +39,11 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
     private ClosePositionParams closePositionParamsMock;
     @Mock
     private MergePositionParams mergePositionParamsMock;
-    private final List<IOrder> ordersForBatch = Lists.newArrayList(buyOrderEURUSD, sellOrderEURUSD);
-    private final Map<OrderEventType, Consumer<OrderEvent>> consumersForParams = new HashMap<>();
-    private final ComposeParamsForOrder composeParamsForOrder = new ComposeParamsForOrder();
+    private final List<IOrder> ordersForBatch =
+            Lists.newArrayList(buyOrderEURUSD, sellOrderEURUSD);
+    private final Map<OrderEventType, Consumer<OrderEvent>> consumersForParams =
+            new HashMap<>();
+    private final ComposeParams composeParams = new ComposeParams();
     private Observable<OrderEvent> composedObservable;
 
     @Before
@@ -49,7 +51,7 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         when(closePositionParamsMock.consumerForEvent()).thenReturn(consumersForParams);
         when(mergePositionParamsMock.consumerForEvent()).thenReturn(consumersForParams);
 
-        when(closePositionParamsMock.closeComposeParams()).thenReturn(composeParamsForOrder);
+        when(closePositionParamsMock.closeComposeParams(any())).thenReturn(composeParams);
         when(mergePositionParamsMock.batchCancelTPMode()).thenReturn(BatchMode.MERGE);
 
         batchChangeTask = new BatchChangeTask(basicTaskMock, taskParamsUtilMock);
@@ -67,13 +69,13 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void isNotConcatenated() {
-            when(taskParamsUtilMock.composeParamsForOrder(any(),
-                                                          any(),
-                                                          eq(composeParamsForOrder),
-                                                          eq(consumersForParams)))
-                                                              .thenReturn(neverObservable())
-                                                              .thenReturn(composedObservable);
+        public void isMerged() {
+            when(taskParamsUtilMock.composeParamsWithEvents(any(),
+                                                            any(),
+                                                            eq(composeParams),
+                                                            eq(consumersForParams)))
+                                                                .thenReturn(neverObservable())
+                                                                .thenReturn(composedObservable);
 
             batchChangeTask
                 .close(ordersForBatch, closePositionParamsMock)
@@ -94,19 +96,19 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
             when(basicTaskMock.setStopLossPrice(any()))
                 .thenReturn(eventObservable(changedSLEvent));
 
-            when(mergePositionParamsMock.cancelSLComposeParams())
-                .thenReturn(composeParamsForOrder);
+            when(mergePositionParamsMock.cancelSLComposeParams(any()))
+                .thenReturn(composeParams);
         }
 
         @Test
         public void forMergeIsNotConcatenated() {
             when(mergePositionParamsMock.batchCancelSLMode()).thenReturn(BatchMode.MERGE);
-            when(taskParamsUtilMock.composeParamsForOrder(any(),
-                                                          any(),
-                                                          eq(composeParamsForOrder),
-                                                          eq(consumersForParams)))
-                                                              .thenReturn(neverObservable())
-                                                              .thenReturn(composedObservable);
+            when(taskParamsUtilMock.composeParamsWithEvents(any(),
+                                                            any(),
+                                                            eq(composeParams),
+                                                            eq(consumersForParams)))
+                                                                .thenReturn(neverObservable())
+                                                                .thenReturn(composedObservable);
 
             batchChangeTask
                 .cancelSL(ordersForBatch, mergePositionParamsMock)
@@ -118,12 +120,12 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         @Test
         public void forConcatIsNotMerged() {
             when(mergePositionParamsMock.batchCancelSLMode()).thenReturn(BatchMode.CONCAT);
-            when(taskParamsUtilMock.composeParamsForOrder(any(),
-                                                          any(),
-                                                          eq(composeParamsForOrder),
-                                                          eq(consumersForParams)))
-                                                              .thenReturn(neverObservable())
-                                                              .thenReturn(composedObservable);
+            when(taskParamsUtilMock.composeParamsWithEvents(any(),
+                                                            any(),
+                                                            eq(composeParams),
+                                                            eq(consumersForParams)))
+                                                                .thenReturn(neverObservable())
+                                                                .thenReturn(composedObservable);
 
             batchChangeTask
                 .cancelSL(ordersForBatch, mergePositionParamsMock)
@@ -144,19 +146,19 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
             when(basicTaskMock.setTakeProfitPrice(any()))
                 .thenReturn(eventObservable(changedTPEvent));
 
-            when(mergePositionParamsMock.cancelTPComposeParams())
-                .thenReturn(composeParamsForOrder);
+            when(mergePositionParamsMock.cancelTPComposeParams(any()))
+                .thenReturn(composeParams);
         }
 
         @Test
         public void forMergeIsNotConcatenated() {
             when(mergePositionParamsMock.batchCancelTPMode()).thenReturn(BatchMode.MERGE);
-            when(taskParamsUtilMock.composeParamsForOrder(any(),
-                                                          any(),
-                                                          eq(composeParamsForOrder),
-                                                          eq(consumersForParams)))
-                                                              .thenReturn(neverObservable())
-                                                              .thenReturn(composedObservable);
+            when(taskParamsUtilMock.composeParamsWithEvents(any(),
+                                                            any(),
+                                                            eq(composeParams),
+                                                            eq(consumersForParams)))
+                                                                .thenReturn(neverObservable())
+                                                                .thenReturn(composedObservable);
 
             batchChangeTask
                 .cancelTP(ordersForBatch, mergePositionParamsMock)
@@ -168,12 +170,12 @@ public class BatchChangeTaskTest extends InstrumentUtilForTest {
         @Test
         public void forConcatIsNotMerged() {
             when(mergePositionParamsMock.batchCancelTPMode()).thenReturn(BatchMode.CONCAT);
-            when(taskParamsUtilMock.composeParamsForOrder(any(),
-                                                          any(),
-                                                          eq(composeParamsForOrder),
-                                                          eq(consumersForParams)))
-                                                              .thenReturn(neverObservable())
-                                                              .thenReturn(composedObservable);
+            when(taskParamsUtilMock.composeParamsWithEvents(any(),
+                                                            any(),
+                                                            eq(composeParams),
+                                                            eq(consumersForParams)))
+                                                                .thenReturn(neverObservable())
+                                                                .thenReturn(composedObservable);
 
             batchChangeTask
                 .cancelTP(ordersForBatch, mergePositionParamsMock)
