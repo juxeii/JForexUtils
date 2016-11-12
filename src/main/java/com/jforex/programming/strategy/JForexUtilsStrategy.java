@@ -1,4 +1,4 @@
-package com.jforex.programming.misc;
+package com.jforex.programming.strategy;
 
 import com.dukascopy.api.IAccount;
 import com.dukascopy.api.IBar;
@@ -12,7 +12,6 @@ import com.dukascopy.api.Period;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.position.PositionUtil;
-import com.jforex.programming.strategy.StrategyUtil;
 
 public abstract class JForexUtilsStrategy implements IStrategy {
 
