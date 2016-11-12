@@ -9,9 +9,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableSet;
@@ -25,8 +22,6 @@ public class Position implements PositionOrders {
     private final Instrument instrument;
     private final ConcurrentMap<IOrder, Boolean> orderRepository =
             new MapMaker().weakKeys().makeMap();
-
-    private static final Logger logger = LogManager.getLogger(Position.class);
 
     public Position(final Instrument instrument,
                     final Observable<OrderEvent> orderEventObservable) {
@@ -57,14 +52,10 @@ public class Position implements PositionOrders {
 
     private synchronized void removeOrder(final IOrder order) {
         orderRepository.remove(order);
-        logger.debug("Removed order " + order.getLabel() + " from position " + instrument
-                + " Orderstate: " + order.getState() + " repo size " + orderRepository.size());
     }
 
     private synchronized void addOrder(final IOrder order) {
         orderRepository.put(order, true);
-        logger.debug("Added order " + order.getLabel() + " to position " + instrument
-                + " Orderstate: " + order.getState() + " repo size " + orderRepository.size());
     }
 
     @Override
