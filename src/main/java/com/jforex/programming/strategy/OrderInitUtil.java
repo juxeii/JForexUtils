@@ -15,6 +15,7 @@ import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.BatchCancelSLTask;
 import com.jforex.programming.order.task.BatchCancelTPTask;
 import com.jforex.programming.order.task.BatchChangeTask;
+import com.jforex.programming.order.task.BatchComposer;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
 import com.jforex.programming.order.task.ClosePositionTaskObservable;
@@ -38,6 +39,7 @@ public class OrderInitUtil {
     private final TaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
     private final BasicTaskObservable orderBasicTask;
+    private final BatchComposer batchComposer;
     private final BatchChangeTask batchChangeTask;
     private final MergePositionTaskObservable orderMergeTask;
     private final ClosePositionTaskObservable orderCloseTask;
@@ -68,7 +70,8 @@ public class OrderInitUtil {
         orderBasicTask = new BasicTaskObservable(orderTaskExecutor,
                                                  orderUtilHandler,
                                                  calculationUtil);
-        batchChangeTask = new BatchChangeTask(orderBasicTask, taskParamsUtil);
+        batchComposer = new BatchComposer(orderBasicTask, taskParamsUtil);
+        batchChangeTask = new BatchChangeTask(batchComposer);
         cancelSLTask = new BatchCancelSLTask(batchChangeTask, taskParamsUtil);
         cancelTPTask = new BatchCancelTPTask(batchChangeTask, taskParamsUtil);
         cancelSLTPTask = new CancelSLTPTask(cancelSLTask, cancelTPTask);
