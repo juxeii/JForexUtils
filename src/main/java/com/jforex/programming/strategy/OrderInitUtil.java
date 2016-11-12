@@ -22,7 +22,6 @@ import com.jforex.programming.order.task.MergePositionTaskObservable;
 import com.jforex.programming.order.task.TaskExecutor;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
-import com.jforex.programming.order.task.params.position.MergePositionParamsHandler;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionUtil;
 
@@ -43,7 +42,6 @@ public class OrderInitUtil {
     private final MergePositionTaskObservable orderMergeTask;
     private final ClosePositionTaskObservable orderCloseTask;
     private final TaskParamsUtil taskParamsUtil = new TaskParamsUtil();
-    private final MergePositionParamsHandler mergeParamsHandler;
     private final ClosePositionParamsHandler closePositionParamsHandler;
     private final CancelSLTPAndMergeTask cancelSLTPAndMergeTask;
     private final BatchCancelSLTask cancelSLTask;
@@ -74,10 +72,9 @@ public class OrderInitUtil {
         cancelSLTask = new BatchCancelSLTask(batchChangeTask, taskParamsUtil);
         cancelTPTask = new BatchCancelTPTask(batchChangeTask, taskParamsUtil);
         cancelSLTPTask = new CancelSLTPTask(cancelSLTask, cancelTPTask);
-        mergeParamsHandler = new MergePositionParamsHandler(cancelSLTPTask,
+        cancelSLTPAndMergeTask = new CancelSLTPAndMergeTask(cancelSLTPTask,
                                                             orderBasicTask,
                                                             taskParamsUtil);
-        cancelSLTPAndMergeTask = new CancelSLTPAndMergeTask(mergeParamsHandler);
         orderMergeTask = new MergePositionTaskObservable(cancelSLTPAndMergeTask, positionUtil);
         closePositionParamsHandler = new ClosePositionParamsHandler(orderMergeTask,
                                                                     batchChangeTask,
