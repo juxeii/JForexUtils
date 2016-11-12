@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.RetryParams;
@@ -121,6 +122,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
         assertThat(closePositionParams.instrument(), equalTo(instrumentEURUSD));
         assertThat(closePositionParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
         assertThat(closePositionParams.closeExecutionMode(), equalTo(CloseExecutionMode.CloseAll));
+        assertThat(closePositionParams.closeBatchMode(), equalTo(BatchMode.MERGE));
         assertThat(closePositionParams.mergePositionParams(), equalTo(mergePositionParamsMock));
     }
 

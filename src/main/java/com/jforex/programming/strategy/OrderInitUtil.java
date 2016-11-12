@@ -11,11 +11,13 @@ import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventTypeDataFactory;
+import com.jforex.programming.order.task.BasicTaskForBatch;
 import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.BatchCancelSLTask;
 import com.jforex.programming.order.task.BatchCancelTPTask;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.BatchComposer;
+import com.jforex.programming.order.task.BatchCreator;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
 import com.jforex.programming.order.task.ClosePositionTaskObservable;
@@ -39,6 +41,8 @@ public class OrderInitUtil {
     private final TaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
     private final BasicTaskObservable orderBasicTask;
+    private final BatchCreator batchCreator = new BatchCreator();
+    private final BasicTaskForBatch basicTaskForBatch;
     private final BatchComposer batchComposer;
     private final BatchChangeTask batchChangeTask;
     private final MergePositionTaskObservable orderMergeTask;
@@ -70,8 +74,9 @@ public class OrderInitUtil {
         orderBasicTask = new BasicTaskObservable(orderTaskExecutor,
                                                  orderUtilHandler,
                                                  calculationUtil);
-        batchComposer = new BatchComposer(orderBasicTask, taskParamsUtil);
-        batchChangeTask = new BatchChangeTask(batchComposer);
+        basicTaskForBatch = new BasicTaskForBatch(orderBasicTask);
+        batchComposer = new BatchComposer(taskParamsUtil, basicTaskForBatch);
+        batchChangeTask = new BatchChangeTask(batchComposer, batchCreator);
         cancelSLTask = new BatchCancelSLTask(batchChangeTask, taskParamsUtil);
         cancelTPTask = new BatchCancelTPTask(batchChangeTask, taskParamsUtil);
         cancelSLTPTask = new CancelSLTPTask(cancelSLTask, cancelTPTask);

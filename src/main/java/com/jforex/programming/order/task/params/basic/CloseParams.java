@@ -63,7 +63,7 @@ public class CloseParams extends CommonParamsBase {
     public static class Builder extends BasicParamsBuilder<Builder> {
 
         private final IOrder order;
-        private double partialCloseAmount = 0.0;
+        private double partialCloseAmount;
         private Optional<Double> maybePrice = Optional.empty();
         private double slippage;
 

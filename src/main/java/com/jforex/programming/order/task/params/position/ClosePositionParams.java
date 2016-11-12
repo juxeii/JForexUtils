@@ -11,6 +11,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeData;
@@ -29,11 +30,13 @@ public class ClosePositionParams {
     private final ComposeParams closePositionComposeParams;
     private final ComposeParamsForOrder closeComposeParams;
     private final CloseExecutionMode closeExecutionMode;
+    private final BatchMode closeBatchMode;
 
     private ClosePositionParams(final Builder builder) {
         instrument = builder.instrument;
         mergeOrderLabel = builder.mergeOrderLabel;
         closeExecutionMode = builder.closeExecutionMode;
+        closeBatchMode = builder.closeBatchMode;
         mergePositionParams = builder.mergePositionParams;
         closePositionComposeParams = builder.closePositionComposeParams;
         closeComposeParams = builder.closeComposeParams;
@@ -55,6 +58,10 @@ public class ClosePositionParams {
 
     public CloseExecutionMode closeExecutionMode() {
         return closeExecutionMode;
+    }
+
+    public BatchMode closeBatchMode() {
+        return closeBatchMode;
     }
 
     public ComposeData closePositionComposeParams() {
@@ -85,6 +92,7 @@ public class ClosePositionParams {
         private final ComposeParams closePositionComposeParams = new ComposeParams();
         private final ComposeParamsForOrder closeComposeParams = new ComposeParamsForOrder();
         private CloseExecutionMode closeExecutionMode = CloseExecutionMode.CloseAll;
+        private final BatchMode closeBatchMode = BatchMode.MERGE;
 
         public Builder(final Instrument instrument,
                        final String mergeOrderLabel) {
