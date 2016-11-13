@@ -76,38 +76,26 @@ public class ClosePositionParams {
         return mergePositionParams;
     }
 
-    public static Builder newBuilder(final Instrument instrument,
-                                     final String mergeOrderLabel) {
-        checkNotNull(instrument);
-        checkNotNull(mergeOrderLabel);
+    public static Builder newBuilder(final MergePositionParams mergePositionParams) {
+        checkNotNull(mergePositionParams);
 
-        return new Builder(instrument, mergeOrderLabel);
+        return new Builder(mergePositionParams);
     }
 
     public static class Builder extends CommonParamsBuilder<Builder> {
 
         private final Instrument instrument;
         private final String mergeOrderLabel;
-        private MergePositionParams mergePositionParams;
+        private final MergePositionParams mergePositionParams;
         private final ComposeParams closePositionComposeParams = new ComposeParams();
         private final ComposeParamsForOrder closeComposeParams = new ComposeParamsForOrder();
         private CloseExecutionMode closeExecutionMode = CloseExecutionMode.CloseAll;
         private final BatchMode closeBatchMode = BatchMode.MERGE;
 
-        public Builder(final Instrument instrument,
-                       final String mergeOrderLabel) {
-            this.instrument = instrument;
-            this.mergeOrderLabel = mergeOrderLabel;
-            mergePositionParams = MergePositionParams
-                .newBuilder(instrument, mergeOrderLabel)
-                .build();
-        }
-
-        public Builder withMergePositionParams(final MergePositionParams mergePositionParams) {
-            checkNotNull(mergePositionParams);
-
+        public Builder(final MergePositionParams mergePositionParams) {
             this.mergePositionParams = mergePositionParams;
-            return this;
+            this.instrument = mergePositionParams.instrument();
+            this.mergeOrderLabel = mergePositionParams.mergeOrderLabel();
         }
 
         public Builder withCloseExecutionMode(final CloseExecutionMode closeExecutionMode) {

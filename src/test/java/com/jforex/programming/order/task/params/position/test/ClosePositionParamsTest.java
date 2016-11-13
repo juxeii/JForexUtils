@@ -53,13 +53,15 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
         consumersForMergeParams.put(OrderEventType.MERGE_REJECTED, eventConsumerMock);
 
         when(actionConsumerMock.apply(orderForTest)).thenReturn(actionMock);
+
+        when(mergePositionParamsMock.instrument()).thenReturn(instrumentEURUSD);
+        when(mergePositionParamsMock.mergeOrderLabel()).thenReturn(mergeOrderLabel);
         when(mergePositionParamsMock.consumerForEvent()).thenReturn(consumersForMergeParams);
 
         closePositionParams = ClosePositionParams
-            .newBuilder(instrumentEURUSD, mergeOrderLabel)
+            .newBuilder(mergePositionParamsMock)
 
             .withCloseExecutionMode(CloseExecutionMode.CloseFilled)
-            .withMergePositionParams(mergePositionParamsMock)
 
             .doOnClosePositionStart(actionMock)
             .doOnClosePositionComplete(actionMock)
@@ -115,8 +117,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
     @Test
     public void defaultValuesAreCorrect() {
         closePositionParams = ClosePositionParams
-            .newBuilder(instrumentEURUSD, mergeOrderLabel)
-            .withMergePositionParams(mergePositionParamsMock)
+            .newBuilder(mergePositionParamsMock)
             .build();
 
         assertThat(closePositionParams.instrument(), equalTo(instrumentEURUSD));
