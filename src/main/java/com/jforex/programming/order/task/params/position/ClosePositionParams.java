@@ -14,11 +14,7 @@ import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeData;
-import com.jforex.programming.order.task.params.ComposeParams;
-import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.basic.CloseParams;
-
-import io.reactivex.functions.Action;
 
 public class ClosePositionParams {
 
@@ -27,7 +23,7 @@ public class ClosePositionParams {
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
     private final MergePositionParams mergePositionParams;
     private final Function<IOrder, CloseParams> closeParamsFactory;
-    private final ComposeParams closePositionComposeParams;
+    private final PositionParams closePositionComposeParams;
     private final CloseExecutionMode closeExecutionMode;
     private final BatchMode closeBatchMode;
 
@@ -64,7 +60,7 @@ public class ClosePositionParams {
     }
 
     public ComposeData closePositionComposeParams() {
-        return closePositionComposeParams;
+        return closePositionComposeParams.composeData();
     }
 
     public MergePositionParams mergePositionParams() {
@@ -89,7 +85,7 @@ public class ClosePositionParams {
         private final String mergeOrderLabel;
         private final MergePositionParams mergePositionParams;
         private final Function<IOrder, CloseParams> closeParamsFactory;
-        private final ComposeParams closePositionComposeParams = new ComposeParams();
+        private PositionParams closePositionComposeParams = PositionParams.newBuilder().build();
         private CloseExecutionMode closeExecutionMode = CloseExecutionMode.CloseAll;
         private final BatchMode closeBatchMode = BatchMode.MERGE;
 
@@ -108,30 +104,10 @@ public class ClosePositionParams {
             return this;
         }
 
-        public Builder doOnClosePositionStart(final Action closePositionStartAction) {
-            checkNotNull(closePositionStartAction);
+        public Builder withClosePositonParams(final PositionParams closePositionComposeParams) {
+            checkNotNull(closePositionComposeParams);
 
-            closePositionComposeParams.setStartAction(closePositionStartAction);
-            return this;
-        }
-
-        public Builder doOnClosePositionComplete(final Action closePositionCompleteAction) {
-            checkNotNull(closePositionCompleteAction);
-
-            closePositionComposeParams.setCompleteAction(closePositionCompleteAction);
-            return this;
-        }
-
-        public Builder doOnClosePositionError(final Consumer<Throwable> closePositionErrorConsumer) {
-            checkNotNull(closePositionErrorConsumer);
-
-            closePositionComposeParams.setErrorConsumer(closePositionErrorConsumer);
-            return this;
-        }
-
-        public Builder retryOnClosePositionReject(final int noOfRetries,
-                                                  final long delayInMillis) {
-            closePositionComposeParams.setRetryParams(new RetryParams(noOfRetries, delayInMillis));
+            this.closePositionComposeParams = closePositionComposeParams;
             return this;
         }
 

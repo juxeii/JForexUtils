@@ -19,10 +19,12 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.ComposeData;
+import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
+import com.jforex.programming.order.task.params.position.PositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
 import io.reactivex.functions.Action;
@@ -30,6 +32,9 @@ import io.reactivex.functions.Action;
 public class ClosePositionParamsTest extends CommonParamsForTest {
 
     private ClosePositionParams closePositionParams;
+
+    @Mock
+    private PositionParams closePositionComposeParamsMock;
     @Mock
     private MergePositionParams mergePositionParamsMock;
     @Mock
@@ -44,6 +49,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
     private Consumer<OrderEvent> eventConsumerMock;
     @Mock
     private Function<IOrder, CloseParams> closeParamsFactoryMock;
+    private final ComposeData composeData = new ComposeParams();
     private final Map<OrderEventType, Consumer<OrderEvent>> consumersForMergeParams = new HashMap<>();
     private final IOrder orderForTest = buyOrderEURUSD;
     private static final String mergeOrderLabel = "mergeOrderLabel";
@@ -61,6 +67,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
         when(mergePositionParamsMock.instrument()).thenReturn(instrumentEURUSD);
         when(mergePositionParamsMock.mergeOrderLabel()).thenReturn(mergeOrderLabel);
         when(mergePositionParamsMock.consumerForEvent()).thenReturn(consumersForMergeParams);
+        when(closePositionComposeParamsMock.composeData()).thenReturn(composeData);
 
         closeParams = CloseParams
             .withOrder(orderForTest)
@@ -76,14 +83,8 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
 
         closePositionParams = ClosePositionParams
             .newBuilder(mergePositionParamsMock, closeParamsFactoryMock)
-
             .withCloseExecutionMode(CloseExecutionMode.CloseFilled)
-
-            .doOnClosePositionStart(actionMock)
-            .doOnClosePositionComplete(actionMock)
-            .doOnClosePositionError(errorConsumerMock)
-            .retryOnClosePositionReject(noOfRetries, delayInMillis)
-
+            .withClosePositonParams(closePositionComposeParamsMock)
             .build();
     }
 
@@ -133,7 +134,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertClosePositionValues() {
-        assertComposeParams(closePositionParams.closePositionComposeParams());
+        assertThat(closePositionParams.closePositionComposeParams(), equalTo(composeData));
     }
 
     @Test

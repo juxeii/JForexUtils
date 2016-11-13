@@ -28,10 +28,10 @@ public class MergePositionParams {
     private final String mergeOrderLabel;
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
 
-    private final ComposeData mergePositionComposeParams;
-    private final ComposeData cancelSLTPComposeParams;
-    private final ComposeData batchCancelSLComposeParams;
-    private final ComposeData batchCancelTPComposeParams;
+    private final PositionParams mergePositionComposeParams;
+    private final PositionParams cancelSLTPComposeParams;
+    private final PositionParams batchCancelSLComposeParams;
+    private final PositionParams batchCancelTPComposeParams;
     private final ComposeDataForOrder cancelSLComposeParams;
     private final ComposeDataForOrder cancelTPComposeParams;
     private final ComposeData mergeComposeParams;
@@ -71,19 +71,19 @@ public class MergePositionParams {
     }
 
     public ComposeData mergePositionComposeParams() {
-        return mergePositionComposeParams;
+        return mergePositionComposeParams.composeData();
     }
 
     public ComposeData cancelSLTPComposeParams() {
-        return cancelSLTPComposeParams;
+        return cancelSLTPComposeParams.composeData();
     }
 
     public ComposeData batchCancelSLComposeParams() {
-        return batchCancelSLComposeParams;
+        return batchCancelSLComposeParams.composeData();
     }
 
     public ComposeData batchCancelTPComposeParams() {
-        return batchCancelTPComposeParams;
+        return batchCancelTPComposeParams.composeData();
     }
 
     public ComposeData cancelSLComposeParams(final IOrder order) {
@@ -123,10 +123,10 @@ public class MergePositionParams {
         private final Instrument instrument;
         private final String mergeOrderLabel;
 
-        private final ComposeParams mergePositionComposeParams = new ComposeParams();
-        private final ComposeParams cancelSLTPComposeParams = new ComposeParams();
-        private final ComposeParams batchCancelSLComposeParams = new ComposeParams();
-        private final ComposeParams batchCancelTPComposeParams = new ComposeParams();
+        private PositionParams mergePositionComposeParams = PositionParams.newBuilder().build();
+        private PositionParams cancelSLTPComposeParams = PositionParams.newBuilder().build();
+        private PositionParams batchCancelSLComposeParams = PositionParams.newBuilder().build();
+        private PositionParams batchCancelTPComposeParams = PositionParams.newBuilder().build();
         private final ComposeParamsForOrder cancelSLComposeParams = new ComposeParamsForOrder();
         private final ComposeParamsForOrder cancelTPComposeParams = new ComposeParamsForOrder();
         private final ComposeParams mergeComposeParams = new ComposeParams();
@@ -141,91 +141,10 @@ public class MergePositionParams {
             this.mergeOrderLabel = mergeOrderLabel;
         }
 
-        public Builder doOnMergePositionStart(final Action mergePositionStartAction) {
-            checkNotNull(mergePositionStartAction);
-
-            mergePositionComposeParams.setStartAction(mergePositionStartAction);
-            return this;
-        }
-
-        public Builder doOnMergePositionComplete(final Action mergePositionCompleteAction) {
-            checkNotNull(mergePositionCompleteAction);
-
-            mergePositionComposeParams.setCompleteAction(mergePositionCompleteAction);
-            return this;
-        }
-
-        public Builder doOnMergePositionError(final Consumer<Throwable> mergePositionErrorConsumer) {
-            checkNotNull(mergePositionErrorConsumer);
-
-            mergePositionComposeParams.setErrorConsumer(mergePositionErrorConsumer);
-            return this;
-        }
-
-        public Builder retryOnMergePositionReject(final int noOfRetries,
-                                                  final long delayInMillis) {
-            mergePositionComposeParams.setRetryParams(new RetryParams(noOfRetries, delayInMillis));
-            return this;
-        }
-
-        public Builder doOnCancelSLTPStart(final Action cancelSLTPStartAction) {
-            checkNotNull(cancelSLTPStartAction);
-
-            cancelSLTPComposeParams.setStartAction(cancelSLTPStartAction);
-            return this;
-        }
-
-        public Builder doOnCancelSLTPComplete(final Action cancelSLTPCompleteAction) {
-            checkNotNull(cancelSLTPCompleteAction);
-
-            cancelSLTPComposeParams.setCompleteAction(cancelSLTPCompleteAction);
-            return this;
-        }
-
-        public Builder doOnCancelSLTPError(final Consumer<Throwable> cancelSLTPErrorConsumer) {
-            checkNotNull(cancelSLTPErrorConsumer);
-
-            cancelSLTPComposeParams.setErrorConsumer(cancelSLTPErrorConsumer);
-            return this;
-        }
-
-        public Builder retryOnCancelSLTPReject(final int noOfRetries,
-                                               final long delayInMillis) {
-            cancelSLTPComposeParams.setRetryParams(new RetryParams(noOfRetries, delayInMillis));
-            return this;
-        }
-
         public Builder withMergeExecutionMode(final MergeExecutionMode mergeExecutionMode) {
             checkNotNull(mergeExecutionMode);
 
             this.mergeExecutionMode = mergeExecutionMode;
-            return this;
-        }
-
-        public Builder doOnBatchCancelSLStart(final Action batchCancelSLStartAction) {
-            checkNotNull(batchCancelSLStartAction);
-
-            batchCancelSLComposeParams.setStartAction(batchCancelSLStartAction);
-            return this;
-        }
-
-        public Builder doOnBatchCancelSLComplete(final Action batchCancelSLCompleteAction) {
-            checkNotNull(batchCancelSLCompleteAction);
-
-            batchCancelSLComposeParams.setCompleteAction(batchCancelSLCompleteAction);
-            return this;
-        }
-
-        public Builder doOnBatchCancelSLError(final Consumer<Throwable> batchCancelSLErrorConsumer) {
-            checkNotNull(batchCancelSLErrorConsumer);
-
-            batchCancelSLComposeParams.setErrorConsumer(batchCancelSLErrorConsumer);
-            return this;
-        }
-
-        public Builder retryOnBatchCancelSLReject(final int noOfRetries,
-                                                  final long delayInMillis) {
-            batchCancelSLComposeParams.setRetryParams(new RetryParams(noOfRetries, delayInMillis));
             return this;
         }
 
@@ -236,37 +155,38 @@ public class MergePositionParams {
             return this;
         }
 
-        public Builder doOnBatchCancelTPStart(final Action batchCancelTPStartAction) {
-            checkNotNull(batchCancelTPStartAction);
-
-            batchCancelTPComposeParams.setStartAction(batchCancelTPStartAction);
-            return this;
-        }
-
-        public Builder doOnBatchCancelTPComplete(final Action batchCancelTPCompleteAction) {
-            checkNotNull(batchCancelTPCompleteAction);
-
-            batchCancelTPComposeParams.setCompleteAction(batchCancelTPCompleteAction);
-            return this;
-        }
-
-        public Builder doOnBatchCancelTPError(final Consumer<Throwable> batchCancelTPErrorConsumer) {
-            checkNotNull(batchCancelTPErrorConsumer);
-
-            batchCancelTPComposeParams.setErrorConsumer(batchCancelTPErrorConsumer);
-            return this;
-        }
-
-        public Builder retryOnBatchCancelTPReject(final int noOfRetries,
-                                                  final long delayInMillis) {
-            batchCancelTPComposeParams.setRetryParams(new RetryParams(noOfRetries, delayInMillis));
-            return this;
-        }
-
         public Builder withBatchCancelTPMode(final BatchMode batchCancelTPMode) {
             checkNotNull(batchCancelTPMode);
 
             this.batchCancelTPMode = batchCancelTPMode;
+            return this;
+        }
+
+        public Builder withMergePositonParams(final PositionParams mergePositionComposeParams) {
+            checkNotNull(mergePositionComposeParams);
+
+            this.mergePositionComposeParams = mergePositionComposeParams;
+            return this;
+        }
+
+        public Builder withCancelSLTPParams(final PositionParams cancelSLTPComposeParams) {
+            checkNotNull(cancelSLTPComposeParams);
+
+            this.cancelSLTPComposeParams = cancelSLTPComposeParams;
+            return this;
+        }
+
+        public Builder withBatchCancelSLParams(final PositionParams batchCancelSLComposeParams) {
+            checkNotNull(batchCancelSLComposeParams);
+
+            this.batchCancelSLComposeParams = batchCancelSLComposeParams;
+            return this;
+        }
+
+        public Builder withBatchCancelTPParams(final PositionParams batchCancelTPComposeParams) {
+            checkNotNull(batchCancelTPComposeParams);
+
+            this.batchCancelTPComposeParams = batchCancelTPComposeParams;
             return this;
         }
 
