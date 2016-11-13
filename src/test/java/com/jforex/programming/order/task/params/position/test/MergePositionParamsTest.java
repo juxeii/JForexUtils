@@ -1,6 +1,7 @@
 package com.jforex.programming.order.task.params.position.test;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.function.BiConsumer;
@@ -18,7 +19,6 @@ import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.MergeExecutionMode;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
-import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.position.PositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
@@ -38,6 +38,16 @@ public class MergePositionParamsTest extends CommonParamsForTest {
     @Mock
     private PositionParams batchCancelTPComposeParamsMock;
     @Mock
+    private Function<IOrder, PositionParams> cancelSLComposeParamsMock;
+    @Mock
+    private PositionParams cancelSLComposeMock;
+    @Mock
+    private Function<IOrder, PositionParams> cancelTPComposeParamsMock;
+    @Mock
+    private PositionParams cancelTPComposeMock;
+    @Mock
+    private PositionParams mergeComposeParamsMock;
+    @Mock
     private Action actionMock;
     @Mock
     private Function<IOrder, Action> actionConsumerMock;
@@ -50,8 +60,6 @@ public class MergePositionParamsTest extends CommonParamsForTest {
     private final ComposeData composeData = new ComposeParams();
     private final IOrder orderForTest = buyOrderEURUSD;
     private static final String mergeOrderLabel = "mergeOrderLabel";
-    private static final int noOfRetries = 3;
-    private static final long delayInMillis = 1500L;
 
     @Before
     public void setUp() {
@@ -61,6 +69,12 @@ public class MergePositionParamsTest extends CommonParamsForTest {
         when(cancelSLTPComposeParamsMock.composeData()).thenReturn(composeData);
         when(batchCancelSLComposeParamsMock.composeData()).thenReturn(composeData);
         when(batchCancelTPComposeParamsMock.composeData()).thenReturn(composeData);
+        when(mergeComposeParamsMock.composeData()).thenReturn(composeData);
+
+        when(cancelSLComposeParamsMock.apply(orderForTest)).thenReturn(cancelSLComposeMock);
+        when(cancelTPComposeParamsMock.apply(orderForTest)).thenReturn(cancelTPComposeMock);
+        when(cancelSLComposeMock.composeData()).thenReturn(composeData);
+        when(cancelTPComposeMock.composeData()).thenReturn(composeData);
 
         mergePositionParams = MergePositionParams
             .newBuilder(instrumentEURUSD, mergeOrderLabel)
@@ -73,21 +87,9 @@ public class MergePositionParamsTest extends CommonParamsForTest {
             .withCancelSLTPParams(cancelSLTPComposeParamsMock)
             .withBatchCancelSLParams(batchCancelSLComposeParamsMock)
             .withBatchCancelTPParams(batchCancelTPComposeParamsMock)
-
-            .doOnCancelSLStart(actionConsumerMock)
-            .doOnCancelSLComplete(actionConsumerMock)
-            .doOnCancelSLError(biErrorConsumerMock)
-            .retryOnCancelSLReject(noOfRetries, delayInMillis)
-
-            .doOnCancelTPStart(actionConsumerMock)
-            .doOnCancelTPComplete(actionConsumerMock)
-            .doOnCancelTPError(biErrorConsumerMock)
-            .retryOnCancelTPReject(noOfRetries, delayInMillis)
-
-            .doOnMergeStart(actionMock)
-            .doOnMergeComplete(actionMock)
-            .doOnMergeError(errorConsumerMock)
-            .retryOnMergeReject(noOfRetries, delayInMillis)
+            .withCancelSLParams(cancelSLComposeParamsMock)
+            .withCancelTPParams(cancelTPComposeParamsMock)
+            .withMergeParams(mergeComposeParamsMock)
 
             .doOnCancelSL(eventConsumerMock)
             .doOnCancelSLReject(eventConsumerMock)
@@ -98,44 +100,12 @@ public class MergePositionParamsTest extends CommonParamsForTest {
             .doOnMerge(eventConsumerMock)
             .doOnMergeClose(eventConsumerMock)
             .doOnMergeReject(eventConsumerMock)
+
             .build();
-    }
-
-    private void assertComposeData(final ComposeData composeData) {
-        assertActions(composeData);
-        assertErrorConsumer(composeData.errorConsumer());
-        assertRetries(composeData.retryParams());
-    }
-
-    private void assertActions(final ComposeData composeData) {
-        assertThat(composeData.startAction(), equalTo(actionMock));
-        assertThat(composeData.completeAction(), equalTo(actionMock));
-    }
-
-    private void assertErrorConsumer(final Consumer<Throwable> errorConsumer) {
-        errorConsumer.accept(jfException);
-
-        verify(errorConsumerMock).accept(any());
-    }
-
-    private void assertRetries(final RetryParams retryParams) {
-        assertThat(retryParams.noOfRetries(), equalTo(noOfRetries));
-        assertThat(retryParams.delayInMillis(), equalTo(delayInMillis));
     }
 
     private void assertEventHandler(final OrderEventType type) {
         assertThat(mergePositionParams.consumerForEvent().get(type), equalTo(eventConsumerMock));
-    }
-
-    private void assertComposeDataWithOrder(final ComposeData composeData) throws Exception {
-        composeData.startAction().run();
-        verify(actionMock).run();
-
-        composeData.completeAction().run();
-        verify(actionMock, times(2)).run();
-
-        composeData.errorConsumer().accept(jfException);
-        verify(biErrorConsumerMock).accept(jfException, orderForTest);
     }
 
     @Test
@@ -150,6 +120,9 @@ public class MergePositionParamsTest extends CommonParamsForTest {
         assertThat(mergePositionParams.batchCancelSLMode(), equalTo(BatchMode.MERGE));
         assertThat(mergePositionParams.batchCancelTPMode(), equalTo(BatchMode.MERGE));
         assertThat(mergePositionParams.consumerForEvent().size(), equalTo(0));
+
+        assertNotNull(mergePositionParams.cancelSLComposeParams(orderForTest));
+        assertNotNull(mergePositionParams.cancelTPComposeParams(orderForTest));
     }
 
     @Test
@@ -183,19 +156,17 @@ public class MergePositionParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertCancelSLValues() throws Exception {
-        final ComposeData composeData = mergePositionParams.cancelSLComposeParams(orderForTest);
-        assertComposeDataWithOrder(composeData);
+        assertThat(mergePositionParams.cancelSLComposeParams(orderForTest), equalTo(composeData));
     }
 
     @Test
     public void assertCancelTPValues() throws Exception {
-        final ComposeData composeData = mergePositionParams.cancelTPComposeParams(orderForTest);
-        assertComposeDataWithOrder(composeData);
+        assertThat(mergePositionParams.cancelTPComposeParams(orderForTest), equalTo(composeData));
     }
 
     @Test
     public void assertMergeValues() {
-        assertComposeData(mergePositionParams.mergeComposeParams());
+        assertThat(mergePositionParams.mergeComposeParams(), equalTo(composeData));
     }
 
     @Test
