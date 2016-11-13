@@ -1,6 +1,9 @@
 package com.jforex.programming.order.task.test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +13,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
@@ -36,6 +40,7 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     @Mock
     private MergePositionParams mergePositionParamsMock;
     private TestObserver<OrderEvent> testObserver;
+    private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final ComposeParams composeParams = new ComposeParams();
     private static final String mergeOrderLabel = "mergeOrderLabel";
@@ -56,6 +61,8 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
             .thenReturn(composeParams);
         when(mergePositionParamsMock.mergeComposeParams())
             .thenReturn(composeParams);
+        when(mergePositionParamsMock.consumerForEvent())
+            .thenReturn(consumerForEvent);
     }
 
     private void subscribeWithEvents(final Observable<OrderEvent> cancelSLTPObservable,
@@ -68,9 +75,10 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
 
         when(basicTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
             .thenReturn(mergeObservable);
-        when(taskParamsUtilMock.composeParams(mergeObservable,
-                                              composeParams))
-                                                  .thenReturn(mergeObservable);
+        when(taskParamsUtilMock.composeParamsWithEvents(mergeObservable,
+                                                        composeParams,
+                                                        mergePositionParamsMock.consumerForEvent()))
+                                                            .thenReturn(mergeObservable);
 
         testObserver = cancelSLTPAndMergeTask
             .observe(toMergeOrders, mergePositionParamsMock)

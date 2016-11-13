@@ -3,7 +3,6 @@ package com.jforex.programming.order.task.params;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.TaskRetry;
@@ -55,8 +54,7 @@ public class TaskParamsUtil {
             .doOnError(composeData.errorConsumer()::accept);
     }
 
-    public Observable<OrderEvent> composeParamsWithEvents(final IOrder order,
-                                                          final Observable<OrderEvent> observable,
+    public Observable<OrderEvent> composeParamsWithEvents(final Observable<OrderEvent> observable,
                                                           final ComposeData composeData,
                                                           final Map<OrderEventType,
                                                                     Consumer<OrderEvent>> consumerForEvent) {

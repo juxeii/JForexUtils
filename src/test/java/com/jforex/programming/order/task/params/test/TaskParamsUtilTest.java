@@ -176,8 +176,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             composeParams.setRetryParams(new RetryParams(noOfRetries, delayInMillis));
 
             testObserver = taskParamsUtil
-                .composeParamsWithEvents(buyOrderEURUSD,
-                                         orderEventSubject,
+                .composeParamsWithEvents(orderEventSubject,
                                          composeParams,
                                          consumerForEvent)
 
