@@ -1,15 +1,23 @@
 package com.jforex.programming.order.task.test;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTaskForBatch;
 import com.jforex.programming.order.task.BasicTaskObservable;
+import com.jforex.programming.order.task.params.SetSLTPMode;
 import com.jforex.programming.order.task.params.basic.CloseParams;
+import com.jforex.programming.order.task.params.basic.SetSLParams;
+import com.jforex.programming.order.task.params.basic.SetTPParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -23,6 +31,10 @@ public class BasicTaskForBatchTest extends InstrumentUtilForTest {
 
     @Mock
     private BasicTaskObservable basicTaskMock;
+    @Captor
+    private ArgumentCaptor<SetSLParams> setSLParamsCaptor;
+    @Captor
+    private ArgumentCaptor<SetTPParams> setTPParamsCaptor;
     private TestObserver<OrderEvent> testObserver;
     private final IOrder orderForTest = buyOrderEURUSD;
     private Observable<OrderEvent> returnedObservable;
@@ -78,8 +90,12 @@ public class BasicTaskForBatchTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void closeOnBasicTaskIsCalled() {
-            verify(basicTaskMock).setStopLossPrice(any());
+        public void closeOnBasicTaskIsWithCorrectParams() {
+            verify(basicTaskMock).setStopLossPrice(setSLParamsCaptor.capture());
+
+            final SetSLParams setSLParams = setSLParamsCaptor.getValue();
+            assertThat(setSLParams.priceOrPips(), equalTo(noSL));
+            assertThat(setSLParams.setSLTPMode(), equalTo(SetSLTPMode.PRICE));
         }
 
         @Test
@@ -102,8 +118,12 @@ public class BasicTaskForBatchTest extends InstrumentUtilForTest {
         }
 
         @Test
-        public void closeOnBasicTaskIsCalled() {
-            verify(basicTaskMock).setTakeProfitPrice(any());
+        public void closeOnBasicTaskIsWithCorrectParams() {
+            verify(basicTaskMock).setTakeProfitPrice(setTPParamsCaptor.capture());
+
+            final SetTPParams setTPParams = setTPParamsCaptor.getValue();
+            assertThat(setTPParams.priceOrPips(), equalTo(noTP));
+            assertThat(setTPParams.setSLTPMode(), equalTo(SetSLTPMode.PRICE));
         }
 
         @Test
