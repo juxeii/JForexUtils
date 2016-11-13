@@ -9,8 +9,8 @@ import org.mockito.Mock;
 
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.task.BasicTaskObservable;
-import com.jforex.programming.order.task.ClosePositionTaskObservable;
-import com.jforex.programming.order.task.MergePositionTaskObservable;
+import com.jforex.programming.order.task.ClosePositionTask;
+import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
@@ -37,9 +37,9 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private BasicTaskObservable basicTaskMock;
     @Mock
-    private MergePositionTaskObservable mergePositionTaskMock;
+    private MergePositionTask mergePositionTaskMock;
     @Mock
-    private ClosePositionTaskObservable closePositionTaskMock;
+    private ClosePositionTask closePositionTaskMock;
     @Mock
     private PositionUtil positionUtilMock;
     @Mock

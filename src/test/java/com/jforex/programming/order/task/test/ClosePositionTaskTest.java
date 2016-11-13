@@ -14,7 +14,7 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.ClosePositionTaskObservable;
+import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.params.position.CloseAllPositionsParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
@@ -26,9 +26,9 @@ import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class ClosePositionTaskObservableTest extends InstrumentUtilForTest {
+public class ClosePositionTaskTest extends InstrumentUtilForTest {
 
-    private ClosePositionTaskObservable closeTask;
+    private ClosePositionTask closePositionTask;
 
     @Mock
     private ClosePositionParamsHandler paramsHandlerMock;
@@ -47,8 +47,8 @@ public class ClosePositionTaskObservableTest extends InstrumentUtilForTest {
 
     @Before
     public void setUp() throws Exception {
-        closeTask = new ClosePositionTaskObservable(paramsHandlerMock,
-                                                    positionUtilMock);
+        closePositionTask = new ClosePositionTask(paramsHandlerMock,
+                                                  positionUtilMock);
     }
 
     private void setUpCommandObservables(final Observable<OrderEvent> mergeObservable,
@@ -61,7 +61,7 @@ public class ClosePositionTaskObservableTest extends InstrumentUtilForTest {
 
     @Test
     public void closeCallIsDeferred() {
-        closeTask.close(closePositionParamsMock);
+        closePositionTask.close(closePositionParamsMock);
 
         verifyZeroInteractions(paramsHandlerMock);
         verifyZeroInteractions(positionUtilMock);
@@ -69,7 +69,7 @@ public class ClosePositionTaskObservableTest extends InstrumentUtilForTest {
 
     @Test
     public void closeAllCallIsDeferred() {
-        closeTask.closeAll(closeAllPositionsParamsMock);
+        closePositionTask.closeAll(closeAllPositionsParamsMock);
 
         verifyZeroInteractions(paramsHandlerMock);
         verifyZeroInteractions(positionUtilMock);
@@ -80,7 +80,7 @@ public class ClosePositionTaskObservableTest extends InstrumentUtilForTest {
         private void setUpCommandObservablesAndSubscribe(final Observable<OrderEvent> mergeObservable,
                                                          final Observable<OrderEvent> closeObservable) {
             setUpCommandObservables(mergeObservable, closeObservable);
-            testObserver = closeTask
+            testObserver = closePositionTask
                 .close(closePositionParamsMock)
                 .test();
         }
@@ -117,7 +117,7 @@ public class ClosePositionTaskObservableTest extends InstrumentUtilForTest {
         private List<Observable<OrderEvent>> closeObservables;
 
         private void closeAllSubscribe() {
-            testObserver = closeTask
+            testObserver = closePositionTask
                 .closeAll(closeAllPositionsParamsMock)
                 .test();
         }

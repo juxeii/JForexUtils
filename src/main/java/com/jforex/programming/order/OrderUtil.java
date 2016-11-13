@@ -5,8 +5,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTaskObservable;
-import com.jforex.programming.order.task.ClosePositionTaskObservable;
-import com.jforex.programming.order.task.MergePositionTaskObservable;
+import com.jforex.programming.order.task.ClosePositionTask;
+import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.CommonParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
@@ -30,14 +30,14 @@ import io.reactivex.Observable;
 public class OrderUtil {
 
     private final BasicTaskObservable basicTask;
-    private final MergePositionTaskObservable mergePositionTask;
-    private final ClosePositionTaskObservable closePositionTask;
+    private final MergePositionTask mergePositionTask;
+    private final ClosePositionTask closePositionTask;
     private final PositionUtil positionUtil;
     private final TaskParamsUtil taskParamsUtil;
 
     public OrderUtil(final BasicTaskObservable basicTask,
-                     final MergePositionTaskObservable mergeTask,
-                     final ClosePositionTaskObservable closePositionTask,
+                     final MergePositionTask mergeTask,
+                     final ClosePositionTask closePositionTask,
                      final PositionUtil positionUtil,
                      final TaskParamsUtil taskParamsUtil) {
         this.basicTask = basicTask;

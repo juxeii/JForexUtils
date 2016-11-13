@@ -18,7 +18,7 @@ import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
-import com.jforex.programming.order.task.MergePositionTaskObservable;
+import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.position.MergeAllPositionsParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.position.PositionUtil;
@@ -29,9 +29,9 @@ import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
+public class MergePositionTaskTest extends InstrumentUtilForTest {
 
-    private MergePositionTaskObservable mergeTask;
+    private MergePositionTask mergeTask;
 
     @Mock
     private CancelSLTPAndMergeTask splitterMock;
@@ -54,7 +54,7 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
     public void setUp() {
         setUpMocks();
 
-        mergeTask = new MergePositionTaskObservable(splitterMock, positionUtilMock);
+        mergeTask = new MergePositionTask(splitterMock, positionUtilMock);
     }
 
     private void setUpMocks() {
@@ -67,6 +67,44 @@ public class MergePositionTaskObservableTest extends InstrumentUtilForTest {
     private void setUpSplitterObservable(final Observable<OrderEvent> splitterObservable) {
         when(splitterMock.observe(toMergeOrders, mergePositionParamsMock))
             .thenReturn(splitterObservable);
+    }
+
+    @Test
+    public void mergeCallWithNoOrdersForMergeReturnsEmptyObservable() {
+        final Set<IOrder> toMergeOrders = Sets.newHashSet();
+        when(positionUtilMock.filledOrders(instrumentEURUSD))
+            .thenReturn(toMergeOrders);
+
+        mergeTask
+            .merge(toMergeOrders, mergePositionParamsMock)
+            .test()
+            .assertComplete();
+
+        mergeTask
+            .merge(mergePositionParamsMock)
+            .test()
+            .assertComplete();
+
+        verifyZeroInteractions(splitterMock);
+    }
+
+    @Test
+    public void mergeCallWithOneOrdersForMergeReturnsEmptyObservable() {
+        final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD);
+        when(positionUtilMock.filledOrders(instrumentEURUSD))
+            .thenReturn(toMergeOrders);
+
+        mergeTask
+            .merge(toMergeOrders, mergePositionParamsMock)
+            .test()
+            .assertComplete();
+
+        mergeTask
+            .merge(mergePositionParamsMock)
+            .test()
+            .assertComplete();
+
+        verifyZeroInteractions(splitterMock);
     }
 
     public class MergeCallSetup {

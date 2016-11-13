@@ -7,18 +7,18 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CloseExecutionMode;
-import com.jforex.programming.order.task.MergePositionTaskObservable;
+import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
 
 public class ClosePositionParamsHandler {
 
-    private final MergePositionTaskObservable mergePositionTask;
+    private final MergePositionTask mergePositionTask;
     private final BatchChangeTask batchChangeTask;
     private final PositionUtil positionUtil;
 
-    public ClosePositionParamsHandler(final MergePositionTaskObservable mergePositionTask,
+    public ClosePositionParamsHandler(final MergePositionTask mergePositionTask,
                                       final BatchChangeTask batchChangeTask,
                                       final PositionUtil positionUtil) {
         this.mergePositionTask = mergePositionTask;

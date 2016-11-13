@@ -12,7 +12,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CloseExecutionMode;
-import com.jforex.programming.order.task.MergePositionTaskObservable;
+import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
@@ -29,7 +29,7 @@ public class ClosePositionParamsHandlerTest extends QuoteProviderForTest {
     private ClosePositionParamsHandler closePositionParamsHandler;
 
     @Mock
-    private MergePositionTaskObservable mergePositionTaskObservableMock;
+    private MergePositionTask mergePositionTaskObservableMock;
     @Mock
     private BatchChangeTask batchChangeTaskMock;
     @Mock
