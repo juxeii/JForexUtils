@@ -5,6 +5,7 @@ import java.util.function.Function;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
+import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 
@@ -22,10 +23,13 @@ public class BatchComposer {
     }
 
     public Function<IOrder, Observable<OrderEvent>> composeClose(final ClosePositionParams closePositionParams) {
-        return order -> taskParamsUtil.composeParamsWithEvents(order,
-                                                               basicTaskForBatch.forClose(order),
-                                                               closePositionParams.closeComposeParams(order),
-                                                               closePositionParams.consumerForEvent());
+        return order -> {
+            final CloseParams closeParams = closePositionParams.closeParamsFactory(order);
+            return taskParamsUtil.composeParamsWithEvents(order,
+                                                          basicTaskForBatch.forClose(closeParams),
+                                                          closeParams.composeData(),
+                                                          closeParams.consumerForEvent());
+        };
     }
 
     public Function<IOrder, Observable<OrderEvent>> composeCancelSL(final MergePositionParams mergePositionParams) {

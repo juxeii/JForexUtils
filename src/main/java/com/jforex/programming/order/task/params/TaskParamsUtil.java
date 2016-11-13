@@ -15,7 +15,7 @@ public class TaskParamsUtil {
     public void subscribeBasicParams(final Observable<OrderEvent> observable,
                                      final CommonParamsBase commonParamsBase) {
         subscribeComposeParams(composeEvents(observable, commonParamsBase.consumerForEvent()),
-                               commonParamsBase.composeParams());
+                               commonParamsBase.composeData());
     }
 
     public void subscribeComposeParams(final Observable<OrderEvent> observable,

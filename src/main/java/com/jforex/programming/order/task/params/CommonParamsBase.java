@@ -9,11 +9,11 @@ import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 
 public abstract class CommonParamsBase {
 
-    protected ComposeParams composeParams;
+    protected ComposeData composeData;
     protected Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
 
     protected CommonParamsBase(final BasicParamsBuilder<?> builder) {
-        composeParams = builder.composeParams;
+        composeData = builder.composeParams;
         consumerForEvent = builder.consumerForEvent;
     }
 
@@ -21,7 +21,7 @@ public abstract class CommonParamsBase {
         return consumerForEvent;
     }
 
-    public ComposeParams composeParams() {
-        return composeParams;
+    public ComposeData composeData() {
+        return composeData;
     }
 }

@@ -9,6 +9,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTaskForBatch;
 import com.jforex.programming.order.task.BasicTaskObservable;
+import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
@@ -39,14 +40,16 @@ public class BasicTaskForBatchTest extends InstrumentUtilForTest {
 
     public class ForClose {
 
+        private final CloseParams closeParams = CloseParams.withOrder(orderForTest).build();
+
         @Before
         public void setUp() {
             returnedEvent = closeEvent;
             returnedObservable = eventObservable(closeEvent);
-            when(basicTaskMock.close(any())).thenReturn(returnedObservable);
+            when(basicTaskMock.close(closeParams)).thenReturn(returnedObservable);
 
             testObserver = basicTaskForBatch
-                .forClose(orderForTest)
+                .forClose(closeParams)
                 .test();
         }
 

@@ -20,6 +20,7 @@ import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.RetryParams;
+import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
@@ -41,11 +42,14 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
     private BiConsumer<Throwable, IOrder> biErrorConsumerMock;
     @Mock
     private Consumer<OrderEvent> eventConsumerMock;
+    @Mock
+    private Function<IOrder, CloseParams> closeParamsFactoryMock;
     private final Map<OrderEventType, Consumer<OrderEvent>> consumersForMergeParams = new HashMap<>();
     private final IOrder orderForTest = buyOrderEURUSD;
     private static final String mergeOrderLabel = "mergeOrderLabel";
     private static final int noOfRetries = 3;
     private static final long delayInMillis = 1500L;
+    private CloseParams closeParams;
 
     @Before
     public void setUp() {
@@ -58,8 +62,20 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
         when(mergePositionParamsMock.mergeOrderLabel()).thenReturn(mergeOrderLabel);
         when(mergePositionParamsMock.consumerForEvent()).thenReturn(consumersForMergeParams);
 
+        closeParams = CloseParams
+            .withOrder(orderForTest)
+            .doOnStart(actionMock)
+            .doOnComplete(actionMock)
+            .doOnError(errorConsumerMock)
+            .retryOnReject(noOfRetries, delayInMillis)
+            .doOnClose(eventConsumerMock)
+            .doOnPartialClose(eventConsumerMock)
+            .doOnReject(eventConsumerMock)
+            .build();
+        when(closeParamsFactoryMock.apply(orderForTest)).thenReturn(closeParams);
+
         closePositionParams = ClosePositionParams
-            .newBuilder(mergePositionParamsMock)
+            .newBuilder(mergePositionParamsMock, closeParamsFactoryMock)
 
             .withCloseExecutionMode(CloseExecutionMode.CloseFilled)
 
@@ -68,14 +84,6 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
             .doOnClosePositionError(errorConsumerMock)
             .retryOnClosePositionReject(noOfRetries, delayInMillis)
 
-            .doOnCloseStart(actionConsumerMock)
-            .doOnCloseComplete(actionConsumerMock)
-            .doOnCloseError(biErrorConsumerMock)
-            .retryOnCloseReject(noOfRetries, delayInMillis)
-
-            .doOnClose(eventConsumerMock)
-            .doOnPartialClose(eventConsumerMock)
-            .doOnCloseReject(eventConsumerMock)
             .build();
     }
 
@@ -103,21 +111,10 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
         assertThat(closePositionParams.consumerForEvent().get(type), equalTo(eventConsumerMock));
     }
 
-    private void assertComposeDataWithOrder(final ComposeData composeData) throws Exception {
-        composeData.startAction().run();
-        verify(actionMock).run();
-
-        composeData.completeAction().run();
-        verify(actionMock, times(2)).run();
-
-        composeData.errorConsumer().accept(jfException);
-        verify(biErrorConsumerMock).accept(jfException, orderForTest);
-    }
-
     @Test
     public void defaultValuesAreCorrect() {
         closePositionParams = ClosePositionParams
-            .newBuilder(mergePositionParamsMock)
+            .newBuilder(mergePositionParamsMock, closeParamsFactoryMock)
             .build();
 
         assertThat(closePositionParams.instrument(), equalTo(instrumentEURUSD));
@@ -141,16 +138,23 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertCloseValues() throws Exception {
-        final ComposeData composeData = closePositionParams.closeComposeParams(orderForTest);
-        assertComposeDataWithOrder(composeData);
+        final CloseParams returnedCloseParams = closePositionParams.closeParamsFactory(orderForTest);
+        final ComposeData composeData = returnedCloseParams.composeData();
+        assertComposeParams(composeData);
+
+        final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = returnedCloseParams.consumerForEvent();
+        assertThat(consumerForEvent.size(), equalTo(3));
+        assertThat(consumerForEvent.get(OrderEventType.CLOSE_OK),
+                   equalTo(eventConsumerMock));
+        assertThat(consumerForEvent.get(OrderEventType.PARTIAL_CLOSE_OK),
+                   equalTo(eventConsumerMock));
+        assertThat(consumerForEvent.get(OrderEventType.CLOSE_REJECTED),
+                   equalTo(eventConsumerMock));
     }
 
     @Test
     public void orderEventHandlersAreCorrect() {
-        assertThat(closePositionParams.consumerForEvent().size(), equalTo(5));
-        assertEventHandler(OrderEventType.CLOSE_OK);
-        assertEventHandler(OrderEventType.PARTIAL_CLOSE_OK);
-        assertEventHandler(OrderEventType.CLOSE_REJECTED);
+        assertThat(closePositionParams.consumerForEvent().size(), equalTo(2));
         assertEventHandler(OrderEventType.MERGE_OK);
         assertEventHandler(OrderEventType.MERGE_REJECTED);
     }

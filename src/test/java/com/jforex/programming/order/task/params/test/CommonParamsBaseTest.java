@@ -33,6 +33,6 @@ public class CommonParamsBaseTest extends InstrumentUtilForTest {
 
         assertThat(closeParams.consumerForEvent().size(), equalTo(1));
         assertThat(closeParams.consumerForEvent().get(OrderEventType.CLOSE_OK), equalTo(consumer));
-        assertNotNull(closeParams.composeParams());
+        assertNotNull(closeParams.composeData());
     }
 }

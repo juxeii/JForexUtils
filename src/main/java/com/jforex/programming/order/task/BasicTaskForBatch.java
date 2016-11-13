@@ -20,10 +20,7 @@ public class BasicTaskForBatch {
         this.basicTask = basicTask;
     }
 
-    public Observable<OrderEvent> forClose(final IOrder order) {
-        final CloseParams closeParams = CloseParams
-            .withOrder(order)
-            .build();
+    public Observable<OrderEvent> forClose(final CloseParams closeParams) {
         return basicTask.close(closeParams);
     }
 

@@ -16,6 +16,7 @@ import com.jforex.programming.order.task.BasicTaskForBatch;
 import com.jforex.programming.order.task.BatchComposer;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
+import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -39,6 +40,8 @@ public class BatchComposerTest extends InstrumentUtilForTest {
     private MergePositionParams mergePositionParamsMock;
     @Mock
     private ComposeData composeDataMock;
+    @Mock
+    private CloseParams closeParamsMock;
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
     private final IOrder orderForTest = buyOrderEURUSD;
     private TestObserver<OrderEvent> testObserver;
@@ -75,12 +78,14 @@ public class BatchComposerTest extends InstrumentUtilForTest {
 
         @Before
         public void setUp() {
-            when(basicTaskForBatchMock.forClose(orderForTest))
-                .thenReturn(basicObservable);
-            when(closePositionParamsMock.closeComposeParams(orderForTest))
+            when(closeParamsMock.composeData())
                 .thenReturn(composeDataMock);
+            when(basicTaskForBatchMock.forClose(closeParamsMock))
+                .thenReturn(basicObservable);
             when(closePositionParamsMock.consumerForEvent())
                 .thenReturn(consumerForEvent);
+            when(closePositionParamsMock.closeParamsFactory(orderForTest))
+                .thenReturn(closeParamsMock);
             setupTaskParamsUtil(basicObservable, closeRejectEvent);
 
             testObserver = batchComposer
@@ -91,7 +96,7 @@ public class BatchComposerTest extends InstrumentUtilForTest {
 
         @Test
         public void basicTaskForBatchIsCalled() {
-            verify(basicTaskForBatchMock).forClose(orderForTest);
+            verify(basicTaskForBatchMock).forClose(closeParamsMock);
         }
 
         @Test
