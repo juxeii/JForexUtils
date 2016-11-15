@@ -20,7 +20,7 @@ public abstract class JForexUtilsStrategy implements IStrategy {
     protected PositionUtil positionUtil;
     protected CalculationUtil calculationUtil;
 
-    protected abstract void onJFStart(final IContext context) throws JFException;
+    public abstract void onJFStart(final IContext context) throws JFException;
 
     @Override
     public void onStart(final IContext context) throws JFException {
@@ -32,8 +32,8 @@ public abstract class JForexUtilsStrategy implements IStrategy {
         onJFStart(context);
     }
 
-    protected abstract void onJFTick(final Instrument instrument,
-                                     final ITick tick) throws JFException;
+    public abstract void onJFTick(final Instrument instrument,
+                                  final ITick tick) throws JFException;
 
     @Override
     public void onTick(final Instrument instrument,
@@ -43,10 +43,10 @@ public abstract class JForexUtilsStrategy implements IStrategy {
         onJFTick(instrument, tick);
     }
 
-    protected abstract void onJFBar(final Instrument instrument,
-                                    final Period period,
-                                    final IBar askBar,
-                                    final IBar bidBar) throws JFException;
+    public abstract void onJFBar(final Instrument instrument,
+                                 final Period period,
+                                 final IBar askBar,
+                                 final IBar bidBar) throws JFException;
 
     @Override
     public void onBar(final Instrument instrument,
@@ -64,7 +64,7 @@ public abstract class JForexUtilsStrategy implements IStrategy {
                 bidBar);
     }
 
-    protected abstract void onJFMessage(final IMessage message) throws JFException;
+    public abstract void onJFMessage(final IMessage message) throws JFException;
 
     @Override
     public void onMessage(final IMessage message) throws JFException {
@@ -73,7 +73,7 @@ public abstract class JForexUtilsStrategy implements IStrategy {
         onJFMessage(message);
     }
 
-    protected abstract void onJFStop() throws JFException;
+    public abstract void onJFStop() throws JFException;
 
     @Override
     public void onStop() throws JFException {
@@ -82,7 +82,7 @@ public abstract class JForexUtilsStrategy implements IStrategy {
         onJFStop();
     }
 
-    protected abstract void onJFAccount(final IAccount account) throws JFException;
+    public abstract void onJFAccount(final IAccount account) throws JFException;
 
     @Override
     public void onAccount(final IAccount account) throws JFException {
