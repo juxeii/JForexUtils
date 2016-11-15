@@ -47,31 +47,31 @@ public class JForexUtilsStrategyTest extends QuoteProviderForTest {
         }
 
         @Override
-        protected void onJFStart(final IContext context) throws JFException {
+        public void onJFStart(final IContext context) throws JFException {
         }
 
         @Override
-        protected void onJFTick(final Instrument instrument,
-                                final ITick tick) throws JFException {
+        public void onJFTick(final Instrument instrument,
+                             final ITick tick) throws JFException {
         }
 
         @Override
-        protected void onJFBar(final Instrument instrument,
-                               final Period period,
-                               final IBar askBar,
-                               final IBar bidBar) throws JFException {
+        public void onJFBar(final Instrument instrument,
+                            final Period period,
+                            final IBar askBar,
+                            final IBar bidBar) throws JFException {
         }
 
         @Override
-        protected void onJFMessage(final IMessage message) throws JFException {
+        public void onJFMessage(final IMessage message) throws JFException {
         }
 
         @Override
-        protected void onJFStop() throws JFException {
+        public void onJFStop() throws JFException {
         }
 
         @Override
-        protected void onJFAccount(final IAccount account) throws JFException {
+        public void onJFAccount(final IAccount account) throws JFException {
         }
     }
 
