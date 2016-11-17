@@ -21,10 +21,11 @@ import com.jforex.programming.order.task.BatchCreator;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
 import com.jforex.programming.order.task.ClosePositionTask;
+import com.jforex.programming.order.task.MergeAndClosePositionTask;
 import com.jforex.programming.order.task.MergePositionTask;
+import com.jforex.programming.order.task.OrdersForPositionClose;
 import com.jforex.programming.order.task.TaskExecutor;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
-import com.jforex.programming.order.task.params.position.MergeAndClosePositionTask;
 import com.jforex.programming.position.PositionFactory;
 import com.jforex.programming.position.PositionUtil;
 
@@ -48,7 +49,8 @@ public class OrderInitUtil {
     private final MergePositionTask orderMergeTask;
     private final ClosePositionTask orderCloseTask;
     private final TaskParamsUtil taskParamsUtil = new TaskParamsUtil();
-    private final MergeAndClosePositionTask closePositionParamsHandler;
+    private final OrdersForPositionClose ordersForPositionClose;
+    private final MergeAndClosePositionTask mergeAndClosePositionTask;
     private final CancelSLTPAndMergeTask cancelSLTPAndMergeTask;
     private final BatchCancelSLTask cancelSLTask;
     private final BatchCancelTPTask cancelTPTask;
@@ -84,10 +86,11 @@ public class OrderInitUtil {
                                                             orderBasicTask,
                                                             taskParamsUtil);
         orderMergeTask = new MergePositionTask(cancelSLTPAndMergeTask, positionUtil);
-        closePositionParamsHandler = new MergeAndClosePositionTask(orderMergeTask,
-                                                                    batchChangeTask,
-                                                                    positionUtil);
-        orderCloseTask = new ClosePositionTask(closePositionParamsHandler, positionUtil);
+        ordersForPositionClose = new OrdersForPositionClose(positionUtil);
+        mergeAndClosePositionTask = new MergeAndClosePositionTask(orderMergeTask,
+                                                                  batchChangeTask,
+                                                                  ordersForPositionClose);
+        orderCloseTask = new ClosePositionTask(mergeAndClosePositionTask, positionUtil);
         orderUtil = new OrderUtil(orderBasicTask,
                                   orderMergeTask,
                                   orderCloseTask,
