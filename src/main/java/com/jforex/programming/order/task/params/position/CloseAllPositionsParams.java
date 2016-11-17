@@ -45,24 +45,24 @@ public class CloseAllPositionsParams {
             this.paramsFactory = paramsFactory;
         }
 
-        public Builder doOnCloseAllPositionsStart(final Action CloseAllPositionsStartAction) {
-            checkNotNull(CloseAllPositionsStartAction);
+        public Builder doOnCloseAllPositionsStart(final Action closeAllPositionsStartAction) {
+            checkNotNull(closeAllPositionsStartAction);
 
-            closeAllPositionsComposeParams.setStartAction(CloseAllPositionsStartAction);
+            closeAllPositionsComposeParams.setStartAction(closeAllPositionsStartAction);
             return this;
         }
 
-        public Builder doOnCloseAllPositionsComplete(final Action CloseAllPositionsCompleteAction) {
-            checkNotNull(CloseAllPositionsCompleteAction);
+        public Builder doOnCloseAllPositionsComplete(final Action closeAllPositionsCompleteAction) {
+            checkNotNull(closeAllPositionsCompleteAction);
 
-            closeAllPositionsComposeParams.setCompleteAction(CloseAllPositionsCompleteAction);
+            closeAllPositionsComposeParams.setCompleteAction(closeAllPositionsCompleteAction);
             return this;
         }
 
-        public Builder doOnCloseAllPositionsError(final Consumer<Throwable> CloseAllPositionsErrorConsumer) {
-            checkNotNull(CloseAllPositionsErrorConsumer);
+        public Builder doOnCloseAllPositionsError(final Consumer<Throwable> closeAllPositionsErrorConsumer) {
+            checkNotNull(closeAllPositionsErrorConsumer);
 
-            closeAllPositionsComposeParams.setErrorConsumer(CloseAllPositionsErrorConsumer);
+            closeAllPositionsComposeParams.setErrorConsumer(closeAllPositionsErrorConsumer);
             return this;
         }
 
