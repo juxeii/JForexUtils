@@ -17,7 +17,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.params.position.CloseAllPositionsParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
-import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
+import com.jforex.programming.order.task.params.position.MergeAndClosePositionTask;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -31,7 +31,7 @@ public class ClosePositionTaskTest extends InstrumentUtilForTest {
     private ClosePositionTask closePositionTask;
 
     @Mock
-    private ClosePositionParamsHandler paramsHandlerMock;
+    private MergeAndClosePositionTask paramsHandlerMock;
     @Mock
     private PositionUtil positionUtilMock;
     @Mock
@@ -135,8 +135,8 @@ public class ClosePositionTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void verifyThatCloseCommandsAreMerged() throws Exception {
-            when(closeAllPositionsParamsMock.paramsFactory())
-                .thenReturn(factoryMock);
+            when(closeAllPositionsParamsMock.paramsForInstrument(instrumentEURUSD))
+                .thenReturn(closePositionParamsMock);
 
             setUpPositionUtilObservables(neverObservable(), eventObservable(event));
 

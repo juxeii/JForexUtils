@@ -12,15 +12,15 @@ import com.jforex.programming.position.PositionUtil;
 
 import io.reactivex.Observable;
 
-public class ClosePositionParamsHandler {
+public class MergeAndClosePositionTask {
 
     private final MergePositionTask mergePositionTask;
     private final BatchChangeTask batchChangeTask;
     private final PositionUtil positionUtil;
 
-    public ClosePositionParamsHandler(final MergePositionTask mergePositionTask,
-                                      final BatchChangeTask batchChangeTask,
-                                      final PositionUtil positionUtil) {
+    public MergeAndClosePositionTask(final MergePositionTask mergePositionTask,
+                                     final BatchChangeTask batchChangeTask,
+                                     final PositionUtil positionUtil) {
         this.mergePositionTask = mergePositionTask;
         this.batchChangeTask = batchChangeTask;
         this.positionUtil = positionUtil;

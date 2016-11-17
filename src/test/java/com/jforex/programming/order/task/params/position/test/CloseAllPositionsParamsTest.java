@@ -86,12 +86,12 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
             .newBuilder(paramsFactoryMock)
             .build();
 
-        assertThat(closeAllPositionsParams.paramsFactory(), equalTo(paramsFactoryMock));
+        assertThat(closeAllPositionsParams.paramsForInstrument(instrumentEURUSD), equalTo(closePositionParamsMock));
     }
 
     @Test
     public void assertSpecifiedValues() {
-        assertThat(closeAllPositionsParams.paramsFactory(), equalTo(paramsFactoryMock));
+        assertThat(closeAllPositionsParams.paramsForInstrument(instrumentEURUSD), equalTo(closePositionParamsMock));
     }
 
     @Test

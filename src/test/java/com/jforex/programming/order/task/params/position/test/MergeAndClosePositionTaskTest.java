@@ -14,7 +14,7 @@ import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
-import com.jforex.programming.order.task.params.position.ClosePositionParamsHandler;
+import com.jforex.programming.order.task.params.position.MergeAndClosePositionTask;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.QuoteProviderForTest;
@@ -24,9 +24,9 @@ import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 
 @RunWith(HierarchicalContextRunner.class)
-public class ClosePositionParamsHandlerTest extends QuoteProviderForTest {
+public class MergeAndClosePositionTaskTest extends QuoteProviderForTest {
 
-    private ClosePositionParamsHandler closePositionParamsHandler;
+    private MergeAndClosePositionTask mergeAndClosePositionTask;
 
     @Mock
     private MergePositionTask mergePositionTaskObservableMock;
@@ -44,9 +44,9 @@ public class ClosePositionParamsHandlerTest extends QuoteProviderForTest {
     public void setUp() {
         setUpMocks();
 
-        closePositionParamsHandler = new ClosePositionParamsHandler(mergePositionTaskObservableMock,
-                                                                    batchChangeTaskMock,
-                                                                    positionUtilMock);
+        mergeAndClosePositionTask = new MergeAndClosePositionTask(mergePositionTaskObservableMock,
+                                                                  batchChangeTaskMock,
+                                                                  positionUtilMock);
     }
 
     private void setUpMocks() {
@@ -61,7 +61,7 @@ public class ClosePositionParamsHandlerTest extends QuoteProviderForTest {
         when(mergePositionTaskObservableMock.merge(anyCollection(), eq(mergePositionParamsMock)))
             .thenReturn(eventObservable(closeEvent));
 
-        testObserver = closePositionParamsHandler
+        testObserver = mergeAndClosePositionTask
             .observeMerge(closePositionParamsMock)
             .test();
 
@@ -74,7 +74,7 @@ public class ClosePositionParamsHandlerTest extends QuoteProviderForTest {
         when(closePositionParamsMock.closeExecutionMode())
             .thenReturn(CloseExecutionMode.CloseOpened);
 
-        testObserver = closePositionParamsHandler
+        testObserver = mergeAndClosePositionTask
             .observeMerge(closePositionParamsMock)
             .test();
 
@@ -101,7 +101,7 @@ public class ClosePositionParamsHandlerTest extends QuoteProviderForTest {
                 when(batchChangeTaskMock.close(filledOrders, closePositionParamsMock))
                     .thenReturn(returnedObservable);
 
-                testObserver = closePositionParamsHandler
+                testObserver = mergeAndClosePositionTask
                     .observeClose(closePositionParamsMock)
                     .test();
             }
@@ -131,7 +131,7 @@ public class ClosePositionParamsHandlerTest extends QuoteProviderForTest {
                 when(batchChangeTaskMock.close(openedOrders, closePositionParamsMock))
                     .thenReturn(returnedObservable);
 
-                testObserver = closePositionParamsHandler
+                testObserver = mergeAndClosePositionTask
                     .observeClose(closePositionParamsMock)
                     .test();
             }
@@ -161,7 +161,7 @@ public class ClosePositionParamsHandlerTest extends QuoteProviderForTest {
                 when(batchChangeTaskMock.close(openedOrders, closePositionParamsMock))
                     .thenReturn(returnedObservable);
 
-                testObserver = closePositionParamsHandler
+                testObserver = mergeAndClosePositionTask
                     .observeClose(closePositionParamsMock)
                     .test();
             }

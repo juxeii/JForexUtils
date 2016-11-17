@@ -22,8 +22,8 @@ public class CloseAllPositionsParams {
         closeAllPositionsComposeParams = builder.closeAllPositionsComposeParams;
     }
 
-    public Function<Instrument, ClosePositionParams> paramsFactory() {
-        return paramsFactory;
+    public ClosePositionParams paramsForInstrument(final Instrument instrument) {
+        return paramsFactory.apply(instrument);
     }
 
     public ComposeParams closeAllPositionsComposeParams() {
