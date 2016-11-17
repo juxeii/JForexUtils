@@ -22,8 +22,8 @@ public class MergeAllPositionsParams {
         mergeAllPositionsComposeParams = builder.mergeAllPositionsComposeParams;
     }
 
-    public Function<Instrument, MergePositionParams> paramsFactory() {
-        return paramsFactory;
+    public MergePositionParams paramsForInstrument(final Instrument instrument) {
+        return paramsFactory.apply(instrument);
     }
 
     public ComposeParams mergeAllPositionsComposeParams() {

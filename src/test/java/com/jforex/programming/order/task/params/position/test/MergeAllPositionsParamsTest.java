@@ -86,12 +86,14 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
             .newBuilder(paramsFactoryMock)
             .build();
 
-        assertThat(mergeAllPositionsParams.paramsFactory(), equalTo(paramsFactoryMock));
+        assertThat(mergeAllPositionsParams.paramsForInstrument(instrumentEURUSD),
+                   equalTo(mergePositionParamsMock));
     }
 
     @Test
     public void assertSpecifiedValues() {
-        assertThat(mergeAllPositionsParams.paramsFactory(), equalTo(paramsFactoryMock));
+        assertThat(mergeAllPositionsParams.paramsForInstrument(instrumentEURUSD),
+                   equalTo(mergePositionParamsMock));
     }
 
     @Test

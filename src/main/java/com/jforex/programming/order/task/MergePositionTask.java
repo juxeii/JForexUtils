@@ -43,7 +43,7 @@ public class MergePositionTask {
     public Observable<OrderEvent> mergeAll(final MergeAllPositionsParams mergeAllPositionParams) {
         return Observable.defer(() -> {
             final Function<Instrument, Observable<OrderEvent>> observablesFromFactory =
-                    instrument -> merge(mergeAllPositionParams.paramsFactory().apply(instrument));
+                    instrument -> merge(mergeAllPositionParams.paramsForInstrument(instrument));
             return Observable.merge(positionUtil.observablesFromFactory(observablesFromFactory));
         });
     }

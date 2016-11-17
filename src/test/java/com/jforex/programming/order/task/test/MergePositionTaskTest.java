@@ -188,8 +188,8 @@ public class MergePositionTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void verifyThatMergeCommandsAreMerged() {
-            when(mergeAllPositionsParamsMock.paramsFactory())
-                .thenReturn(factoryMock);
+            when(mergeAllPositionsParamsMock.paramsForInstrument(instrumentEURUSD))
+                .thenReturn(mergePositionParamsMock);
 
             setUpPositionUtilObservables(neverObservable(),
                                          eventObservable(testEvent));
