@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
+import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.RetryParams;
 
@@ -15,19 +16,19 @@ import io.reactivex.functions.Action;
 public class CloseAllPositionsParams {
 
     private final Function<Instrument, ClosePositionParams> paramsFactory;
-    private final ComposeParams closeAllPositionsComposeParams;
+    private final ComposeData closeAllPositionsComposeData;
 
     private CloseAllPositionsParams(final Builder builder) {
         paramsFactory = builder.paramsFactory;
-        closeAllPositionsComposeParams = builder.closeAllPositionsComposeParams;
+        closeAllPositionsComposeData = builder.closeAllPositionsComposeParams;
     }
 
     public ClosePositionParams paramsForInstrument(final Instrument instrument) {
         return paramsFactory.apply(instrument);
     }
 
-    public ComposeParams closeAllPositionsComposeParams() {
-        return closeAllPositionsComposeParams;
+    public ComposeData closeAllPositionsComposeData() {
+        return closeAllPositionsComposeData;
     }
 
     public static Builder newBuilder(final Function<Instrument, ClosePositionParams> paramsFactory) {

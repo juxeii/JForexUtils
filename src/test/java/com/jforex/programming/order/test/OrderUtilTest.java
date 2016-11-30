@@ -155,20 +155,20 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         orderUtil.mergePosition(mergePositionParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribeComposeParams(mergePositionTaskMock.merge(mergePositionParamsMock),
+            .subscribeComposeData(mergePositionTaskMock.merge(mergePositionParamsMock),
                                     composeParamsMock);
     }
 
     @Test
     public void mergeAllPositionsCallsSubscribeOnTaskParams() {
         final MergeAllPositionsParams mergeAllPositionsParamsMock = mock(MergeAllPositionsParams.class);
-        when(mergeAllPositionsParamsMock.mergeAllPositionsComposeParams())
+        when(mergeAllPositionsParamsMock.mergeAllPositionsComposeData())
             .thenReturn(composeParamsMock);
 
         orderUtil.mergeAllPositions(mergeAllPositionsParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribeComposeParams(mergePositionTaskMock.mergeAll(mergeAllPositionsParamsMock),
+            .subscribeComposeData(mergePositionTaskMock.mergeAll(mergeAllPositionsParamsMock),
                                     composeParamsMock);
     }
 
@@ -181,20 +181,20 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         orderUtil.closePosition(closePositionParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribeComposeParams(closePositionTaskMock.close(closePositionParamsMock),
+            .subscribeComposeData(closePositionTaskMock.close(closePositionParamsMock),
                                     composeParamsMock);
     }
 
     @Test
     public void closeAllPositionsCallsSubscribeOnTaskParams() {
         final CloseAllPositionsParams closeAllPositionsParamsMock = mock(CloseAllPositionsParams.class);
-        when(closeAllPositionsParamsMock.closeAllPositionsComposeParams())
+        when(closeAllPositionsParamsMock.closeAllPositionsComposeData())
             .thenReturn(composeParamsMock);
 
         orderUtil.closeAllPositions(closeAllPositionsParamsMock);
 
         verify(taskParamsUtilMock)
-            .subscribeComposeParams(closePositionTaskMock.closeAll(closeAllPositionsParamsMock),
+            .subscribeComposeData(closePositionTaskMock.closeAll(closeAllPositionsParamsMock),
                                     composeParamsMock);
 
     }

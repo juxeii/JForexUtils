@@ -8,6 +8,7 @@ import com.jforex.programming.order.task.BasicTaskObservable;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.CommonParamsBase;
+import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.basic.MergeParams;
@@ -50,90 +51,93 @@ public class OrderUtil {
     public void submitOrder(final SubmitParams submitParams) {
         checkNotNull(submitParams);
 
-        subscribe(basicTask.submitOrder(submitParams), submitParams);
+        subscribeBasic(basicTask.submitOrder(submitParams), submitParams);
     }
 
     public void mergeOrders(final MergeParams mergeParams) {
         checkNotNull(mergeParams);
 
-        subscribe(basicTask.mergeOrders(mergeParams), mergeParams);
+        subscribeBasic(basicTask.mergeOrders(mergeParams), mergeParams);
     }
 
     public void close(final CloseParams closeParams) {
         checkNotNull(closeParams);
 
-        subscribe(basicTask.close(closeParams), closeParams);
+        subscribeBasic(basicTask.close(closeParams), closeParams);
     }
 
     public void setLabel(final SetLabelParams setLabelParams) {
         checkNotNull(setLabelParams);
 
-        subscribe(basicTask.setLabel(setLabelParams), setLabelParams);
+        subscribeBasic(basicTask.setLabel(setLabelParams), setLabelParams);
     }
 
     public void setGoodTillTime(final SetGTTParams setGTTParams) {
         checkNotNull(setGTTParams);
 
-        subscribe(basicTask.setGoodTillTime(setGTTParams), setGTTParams);
+        subscribeBasic(basicTask.setGoodTillTime(setGTTParams), setGTTParams);
     }
 
     public void setRequestedAmount(final SetAmountParams setAmountParams) {
         checkNotNull(setAmountParams);
 
-        subscribe(basicTask.setRequestedAmount(setAmountParams), setAmountParams);
+        subscribeBasic(basicTask.setRequestedAmount(setAmountParams), setAmountParams);
     }
 
     public void setOpenPrice(final SetOpenPriceParams setOpenPriceParams) {
         checkNotNull(setOpenPriceParams);
 
-        subscribe(basicTask.setOpenPrice(setOpenPriceParams), setOpenPriceParams);
+        subscribeBasic(basicTask.setOpenPrice(setOpenPriceParams), setOpenPriceParams);
     }
 
     public void setStopLossPrice(final SetSLParams setSLParams) {
         checkNotNull(setSLParams);
 
-        subscribe(basicTask.setStopLossPrice(setSLParams), setSLParams);
+        subscribeBasic(basicTask.setStopLossPrice(setSLParams), setSLParams);
     }
 
     public void setTakeProfitPrice(final SetTPParams setTPParams) {
         checkNotNull(setTPParams);
 
-        subscribe(basicTask.setTakeProfitPrice(setTPParams), setTPParams);
+        subscribeBasic(basicTask.setTakeProfitPrice(setTPParams), setTPParams);
     }
 
-    private void subscribe(final Observable<OrderEvent> observable,
-                           final CommonParamsBase commonParamsBase) {
+    private void subscribeBasic(final Observable<OrderEvent> observable,
+                                final CommonParamsBase commonParamsBase) {
         taskParamsUtil.subscribeBasicParams(observable, commonParamsBase);
     }
 
     public void mergePosition(final MergePositionParams mergePositionParams) {
         checkNotNull(mergePositionParams);
 
-        final Observable<OrderEvent> observable = mergePositionTask.merge(mergePositionParams);
-        taskParamsUtil.subscribeComposeParams(observable,
-                                              mergePositionParams.mergePositionComposeParams());
+        subscribePosition(mergePositionTask.merge(mergePositionParams),
+                          mergePositionParams.mergePositionComposeParams());
     }
 
     public void mergeAllPositions(final MergeAllPositionsParams mergeAllPositionParams) {
         checkNotNull(mergeAllPositionParams);
 
-        taskParamsUtil.subscribeComposeParams(mergePositionTask.mergeAll(mergeAllPositionParams),
-                                              mergeAllPositionParams.mergeAllPositionsComposeParams());
+        subscribePosition(mergePositionTask.mergeAll(mergeAllPositionParams),
+                          mergeAllPositionParams.mergeAllPositionsComposeData());
     }
 
     public void closePosition(final ClosePositionParams closePositionParams) {
         checkNotNull(closePositionParams);
 
-        final Observable<OrderEvent> observable = closePositionTask.close(closePositionParams);
-        taskParamsUtil.subscribeComposeParams(observable,
-                                              closePositionParams.closePositionComposeParams());
+        subscribePosition(closePositionTask.close(closePositionParams),
+                          closePositionParams.closePositionComposeParams());
     }
 
     public void closeAllPositions(final CloseAllPositionsParams closeAllPositionParams) {
         checkNotNull(closeAllPositionParams);
 
-        taskParamsUtil.subscribeComposeParams(closePositionTask.closeAll(closeAllPositionParams),
-                                              closeAllPositionParams.closeAllPositionsComposeParams());
+        subscribePosition(closePositionTask.closeAll(closeAllPositionParams),
+                          closeAllPositionParams.closeAllPositionsComposeData());
+    }
+
+    private void subscribePosition(final Observable<OrderEvent> observable,
+                                   final ComposeData composeData) {
+        taskParamsUtil.subscribeComposeData(observable, composeData);
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {

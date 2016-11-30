@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
+import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.RetryParams;
 
@@ -15,19 +16,19 @@ import io.reactivex.functions.Action;
 public class MergeAllPositionsParams {
 
     private final Function<Instrument, MergePositionParams> paramsFactory;
-    private final ComposeParams mergeAllPositionsComposeParams;
+    private final ComposeData mergeAllPositionsComposeData;
 
     private MergeAllPositionsParams(final Builder builder) {
         paramsFactory = builder.paramsFactory;
-        mergeAllPositionsComposeParams = builder.mergeAllPositionsComposeParams;
+        mergeAllPositionsComposeData = builder.mergeAllPositionsComposeParams;
     }
 
     public MergePositionParams paramsForInstrument(final Instrument instrument) {
         return paramsFactory.apply(instrument);
     }
 
-    public ComposeParams mergeAllPositionsComposeParams() {
-        return mergeAllPositionsComposeParams;
+    public ComposeData mergeAllPositionsComposeData() {
+        return mergeAllPositionsComposeData;
     }
 
     public static Builder newBuilder(final Function<Instrument, MergePositionParams> paramsFactory) {

@@ -14,7 +14,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.params.ComposeParams;
+import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.position.CloseAllPositionsParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
@@ -60,15 +60,15 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
             .build();
     }
 
-    private void assertComposeParams(final ComposeParams composeParams) {
-        assertActions(composeParams);
-        assertErrorConsumer(composeParams.errorConsumer());
-        assertRetries(composeParams.retryParams());
+    private void assertComposeParams(final ComposeData composeData) {
+        assertActions(composeData);
+        assertErrorConsumer(composeData.errorConsumer());
+        assertRetries(composeData.retryParams());
     }
 
-    private void assertActions(final ComposeParams composeParams) {
-        assertThat(composeParams.startAction(), equalTo(actionMock));
-        assertThat(composeParams.completeAction(), equalTo(actionMock));
+    private void assertActions(final ComposeData composeData) {
+        assertThat(composeData.startAction(), equalTo(actionMock));
+        assertThat(composeData.completeAction(), equalTo(actionMock));
     }
 
     private void assertErrorConsumer(final Consumer<Throwable> errorConsumer) {
@@ -96,6 +96,6 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertMergeAllPositionsValues() {
-        assertComposeParams(closeAllPositionsParams.closeAllPositionsComposeParams());
+        assertComposeParams(closeAllPositionsParams.closeAllPositionsComposeData());
     }
 }

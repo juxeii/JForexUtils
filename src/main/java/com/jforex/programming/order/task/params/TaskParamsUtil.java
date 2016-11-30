@@ -13,12 +13,12 @@ public class TaskParamsUtil {
 
     public void subscribeBasicParams(final Observable<OrderEvent> observable,
                                      final CommonParamsBase commonParamsBase) {
-        subscribeComposeParams(composeEvents(observable, commonParamsBase.consumerForEvent()),
-                               commonParamsBase.composeData());
+        subscribeComposeData(composeEvents(observable, commonParamsBase.consumerForEvent()),
+                             commonParamsBase.composeData());
     }
 
-    public void subscribeComposeParams(final Observable<OrderEvent> observable,
-                                       final ComposeData composeData) {
+    public void subscribeComposeData(final Observable<OrderEvent> observable,
+                                     final ComposeData composeData) {
         composeRetry(observable, composeData.retryParams())
             .doOnSubscribe(d -> composeData.startAction().run())
             .subscribe(orderEvent -> {},
