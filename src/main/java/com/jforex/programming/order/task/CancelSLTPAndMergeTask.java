@@ -12,11 +12,11 @@ import io.reactivex.Observable;
 public class CancelSLTPAndMergeTask {
 
     private final CancelSLTPTask cancelSLTPTask;
-    private final BasicTaskObservable basicTask;
+    private final BasicTask basicTask;
     private final TaskParamsUtil taskParamsUtil;
 
     public CancelSLTPAndMergeTask(final CancelSLTPTask cancelSLTPTask,
-                                  final BasicTaskObservable basicTask,
+                                  final BasicTask basicTask,
                                   final TaskParamsUtil taskParamsUtil) {
         this.cancelSLTPTask = cancelSLTPTask;
         this.basicTask = basicTask;

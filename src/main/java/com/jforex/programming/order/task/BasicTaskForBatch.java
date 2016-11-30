@@ -12,11 +12,11 @@ import io.reactivex.Observable;
 
 public class BasicTaskForBatch {
 
-    private final BasicTaskObservable basicTask;
+    private final BasicTask basicTask;
 
     private static final PlatformSettings platformSettings = StrategyUtil.platformSettings;
 
-    public BasicTaskForBatch(final BasicTaskObservable basicTask) {
+    public BasicTaskForBatch(final BasicTask basicTask) {
         this.basicTask = basicTask;
     }
 

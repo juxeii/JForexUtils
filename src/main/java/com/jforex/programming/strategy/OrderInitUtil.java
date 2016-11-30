@@ -12,7 +12,7 @@ import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventTypeDataFactory;
 import com.jforex.programming.order.task.BasicTaskForBatch;
-import com.jforex.programming.order.task.BasicTaskObservable;
+import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.BatchCancelSLTask;
 import com.jforex.programming.order.task.BatchCancelTPTask;
 import com.jforex.programming.order.task.BatchChangeTask;
@@ -41,7 +41,7 @@ public class OrderInitUtil {
     private final StrategyThreadRunner strategyThreadRunner;
     private final TaskExecutor orderTaskExecutor;
     private final OrderUtilHandler orderUtilHandler;
-    private final BasicTaskObservable orderBasicTask;
+    private final BasicTask orderBasicTask;
     private final BatchCreator batchCreator = new BatchCreator();
     private final BasicTaskForBatch basicTaskForBatch;
     private final BatchComposer batchComposer;
@@ -73,7 +73,7 @@ public class OrderInitUtil {
                                                 orderEventTypeDataFactory,
                                                 callRequestPublisher);
         orderTaskExecutor = new TaskExecutor(strategyThreadRunner, engine);
-        orderBasicTask = new BasicTaskObservable(orderTaskExecutor,
+        orderBasicTask = new BasicTask(orderTaskExecutor,
                                                  orderUtilHandler,
                                                  calculationUtil);
         basicTaskForBatch = new BasicTaskForBatch(orderBasicTask);

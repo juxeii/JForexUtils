@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.jforex.programming.order.OrderUtil;
-import com.jforex.programming.order.task.BasicTaskObservable;
+import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.ComposeParams;
@@ -35,7 +35,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private OrderUtil orderUtil;
 
     @Mock
-    private BasicTaskObservable basicTaskMock;
+    private BasicTask basicTaskMock;
     @Mock
     private MergePositionTask mergePositionTaskMock;
     @Mock

@@ -13,7 +13,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTaskForBatch;
-import com.jforex.programming.order.task.BasicTaskObservable;
+import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.params.SetSLTPMode;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.basic.SetSLParams;
@@ -30,7 +30,7 @@ public class BasicTaskForBatchTest extends InstrumentUtilForTest {
     private BasicTaskForBatch basicTaskForBatch;
 
     @Mock
-    private BasicTaskObservable basicTaskMock;
+    private BasicTask basicTaskMock;
     @Captor
     private ArgumentCaptor<SetSLParams> setSLParamsCaptor;
     @Captor

@@ -14,7 +14,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.BasicTaskObservable;
+import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
 import com.jforex.programming.order.task.params.ComposeParams;
@@ -34,7 +34,7 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     @Mock
     private CancelSLTPTask cancelSLTPTaskMock;
     @Mock
-    private BasicTaskObservable basicTaskMock;
+    private BasicTask basicTaskMock;
     @Mock
     private TaskParamsUtil taskParamsUtilMock;
     @Mock

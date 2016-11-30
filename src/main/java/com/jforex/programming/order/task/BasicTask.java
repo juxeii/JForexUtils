@@ -30,15 +30,15 @@ import com.jforex.programming.order.task.params.basic.SubmitParams;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 
-public class BasicTaskObservable {
+public class BasicTask {
 
     private final TaskExecutor taskExecutor;
     private final OrderUtilHandler orderUtilHandler;
     private final CalculationUtil calculationUtil;
 
-    public BasicTaskObservable(final TaskExecutor taskExecutor,
-                               final OrderUtilHandler orderUtilHandler,
-                               final CalculationUtil calculationUtil) {
+    public BasicTask(final TaskExecutor taskExecutor,
+                     final OrderUtilHandler orderUtilHandler,
+                     final CalculationUtil calculationUtil) {
         this.taskExecutor = taskExecutor;
         this.orderUtilHandler = orderUtilHandler;
         this.calculationUtil = calculationUtil;
@@ -148,10 +148,6 @@ public class BasicTaskObservable {
         final double newSL = setSLParams.setSLTPMode() == SetSLTPMode.PRICE
                 ? setSLParams.priceOrPips()
                 : calculationUtil.slPriceForPips(orderToSetSL, setSLParams.priceOrPips());
-
-        if (setSLParams.setSLTPMode() == SetSLTPMode.PIPS) {
-            System.out.println("UUUUUUUUUUUUU " + newSL);
-        }
 
         return Observable
             .just(setSLParams.order())
