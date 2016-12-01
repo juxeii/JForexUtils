@@ -55,63 +55,104 @@ public class MergeAndClosePositionTaskTest extends QuoteProviderForTest {
             .thenReturn(mergePositionParamsMock);
     }
 
-    @Test
-    public void observeMergeDelegatesToMergePositionTaskMock() {
-        when(mergePositionTaskObservableMock.merge(anyCollection(), eq(mergePositionParamsMock)))
-            .thenReturn(eventObservable(closeEvent));
+    public class ObserveMerge {
 
-        testObserver = mergeAndClosePositionTask
-            .observeMerge(closePositionParamsMock)
-            .test();
+        private final Set<IOrder> ordersForMerge = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
 
-        testObserver.assertComplete();
-        testObserver.assertValue(closeEvent);
-    }
+        private void assertMergeObservable(final Set<IOrder> orders) {
+            when(ordersForPositionCloseMock.filled(instrumentEURUSD))
+                .thenReturn(orders);
 
-    @Test
-    public void emptyMergeObservableIsReturnedWhenClosingOnlyOpenedOrders() {
-        when(closePositionParamsMock.closeExecutionMode())
-            .thenReturn(CloseExecutionMode.CloseOpened);
+            testObserver = mergeAndClosePositionTask
+                .observeMerge(closePositionParamsMock)
+                .test();
 
-        testObserver = mergeAndClosePositionTask
-            .observeMerge(closePositionParamsMock)
-            .test();
+            testObserver.assertComplete();
+        }
 
-        testObserver.assertComplete();
-        testObserver.assertNoValues();
+        @Test
+        public void observeMergeIsEmptyForNoFilledOrders() {
+            assertMergeObservable(Sets.newHashSet());
+            verifyZeroInteractions(mergePositionTaskObservableMock);
+        }
+
+        @Test
+        public void observeMergeIsEmptyForOneFilledOrder() {
+            assertMergeObservable(Sets.newHashSet(buyOrderEURUSD));
+            verifyZeroInteractions(mergePositionTaskObservableMock);
+        }
+
+        @Test
+        public void observeMergeDelegatesToMergePositionTaskMock() {
+            when(mergePositionTaskObservableMock.merge(anyCollection(), eq(mergePositionParamsMock)))
+                .thenReturn(eventObservable(closeEvent));
+
+            assertMergeObservable(ordersForMerge);
+            testObserver.assertValue(closeEvent);
+        }
+
+        @Test
+        public void emptyMergeObservableIsReturnedWhenClosingOnlyOpenedOrders() {
+            when(closePositionParamsMock.closeExecutionMode())
+                .thenReturn(CloseExecutionMode.CloseOpened);
+
+            testObserver = mergeAndClosePositionTask
+                .observeMerge(closePositionParamsMock)
+                .test();
+
+            testObserver.assertComplete();
+            testObserver.assertNoValues();
+        }
     }
 
     public class ObserveClose {
 
-        private final Set<IOrder> filledOrders = Sets.newHashSet(buyOrderEURUSD);
-
-        @Before
-        public void setUp() {
+        @Test
+        public void observeCloseIsEmptyForNoOrders() {
             when(ordersForPositionCloseMock.forMode(closePositionParamsMock))
-                .thenReturn(filledOrders);
+                .thenReturn(Sets.newHashSet());
 
-            when(batchChangeTaskMock.close(filledOrders, closePositionParamsMock))
-                .thenReturn(eventObservable(closeEvent));
-
-            testObserver = mergeAndClosePositionTask
+            mergeAndClosePositionTask
                 .observeClose(closePositionParamsMock)
-                .test();
+                .test()
+                .assertNoValues()
+                .assertComplete();
+
+            verifyZeroInteractions(batchChangeTaskMock);
         }
 
-        @Test
-        public void observeCloseCallsBatchTaskMockCorrect() {
-            verify(batchChangeTaskMock).close(filledOrders, closePositionParamsMock);
-        }
+        public class WithOrdersToClose {
 
-        @Test
-        public void ordersForPositionCloseIsCalled() {
-            verify(ordersForPositionCloseMock).forMode(closePositionParamsMock);
-        }
+            private final Set<IOrder> filledOrders = Sets.newHashSet(buyOrderEURUSD);
 
-        @Test
-        public void emittedEventIsCorrect() {
-            testObserver.assertComplete();
-            testObserver.assertValue(closeEvent);
+            @Before
+            public void setUp() {
+                when(ordersForPositionCloseMock.forMode(closePositionParamsMock))
+                    .thenReturn(filledOrders);
+
+                when(batchChangeTaskMock.close(filledOrders, closePositionParamsMock))
+                    .thenReturn(eventObservable(closeEvent));
+
+                testObserver = mergeAndClosePositionTask
+                    .observeClose(closePositionParamsMock)
+                    .test();
+            }
+
+            @Test
+            public void observeCloseCallsBatchTaskMockCorrect() {
+                verify(batchChangeTaskMock).close(filledOrders, closePositionParamsMock);
+            }
+
+            @Test
+            public void ordersForPositionCloseIsCalled() {
+                verify(ordersForPositionCloseMock).forMode(closePositionParamsMock);
+            }
+
+            @Test
+            public void emittedEventIsCorrect() {
+                testObserver.assertComplete();
+                testObserver.assertValue(closeEvent);
+            }
         }
     }
 }

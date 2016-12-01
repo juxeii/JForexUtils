@@ -35,9 +35,9 @@ public class MergePositionTask {
 
     private final Observable<OrderEvent> observeSplit(final Collection<IOrder> toMergeOrders,
                                                       final MergePositionParams mergePositionParams) {
-        return Observable.defer(() -> toMergeOrders.size() <= 1
-                ? Observable.empty()
-                : cancelSLTPAndMergeTask.observe(toMergeOrders, mergePositionParams));
+        return Observable.defer(() -> toMergeOrders.size() > 1
+                ? cancelSLTPAndMergeTask.observe(toMergeOrders, mergePositionParams)
+                : Observable.empty());
     }
 
     public Observable<OrderEvent> mergeAll(final MergeAllPositionsParams mergeAllPositionParams) {

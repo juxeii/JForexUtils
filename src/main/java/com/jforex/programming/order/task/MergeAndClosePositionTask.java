@@ -30,13 +30,19 @@ public class MergeAndClosePositionTask {
 
     private Observable<OrderEvent> observeMergeForFilledOrders(final ClosePositionParams closePositionParams) {
         return Observable.defer(() -> {
-            final Collection<IOrder> ordersToMerge = ordersForPositionClose.filled(closePositionParams.instrument());
-            return mergePositionTask.merge(ordersToMerge, closePositionParams.mergePositionParams());
+            final Collection<IOrder> filledOrders = ordersForPositionClose.filled(closePositionParams.instrument());
+            return filledOrders.size() > 1
+                    ? mergePositionTask.merge(filledOrders, closePositionParams.mergePositionParams())
+                    : Observable.empty();
         });
     }
 
     public Observable<OrderEvent> observeClose(final ClosePositionParams closePositionParams) {
-        return Observable.defer(() -> batchChangeTask.close(ordersForPositionClose.forMode(closePositionParams),
-                                                            closePositionParams));
+        return Observable.defer(() -> {
+            final Collection<IOrder> ordersToClose = ordersForPositionClose.forMode(closePositionParams);
+            return ordersToClose.size() > 0
+                    ? batchChangeTask.close(ordersToClose, closePositionParams)
+                    : Observable.empty();
+        });
     }
 }
