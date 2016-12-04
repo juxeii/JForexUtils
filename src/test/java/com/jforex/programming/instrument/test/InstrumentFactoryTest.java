@@ -1,7 +1,7 @@
 package com.jforex.programming.instrument.test;
 
-import static com.jforex.programming.instrument.InstrumentFactory.combineAllFromCurrencySet;
-import static com.jforex.programming.instrument.InstrumentFactory.combineAllWithAnchorCurrency;
+import static com.jforex.programming.instrument.InstrumentFactory.combineCurrencies;
+import static com.jforex.programming.instrument.InstrumentFactory.combineWithAnchorCurrency;
 import static com.jforex.programming.instrument.InstrumentFactory.maybeFromCurrencies;
 import static com.jforex.programming.instrument.InstrumentFactory.maybeFromName;
 import static org.hamcrest.Matchers.equalTo;
@@ -35,12 +35,12 @@ public class InstrumentFactoryTest extends CurrencyUtilForTest {
 
     private void assertCombineCurrencySet(final Set<ICurrency> currencies,
                                           final Set<Instrument> instruments) {
-        assertThat(combineAllFromCurrencySet(currencies), equalTo(instruments));
+        assertThat(combineCurrencies(currencies), equalTo(instruments));
     }
 
     private void assertAnchorCurrencySet(final Set<ICurrency> partnerCurrencies,
                                          final Set<Instrument> instruments) {
-        assertThat(combineAllWithAnchorCurrency(currencyEUR, partnerCurrencies),
+        assertThat(combineWithAnchorCurrency(currencyEUR, partnerCurrencies),
                    equalTo(instruments));
     }
 
@@ -83,26 +83,26 @@ public class InstrumentFactoryTest extends CurrencyUtilForTest {
     }
 
     @Test
-    public void testCombineAllFromCurrencySetReturnsEmptySetForZeorCurrencies() {
+    public void combineCurrenciesReturnsEmptySetForZeorCurrencies() {
         final Set<ICurrency> currencies = Sets.newHashSet();
 
         assertCombineCurrencySet(currencies, Sets.newHashSet());
     }
 
     @Test
-    public void testCombineAllFromCurrencySetReturnsEmptySetForOneCurrency() {
+    public void combineCurrenciesReturnsEmptySetForOneCurrency() {
         assertCombineCurrencySet(Sets.newHashSet(currencyEUR), Sets.newHashSet());
     }
 
     @Test
-    public void testCombineAllFromCurrencySetReturnsEmptySetForOnlyEqualCurrencies() {
+    public void combineCurrenciesReturnsEmptySetForOnlyEqualCurrencies() {
         final Set<ICurrency> currencies = Sets.newHashSet(currencyEUR, currencyEUR);
 
         assertCombineCurrencySet(currencies, Sets.newHashSet());
     }
 
     @Test
-    public void testCombineAllFromCurrencySetReturnsCorrectInstruments() {
+    public void combineCurrenciesReturnsCorrectInstruments() {
         final Set<ICurrency> currencies = Sets.newHashSet(currencyEUR,
                                                           currencyUSD,
                                                           currencyAUD,
@@ -112,8 +112,7 @@ public class InstrumentFactoryTest extends CurrencyUtilForTest {
     }
 
     @Test
-    public void
-           testCombineAllFromCurrencySetReturnsCorrectInstrumentsForEqualCurrenciesInCollection() {
+    public void combineCurrenciesReturnsCorrectInstrumentsForEqualCurrenciesInCollection() {
         final Set<ICurrency> currencies = Sets.newHashSet(currencyEUR,
                                                           currencyEUR,
                                                           currencyUSD,
@@ -121,7 +120,7 @@ public class InstrumentFactoryTest extends CurrencyUtilForTest {
                                                           currencyJPY,
                                                           currencyJPY);
 
-        assertThat(combineAllFromCurrencySet(currencies), equalTo(instrumentsForCombineTests));
+        assertThat(combineCurrencies(currencies), equalTo(instrumentsForCombineTests));
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.jforex.programming.math;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,7 +22,7 @@ public final class MathUtil {
 
     private static final PlatformSettings platformSettings = StrategyUtil.platformSettings;
 
-    public static final <T> Set<Set<T>> kPowerSet(final Set<T> sourceSet,
+    public static final <T> Set<Set<T>> kPowerSet(final Collection<T> sourceSet,
                                                   final int setSize) {
         checkNotNull(sourceSet);
 

@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.stream.Collectors.toSet;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -55,7 +56,7 @@ public final class InstrumentFactory {
         return maybeFromName(instrumentName).get();
     }
 
-    public static final Set<Instrument> combineAllFromCurrencySet(final Set<ICurrency> currencies) {
+    public static final Set<Instrument> combineCurrencies(final Collection<? extends ICurrency> currencies) {
         checkNotNull(currencies);
 
         return MathUtil
@@ -67,8 +68,8 @@ public final class InstrumentFactory {
             .collect(toSet());
     }
 
-    public static final Set<Instrument> combineAllWithAnchorCurrency(final ICurrency anchorCurrency,
-                                                                     final Set<ICurrency> partnerCurrencies) {
+    public static final Set<Instrument> combineWithAnchorCurrency(final ICurrency anchorCurrency,
+                                                                  final Collection<? extends ICurrency> partnerCurrencies) {
         checkNotNull(anchorCurrency);
         checkNotNull(partnerCurrencies);
 
