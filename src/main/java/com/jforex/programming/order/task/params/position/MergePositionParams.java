@@ -11,7 +11,7 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
-import com.jforex.programming.order.task.MergeExecutionMode;
+import com.jforex.programming.order.task.CancelSLTPMode;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeData;
 
@@ -29,7 +29,7 @@ public class MergePositionParams {
     private final Function<IOrder, PositionParams> cancelSLComposeParams;
     private final Function<IOrder, PositionParams> cancelTPComposeParams;
 
-    private final MergeExecutionMode mergeExecutionMode;
+    private final CancelSLTPMode mergeExecutionMode;
     private final BatchMode batchCancelSLMode;
     private final BatchMode batchCancelTPMode;
 
@@ -95,7 +95,7 @@ public class MergePositionParams {
         return mergeComposeParams.composeData();
     }
 
-    public MergeExecutionMode mergeExecutionMode() {
+    public CancelSLTPMode mergeExecutionMode() {
         return mergeExecutionMode;
     }
 
@@ -129,7 +129,7 @@ public class MergePositionParams {
                 order -> PositionParams.newBuilder().build();
         private Function<IOrder, PositionParams> cancelTPComposeParams =
                 order -> PositionParams.newBuilder().build();
-        private MergeExecutionMode mergeExecutionMode = MergeExecutionMode.MergeCancelSLAndTP;
+        private CancelSLTPMode mergeExecutionMode = CancelSLTPMode.MergeCancelSLAndTP;
         private BatchMode batchCancelSLMode = BatchMode.MERGE;
         private BatchMode batchCancelTPMode = BatchMode.MERGE;
 
@@ -139,7 +139,7 @@ public class MergePositionParams {
             this.mergeOrderLabel = mergeOrderLabel;
         }
 
-        public Builder withMergeExecutionMode(final MergeExecutionMode mergeExecutionMode) {
+        public Builder withMergeExecutionMode(final CancelSLTPMode mergeExecutionMode) {
             checkNotNull(mergeExecutionMode);
 
             this.mergeExecutionMode = mergeExecutionMode;

@@ -16,7 +16,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
-import com.jforex.programming.order.task.MergeExecutionMode;
+import com.jforex.programming.order.task.CancelSLTPMode;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
@@ -79,7 +79,7 @@ public class MergePositionParamsTest extends CommonParamsForTest {
         mergePositionParams = MergePositionParams
             .newBuilder(instrumentEURUSD, mergeOrderLabel)
 
-            .withMergeExecutionMode(MergeExecutionMode.ConcatCancelSLAndTP)
+            .withMergeExecutionMode(CancelSLTPMode.ConcatCancelSLAndTP)
             .withBatchCancelSLMode(BatchMode.CONCAT)
             .withBatchCancelTPMode(BatchMode.CONCAT)
 
@@ -116,7 +116,7 @@ public class MergePositionParamsTest extends CommonParamsForTest {
 
         assertThat(mergePositionParams.instrument(), equalTo(instrumentEURUSD));
         assertThat(mergePositionParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
-        assertThat(mergePositionParams.mergeExecutionMode(), equalTo(MergeExecutionMode.MergeCancelSLAndTP));
+        assertThat(mergePositionParams.mergeExecutionMode(), equalTo(CancelSLTPMode.MergeCancelSLAndTP));
         assertThat(mergePositionParams.batchCancelSLMode(), equalTo(BatchMode.MERGE));
         assertThat(mergePositionParams.batchCancelTPMode(), equalTo(BatchMode.MERGE));
         assertThat(mergePositionParams.consumerForEvent().size(), equalTo(0));
@@ -129,7 +129,7 @@ public class MergePositionParamsTest extends CommonParamsForTest {
     public void assertSpecifiedValues() {
         assertThat(mergePositionParams.instrument(), equalTo(instrumentEURUSD));
         assertThat(mergePositionParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
-        assertThat(mergePositionParams.mergeExecutionMode(), equalTo(MergeExecutionMode.ConcatCancelSLAndTP));
+        assertThat(mergePositionParams.mergeExecutionMode(), equalTo(CancelSLTPMode.ConcatCancelSLAndTP));
         assertThat(mergePositionParams.batchCancelSLMode(), equalTo(BatchMode.CONCAT));
         assertThat(mergePositionParams.batchCancelTPMode(), equalTo(BatchMode.CONCAT));
     }

@@ -39,10 +39,10 @@ public class CancelSLTPTask {
 
     private Observable<OrderEvent> arrangeObservables(final Observable<OrderEvent> cancelSL,
                                                       final Observable<OrderEvent> cancelTP,
-                                                      final MergeExecutionMode executionMode) {
-        if (executionMode == MergeExecutionMode.ConcatCancelSLAndTP)
+                                                      final CancelSLTPMode executionMode) {
+        if (executionMode == CancelSLTPMode.ConcatCancelSLAndTP)
             return cancelSL.concatWith(cancelTP);
-        else if (executionMode == MergeExecutionMode.ConcatCancelTPAndSL)
+        else if (executionMode == CancelSLTPMode.ConcatCancelTPAndSL)
             return cancelTP.concatWith(cancelSL);
         return cancelSL.mergeWith(cancelTP);
     }

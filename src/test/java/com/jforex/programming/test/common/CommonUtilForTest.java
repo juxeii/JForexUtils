@@ -37,7 +37,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
-import com.jforex.programming.order.task.MergeExecutionMode;
+import com.jforex.programming.order.task.CancelSLTPMode;
 import com.jforex.programming.order.task.params.SetSLTPMode;
 import com.jforex.programming.position.PositionDirection;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -187,8 +187,8 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(OrderDirection.LONG.toString());
         PositionDirection
             .valueOf(PositionDirection.FLAT.toString());
-        MergeExecutionMode
-            .valueOf(MergeExecutionMode.ConcatCancelSLAndTP.toString());
+        CancelSLTPMode
+            .valueOf(CancelSLTPMode.ConcatCancelSLAndTP.toString());
         CloseExecutionMode
             .valueOf(CloseExecutionMode.CloseAll.toString());
         BatchMode

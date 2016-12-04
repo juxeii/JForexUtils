@@ -1,6 +1,6 @@
 package com.jforex.programming.order.task;
 
-public enum MergeExecutionMode {
+public enum CancelSLTPMode {
 
     ConcatCancelSLAndTP,
     ConcatCancelTPAndSL,

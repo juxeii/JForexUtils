@@ -13,7 +13,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BatchCancelSLTask;
 import com.jforex.programming.order.task.BatchCancelTPTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
-import com.jforex.programming.order.task.MergeExecutionMode;
+import com.jforex.programming.order.task.CancelSLTPMode;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
@@ -79,13 +79,13 @@ public class CancelSLTPTaskTest extends InstrumentUtilForTest {
 
     public class ObserveTaskSetup {
 
-        private void setExecutionMode(final MergeExecutionMode mode) {
+        private void setExecutionMode(final CancelSLTPMode mode) {
             when(mergePositionParamsMock.mergeExecutionMode()).thenReturn(mode);
         }
 
         @Test
         public void cancelSLAndCancelTPAreConcatenated() {
-            setExecutionMode(MergeExecutionMode.ConcatCancelSLAndTP);
+            setExecutionMode(CancelSLTPMode.ConcatCancelSLAndTP);
             setUpCommandObservables(neverObservable(), eventObservable(testEvent));
 
             subscribeWithOrders(toCancelSLTPOrders);
@@ -96,7 +96,7 @@ public class CancelSLTPTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void cancelTPAndCancelSLAreConcatenated() {
-            setExecutionMode(MergeExecutionMode.ConcatCancelTPAndSL);
+            setExecutionMode(CancelSLTPMode.ConcatCancelTPAndSL);
             setUpCommandObservables(eventObservable(testEvent), neverObservable());
 
             subscribeWithOrders(toCancelSLTPOrders);
@@ -107,7 +107,7 @@ public class CancelSLTPTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void cancelSLAndTPAreMerged() {
-            setExecutionMode(MergeExecutionMode.MergeCancelSLAndTP);
+            setExecutionMode(CancelSLTPMode.MergeCancelSLAndTP);
             setUpCommandObservables(neverObservable(), eventObservable(testEvent));
 
             subscribeWithOrders(toCancelSLTPOrders);

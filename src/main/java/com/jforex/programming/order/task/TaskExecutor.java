@@ -15,12 +15,12 @@ import io.reactivex.functions.Action;
 
 public class TaskExecutor {
 
-    private final StrategyThreadRunner strategyThreadTask;
+    private final StrategyThreadRunner strategyThreadRunner;
     private final IEngine engine;
 
-    public TaskExecutor(final StrategyThreadRunner strategyThreadTask,
+    public TaskExecutor(final StrategyThreadRunner strategyThreadRunner,
                         final IEngine engine) {
-        this.strategyThreadTask = strategyThreadTask;
+        this.strategyThreadRunner = strategyThreadRunner;
         this.engine = engine;
     }
 
@@ -91,10 +91,10 @@ public class TaskExecutor {
     }
 
     private Single<IOrder> single(final Callable<IOrder> callable) {
-        return strategyThreadTask.execute(callable);
+        return strategyThreadRunner.execute(callable);
     }
 
     private Completable completable(final Action action) {
-        return strategyThreadTask.execute(action);
+        return strategyThreadRunner.execute(action);
     }
 }
