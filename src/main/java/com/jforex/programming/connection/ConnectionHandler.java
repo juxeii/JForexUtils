@@ -11,16 +11,16 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
 
-public class ConnectionKeeper {
+public class ConnectionHandler {
 
     private final Observable<ConnectionState> connectionStateObservable;
     private Observable<ConnectionState> reconnectStrategy;
     private ObservableTransformer<ConnectionState, ConnectionState> reconnectComposer;
     private LoginState currentLoginState = LoginState.LOGGED_OUT;
 
-    private static final Logger logger = LogManager.getLogger(ConnectionKeeper.class);
+    private static final Logger logger = LogManager.getLogger(ConnectionHandler.class);
 
-    public ConnectionKeeper(final IClient client,
+    public ConnectionHandler(final IClient client,
                             final Observable<ConnectionState> connectionStateObservable,
                             final Observable<LoginState> loginStateObservable) {
         this.connectionStateObservable = connectionStateObservable;

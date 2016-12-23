@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.jforex.programming.connection.ConnectionKeeper;
+import com.jforex.programming.connection.ConnectionHandler;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.test.common.CommonUtilForTest;
@@ -14,18 +14,18 @@ import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
-public class ConnectionKeeperTest extends CommonUtilForTest {
+public class ConnectionHandlerTest extends CommonUtilForTest {
 
-    private ConnectionKeeper connectionKeeper;
+    private ConnectionHandler connectionHandler;
 
     private final Subject<ConnectionState> connectionStateSubject = PublishSubject.create();
     private final Subject<LoginState> loginStateSubject = PublishSubject.create();
 
     @Before
     public void setUp() {
-        connectionKeeper = new ConnectionKeeper(clientMock,
-                                                connectionStateSubject,
-                                                loginStateSubject);
+        connectionHandler = new ConnectionHandler(clientMock,
+                                                  connectionStateSubject,
+                                                  loginStateSubject);
     }
 
     public class NoReconnectComposer {
@@ -105,7 +105,7 @@ public class ConnectionKeeperTest extends CommonUtilForTest {
 
         @Before
         public void setUp() {
-            connectionKeeper.setReconnectComposer(obs -> obs.retry(2));
+            connectionHandler.setReconnectComposer(obs -> obs.retry(2));
         }
 
         public class WhenLoggedIn {
