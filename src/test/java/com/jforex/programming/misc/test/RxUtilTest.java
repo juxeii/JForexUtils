@@ -41,9 +41,9 @@ public class RxUtilTest extends CommonUtilForTest {
     @Test
     public void retryComposerIsCorrect() {
         final TestObserver<Long> subscriber = throwableSubject
-            .compose(RxUtil.retryComposer(2,
-                                          delay,
-                                          timeUnit))
+            .compose(RxUtil.retryWhenComposer(2,
+                                              delay,
+                                              timeUnit))
             .test();
 
         emitThrowableAndAdvanceTime();

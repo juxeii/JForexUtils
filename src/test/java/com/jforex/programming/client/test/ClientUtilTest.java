@@ -58,11 +58,6 @@ public class ClientUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void connectionKeeperIsValid() {
-        assertNotNull(clientUtil.connectionKeeper());
-    }
-
-    @Test
     public void connectMessageIsPublished() {
         clientForTest.publishConnected();
 

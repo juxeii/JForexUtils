@@ -91,7 +91,7 @@ public class HistoryUtil {
     public final Observable<Long> retryOnHistoryFailObservable(final Observable<? extends Throwable> errors) {
         return checkNotNull(errors)
             .cast(Throwable.class)
-            .compose(RxUtil.retryComposer(maxRetriesOnHistoryFail,
+            .compose(RxUtil.retryWhenComposer(maxRetriesOnHistoryFail,
                                           delayOnHistoryFailRetry,
                                           TimeUnit.MILLISECONDS));
     }

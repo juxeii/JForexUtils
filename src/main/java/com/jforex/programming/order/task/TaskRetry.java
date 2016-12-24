@@ -41,7 +41,7 @@ public class TaskRetry {
                           final long delayInMillis) {
         return errors -> errors
             .flatMap(error -> filterCallErrorType(error, delayInMillis))
-            .compose(RxUtil.retryComposer(noOfRetries,
+            .compose(RxUtil.retryWhenComposer(noOfRetries,
                                           delayInMillis,
                                           TimeUnit.MILLISECONDS));
     }
