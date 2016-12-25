@@ -1,4 +1,4 @@
-package com.jforex.programming.misc;
+package com.jforex.programming.rx;
 
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;

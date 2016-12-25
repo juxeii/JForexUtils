@@ -1,4 +1,4 @@
-package com.jforex.programming.misc.test;
+package com.jforex.programming.rx.test;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -6,8 +6,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.jforex.programming.misc.RetryDelay;
-import com.jforex.programming.misc.RxUtil;
+import com.jforex.programming.rx.RetryDelay;
+import com.jforex.programming.rx.RxUtil;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
 

@@ -18,6 +18,8 @@ import com.dukascopy.api.Period;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.QuoteException;
 import com.jforex.programming.quote.TickQuote;
+import com.jforex.programming.rx.RetryDelay;
+import com.jforex.programming.rx.RxUtil;
 import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.strategy.StrategyUtil;
 

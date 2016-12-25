@@ -2,7 +2,7 @@ package com.jforex.programming.connection;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.jforex.programming.misc.RetryDelayFunction;
+import com.jforex.programming.rx.RetryDelayFunction;
 
 import io.reactivex.functions.Action;
 

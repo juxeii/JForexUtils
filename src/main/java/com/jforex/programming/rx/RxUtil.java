@@ -1,4 +1,4 @@
-package com.jforex.programming.misc;
+package com.jforex.programming.rx;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;

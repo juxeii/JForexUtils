@@ -1,6 +1,6 @@
 package com.jforex.programming.connection;
 
-import com.jforex.programming.misc.RxUtil;
+import com.jforex.programming.rx.RxUtil;
 
 import io.reactivex.Completable;
 

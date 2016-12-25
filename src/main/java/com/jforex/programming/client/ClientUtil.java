@@ -16,7 +16,7 @@ import com.jforex.programming.connection.LoginReconnector;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.connection.ReconnectParams;
 import com.jforex.programming.connection.Reconnector;
-import com.jforex.programming.misc.JFHotPublisher;
+import com.jforex.programming.rx.JFHotPublisher;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;

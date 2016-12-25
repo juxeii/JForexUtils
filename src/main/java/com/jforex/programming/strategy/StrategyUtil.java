@@ -17,12 +17,12 @@ import com.dukascopy.api.Period;
 import com.jforex.programming.instrument.InstrumentUtil;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.misc.HistoryUtil;
-import com.jforex.programming.misc.JFHotPublisher;
 import com.jforex.programming.misc.StrategyThreadRunner;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.rx.JFHotPublisher;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 

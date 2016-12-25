@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.JFHotPublisher;
+import com.jforex.programming.rx.JFHotPublisher;
 
 import io.reactivex.Observable;
 

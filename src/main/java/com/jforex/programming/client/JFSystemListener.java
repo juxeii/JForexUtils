@@ -2,7 +2,7 @@ package com.jforex.programming.client;
 
 import com.dukascopy.api.system.ISystemListener;
 import com.jforex.programming.connection.ConnectionState;
-import com.jforex.programming.misc.JFHotPublisher;
+import com.jforex.programming.rx.JFHotPublisher;
 
 import io.reactivex.Observable;
 

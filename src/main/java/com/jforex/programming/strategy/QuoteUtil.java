@@ -7,7 +7,6 @@ import com.dukascopy.api.ITick;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
-import com.jforex.programming.misc.JFHotPublisher;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuote;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -15,6 +14,7 @@ import com.jforex.programming.quote.BarQuoteRepository;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteProvider;
 import com.jforex.programming.quote.TickQuoteRepository;
+import com.jforex.programming.rx.JFHotPublisher;
 
 public class QuoteUtil {
 

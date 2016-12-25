@@ -7,7 +7,7 @@ import org.junit.runner.RunWith;
 import com.jforex.programming.connection.Authentification;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
-import com.jforex.programming.misc.JFHotPublisher;
+import com.jforex.programming.rx.JFHotPublisher;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;

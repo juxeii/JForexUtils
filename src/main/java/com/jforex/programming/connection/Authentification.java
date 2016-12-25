@@ -5,7 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Optional;
 
 import com.dukascopy.api.system.IClient;
-import com.jforex.programming.misc.JFHotPublisher;
+import com.jforex.programming.rx.JFHotPublisher;
 
 import io.reactivex.Completable;
 

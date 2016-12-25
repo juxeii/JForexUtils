@@ -1,13 +1,13 @@
 package com.jforex.programming.order;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.misc.JFHotPublisher;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventGateway;
 import com.jforex.programming.order.event.OrderEventTypeData;
 import com.jforex.programming.order.event.OrderEventTypeDataFactory;
+import com.jforex.programming.rx.JFHotPublisher;
 
 import io.reactivex.Observable;
 

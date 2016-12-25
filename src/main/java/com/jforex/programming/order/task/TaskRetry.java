@@ -7,10 +7,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.jforex.programming.misc.RetryDelay;
-import com.jforex.programming.misc.RxUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.rx.RetryDelay;
+import com.jforex.programming.rx.RxUtil;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;

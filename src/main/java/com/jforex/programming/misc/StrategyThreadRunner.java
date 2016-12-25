@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.concurrent.Callable;
 
 import com.dukascopy.api.IContext;
+import com.jforex.programming.rx.RxUtil;
 import com.jforex.programming.strategy.StrategyUtil;
 
 import io.reactivex.Completable;

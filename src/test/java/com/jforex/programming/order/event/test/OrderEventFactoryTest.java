@@ -13,7 +13,6 @@ import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
-import com.jforex.programming.misc.JFHotPublisher;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
 import com.jforex.programming.order.event.OrderEvent;
@@ -21,6 +20,7 @@ import com.jforex.programming.order.event.OrderEventFactory;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.event.OrderEventTypeMapper;
 import com.jforex.programming.order.event.OrderEventTypeSets;
+import com.jforex.programming.rx.JFHotPublisher;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;

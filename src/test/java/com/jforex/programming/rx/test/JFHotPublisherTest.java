@@ -1,4 +1,4 @@
-package com.jforex.programming.misc.test;
+package com.jforex.programming.rx.test;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.jforex.programming.misc.JFHotPublisher;
+import com.jforex.programming.rx.JFHotPublisher;
 import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
