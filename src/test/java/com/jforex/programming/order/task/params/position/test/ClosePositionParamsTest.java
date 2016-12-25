@@ -73,7 +73,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
             .doOnStart(actionMock)
             .doOnComplete(actionMock)
             .doOnError(errorConsumerMock)
-            .retryOnReject(noOfRetries, retryFunction)
+            .retryOnReject(noOfRetries, retryDelayFunction)
             .doOnClose(eventConsumerMock)
             .doOnPartialClose(eventConsumerMock)
             .doOnReject(eventConsumerMock)

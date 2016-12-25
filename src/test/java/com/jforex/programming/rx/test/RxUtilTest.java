@@ -6,7 +6,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import com.jforex.programming.rx.RetryDelay;
 import com.jforex.programming.rx.RxUtil;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
@@ -20,7 +19,6 @@ public class RxUtilTest extends CommonUtilForTest {
 
     private final Subject<Throwable> throwableSubject = PublishSubject.create();
     private static TimeUnit timeUnit = TimeUnit.MILLISECONDS;
-    private static long delay = 1500L;
 
     @Mock
     private Action actionMock;
@@ -29,9 +27,14 @@ public class RxUtilTest extends CommonUtilForTest {
         RxTestUtil.advanceTimeInMillisBy(delay);
     }
 
+    private void emitErrorAndAdvanceTime() {
+        throwableSubject.onError(jfException);
+        advanceTime(delayInMillis);
+    }
+
     private void emitThrowableAndAdvanceTime() {
         throwableSubject.onNext(jfException);
-        advanceTime(delay);
+        advanceTime(delayInMillis);
     }
 
     @Test
@@ -40,19 +43,21 @@ public class RxUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void retryComposerIsCorrect() {
-        final TestObserver<Long> subscriber = throwableSubject
-            .compose(RxUtil.retryWhenComposer(2,
-                                              attempt -> new RetryDelay(delay, timeUnit)))
+    public void retryWhenIsCorrect() {
+        final TestObserver<Throwable> subscriber = throwableSubject
+            .retryWhen(RxUtil.retryWhen(retryParams))
             .test();
 
         emitThrowableAndAdvanceTime();
-        subscriber.assertValue(0L);
+        subscriber.assertValue(jfException);
 
-        emitThrowableAndAdvanceTime();
-        subscriber.assertValues(0L, 0L);
+        emitErrorAndAdvanceTime();
+        subscriber.assertValue(jfException);
 
-        emitThrowableAndAdvanceTime();
+        emitErrorAndAdvanceTime();
+        subscriber.assertValue(jfException);
+
+        emitErrorAndAdvanceTime();
         subscriber.assertError(jfException);
     }
 
@@ -69,7 +74,7 @@ public class RxUtilTest extends CommonUtilForTest {
     @Test
     public void waitObservableIsCorrect() {
         final TestObserver<Long> subscriber = RxUtil
-            .wait(delay, timeUnit)
+            .wait(delayInMillis, timeUnit)
             .test();
 
         advanceTime(1300L);

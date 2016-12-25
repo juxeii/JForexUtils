@@ -1,5 +1,6 @@
 package com.jforex.programming.connection;
 
+import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.rx.RxUtil;
 
 import io.reactivex.Completable;
@@ -23,8 +24,8 @@ public class LoginReconnector {
                 ? authentification
                     .login(reconnectParams.loginCredentials())
                     .andThen(connectionMonitor.observe())
-                    .retryWhen(RxUtil.retryWhen(reconnectParams.noOfRelogins(),
-                                                reconnectParams.reloginDelayFunction()))
+                    .retryWhen(RxUtil.retryWhen(new RetryParams(reconnectParams.noOfRelogins(),
+                                                                reconnectParams.reloginDelayFunction())))
                     .ignoreElements()
                 : Completable.complete();
     }

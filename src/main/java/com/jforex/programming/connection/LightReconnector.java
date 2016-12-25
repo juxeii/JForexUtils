@@ -1,6 +1,7 @@
 package com.jforex.programming.connection;
 
 import com.dukascopy.api.system.IClient;
+import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.rx.RxUtil;
 
 import io.reactivex.Completable;
@@ -24,8 +25,8 @@ public class LightReconnector {
                 ? Completable
                     .fromAction(() -> client.reconnect())
                     .andThen(connectionMonitor.observe())
-                    .retryWhen(RxUtil.retryWhen(reconnectParams.noOfLightReconnects(),
-                                                reconnectParams.lightReconnectDelayFunction()))
+                    .retryWhen(RxUtil.retryWhen(new RetryParams(reconnectParams.noOfLightReconnects(),
+                                                                reconnectParams.lightReconnectDelayFunction())))
                     .ignoreElements()
                 : Completable.complete();
     }

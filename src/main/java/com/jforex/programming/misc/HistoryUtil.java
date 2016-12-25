@@ -1,7 +1,5 @@
 package com.jforex.programming.misc;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -15,6 +13,7 @@ import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.dukascopy.api.OfferSide;
 import com.dukascopy.api.Period;
+import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.QuoteException;
 import com.jforex.programming.quote.TickQuote;
@@ -54,7 +53,12 @@ public class HistoryUtil {
             .fromCallable(() -> latestHistoryTick(instrument))
             .doOnError(e -> logger.error(e.getMessage()
                     + "! Will retry latest tick from history now..."))
-            .retryWhen(this::retryOnHistoryFailObservable);
+            .retryWhen(RxUtil.retryWhen(retryParams()));
+    }
+
+    private RetryParams retryParams() {
+        return new RetryParams(maxRetriesOnHistoryFail,
+                               attempt -> new RetryDelay(delayOnHistoryFailRetry, TimeUnit.MILLISECONDS));
     }
 
     private ITick latestHistoryTick(final Instrument instrument) throws JFException {
@@ -74,7 +78,7 @@ public class HistoryUtil {
             .fromCallable(() -> latestHistoryBar(instrument, period, offerSide))
             .doOnError(e -> logger.error(e.getMessage()
                     + "! Will retry latest bar from history now..."))
-            .retryWhen(this::retryOnHistoryFailObservable);
+            .retryWhen(RxUtil.retryWhen(retryParams()));
     }
 
     private IBar latestHistoryBar(final Instrument instrument,
@@ -88,13 +92,5 @@ public class HistoryUtil {
             throw new QuoteException("Latest bar from history for " + instrument
                     + " " + period + " " + offerSide + " returned null!");
         return bar;
-    }
-
-    public final Observable<Long> retryOnHistoryFailObservable(final Observable<? extends Throwable> errors) {
-        return checkNotNull(errors)
-            .cast(Throwable.class)
-            .compose(RxUtil.retryWhenComposer(maxRetriesOnHistoryFail,
-                                              attempt -> new RetryDelay(delayOnHistoryFailRetry,
-                                                                        TimeUnit.MILLISECONDS)));
     }
 }

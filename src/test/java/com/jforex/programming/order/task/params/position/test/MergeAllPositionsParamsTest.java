@@ -54,7 +54,7 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
             .doOnMergeAllPositionsStart(actionMock)
             .doOnMergeAllPositionsComplete(actionMock)
             .doOnMergeAllPositionsError(errorConsumerMock)
-            .retryOnMergeAllPositionsReject(noOfRetries, retryFunction)
+            .retryOnMergeAllPositionsReject(noOfRetries, retryDelayFunction)
 
             .build();
     }

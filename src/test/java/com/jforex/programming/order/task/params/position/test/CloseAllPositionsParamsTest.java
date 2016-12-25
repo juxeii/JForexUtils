@@ -54,7 +54,7 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
             .doOnCloseAllPositionsStart(actionMock)
             .doOnCloseAllPositionsComplete(actionMock)
             .doOnCloseAllPositionsError(errorConsumerMock)
-            .retryOnCloseAllPositionsReject(noOfRetries, retryFunction)
+            .retryOnCloseAllPositionsReject(noOfRetries, retryDelayFunction)
 
             .build();
     }
@@ -76,7 +76,8 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
 
     private void assertRetries(final RetryParams retryParams) {
         assertThat(retryParams.noOfRetries(), equalTo(noOfRetries));
-        // assertThat(retryParams.delayInMillis(), equalTo(delayInMillis));
+        // assertThat(retryParams.delayFunction().apply(1).delay(),
+        // equalTo(delayInMillis));
     }
 
     @Test

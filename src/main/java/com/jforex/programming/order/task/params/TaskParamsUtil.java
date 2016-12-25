@@ -35,7 +35,7 @@ public class TaskParamsUtil {
                                                final RetryParams retryParams) {
         final int noOfRetries = retryParams.noOfRetries();
         return noOfRetries > 0
-                ? observable.compose(TaskRetry.onRejectRetryWith(noOfRetries, retryParams.delayFunction()))
+                ? TaskRetry.rejectObservable(observable, retryParams)
                 : observable;
     }
 

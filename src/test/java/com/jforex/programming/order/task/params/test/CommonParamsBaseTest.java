@@ -27,7 +27,7 @@ public class CommonParamsBaseTest extends InstrumentUtilForTest {
         closeParams = CloseParams
             .withOrder(buyOrderEURUSD)
             .doOnClose(consumer)
-            .retryOnReject(noOfRetries, retryFunction)
+            .retryOnReject(noOfRetries, retryDelayFunction)
             .build();
 
         assertThat(closeParams.consumerForEvent().size(), equalTo(1));

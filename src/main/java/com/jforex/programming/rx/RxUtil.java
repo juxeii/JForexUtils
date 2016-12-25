@@ -3,35 +3,30 @@ package com.jforex.programming.rx;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import com.jforex.programming.order.task.params.RetryParams;
+
 import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.BiFunction;
 
 public final class RxUtil {
 
     private RxUtil() {
     }
 
-    public static final RetryWhenFunction retryWhen(final int noOfRetries,
-                                                    final RetryDelayFunction delayFunction) {
-        return failures -> failures
-            .zipWith(retryCounter(noOfRetries), (err, attempt) -> {
-                if (attempt <= noOfRetries) {
-                    final RetryDelay retryDelay = delayFunction.apply(attempt);
-                    return wait(retryDelay.delay(), retryDelay.timeUnit());
-                }
-                return Observable.<Long> error(err);
-            })
-            .flatMap(x -> x);
+    public static final RetryWhenFunction retryWhen(final RetryParams retryParams) {
+        return retryWhen(retryParams,
+                         (err, attempt) -> attempt <= retryParams.noOfRetries());
     }
 
-    public static final ObservableTransformer<Throwable, Long>
-           retryWhenComposer(final int noOfRetries,
-                             final RetryDelayFunction delayFunction) {
+    public static final RetryWhenFunction retryWhen(final RetryParams retryParams,
+                                                    final BiFunction<Throwable, Integer, Boolean> retryPredicate) {
         return failures -> failures
-            .zipWith(retryCounter(noOfRetries), (err, attempt) -> {
-                if (attempt <= noOfRetries) {
-                    final RetryDelay retryDelay = delayFunction.apply(attempt);
+            .zipWith(retryCounter(retryParams.noOfRetries()), (err, attempt) -> {
+                if (retryPredicate.apply(err, attempt)) {
+                    final RetryDelay retryDelay = retryParams
+                        .delayFunction()
+                        .apply(attempt);
                     return wait(retryDelay.delay(), retryDelay.timeUnit());
                 }
                 return Observable.<Long> error(err);

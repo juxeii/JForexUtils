@@ -39,6 +39,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CancelSLTPMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
+import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.SetSLTPMode;
 import com.jforex.programming.position.PositionDirection;
 import com.jforex.programming.quote.BarQuoteProvider;
@@ -118,8 +119,9 @@ public class CommonUtilForTest extends BDDMockito {
     protected static final double noSL = platformSettings.noSLPrice();
     protected static final double noTP = platformSettings.noTPPrice();
     protected static final long delayInMillis = 1500L;
-    protected static final RetryDelayFunction retryFunction =
+    protected static final RetryDelayFunction retryDelayFunction =
             attempt -> new RetryDelay(delayInMillis, TimeUnit.MILLISECONDS);
+    protected static final RetryParams retryParams = new RetryParams(2, retryDelayFunction);
 
     protected static final Logger logger = LogManager.getLogger(CommonUtilForTest.class);
 

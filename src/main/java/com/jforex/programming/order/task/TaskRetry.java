@@ -7,12 +7,11 @@ import org.apache.logging.log4j.Logger;
 
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.rx.RetryDelayFunction;
+import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.rx.RxUtil;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableTransformer;
-import io.reactivex.functions.Function;
+import io.reactivex.functions.BiFunction;
 
 public class TaskRetry {
 
@@ -21,11 +20,11 @@ public class TaskRetry {
     private TaskRetry() {
     }
 
-    public static ObservableTransformer<OrderEvent, OrderEvent> onRejectRetryWith(final int noOfRetries,
-                                                                                  final RetryDelayFunction delayFunction) {
-        return sourceObservable -> sourceObservable
+    public static Observable<OrderEvent> rejectObservable(final Observable<OrderEvent> observable,
+                                                          final RetryParams retryParams) {
+        return observable
             .flatMap(TaskRetry::rejectAsError)
-            .retryWhen(retryOnReject(noOfRetries, delayFunction));
+            .retryWhen(RxUtil.retryWhen(retryParams, retryPredicate(retryParams)));
     }
 
     private final static Observable<OrderEvent> rejectAsError(final OrderEvent orderEvent) {
@@ -34,21 +33,16 @@ public class TaskRetry {
                 : Observable.just(orderEvent);
     }
 
-    private static final Function<Observable<? extends Throwable>, Observable<Long>>
-            retryOnReject(final int noOfRetries,
-                          final RetryDelayFunction delayFunction) {
-        return errors -> errors
-            .flatMap(error -> filterCallErrorType(error, delayFunction))
-            .compose(RxUtil.retryWhenComposer(noOfRetries, delayFunction));
+    private static final BiFunction<Throwable, Integer, Boolean> retryPredicate(final RetryParams retryParams) {
+        return (err, attempt) -> attempt <= retryParams.noOfRetries() && isRejectError(err);
     }
 
-    private static final Observable<Throwable> filterCallErrorType(final Throwable error,
-                                                                   final RetryDelayFunction delayFunction) {
+    private static final boolean isRejectError(final Throwable error) {
         if (error instanceof OrderCallRejectException) {
             logPositionTaskRetry((OrderCallRejectException) error);
-            return Observable.just(error);
+            return true;
         }
-        return Observable.error(error);
+        return false;
     }
 
     private static final void logPositionTaskRetry(final OrderCallRejectException rejectException) {

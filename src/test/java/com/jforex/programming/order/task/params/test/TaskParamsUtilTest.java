@@ -73,7 +73,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
                 .doOnError(errorConsumerMock)
                 .doOnClose(consumerMockA)
                 .doOnReject(consumerMockB)
-                .retryOnReject(noOfRetries, retryFunction)
+                .retryOnReject(noOfRetries, retryDelayFunction)
                 .build();
 
             taskParamsUtil.subscribeBasicParams(orderEventSubject, closeParams);
@@ -125,7 +125,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             composeParams.setStartAction(startActionMock);
             composeParams.setCompleteAction(completeActionMock);
             composeParams.setErrorConsumer(errorConsumerMock);
-            composeParams.setRetryParams(new RetryParams(noOfRetries, retryFunction));
+            composeParams.setRetryParams(new RetryParams(noOfRetries, retryDelayFunction));
 
             testObserver = taskParamsUtil
                 .composeParams(orderEventSubject, composeParams)
@@ -172,7 +172,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             composeParams.setStartAction(startActionMock);
             composeParams.setCompleteAction(completeActionMock);
             composeParams.setErrorConsumer(errorConsumerMock);
-            composeParams.setRetryParams(new RetryParams(noOfRetries, retryFunction));
+            composeParams.setRetryParams(new RetryParams(noOfRetries, retryDelayFunction));
 
             testObserver = taskParamsUtil
                 .composeParamsWithEvents(orderEventSubject,

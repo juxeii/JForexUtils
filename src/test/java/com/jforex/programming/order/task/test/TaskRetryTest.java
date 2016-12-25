@@ -28,12 +28,11 @@ public class TaskRetryTest extends CommonUtilForTest {
     private final Subject<OrderEvent> subject = PublishSubject.create();
     private TestObserver<OrderEvent> testObserver;
     private OrderEvent eventForTest;
-    private final int noOfRetries = 2;
 
     @Before
     public void setUp() {
-        testObserver = subject
-            .compose(TaskRetry.onRejectRetryWith(noOfRetries, retryFunction))
+        testObserver = TaskRetry
+            .rejectObservable(subject, retryParams)
             .test();
     }
 
