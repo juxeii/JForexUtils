@@ -92,7 +92,7 @@ public class HistoryUtil {
         return checkNotNull(errors)
             .cast(Throwable.class)
             .compose(RxUtil.retryWhenComposer(maxRetriesOnHistoryFail,
-                                          delayOnHistoryFailRetry,
-                                          TimeUnit.MILLISECONDS));
+                                              attempt -> new RetryDelay(delayOnHistoryFailRetry,
+                                                                        TimeUnit.MILLISECONDS)));
     }
 }

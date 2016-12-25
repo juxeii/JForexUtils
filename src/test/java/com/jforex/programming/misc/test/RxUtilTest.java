@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import com.jforex.programming.misc.RetryDelay;
 import com.jforex.programming.misc.RxUtil;
 import com.jforex.programming.test.common.CommonUtilForTest;
 import com.jforex.programming.test.common.RxTestUtil;
@@ -42,8 +43,7 @@ public class RxUtilTest extends CommonUtilForTest {
     public void retryComposerIsCorrect() {
         final TestObserver<Long> subscriber = throwableSubject
             .compose(RxUtil.retryWhenComposer(2,
-                                              delay,
-                                              timeUnit))
+                                              attempt -> new RetryDelay(delay, timeUnit)))
             .test();
 
         emitThrowableAndAdvanceTime();

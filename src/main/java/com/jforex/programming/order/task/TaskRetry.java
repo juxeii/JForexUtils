@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.jforex.programming.misc.RetryDelay;
 import com.jforex.programming.misc.RxUtil;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
@@ -35,15 +36,13 @@ public class TaskRetry {
                 : Observable.just(orderEvent);
     }
 
-    private static final Function<Observable<? extends Throwable>,
-                                  Observable<Long>>
+    private static final Function<Observable<? extends Throwable>, Observable<Long>>
             retryOnReject(final int noOfRetries,
                           final long delayInMillis) {
         return errors -> errors
             .flatMap(error -> filterCallErrorType(error, delayInMillis))
             .compose(RxUtil.retryWhenComposer(noOfRetries,
-                                          delayInMillis,
-                                          TimeUnit.MILLISECONDS));
+                                              attempt -> new RetryDelay(delayInMillis, TimeUnit.MILLISECONDS)));
     }
 
     private static final Observable<Throwable> filterCallErrorType(final Throwable error,
