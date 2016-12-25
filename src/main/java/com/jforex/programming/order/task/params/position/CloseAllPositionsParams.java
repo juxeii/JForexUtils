@@ -10,6 +10,7 @@ import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.RetryParams;
+import com.jforex.programming.rx.RetryDelayFunction;
 
 import io.reactivex.functions.Action;
 
@@ -68,8 +69,8 @@ public class CloseAllPositionsParams {
         }
 
         public Builder retryOnCloseAllPositionsReject(final int noOfRetries,
-                                                      final long delayInMillis) {
-            closeAllPositionsComposeParams.setRetryParams(new RetryParams(noOfRetries, delayInMillis));
+                                                      final RetryDelayFunction delayFunction) {
+            closeAllPositionsComposeParams.setRetryParams(new RetryParams(noOfRetries, delayFunction));
             return this;
         }
 

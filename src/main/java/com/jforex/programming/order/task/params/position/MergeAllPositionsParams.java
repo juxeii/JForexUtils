@@ -10,6 +10,7 @@ import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.RetryParams;
+import com.jforex.programming.rx.RetryDelayFunction;
 
 import io.reactivex.functions.Action;
 
@@ -68,8 +69,8 @@ public class MergeAllPositionsParams {
         }
 
         public Builder retryOnMergeAllPositionsReject(final int noOfRetries,
-                                                      final long delayInMillis) {
-            mergeAllPositionsComposeParams.setRetryParams(new RetryParams(noOfRetries, delayInMillis));
+                                                      final RetryDelayFunction delayFunction) {
+            mergeAllPositionsComposeParams.setRetryParams(new RetryParams(noOfRetries, delayFunction));
             return this;
         }
 

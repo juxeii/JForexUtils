@@ -42,7 +42,6 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
     private Function<Instrument, ClosePositionParams> paramsFactoryMock;
     private final IOrder orderForTest = buyOrderEURUSD;
     private static final int noOfRetries = 3;
-    private static final long delayInMillis = 1500L;
 
     @Before
     public void setUp() {
@@ -55,7 +54,7 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
             .doOnCloseAllPositionsStart(actionMock)
             .doOnCloseAllPositionsComplete(actionMock)
             .doOnCloseAllPositionsError(errorConsumerMock)
-            .retryOnCloseAllPositionsReject(noOfRetries, delayInMillis)
+            .retryOnCloseAllPositionsReject(noOfRetries, retryFunction)
 
             .build();
     }
@@ -77,7 +76,7 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
 
     private void assertRetries(final RetryParams retryParams) {
         assertThat(retryParams.noOfRetries(), equalTo(noOfRetries));
-        assertThat(retryParams.delayInMillis(), equalTo(delayInMillis));
+        // assertThat(retryParams.delayInMillis(), equalTo(delayInMillis));
     }
 
     @Test

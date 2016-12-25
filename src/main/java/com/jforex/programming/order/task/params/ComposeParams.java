@@ -1,6 +1,9 @@
 package com.jforex.programming.order.task.params;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import com.jforex.programming.rx.RetryDelay;
 
 import io.reactivex.functions.Action;
 
@@ -9,7 +12,7 @@ public class ComposeParams implements ComposeData {
     private Action startAction = () -> {};
     private Action completeAction = () -> {};
     private Consumer<Throwable> errorConsumer = t -> {};
-    private RetryParams retryParams = new RetryParams(0, 0L);
+    private RetryParams retryParams = new RetryParams(0, attempt -> new RetryDelay(0L, TimeUnit.MILLISECONDS));
 
     @Override
     public Action startAction() {

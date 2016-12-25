@@ -6,6 +6,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,12 +37,14 @@ import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
-import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.CancelSLTPMode;
+import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.SetSLTPMode;
 import com.jforex.programming.position.PositionDirection;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuoteProvider;
+import com.jforex.programming.rx.RetryDelay;
+import com.jforex.programming.rx.RetryDelayFunction;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.settings.UserSettings;
 import com.jforex.programming.strategy.StrategyUtil;
@@ -114,6 +117,9 @@ public class CommonUtilForTest extends BDDMockito {
     protected static final UserSettings userSettings = StrategyUtil.userSettings;
     protected static final double noSL = platformSettings.noSLPrice();
     protected static final double noTP = platformSettings.noTPPrice();
+    protected static final long delayInMillis = 1500L;
+    protected static final RetryDelayFunction retryFunction =
+            attempt -> new RetryDelay(delayInMillis, TimeUnit.MILLISECONDS);
 
     protected static final Logger logger = LogManager.getLogger(CommonUtilForTest.class);
 

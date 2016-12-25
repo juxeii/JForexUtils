@@ -29,12 +29,11 @@ public class TaskRetryTest extends CommonUtilForTest {
     private TestObserver<OrderEvent> testObserver;
     private OrderEvent eventForTest;
     private final int noOfRetries = 2;
-    private final long delayInMillis = 1500L;
 
     @Before
     public void setUp() {
         testObserver = subject
-            .compose(TaskRetry.onRejectRetryWith(noOfRetries, delayInMillis))
+            .compose(TaskRetry.onRejectRetryWith(noOfRetries, retryFunction))
             .test();
     }
 

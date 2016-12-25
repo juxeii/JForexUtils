@@ -54,7 +54,6 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
     private final IOrder orderForTest = buyOrderEURUSD;
     private static final String mergeOrderLabel = "mergeOrderLabel";
     private static final int noOfRetries = 3;
-    private static final long delayInMillis = 1500L;
     private CloseParams closeParams;
 
     @Before
@@ -74,7 +73,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
             .doOnStart(actionMock)
             .doOnComplete(actionMock)
             .doOnError(errorConsumerMock)
-            .retryOnReject(noOfRetries, delayInMillis)
+            .retryOnReject(noOfRetries, retryFunction)
             .doOnClose(eventConsumerMock)
             .doOnPartialClose(eventConsumerMock)
             .doOnReject(eventConsumerMock)
@@ -105,7 +104,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
 
     private void assertRetries(final RetryParams retryParams) {
         assertThat(retryParams.noOfRetries(), equalTo(noOfRetries));
-        assertThat(retryParams.delayInMillis(), equalTo(delayInMillis));
+        // assertThat(retryParams.delayInMillis(), equalTo(delayInMillis));
     }
 
     private void assertEventHandler(final OrderEventType type) {
