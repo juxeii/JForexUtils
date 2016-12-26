@@ -58,6 +58,11 @@ public class ClientUtilTest extends CommonUtilForTest {
     }
 
     @Test
+    public void reconnectorIsValid() {
+        assertNotNull(clientUtil.reconnector());
+    }
+
+    @Test
     public void connectMessageIsPublished() {
         clientForTest.publishConnected();
 

@@ -11,14 +11,10 @@ import com.dukascopy.api.system.IClient;
 import com.jforex.programming.connection.Authentification;
 import com.jforex.programming.connection.ConnectionMonitor;
 import com.jforex.programming.connection.ConnectionState;
-import com.jforex.programming.connection.LightReconnector;
-import com.jforex.programming.connection.LoginReconnector;
 import com.jforex.programming.connection.LoginState;
-import com.jforex.programming.connection.ReconnectParams;
 import com.jforex.programming.connection.Reconnector;
 import com.jforex.programming.rx.JFHotPublisher;
 
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 
 public final class ClientUtil {
@@ -45,7 +41,9 @@ public final class ClientUtil {
         initCacheDirectory(cacheDirectory);
         client.setSystemListener(jfSystemListener);
         connectionMonitor = new ConnectionMonitor(observeConnectionState(), loginStatePublisher.observable());
-        reconnector = new Reconnector(connectionMonitor);
+        reconnector = new Reconnector(client,
+                                      authentification,
+                                      connectionMonitor);
     }
 
     private void initCacheDirectory(final String cacheDirectoryPath) {
@@ -62,17 +60,8 @@ public final class ClientUtil {
         return jfSystemListener.observeStrategyRunData();
     }
 
-    public void setReconnectParams(final ReconnectParams reconnectParams) {
-        final LightReconnector lightReconnector = new LightReconnector(client,
-                                                                       connectionMonitor,
-                                                                       reconnectParams);
-        final LoginReconnector loginReconnector = new LoginReconnector(authentification,
-                                                                       connectionMonitor,
-                                                                       reconnectParams);
-        final Completable reconnectStrategy = lightReconnector
-            .strategy()
-            .onErrorResumeNext(err -> loginReconnector.strategy());
-        reconnector.applyStrategy(reconnectStrategy);
+    public Reconnector reconnector() {
+        return reconnector;
     }
 
     public final Authentification authentification() {
