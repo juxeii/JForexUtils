@@ -43,9 +43,9 @@ public class RxUtilTest extends CommonUtilForTest {
     }
 
     @Test
-    public void retryWhenIsCorrect() {
+    public void retryWithDelayIsCorrect() {
         final TestObserver<Throwable> subscriber = throwableSubject
-            .retryWhen(RxUtil.retryWhen(retryParams))
+            .retryWhen(RxUtil.retryWithDelay(retryParams))
             .test();
 
         emitThrowableAndAdvanceTime();
@@ -55,6 +55,35 @@ public class RxUtilTest extends CommonUtilForTest {
         subscriber.assertValue(jfException);
 
         emitErrorAndAdvanceTime();
+        subscriber.assertValue(jfException);
+
+        emitErrorAndAdvanceTime();
+        subscriber.assertError(jfException);
+    }
+
+    @Test
+    public void retryWithDelayAndPredicateIsCorrect() {
+        final TestObserver<Throwable> subscriber = throwableSubject
+            .retryWhen(RxUtil.retryWithDelay(retryParams, (err, attempt) -> attempt < 3))
+            .test();
+
+        emitThrowableAndAdvanceTime();
+        subscriber.assertValue(jfException);
+
+        emitErrorAndAdvanceTime();
+        subscriber.assertValue(jfException);
+
+        emitErrorAndAdvanceTime();
+        subscriber.assertError(jfException);
+    }
+
+    @Test
+    public void retryWithDelayAndFalsePredicateEmitsError() {
+        final TestObserver<Throwable> subscriber = throwableSubject
+            .retryWhen(RxUtil.retryWithDelay(retryParams, (err, attempt) -> false))
+            .test();
+
+        emitThrowableAndAdvanceTime();
         subscriber.assertValue(jfException);
 
         emitErrorAndAdvanceTime();

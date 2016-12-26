@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.RetryParams;
-import com.jforex.programming.rx.RetryDelayFunction;
 
 import io.reactivex.functions.Action;
 
@@ -16,9 +15,8 @@ public abstract class BasicParamsBuilder<T> extends CommonParamsBuilder<T> {
 
     public ComposeParams composeParams = new ComposeParams();
 
-    public T retryOnReject(final int noOfRetries,
-                           final RetryDelayFunction delayFunction) {
-        composeParams.setRetryParams(new RetryParams(noOfRetries, delayFunction));
+    public T retryOnReject(final RetryParams retryParams) {
+        composeParams.setRetryParams(retryParams);
         return (T) this;
     }
 

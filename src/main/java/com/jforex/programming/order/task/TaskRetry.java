@@ -8,10 +8,10 @@ import org.apache.logging.log4j.Logger;
 import com.jforex.programming.order.call.OrderCallRejectException;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.RetryParams;
+import com.jforex.programming.rx.RetryPredicate;
 import com.jforex.programming.rx.RxUtil;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.BiFunction;
 
 public class TaskRetry {
 
@@ -24,7 +24,7 @@ public class TaskRetry {
                                                           final RetryParams retryParams) {
         return observable
             .flatMap(TaskRetry::rejectAsError)
-            .retryWhen(RxUtil.retryWhen(retryParams, retryPredicate(retryParams)));
+            .retryWhen(RxUtil.retryWithDelay(retryParams, retryPredicate(retryParams)));
     }
 
     private final static Observable<OrderEvent> rejectAsError(final OrderEvent orderEvent) {
@@ -33,7 +33,7 @@ public class TaskRetry {
                 : Observable.just(orderEvent);
     }
 
-    private static final BiFunction<Throwable, Integer, Boolean> retryPredicate(final RetryParams retryParams) {
+    private static final RetryPredicate retryPredicate(final RetryParams retryParams) {
         return (err, attempt) -> attempt <= retryParams.noOfRetries() && isRejectError(err);
     }
 

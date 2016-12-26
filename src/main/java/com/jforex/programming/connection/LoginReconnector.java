@@ -24,8 +24,8 @@ public class LoginReconnector {
                 ? authentification
                     .login(reconnectParams.loginCredentials())
                     .andThen(connectionMonitor.observe())
-                    .retryWhen(RxUtil.retryWhen(new RetryParams(reconnectParams.noOfRelogins(),
-                                                                reconnectParams.reloginDelayFunction())))
+                    .retryWhen(RxUtil.retryWithDelay(new RetryParams(reconnectParams.noOfRelogins(),
+                                                                     reconnectParams.reloginDelayFunction())))
                     .ignoreElements()
                 : Completable.complete();
     }

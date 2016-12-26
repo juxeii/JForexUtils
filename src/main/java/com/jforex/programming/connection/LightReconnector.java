@@ -25,8 +25,8 @@ public class LightReconnector {
                 ? Completable
                     .fromAction(() -> client.reconnect())
                     .andThen(connectionMonitor.observe())
-                    .retryWhen(RxUtil.retryWhen(new RetryParams(reconnectParams.noOfLightReconnects(),
-                                                                reconnectParams.lightReconnectDelayFunction())))
+                    .retryWhen(RxUtil.retryWithDelay(new RetryParams(reconnectParams.noOfLightReconnects(),
+                                                                     reconnectParams.lightReconnectDelayFunction())))
                     .ignoreElements()
                 : Completable.complete();
     }

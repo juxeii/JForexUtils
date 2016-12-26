@@ -53,7 +53,7 @@ public class HistoryUtil {
             .fromCallable(() -> latestHistoryTick(instrument))
             .doOnError(e -> logger.error(e.getMessage()
                     + "! Will retry latest tick from history now..."))
-            .retryWhen(RxUtil.retryWhen(retryParams()));
+            .retryWhen(RxUtil.retryWithDelay(retryParams()));
     }
 
     private RetryParams retryParams() {
@@ -78,7 +78,7 @@ public class HistoryUtil {
             .fromCallable(() -> latestHistoryBar(instrument, period, offerSide))
             .doOnError(e -> logger.error(e.getMessage()
                     + "! Will retry latest bar from history now..."))
-            .retryWhen(RxUtil.retryWhen(retryParams()));
+            .retryWhen(RxUtil.retryWithDelay(retryParams()));
     }
 
     private IBar latestHistoryBar(final Instrument instrument,

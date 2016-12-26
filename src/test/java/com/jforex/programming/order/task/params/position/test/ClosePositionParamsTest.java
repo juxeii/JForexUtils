@@ -53,7 +53,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
     private final Map<OrderEventType, Consumer<OrderEvent>> consumersForMergeParams = new HashMap<>();
     private final IOrder orderForTest = buyOrderEURUSD;
     private static final String mergeOrderLabel = "mergeOrderLabel";
-    private static final int noOfRetries = 3;
+    private static final int noOfRetries = retryParams.noOfRetries();
     private CloseParams closeParams;
 
     @Before
@@ -73,7 +73,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
             .doOnStart(actionMock)
             .doOnComplete(actionMock)
             .doOnError(errorConsumerMock)
-            .retryOnReject(noOfRetries, retryDelayFunction)
+            .retryOnReject(retryParams)
             .doOnClose(eventConsumerMock)
             .doOnPartialClose(eventConsumerMock)
             .doOnReject(eventConsumerMock)
@@ -104,7 +104,8 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
 
     private void assertRetries(final RetryParams retryParams) {
         assertThat(retryParams.noOfRetries(), equalTo(noOfRetries));
-        // assertThat(retryParams.delayInMillis(), equalTo(delayInMillis));
+        // assertThat(retryParams.delayFunction().apply(0).delay(),
+        // equalTo(delayInMillis));
     }
 
     private void assertEventHandler(final OrderEventType type) {

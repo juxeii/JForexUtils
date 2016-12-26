@@ -20,14 +20,13 @@ public class CommonParamsBaseTest extends InstrumentUtilForTest {
 
     @Mock
     private Consumer<OrderEvent> consumer;
-    private static final int noOfRetries = 3;
 
     @Test
     public void commonParamsAreCorrect() {
         closeParams = CloseParams
             .withOrder(buyOrderEURUSD)
             .doOnClose(consumer)
-            .retryOnReject(noOfRetries, retryDelayFunction)
+            .retryOnReject(retryParams)
             .build();
 
         assertThat(closeParams.consumerForEvent().size(), equalTo(1));

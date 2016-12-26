@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.ComposeParams;
-import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
@@ -42,7 +41,6 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
     @Mock
     private ClosePositionParams closePositionParamsMock;
     private final Subject<OrderEvent> orderEventSubject = PublishSubject.create();
-    private static final int noOfRetries = 3;
 
     @Before
     public void setUp() {
@@ -73,7 +71,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
                 .doOnError(errorConsumerMock)
                 .doOnClose(consumerMockA)
                 .doOnReject(consumerMockB)
-                .retryOnReject(noOfRetries, retryDelayFunction)
+                .retryOnReject(retryParams)
                 .build();
 
             taskParamsUtil.subscribeBasicParams(orderEventSubject, closeParams);
@@ -125,7 +123,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             composeParams.setStartAction(startActionMock);
             composeParams.setCompleteAction(completeActionMock);
             composeParams.setErrorConsumer(errorConsumerMock);
-            composeParams.setRetryParams(new RetryParams(noOfRetries, retryDelayFunction));
+            composeParams.setRetryParams(retryParams);
 
             testObserver = taskParamsUtil
                 .composeParams(orderEventSubject, composeParams)
@@ -172,7 +170,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             composeParams.setStartAction(startActionMock);
             composeParams.setCompleteAction(completeActionMock);
             composeParams.setErrorConsumer(errorConsumerMock);
-            composeParams.setRetryParams(new RetryParams(noOfRetries, retryDelayFunction));
+            composeParams.setRetryParams(retryParams);
 
             testObserver = taskParamsUtil
                 .composeParamsWithEvents(orderEventSubject,
