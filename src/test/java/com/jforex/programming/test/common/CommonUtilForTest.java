@@ -29,6 +29,7 @@ import com.jforex.programming.client.StrategyRunState;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
+import com.jforex.programming.connection.UserConnectionState;
 import com.jforex.programming.currency.CurrencyCode;
 import com.jforex.programming.misc.HistoryUtil;
 import com.jforex.programming.order.OrderDirection;
@@ -203,6 +204,8 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(BatchMode.CONCAT.toString());
         SetSLTPMode
             .valueOf(SetSLTPMode.PIPS.toString());
+        UserConnectionState
+            .valueOf(UserConnectionState.CONNECTED.toString());
     }
 
     protected final Completable emptyCompletable() {

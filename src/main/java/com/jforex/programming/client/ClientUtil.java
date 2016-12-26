@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.system.IClient;
 import com.jforex.programming.connection.Authentification;
-import com.jforex.programming.connection.ConnectionMonitor;
+import com.jforex.programming.connection.UserConnection;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.connection.Reconnector;
@@ -23,7 +23,7 @@ public final class ClientUtil {
     private final Authentification authentification;
     private final JFSystemListener jfSystemListener = new JFSystemListener();
     private final JFHotPublisher<LoginState> loginStatePublisher = new JFHotPublisher<>();
-    private final ConnectionMonitor connectionMonitor;
+    private final UserConnection connectionMonitor;
     private final Reconnector reconnector;
     private final PinCaptcha pinCaptcha;
 
@@ -40,7 +40,7 @@ public final class ClientUtil {
 
         initCacheDirectory(cacheDirectory);
         client.setSystemListener(jfSystemListener);
-        connectionMonitor = new ConnectionMonitor(observeConnectionState(), loginStatePublisher.observable());
+        connectionMonitor = new UserConnection(observeConnectionState(), loginStatePublisher.observable());
         reconnector = new Reconnector(client,
                                       authentification,
                                       connectionMonitor);

@@ -3,44 +3,70 @@ package com.jforex.programming.connection;
 import com.dukascopy.api.system.IClient;
 
 import io.reactivex.Completable;
+import io.reactivex.Observable;
 
 public class Reconnector {
 
     private final IClient client;
     private final Authentification authentification;
-    private final ConnectionMonitor connectionMonitor;
+    private final UserConnection userConnection;
 
     public Reconnector(final IClient client,
                        final Authentification authentification,
-                       final ConnectionMonitor connectionMonitor) {
+                       final UserConnection userConnection) {
         this.client = client;
         this.authentification = authentification;
-        this.connectionMonitor = connectionMonitor;
+        this.userConnection = userConnection;
     }
 
     public Completable lightReconnect() {
         return Completable
-            .fromAction(() -> client.reconnect())
-            .andThen(connectionMonitor.observe())
-            .ignoreElements();
+            .fromAction(client::reconnect)
+            .andThen(userCompletableWithError());
     }
 
     public Completable relogin(final LoginCredentials loginCredentials) {
         return authentification
             .login(loginCredentials)
-            .andThen(connectionMonitor.observe())
+            .andThen(userCompletableWithError());
+    }
+
+    private Completable userCompletableWithError() {
+        return observeUserConnectionStateWithError()
+            .takeUntil(userConnectionState -> userConnectionState == UserConnectionState.CONNECTED)
             .ignoreElements();
     }
 
-    public void applyStrategy(final Completable reconnectStrategy) {
-        connectionMonitor
+    public void applyStrategy(final Completable retryStrategy) {
+        userConnection
             .observe()
-            .subscribe(item -> {},
-                       err -> startRetryStrategy(reconnectStrategy));
+            .takeUntil(this::isDisconnected)
+            .subscribe(userConnectionState -> {
+                if (isDisconnected(userConnectionState))
+                    startRetryStrategy(retryStrategy);
+            });
     }
 
-    private void startRetryStrategy(final Completable reconnectStrategy) {
-        reconnectStrategy.subscribe(() -> applyStrategy(reconnectStrategy),
-                                    err -> applyStrategy(reconnectStrategy));
+    private boolean isDisconnected(final UserConnectionState userConnectionState) {
+        return userConnectionState == UserConnectionState.DISCONNECTED;
+    }
+
+    private void startRetryStrategy(final Completable retryStrategy) {
+        retryStrategy
+            .doOnSubscribe(d -> System.out.println("Trying to reconnect..."))
+            .doAfterTerminate(() -> applyStrategy(retryStrategy))
+            .subscribe(() -> {
+                System.out.println("Connection successfully reestablished.");
+            }, err -> {
+                System.out.println("Failed to reconnect! " + err.getMessage());
+            });
+    }
+
+    private final Observable<UserConnectionState> observeUserConnectionStateWithError() {
+        return userConnection
+            .observe()
+            .concatMap(userConnectionState -> isDisconnected(userConnectionState)
+                    ? Observable.error(new ConnectionLostException("Connection to server lost while logged in"))
+                    : Observable.just(userConnectionState));
     }
 }
