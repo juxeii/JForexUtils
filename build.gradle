@@ -5,6 +5,7 @@ buildscript {
 
     dependencies {
         classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.3.0'
+        classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.7.1"
     }
 }
 
@@ -17,6 +18,7 @@ cobertura.coverageFormats = ['html', 'xml']
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 apply plugin: 'biz.aQute.bnd.builder'
+apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'jacoco'
 
 group= 'com.jforex.programming'
