@@ -1,9 +1,9 @@
 package com.jforex.programming.connection;
 
 import com.dukascopy.api.system.IClient;
+import com.jforex.programming.rx.UserConnectionStateTransformer;
 
 import io.reactivex.Completable;
-import io.reactivex.CompletableTransformer;
 import io.reactivex.Observable;
 
 public class Reconnector {
@@ -30,24 +30,24 @@ public class Reconnector {
         return new ConnectionLostException("Connection to server lost while logged in");
     }
 
-    public void composeLightReconnect(final CompletableTransformer transformer) {
+    public void composeLightReconnect(final UserConnectionStateTransformer transformer) {
         lightReconnector = Completable
             .fromAction(client::reconnect)
             .andThen(userCompletableWithError(transformer));
     }
 
     public void composeLoginReconnect(final LoginCredentials loginCredentials,
-                                      final CompletableTransformer transformer) {
+                                      final UserConnectionStateTransformer transformer) {
         loginReconnector = authentification
             .login(loginCredentials)
             .andThen(userCompletableWithError(transformer));
     }
 
-    private Completable userCompletableWithError(final CompletableTransformer transformer) {
+    private Completable userCompletableWithError(final UserConnectionStateTransformer transformer) {
         return observeUserConnectionStateWithError()
             .takeUntil(this::isConnected)
-            .ignoreElements()
-            .compose(transformer);
+            .compose(transformer)
+            .ignoreElements();
     }
 
     private void monitorConnection() {
