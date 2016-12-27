@@ -5,6 +5,7 @@ buildscript {
 
     dependencies {
         classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.3.0'
+        classpath 'net.saliman:gradle-cobertura-plugin:2.4.0'
         classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.7.1"
     }
 }
