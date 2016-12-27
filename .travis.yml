@@ -1,25 +1,7 @@
-before_install:
- - chmod +x gradlew
-
 language: java
-  
-addons:
-  apt:
-    packages:
-      - oracle-java8-installer
 
-sudo: required
-dist: trusty
+jdk:
+- oraclejdk8
 
-before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
- 
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
-    
 after_success:
-    - ./gradlew cobertura coveralls
-    - bash <(curl -s https://codecov.io/bash)
+- ./gradlew cobertura coveralls
