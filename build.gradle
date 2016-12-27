@@ -26,6 +26,7 @@ version = '0.9.8'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+
 description ="""
 A collection of utilities for Dukascopy's JForex API. See http://www.dukascopy.com/wiki for further documentation.
 Project name: ${project.name}
