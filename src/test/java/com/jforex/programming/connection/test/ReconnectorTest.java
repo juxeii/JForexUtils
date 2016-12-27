@@ -14,7 +14,6 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Completable;
 import io.reactivex.functions.Action;
-import io.reactivex.observers.TestObserver;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
@@ -28,8 +27,8 @@ public class ReconnectorTest extends CommonUtilForTest {
     @Mock
     private UserConnection userConnectionMock;
     @Mock
-    private Action actionMock;
-    private final Subject<UserConnectionState> userConnectionState = PublishSubject.create();
+    private Action loginActionMock;
+    private final Subject<UserConnectionState> userConnectionSubject = PublishSubject.create();
 
     @Before
     public void setUp() {
@@ -41,112 +40,83 @@ public class ReconnectorTest extends CommonUtilForTest {
     }
 
     public void setUpMocks() {
-        when(userConnectionMock.observe()).thenReturn(userConnectionState);
+        when(userConnectionMock.observe()).thenReturn(userConnectionSubject);
 
-        when(authentificationMock.login(loginCredentials)).thenReturn(Completable.complete());
+        when(authentificationMock.login(loginCredentials)).thenReturn(Completable.fromAction(loginActionMock));
     }
 
     private void sendConnect() {
-        userConnectionState.onNext(UserConnectionState.CONNECTED);
+        sendUserConnectionState(UserConnectionState.CONNECTED);
     }
 
     private void sendDisconnect() {
-        userConnectionState.onNext(UserConnectionState.DISCONNECTED);
+        sendUserConnectionState(UserConnectionState.DISCONNECTED);
     }
 
-    public class LightReconnect {
+    private void sendLogout() {
+        sendUserConnectionState(UserConnectionState.LOGGED_OUT);
+    }
 
-        private TestObserver<Void> strategy;
+    private void sendUserConnectionState(final UserConnectionState userConnectionState) {
+        userConnectionSubject.onNext(userConnectionState);
+    }
 
-        @Before
-        public void setUp() {
-            strategy = reconnector
-                .lightReconnect()
-                .test();
+    private void verifyNoMockCalls() {
+        verifyZeroInteractions(clientMock);
+        verifyZeroInteractions(loginActionMock);
+    }
+
+    public class NoCompose {
+
+        @Test
+        public void noMockCallsOnConnect() {
+            sendConnect();
+
+            verifyNoMockCalls();
         }
 
         @Test
-        public void clientReconnectIsCalled() {
-            verify(clientMock).reconnect();
-        }
-
-        @Test
-        public void strategyNotCompletedOnDisconnect() {
+        public void noMockCallsOnDisconnect() {
             sendDisconnect();
 
-            strategy.assertNotComplete();
+            verifyNoMockCalls();
         }
 
         @Test
-        public void strategyNotCompletedOnLogout() {
-            userConnectionState.onNext(UserConnectionState.LOGGED_OUT);
+        public void noMockCallsOnLogout() {
+            sendLogout();
 
-            strategy.assertNotComplete();
-        }
-
-        @Test
-        public void strategyCompletedOnConnectedValue() {
-            sendConnect();
-
-            strategy.assertComplete();
+            verifyNoMockCalls();
         }
     }
 
-    public class Relogin {
-
-        private TestObserver<Void> strategy;
+    public class ComposeLightReconnect {
 
         @Before
         public void setUp() {
-            strategy = reconnector
-                .relogin(loginCredentials)
-                .test();
+            reconnector.composeLightReconnect(x -> x);
         }
 
         @Test
-        public void loginOnAuthentificationIsCalled() {
-            verify(authentificationMock).login(loginCredentials);
+        public void noMockCalls() {
+            verifyNoMockCalls();
         }
 
         @Test
-        public void strategyNotCompletedOnValueOtherThanConnected() {
-            sendDisconnect();
-
-            strategy.assertNotComplete();
-        }
-
-        @Test
-        public void strategyCompletedOnConnectedValue() {
+        public void noMockCallsOnConnect() {
             sendConnect();
 
-            strategy.assertComplete();
-        }
-    }
-
-    public class ApplyStrategy {
-
-        @Before
-        public void setUp() {
-            reconnector.applyStrategy(reconnector
-                .lightReconnect()
-                .retry(2));
+            verifyNoMockCalls();
         }
 
         @Test
-        public void noActionCallWhenUserConnectionConnects() {
-            sendConnect();
+        public void noMockCallsOnLogout() {
+            sendLogout();
 
-            verifyZeroInteractions(actionMock);
+            verifyNoMockCalls();
         }
 
-        @Test
-        public void noActionCallWhenUserConnectionLogsout() {
-            userConnectionState.onNext(UserConnectionState.LOGGED_OUT);
-
-            verifyZeroInteractions(actionMock);
-        }
-
-        public class OnUserConnectionDisconnect {
+        public class OnDisconnectLightStrategyStart {
 
             @Before
             public void setUp() {
@@ -154,32 +124,171 @@ public class ReconnectorTest extends CommonUtilForTest {
             }
 
             @Test
-            public void actionIsExecuted() throws Exception {
+            public void reconnectOnClientIsCalled() {
                 verify(clientMock).reconnect();
             }
 
             @Test
-            public void userConnectionIsMonitoredAgainOnSuccess() {
-                sendConnect();
-                sendDisconnect();
-                sendConnect();
-
-                verify(clientMock, times(2)).reconnect();
+            public void noLoginCall() {
+                verifyZeroInteractions(loginActionMock);
             }
 
             @Test
-            public void userConnectionIsMonitoredAgainOnError() {
+            public void logoutIsIgnored() {
+                sendLogout();
                 sendDisconnect();
+
+                verify(clientMock).reconnect();
+            }
+
+            @Test
+            public void nextDisconnectRestartsLightStrategy() {
                 sendDisconnect();
                 sendDisconnect();
 
-                verify(clientMock, times(3)).reconnect();
+                verify(clientMock, times(2)).reconnect();
+            }
+        }
 
+        public class ComposeRelogin {
+
+            @Before
+            public void setUp() {
+                reconnector.composeLoginReconnect(loginCredentials, x -> x);
+            }
+
+            @Test
+            public void noMockCalls() {
+                verifyNoMockCalls();
+            }
+
+            @Test
+            public void noMockCallsOnConnect() {
+                sendConnect();
+
+                verifyNoMockCalls();
+            }
+
+            @Test
+            public void noMockCallsOnLogout() {
+                sendLogout();
+
+                verifyNoMockCalls();
+            }
+
+            public class OnDisconnect {
+
+                @Before
+                public void setUp() {
+                    sendDisconnect();
+                }
+
+                @Test
+                public void firstReconnectCall() {
+                    verify(clientMock).reconnect();
+                }
+
+                public class OnConnect {
+
+                    @Before
+                    public void setUp() {
+                        sendConnect();
+                    }
+
+                    @Test
+                    public void lightReconnectStrategyRestarted() {
+                        sendDisconnect();
+                        verify(clientMock, times(2)).reconnect();
+                    }
+                }
+
+                public class OnSecondDisconnect {
+
+                    @Before
+                    public void setUp() {
+                        sendDisconnect();
+                    }
+
+                    @Test
+                    public void reloginStrategyIsStarted() throws Exception {
+                        verify(loginActionMock).run();
+                    }
+
+                    public class OnThirdDisconnect {
+
+                        @Before
+                        public void setUp() {
+                            sendDisconnect();
+                        }
+
+                        @Test
+                        public void lightReconnectStrategyRestarted() {
+                            sendDisconnect();
+                            verify(clientMock, times(2)).reconnect();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public class ComposeRelogin {
+
+        @Before
+        public void setUp() {
+            reconnector.composeLoginReconnect(loginCredentials, x -> x);
+        }
+
+        @Test
+        public void noMockCalls() {
+            verifyNoMockCalls();
+        }
+
+        @Test
+        public void noMockCallsOnConnect() {
+            sendConnect();
+
+            verifyNoMockCalls();
+        }
+
+        @Test
+        public void noMockCallsOnLogout() {
+            sendLogout();
+
+            verifyNoMockCalls();
+        }
+
+        public class OnDisconnect {
+
+            @Before
+            public void setUp() {
                 sendDisconnect();
+            }
+
+            @Test
+            public void noReconnectCall() {
+                verifyZeroInteractions(clientMock);
+            }
+
+            @Test
+            public void loginOnAuthentificationIsCalled() throws Exception {
+                verify(loginActionMock).run();
+            }
+
+            @Test
+            public void reloginFailureRestartsLoginStrategy() throws Exception {
                 sendDisconnect();
                 sendDisconnect();
 
-                verify(clientMock, times(6)).reconnect();
+                verify(loginActionMock, times(2)).run();
+            }
+
+            @Test
+            public void reloginSuccessRestartsLoginStrategy() throws Exception {
+                sendConnect();
+                sendDisconnect();
+
+                verify(loginActionMock, times(2)).run();
             }
         }
     }

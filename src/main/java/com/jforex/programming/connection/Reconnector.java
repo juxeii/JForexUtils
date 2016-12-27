@@ -3,6 +3,7 @@ package com.jforex.programming.connection;
 import com.dukascopy.api.system.IClient;
 
 import io.reactivex.Completable;
+import io.reactivex.CompletableTransformer;
 import io.reactivex.Observable;
 
 public class Reconnector {
@@ -10,6 +11,8 @@ public class Reconnector {
     private final IClient client;
     private final Authentification authentification;
     private final UserConnection userConnection;
+    private Completable lightReconnector;
+    private Completable loginReconnector;
 
     public Reconnector(final IClient client,
                        final Authentification authentification,
@@ -17,56 +20,66 @@ public class Reconnector {
         this.client = client;
         this.authentification = authentification;
         this.userConnection = userConnection;
+
+        lightReconnector = Completable.error(connectionLostException());
+        loginReconnector = lightReconnector;
+        monitorConnection();
     }
 
-    public Completable lightReconnect() {
-        return Completable
+    private ConnectionLostException connectionLostException() {
+        return new ConnectionLostException("Connection to server lost while logged in");
+    }
+
+    public void composeLightReconnect(final CompletableTransformer transformer) {
+        lightReconnector = Completable
             .fromAction(client::reconnect)
-            .andThen(userCompletableWithError());
+            .andThen(userCompletableWithError(transformer));
     }
 
-    public Completable relogin(final LoginCredentials loginCredentials) {
-        return authentification
+    public void composeLoginReconnect(final LoginCredentials loginCredentials,
+                                      final CompletableTransformer transformer) {
+        loginReconnector = authentification
             .login(loginCredentials)
-            .andThen(userCompletableWithError());
+            .andThen(userCompletableWithError(transformer));
     }
 
-    private Completable userCompletableWithError() {
+    private Completable userCompletableWithError(final CompletableTransformer transformer) {
         return observeUserConnectionStateWithError()
-            .takeUntil(userConnectionState -> userConnectionState == UserConnectionState.CONNECTED)
-            .ignoreElements();
+            .takeUntil(this::isConnected)
+            .ignoreElements()
+            .compose(transformer);
     }
 
-    public void applyStrategy(final Completable retryStrategy) {
+    private void monitorConnection() {
         userConnection
             .observe()
             .takeUntil(this::isDisconnected)
             .subscribe(userConnectionState -> {
                 if (isDisconnected(userConnectionState))
-                    startRetryStrategy(retryStrategy);
+                    startRetryStrategy();
             });
+    }
+
+    private boolean isConnected(final UserConnectionState userConnectionState) {
+        return userConnectionState == UserConnectionState.CONNECTED;
     }
 
     private boolean isDisconnected(final UserConnectionState userConnectionState) {
         return userConnectionState == UserConnectionState.DISCONNECTED;
     }
 
-    private void startRetryStrategy(final Completable retryStrategy) {
-        retryStrategy
-            .doOnSubscribe(d -> System.out.println("Trying to reconnect..."))
-            .doAfterTerminate(() -> applyStrategy(retryStrategy))
-            .subscribe(() -> {
-                System.out.println("Connection successfully reestablished.");
-            }, err -> {
-                System.out.println("Failed to reconnect! " + err.getMessage());
-            });
+    private void startRetryStrategy() {
+        lightReconnector
+            .onErrorResumeNext(err -> loginReconnector)
+            .doAfterTerminate(() -> monitorConnection())
+            .subscribe(() -> {}, err -> {});
     }
 
     private final Observable<UserConnectionState> observeUserConnectionStateWithError() {
         return userConnection
             .observe()
             .concatMap(userConnectionState -> isDisconnected(userConnectionState)
-                    ? Observable.error(new ConnectionLostException("Connection to server lost while logged in"))
+                    ? Observable.error(connectionLostException())
                     : Observable.just(userConnectionState));
     }
 }
