@@ -9,8 +9,8 @@ buildscript {
 }
 
 plugins {
-    id 'net.saliman.cobertura' version '2.3.2'
-    id 'com.github.kt3k.coveralls' version '2.6.3'
+    id 'net.saliman.cobertura' version '2.4.0'
+    id 'com.github.kt3k.coveralls' version '2.7.1'
 }
 cobertura.coverageFormats = ['html', 'xml']
 
