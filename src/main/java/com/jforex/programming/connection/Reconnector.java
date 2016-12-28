@@ -13,6 +13,7 @@ public class Reconnector {
     private final UserConnection userConnection;
     private Completable lightReconnector;
     private Completable loginReconnector;
+    private Completable reconnectStrategy = Completable.complete();
 
     public Reconnector(final IClient client,
                        final Authentification authentification,
@@ -34,6 +35,7 @@ public class Reconnector {
         lightReconnector = Completable
             .fromAction(client::reconnect)
             .andThen(userCompletableWithError(transformer));
+        composeReconnectStrategy();
     }
 
     public void composeLoginReconnect(final LoginCredentials loginCredentials,
@@ -41,23 +43,28 @@ public class Reconnector {
         loginReconnector = authentification
             .login(loginCredentials)
             .andThen(userCompletableWithError(transformer));
+        composeReconnectStrategy();
     }
-
+    
     private Completable userCompletableWithError(final UserConnectionStateTransformer transformer) {
         return observeUserConnectionStateWithError()
             .takeUntil(this::isConnected)
             .compose(transformer)
             .ignoreElements();
     }
+    
+    private void composeReconnectStrategy() {
+    	reconnectStrategy = lightReconnector
+            .onErrorResumeNext(err -> loginReconnector)
+            .doAfterTerminate(() -> monitorConnection());
+    }
 
     private void monitorConnection() {
         userConnection
             .observe()
             .takeUntil(this::isDisconnected)
-            .subscribe(userConnectionState -> {
-                if (isDisconnected(userConnectionState))
-                    startRetryStrategy();
-            });
+            .doOnComplete(this::startRetryStrategy)
+            .subscribe();
     }
 
     private boolean isConnected(final UserConnectionState userConnectionState) {
@@ -69,10 +76,7 @@ public class Reconnector {
     }
 
     private void startRetryStrategy() {
-        lightReconnector
-            .onErrorResumeNext(err -> loginReconnector)
-            .doAfterTerminate(() -> monitorConnection())
-            .subscribe(() -> {}, err -> {});
+    	reconnectStrategy.subscribe(() -> {}, err -> {});
     }
 
     private final Observable<UserConnectionState> observeUserConnectionStateWithError() {
