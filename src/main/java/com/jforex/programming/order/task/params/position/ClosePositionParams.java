@@ -14,9 +14,11 @@ import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeData;
+import com.jforex.programming.order.task.params.TaskParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 
-public class ClosePositionParams {
+public class ClosePositionParams implements TaskParamsBase {
 
     private final Instrument instrument;
     private final String mergeOrderLabel;
@@ -59,16 +61,22 @@ public class ClosePositionParams {
         return closeBatchMode;
     }
 
-    public ComposeData closePositionComposeParams() {
-        return closePositionComposeParams.composeData();
-    }
-
     public MergePositionParams mergePositionParams() {
         return mergePositionParams;
     }
 
     public CloseParams closeParamsFactory(final IOrder order) {
         return closeParamsFactory.apply(order);
+    }
+
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.CLOSEPOSITION;
+    }
+
+    @Override
+    public ComposeData composeData() {
+        return closePositionComposeParams.composeData();
     }
 
     public static Builder newBuilder(final MergePositionParams mergePositionParams,

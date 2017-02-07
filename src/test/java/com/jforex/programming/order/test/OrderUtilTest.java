@@ -156,7 +156,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         verify(taskParamsUtilMock)
             .subscribeComposeData(mergePositionTaskMock.merge(mergePositionParamsMock),
-                                    composeParamsMock);
+                                  composeParamsMock);
     }
 
     @Test
@@ -169,33 +169,33 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         verify(taskParamsUtilMock)
             .subscribeComposeData(mergePositionTaskMock.mergeAll(mergeAllPositionsParamsMock),
-                                    composeParamsMock);
+                                  composeParamsMock);
     }
 
     @Test
     public void closePositionCallsSubscribeOnTaskParams() {
         final ClosePositionParams closePositionParamsMock = mock(ClosePositionParams.class);
-        when(closePositionParamsMock.closePositionComposeParams())
+        when(closePositionParamsMock.composeData())
             .thenReturn(composeParamsMock);
 
         orderUtil.closePosition(closePositionParamsMock);
 
         verify(taskParamsUtilMock)
             .subscribeComposeData(closePositionTaskMock.close(closePositionParamsMock),
-                                    composeParamsMock);
+                                  composeParamsMock);
     }
 
     @Test
     public void closeAllPositionsCallsSubscribeOnTaskParams() {
         final CloseAllPositionsParams closeAllPositionsParamsMock = mock(CloseAllPositionsParams.class);
-        when(closeAllPositionsParamsMock.closeAllPositionsComposeData())
+        when(closeAllPositionsParamsMock.composeData())
             .thenReturn(composeParamsMock);
 
         orderUtil.closeAllPositions(closeAllPositionsParamsMock);
 
         verify(taskParamsUtilMock)
             .subscribeComposeData(closePositionTaskMock.closeAll(closeAllPositionsParamsMock),
-                                    composeParamsMock);
+                                  composeParamsMock);
 
     }
 

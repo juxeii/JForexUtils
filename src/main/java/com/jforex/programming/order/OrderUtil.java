@@ -15,6 +15,8 @@ import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.CommonParamsBase;
 import com.jforex.programming.order.task.params.ComposeData;
+import com.jforex.programming.order.task.params.TaskParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.BatchParams;
 import com.jforex.programming.order.task.params.basic.CloseParams;
@@ -42,7 +44,7 @@ public class OrderUtil {
     private final ClosePositionTask closePositionTask;
     private final PositionUtil positionUtil;
     private final TaskParamsUtil taskParamsUtil;
-    private Map<Class<?>, Function<CommonParamsBase, Observable<OrderEvent>>> paramsMapper;
+    private Map<TaskParamsType, Function<TaskParamsBase, Observable<OrderEvent>>> paramsMapper;
 
     public OrderUtil(final BasicTask basicTask,
                      final MergePositionTask mergeTask,
@@ -55,16 +57,24 @@ public class OrderUtil {
         this.positionUtil = positionUtil;
         this.taskParamsUtil = taskParamsUtil;
 
-        paramsMapper = ImmutableMap.<Class<?>, Function<CommonParamsBase, Observable<OrderEvent>>> builder()
-            .put(SubmitParams.class, params -> basicTask.submitOrder((SubmitParams) params))
-            .put(MergeParams.class, params -> basicTask.mergeOrders((MergeParams) params))
-            .put(CloseParams.class, params -> basicTask.close((CloseParams) params))
-            .put(SetLabelParams.class, params -> basicTask.setLabel((SetLabelParams) params))
-            .put(SetGTTParams.class, params -> basicTask.setGoodTillTime((SetGTTParams) params))
-            .put(SetAmountParams.class, params -> basicTask.setRequestedAmount((SetAmountParams) params))
-            .put(SetOpenPriceParams.class, params -> basicTask.setOpenPrice((SetOpenPriceParams) params))
-            .put(SetSLParams.class, params -> basicTask.setStopLossPrice((SetSLParams) params))
-            .put(SetTPParams.class, params -> basicTask.setTakeProfitPrice((SetTPParams) params))
+        paramsMapper = ImmutableMap.<TaskParamsType, Function<TaskParamsBase, Observable<OrderEvent>>> builder()
+            .put(TaskParamsType.SUBMIT, params -> basicTask.submitOrder((SubmitParams) params))
+            .put(TaskParamsType.MERGE, params -> basicTask.mergeOrders((MergeParams) params))
+            .put(TaskParamsType.CLOSE, params -> basicTask.close((CloseParams) params))
+            .put(TaskParamsType.SETLABEL, params -> basicTask.setLabel((SetLabelParams) params))
+            .put(TaskParamsType.SETGTT, params -> basicTask.setGoodTillTime((SetGTTParams) params))
+            .put(TaskParamsType.SETAMOUNT, params -> basicTask.setRequestedAmount((SetAmountParams) params))
+            .put(TaskParamsType.SETOPENPRICE, params -> basicTask.setOpenPrice((SetOpenPriceParams) params))
+            .put(TaskParamsType.SETSL, params -> basicTask.setStopLossPrice((SetSLParams) params))
+            .put(TaskParamsType.SETTP, params -> basicTask.setTakeProfitPrice((SetTPParams) params))
+
+            .put(TaskParamsType.MERGEPOSITION, params -> mergePositionTask.merge((MergePositionParams) params))
+            .put(TaskParamsType.MERGEALLPOSITIONS,
+                 params -> mergePositionTask.mergeAll((MergeAllPositionsParams) params))
+            .put(TaskParamsType.CLOSEPOSITION, params -> closePositionTask.close((ClosePositionParams) params))
+            .put(TaskParamsType.CLOSEALLPOSITIONS,
+                 params -> closePositionTask.closeAll((CloseAllPositionsParams) params))
+
             .build();
     }
 
@@ -132,12 +142,12 @@ public class OrderUtil {
         taskParamsUtil.subscribeComposeData(Observable.merge(observables), batchParams.composeData());
     }
 
-    private final Observable<OrderEvent> paramsToObservable(final CommonParamsBase commonParamsBase) {
+    private final Observable<OrderEvent> paramsToObservable(final TaskParamsBase taskParamsBase) {
         Observable<OrderEvent> observable = paramsMapper
-            .get(commonParamsBase.getClass())
-            .apply(commonParamsBase);
+            .get(taskParamsBase.type())
+            .apply(taskParamsBase);
 
-        return taskParamsUtil.composeParams(observable, commonParamsBase.composeData());
+        return taskParamsUtil.composeParams(observable, taskParamsBase.composeData());
     }
 
     private final void subscribeBasic(final Observable<OrderEvent> observable,
@@ -163,14 +173,14 @@ public class OrderUtil {
         checkNotNull(closePositionParams);
 
         subscribePosition(closePositionTask.close(closePositionParams),
-                          closePositionParams.closePositionComposeParams());
+                          closePositionParams.composeData());
     }
 
     public void closeAllPositions(final CloseAllPositionsParams closeAllPositionParams) {
         checkNotNull(closeAllPositionParams);
 
         subscribePosition(closePositionTask.closeAll(closeAllPositionParams),
-                          closeAllPositionParams.closeAllPositionsComposeData());
+                          closeAllPositionParams.composeData());
     }
 
     private final void subscribePosition(final Observable<OrderEvent> observable,

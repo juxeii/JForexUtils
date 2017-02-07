@@ -8,6 +8,7 @@ import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.CommonParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsType;
 
 public class SubmitParams extends CommonParamsBase {
 
@@ -60,5 +61,10 @@ public class SubmitParams extends CommonParamsBase {
         public SubmitParams build() {
             return new SubmitParams(this);
         }
+    }
+
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SUBMIT;
     }
 }

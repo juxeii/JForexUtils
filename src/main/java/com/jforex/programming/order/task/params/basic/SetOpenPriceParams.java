@@ -8,6 +8,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.CommonParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsType;
 
 public class SetOpenPriceParams extends CommonParamsBase {
 
@@ -58,5 +59,10 @@ public class SetOpenPriceParams extends CommonParamsBase {
         public SetOpenPriceParams build() {
             return new SetOpenPriceParams(this);
         }
+    }
+
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SETOPENPRICE;
     }
 }

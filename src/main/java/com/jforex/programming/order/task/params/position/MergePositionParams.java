@@ -14,8 +14,10 @@ import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CancelSLTPMode;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeData;
+import com.jforex.programming.order.task.params.TaskParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsType;
 
-public class MergePositionParams {
+public class MergePositionParams implements TaskParamsBase {
 
     private final Instrument instrument;
     private final String mergeOrderLabel;
@@ -91,10 +93,6 @@ public class MergePositionParams {
             .composeData();
     }
 
-    public ComposeData mergeComposeParams() {
-        return mergeComposeParams.composeData();
-    }
-
     public CancelSLTPMode mergeExecutionMode() {
         return mergeExecutionMode;
     }
@@ -105,6 +103,16 @@ public class MergePositionParams {
 
     public BatchMode batchCancelTPMode() {
         return batchCancelTPMode;
+    }
+
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.MERGEPOSITION;
+    }
+
+    @Override
+    public ComposeData composeData() {
+        return mergeComposeParams.composeData();
     }
 
     public static Builder newBuilder(final Instrument instrument,

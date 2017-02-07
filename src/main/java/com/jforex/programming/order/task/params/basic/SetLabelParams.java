@@ -8,6 +8,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.CommonParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsType;
 
 public class SetLabelParams extends CommonParamsBase {
 
@@ -59,5 +60,10 @@ public class SetLabelParams extends CommonParamsBase {
         public SetLabelParams build() {
             return new SetLabelParams(this);
         }
+    }
+
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SETLABEL;
     }
 }

@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 
 import com.jforex.programming.order.task.params.CommonParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsType;
 
 public class BatchParams extends CommonParamsBase {
 
@@ -37,5 +38,10 @@ public class BatchParams extends CommonParamsBase {
         public BatchParams build() {
             return new BatchParams(this);
         }
+    }
+
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.BATCH;
     }
 }

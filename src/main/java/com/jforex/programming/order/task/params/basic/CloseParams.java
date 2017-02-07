@@ -9,6 +9,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.CommonParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.strategy.StrategyUtil;
 
 public class CloseParams extends CommonParamsBase {
@@ -98,5 +99,10 @@ public class CloseParams extends CommonParamsBase {
         public CloseParams build() {
             return new CloseParams(this);
         }
+    }
+
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.CLOSE;
     }
 }

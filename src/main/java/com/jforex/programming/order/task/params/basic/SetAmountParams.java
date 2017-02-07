@@ -8,6 +8,7 @@ import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.CommonParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsType;
 
 public class SetAmountParams extends CommonParamsBase {
 
@@ -58,5 +59,10 @@ public class SetAmountParams extends CommonParamsBase {
         public SetAmountParams build() {
             return new SetAmountParams(this);
         }
+    }
+
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SETAMOUNT;
     }
 }

@@ -7,7 +7,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 
-public abstract class CommonParamsBase {
+public abstract class CommonParamsBase implements TaskParamsBase {
 
     protected ComposeData composeData;
     protected Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
@@ -21,6 +21,10 @@ public abstract class CommonParamsBase {
         return consumerForEvent;
     }
 
+    @Override
+    public abstract TaskParamsType type();
+
+    @Override
     public ComposeData composeData() {
         return composeData;
     }

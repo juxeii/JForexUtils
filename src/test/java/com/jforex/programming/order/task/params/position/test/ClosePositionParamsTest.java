@@ -134,7 +134,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertClosePositionValues() {
-        assertThat(closePositionParams.closePositionComposeParams(), equalTo(composeData));
+        assertThat(closePositionParams.composeData(), equalTo(composeData));
     }
 
     @Test

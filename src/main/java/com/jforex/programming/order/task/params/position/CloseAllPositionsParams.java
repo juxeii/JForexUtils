@@ -10,11 +10,13 @@ import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.RetryParams;
+import com.jforex.programming.order.task.params.TaskParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.rx.RetryDelayFunction;
 
 import io.reactivex.functions.Action;
 
-public class CloseAllPositionsParams {
+public class CloseAllPositionsParams implements TaskParamsBase {
 
     private final Function<Instrument, ClosePositionParams> paramsFactory;
     private final ComposeData closeAllPositionsComposeData;
@@ -28,7 +30,13 @@ public class CloseAllPositionsParams {
         return paramsFactory.apply(instrument);
     }
 
-    public ComposeData closeAllPositionsComposeData() {
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.CLOSEALLPOSITIONS;
+    }
+
+    @Override
+    public ComposeData composeData() {
         return closeAllPositionsComposeData;
     }
 

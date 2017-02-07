@@ -9,6 +9,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.CommonParamsBase;
 import com.jforex.programming.order.task.params.SetSLTPMode;
+import com.jforex.programming.order.task.params.TaskParamsType;
 
 public class SetTPParams extends CommonParamsBase {
 
@@ -79,5 +80,10 @@ public class SetTPParams extends CommonParamsBase {
         public SetTPParams build() {
             return new SetTPParams(this);
         }
+    }
+
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SETTP;
     }
 }

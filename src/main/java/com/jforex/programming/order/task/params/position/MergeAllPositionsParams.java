@@ -10,11 +10,13 @@ import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.RetryParams;
+import com.jforex.programming.order.task.params.TaskParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.rx.RetryDelayFunction;
 
 import io.reactivex.functions.Action;
 
-public class MergeAllPositionsParams {
+public class MergeAllPositionsParams implements TaskParamsBase {
 
     private final Function<Instrument, MergePositionParams> paramsFactory;
     private final ComposeData mergeAllPositionsComposeData;
@@ -29,6 +31,16 @@ public class MergeAllPositionsParams {
     }
 
     public ComposeData mergeAllPositionsComposeData() {
+        return mergeAllPositionsComposeData;
+    }
+
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.MERGEALLPOSITIONS;
+    }
+
+    @Override
+    public ComposeData composeData() {
         return mergeAllPositionsComposeData;
     }
 
