@@ -76,7 +76,6 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
 
     private void assertRetries(final RetryParams retryParams) {
         assertThat(retryParams.noOfRetries(), equalTo(noOfRetries));
-        // assertThat(retryParams.delayInMillis(), equalTo(delayInMillis));
     }
 
     @Test

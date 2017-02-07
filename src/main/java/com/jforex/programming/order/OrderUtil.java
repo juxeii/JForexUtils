@@ -10,6 +10,7 @@ import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.CommonParamsBase;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
+import com.jforex.programming.order.task.params.basic.BatchParams;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.basic.MergeParams;
 import com.jforex.programming.order.task.params.basic.SetAmountParams;
@@ -100,6 +101,10 @@ public class OrderUtil {
         checkNotNull(setTPParams);
 
         subscribeBasic(basicTask.setTakeProfitPrice(setTPParams), setTPParams);
+    }
+    
+    public void executeBatch(final BatchParams batchParams) {
+        //TODO
     }
 
     private void subscribeBasic(final Observable<OrderEvent> observable,

@@ -76,8 +76,6 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
 
     private void assertRetries(final RetryParams retryParams) {
         assertThat(retryParams.noOfRetries(), equalTo(noOfRetries));
-        // assertThat(retryParams.delayFunction().apply(1).delay(),
-        // equalTo(delayInMillis));
     }
 
     @Test
