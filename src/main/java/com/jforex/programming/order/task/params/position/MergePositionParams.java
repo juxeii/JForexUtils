@@ -65,8 +65,8 @@ public class MergePositionParams implements TaskParamsBase {
         return consumerForEvent;
     }
 
-    public ComposeData mergePositionComposeParams() {
-        return mergePositionComposeParams.composeData();
+    public ComposeData mergeComposeParams() {
+        return mergeComposeParams.composeData();
     }
 
     public ComposeData cancelSLTPComposeParams() {
@@ -112,7 +112,7 @@ public class MergePositionParams implements TaskParamsBase {
 
     @Override
     public ComposeData composeData() {
-        return mergeComposeParams.composeData();
+        return mergePositionComposeParams.composeData();
     }
 
     public static Builder newBuilder(final Instrument instrument,

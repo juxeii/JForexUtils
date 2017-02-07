@@ -9,11 +9,11 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.CommonParamsBase;
+import com.jforex.programming.order.task.params.BasicTaskParamsBase;
 import com.jforex.programming.order.task.params.SetSLTPMode;
 import com.jforex.programming.order.task.params.TaskParamsType;
 
-public class SetSLParams extends CommonParamsBase {
+public class SetSLParams extends BasicTaskParamsBase {
 
     private final IOrder order;
     private final double priceOrPips;

@@ -136,7 +136,7 @@ public class MergePositionParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertMergePositionValues() {
-        assertThat(mergePositionParams.mergePositionComposeParams(), equalTo(composeData));
+        assertThat(mergePositionParams.composeData(), equalTo(composeData));
     }
 
     @Test

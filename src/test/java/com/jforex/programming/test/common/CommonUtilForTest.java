@@ -42,6 +42,7 @@ import com.jforex.programming.order.task.CancelSLTPMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.RetryParams;
 import com.jforex.programming.order.task.params.SetSLTPMode;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.position.PositionDirection;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuoteProvider;
@@ -206,6 +207,8 @@ public class CommonUtilForTest extends BDDMockito {
             .valueOf(SetSLTPMode.PIPS.toString());
         UserConnectionState
             .valueOf(UserConnectionState.CONNECTED.toString());
+        TaskParamsType
+            .valueOf(TaskParamsType.SETAMOUNT.toString());
     }
 
     protected final Completable emptyCompletable() {

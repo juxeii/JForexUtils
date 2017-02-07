@@ -96,6 +96,6 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertMergeAllPositionsValues() {
-        assertComposeParams(mergeAllPositionsParams.mergeAllPositionsComposeData());
+        assertComposeParams(mergeAllPositionsParams.composeData());
     }
 }

@@ -7,10 +7,10 @@ import java.util.function.Consumer;
 import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.CommonParamsBase;
+import com.jforex.programming.order.task.params.BasicTaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 
-public class SubmitParams extends CommonParamsBase {
+public class SubmitParams extends BasicTaskParamsBase {
 
     private final OrderParams orderParams;
 
@@ -22,6 +22,11 @@ public class SubmitParams extends CommonParamsBase {
 
     public OrderParams orderParams() {
         return orderParams;
+    }
+
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SUBMIT;
     }
 
     public static Builder withOrderParams(final OrderParams orderParams) {
@@ -61,10 +66,5 @@ public class SubmitParams extends CommonParamsBase {
         public SubmitParams build() {
             return new SubmitParams(this);
         }
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.SUBMIT;
     }
 }

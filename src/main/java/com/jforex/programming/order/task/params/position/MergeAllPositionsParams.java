@@ -30,10 +30,6 @@ public class MergeAllPositionsParams implements TaskParamsBase {
         return paramsFactory.apply(instrument);
     }
 
-    public ComposeData mergeAllPositionsComposeData() {
-        return mergeAllPositionsComposeData;
-    }
-
     @Override
     public TaskParamsType type() {
         return TaskParamsType.MERGEALLPOSITIONS;

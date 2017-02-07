@@ -4,12 +4,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
-import com.jforex.programming.order.task.params.CommonParamsBase;
+import com.jforex.programming.order.task.params.BasicTaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 
-public class BatchParams extends CommonParamsBase {
+public class BatchParams extends BasicTaskParamsBase {
 
-    private final List<? extends CommonParamsBase> paramsList;
+    private final List<? extends BasicTaskParamsBase> paramsList;
 
     private BatchParams(final Builder builder) {
         super(builder);
@@ -17,11 +17,11 @@ public class BatchParams extends CommonParamsBase {
         this.paramsList = builder.paramsList;
     }
 
-    public List<? extends CommonParamsBase> paramsList() {
+    public List<? extends BasicTaskParamsBase> paramsList() {
         return paramsList;
     }
 
-    public static Builder setBatchWith(List<? extends CommonParamsBase> paramsList) {
+    public static Builder setBatchWith(List<? extends BasicTaskParamsBase> paramsList) {
         checkNotNull(paramsList);
 
         return new Builder(paramsList);
@@ -29,9 +29,9 @@ public class BatchParams extends CommonParamsBase {
 
     public static class Builder extends BasicParamsBuilder<Builder> {
 
-        private final List<? extends CommonParamsBase> paramsList;
+        private final List<? extends BasicTaskParamsBase> paramsList;
 
-        public Builder(List<? extends CommonParamsBase> paramsList) {
+        public Builder(List<? extends BasicTaskParamsBase> paramsList) {
             this.paramsList = paramsList;
         }
 

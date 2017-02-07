@@ -7,10 +7,10 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.CommonParamsBase;
+import com.jforex.programming.order.task.params.BasicTaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 
-public class CancelSLParams extends CommonParamsBase {
+public class CancelSLParams extends BasicTaskParamsBase {
 
     private final IOrder order;
 
