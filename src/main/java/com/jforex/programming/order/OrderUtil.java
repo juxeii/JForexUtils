@@ -2,7 +2,13 @@ package com.jforex.programming.order;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.dukascopy.api.Instrument;
+import com.google.common.collect.ImmutableMap;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
@@ -36,6 +42,7 @@ public class OrderUtil {
     private final ClosePositionTask closePositionTask;
     private final PositionUtil positionUtil;
     private final TaskParamsUtil taskParamsUtil;
+    private Map<Class<?>, Function<CommonParamsBase, Observable<OrderEvent>>> paramsMapper;
 
     public OrderUtil(final BasicTask basicTask,
                      final MergePositionTask mergeTask,
@@ -47,6 +54,18 @@ public class OrderUtil {
         this.closePositionTask = closePositionTask;
         this.positionUtil = positionUtil;
         this.taskParamsUtil = taskParamsUtil;
+
+        paramsMapper = ImmutableMap.<Class<?>, Function<CommonParamsBase, Observable<OrderEvent>>> builder()
+            .put(SubmitParams.class, params -> basicTask.submitOrder((SubmitParams) params))
+            .put(MergeParams.class, params -> basicTask.mergeOrders((MergeParams) params))
+            .put(CloseParams.class, params -> basicTask.close((CloseParams) params))
+            .put(SetLabelParams.class, params -> basicTask.setLabel((SetLabelParams) params))
+            .put(SetGTTParams.class, params -> basicTask.setGoodTillTime((SetGTTParams) params))
+            .put(SetAmountParams.class, params -> basicTask.setRequestedAmount((SetAmountParams) params))
+            .put(SetOpenPriceParams.class, params -> basicTask.setOpenPrice((SetOpenPriceParams) params))
+            .put(SetSLParams.class, params -> basicTask.setStopLossPrice((SetSLParams) params))
+            .put(SetTPParams.class, params -> basicTask.setTakeProfitPrice((SetTPParams) params))
+            .build();
     }
 
     public void submitOrder(final SubmitParams submitParams) {
@@ -102,13 +121,27 @@ public class OrderUtil {
 
         subscribeBasic(basicTask.setTakeProfitPrice(setTPParams), setTPParams);
     }
-    
+
     public void executeBatch(final BatchParams batchParams) {
-        //TODO
+        List<Observable<OrderEvent>> observables = batchParams
+            .paramsList()
+            .stream()
+            .map(this::paramsToObservable)
+            .collect(Collectors.toList());
+
+        taskParamsUtil.subscribeComposeData(Observable.merge(observables), batchParams.composeData());
     }
 
-    private void subscribeBasic(final Observable<OrderEvent> observable,
-                                final CommonParamsBase commonParamsBase) {
+    private final Observable<OrderEvent> paramsToObservable(final CommonParamsBase commonParamsBase) {
+        Observable<OrderEvent> observable = paramsMapper
+            .get(commonParamsBase.getClass())
+            .apply(commonParamsBase);
+
+        return taskParamsUtil.composeParams(observable, commonParamsBase.composeData());
+    }
+
+    private final void subscribeBasic(final Observable<OrderEvent> observable,
+                                      final CommonParamsBase commonParamsBase) {
         taskParamsUtil.subscribeBasicParams(observable, commonParamsBase);
     }
 
@@ -140,8 +173,8 @@ public class OrderUtil {
                           closeAllPositionParams.closeAllPositionsComposeData());
     }
 
-    private void subscribePosition(final Observable<OrderEvent> observable,
-                                   final ComposeData composeData) {
+    private final void subscribePosition(final Observable<OrderEvent> observable,
+                                         final ComposeData composeData) {
         taskParamsUtil.subscribeComposeData(observable, composeData);
     }
 
