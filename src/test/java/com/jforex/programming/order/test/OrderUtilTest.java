@@ -8,13 +8,17 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import com.jforex.programming.order.OrderUtil;
+import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.BasicTaskParamsBase;
+import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
@@ -36,6 +40,11 @@ import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
+import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
+
 public class OrderUtilTest extends InstrumentUtilForTest {
 
     private OrderUtil orderUtil;
@@ -52,6 +61,8 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private TaskParamsUtil taskParamsUtilMock;
     @Mock
     private ComposeParams composeParamsMock;
+    @Captor
+    private ArgumentCaptor<Observable<OrderEvent>> mergeCaptor;
 
     @Before
     public void setUp() {
@@ -222,17 +233,45 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void executeBatchSubscribesCorrect() {
         final SubmitParams submitParamsMock = mock(SubmitParams.class);
         when(submitParamsMock.type()).thenReturn(TaskParamsType.SUBMIT);
+        final Subject<OrderEvent> submitSubject = PublishSubject.create();
+        when(basicTaskMock.submitOrder(submitParamsMock)).thenReturn(submitSubject);
 
         final CloseParams closeParamsMock = mock(CloseParams.class);
         when(closeParamsMock.type()).thenReturn(TaskParamsType.CLOSE);
+        final Subject<OrderEvent> closeSubject = PublishSubject.create();
+        when(basicTaskMock.close(closeParamsMock)).thenReturn(closeSubject);
 
-        List<BasicTaskParamsBase> paramsList = new ArrayList<>();
+        final List<BasicTaskParamsBase> paramsList = new ArrayList<>();
         paramsList.add(submitParamsMock);
         paramsList.add(closeParamsMock);
         final BatchParams batchParamsMock = mock(BatchParams.class);
         when(batchParamsMock.paramsCollection()).thenReturn(paramsList);
+        final ComposeData composeDataMock = mock(ComposeData.class);
+        when(batchParamsMock.composeData()).thenReturn(composeDataMock);
+
+        when(taskParamsUtilMock.composeParams(submitSubject, submitParamsMock.composeData()))
+            .thenReturn(submitSubject);
+        when(taskParamsUtilMock.composeParams(closeSubject, closeParamsMock.composeData()))
+            .thenReturn(closeSubject);
 
         orderUtil.executeBatch(batchParamsMock);
+
+        verify(taskParamsUtilMock).composeParams(submitSubject, submitParamsMock.composeData());
+        verify(taskParamsUtilMock).composeParams(closeSubject, closeParamsMock.composeData());
+
+        verify(taskParamsUtilMock).subscribeComposeData(mergeCaptor.capture(), eq(composeDataMock));
+        final Observable<OrderEvent> mergedObservables = mergeCaptor.getValue();
+        final TestObserver<OrderEvent> testObserver = mergedObservables.test();
+
+        submitSubject.onNext(submitEvent);
+        closeSubject.onNext(closeEvent);
+        testObserver.assertValues(submitEvent, closeEvent);
+
+        submitSubject.onComplete();
+        testObserver.assertNotComplete();
+
+        closeSubject.onComplete();
+        testObserver.assertComplete();
     }
 
     @Test
