@@ -3,6 +3,9 @@ package com.jforex.programming.order.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -11,9 +14,11 @@ import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.MergePositionTask;
+import com.jforex.programming.order.task.params.BasicTaskParamsBase;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
+import com.jforex.programming.order.task.params.basic.BatchParams;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.basic.MergeParams;
 import com.jforex.programming.order.task.params.basic.SetAmountParams;
@@ -211,6 +216,23 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             .subscribeComposeData(closePositionTaskMock.closeAll(closeAllPositionsParamsMock),
                                   composeParamsMock);
 
+    }
+
+    @Test
+    public void executeBatchSubscribesCorrect() {
+        final SubmitParams submitParamsMock = mock(SubmitParams.class);
+        when(submitParamsMock.type()).thenReturn(TaskParamsType.SUBMIT);
+
+        final CloseParams closeParamsMock = mock(CloseParams.class);
+        when(closeParamsMock.type()).thenReturn(TaskParamsType.CLOSE);
+
+        List<BasicTaskParamsBase> paramsList = new ArrayList<>();
+        paramsList.add(submitParamsMock);
+        paramsList.add(closeParamsMock);
+        final BatchParams batchParamsMock = mock(BatchParams.class);
+        when(batchParamsMock.paramsCollection()).thenReturn(paramsList);
+
+        orderUtil.executeBatch(batchParamsMock);
     }
 
     @Test

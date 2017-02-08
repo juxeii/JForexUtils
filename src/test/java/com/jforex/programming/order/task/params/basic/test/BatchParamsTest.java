@@ -18,7 +18,7 @@ public class BatchParamsTest extends CommonParamsForTest {
 
     private BatchParams batchParams;
 
-    private List<? extends BasicTaskParamsBase> paramsList = new ArrayList<>();
+    private List<BasicTaskParamsBase> paramsList = new ArrayList<>();
 
     @Before
     public void setUp() {
@@ -30,6 +30,6 @@ public class BatchParamsTest extends CommonParamsForTest {
     @Test
     public void valuesAreCorrect() {
         assertThat(batchParams.type(), equalTo(TaskParamsType.BATCH));
-        assertThat(batchParams.paramsList(), equalTo(paramsList));
+        assertThat(batchParams.paramsCollection(), equalTo(paramsList));
     }
 }
