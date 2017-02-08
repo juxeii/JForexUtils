@@ -88,6 +88,7 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
         assertThat(mergeAllPositionsParams.type(), equalTo(TaskParamsType.MERGEALLPOSITIONS));
         assertThat(mergeAllPositionsParams.paramsForInstrument(instrumentEURUSD),
                    equalTo(mergePositionParamsMock));
+        assertThat(mergeAllPositionsParams.consumerForEvent().size(), equalTo(0));
     }
 
     @Test

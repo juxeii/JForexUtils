@@ -249,15 +249,23 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final ComposeData composeDataMock = mock(ComposeData.class);
         when(batchParamsMock.composeData()).thenReturn(composeDataMock);
 
-        when(taskParamsUtilMock.composeParams(submitSubject, submitParamsMock.composeData()))
-            .thenReturn(submitSubject);
-        when(taskParamsUtilMock.composeParams(closeSubject, closeParamsMock.composeData()))
-            .thenReturn(closeSubject);
+        when(taskParamsUtilMock.composeParamsWithEvents(submitSubject,
+                                                        submitParamsMock.composeData(),
+                                                        submitParamsMock.consumerForEvent()))
+                                                            .thenReturn(submitSubject);
+        when(taskParamsUtilMock.composeParamsWithEvents(closeSubject,
+                                                        closeParamsMock.composeData(),
+                                                        closeParamsMock.consumerForEvent()))
+                                                            .thenReturn(closeSubject);
 
         orderUtil.executeBatch(batchParamsMock);
 
-        verify(taskParamsUtilMock).composeParams(submitSubject, submitParamsMock.composeData());
-        verify(taskParamsUtilMock).composeParams(closeSubject, closeParamsMock.composeData());
+        verify(taskParamsUtilMock).composeParamsWithEvents(submitSubject,
+                                                           submitParamsMock.composeData(),
+                                                           submitParamsMock.consumerForEvent());
+        verify(taskParamsUtilMock).composeParamsWithEvents(closeSubject,
+                                                           closeParamsMock.composeData(),
+                                                           closeParamsMock.consumerForEvent());
 
         verify(taskParamsUtilMock).subscribeComposeData(mergeCaptor.capture(), eq(composeDataMock));
         final Observable<OrderEvent> mergedObservables = mergeCaptor.getValue();

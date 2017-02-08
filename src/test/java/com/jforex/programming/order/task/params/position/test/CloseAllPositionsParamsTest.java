@@ -87,6 +87,7 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
 
         assertThat(closeAllPositionsParams.type(), equalTo(TaskParamsType.CLOSEALLPOSITIONS));
         assertThat(closeAllPositionsParams.paramsForInstrument(instrumentEURUSD), equalTo(closePositionParamsMock));
+        assertThat(closeAllPositionsParams.consumerForEvent().size(), equalTo(0));
     }
 
     @Test

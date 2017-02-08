@@ -42,8 +42,8 @@ public class OrderUtil {
 
     private final PositionUtil positionUtil;
     private final TaskParamsUtil taskParamsUtil;
-    private Map<TaskParamsType, Function<TaskParamsBase, Observable<OrderEvent>>> paramsMapper;
-    private ImmutableSet<TaskParamsType> basicTaskTypes =
+    private final Map<TaskParamsType, Function<TaskParamsBase, Observable<OrderEvent>>> paramsMapper;
+    private final ImmutableSet<TaskParamsType> basicTaskTypes =
             Sets.immutableEnumSet(TaskParamsType.SUBMIT,
                                   TaskParamsType.MERGE,
                                   TaskParamsType.CLOSE,
@@ -95,8 +95,8 @@ public class OrderUtil {
     public void execute(final TaskParamsBase params) {
         checkNotNull(params);
 
-        Observable<OrderEvent> observable = paramsToObservable(params);
-        TaskParamsType taskParamsType = params.type();
+        final Observable<OrderEvent> observable = paramsToObservable(params);
+        final TaskParamsType taskParamsType = params.type();
 
         if (basicTaskTypes.contains(taskParamsType))
             taskParamsUtil.subscribeBasicParams(observable, (BasicTaskParamsBase) params);
@@ -107,7 +107,7 @@ public class OrderUtil {
     public void executeBatch(final BatchParams batchParams) {
         checkNotNull(batchParams);
 
-        List<Observable<OrderEvent>> observables = batchParams
+        final List<Observable<OrderEvent>> observables = batchParams
             .paramsCollection()
             .stream()
             .map(this::paramsToObservable)
@@ -117,11 +117,13 @@ public class OrderUtil {
     }
 
     private final Observable<OrderEvent> paramsToObservable(final TaskParamsBase taskParamsBase) {
-        Observable<OrderEvent> observable = paramsMapper
+        final Observable<OrderEvent> observable = paramsMapper
             .get(taskParamsBase.type())
             .apply(taskParamsBase);
 
-        return taskParamsUtil.composeParams(observable, taskParamsBase.composeData());
+        return taskParamsUtil.composeParamsWithEvents(observable,
+                                                      taskParamsBase.composeData(),
+                                                      taskParamsBase.consumerForEvent());
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {

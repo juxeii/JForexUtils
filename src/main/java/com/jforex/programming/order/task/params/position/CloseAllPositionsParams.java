@@ -2,10 +2,14 @@ package com.jforex.programming.order.task.params.position;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
@@ -38,6 +42,11 @@ public class CloseAllPositionsParams implements TaskParamsBase {
     @Override
     public ComposeData composeData() {
         return closeAllPositionsComposeData;
+    }
+
+    @Override
+    public Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent() {
+        return new HashMap<OrderEventType, Consumer<OrderEvent>>();
     }
 
     public static Builder newBuilder(final Function<Instrument, ClosePositionParams> paramsFactory) {
