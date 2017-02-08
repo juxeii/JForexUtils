@@ -55,6 +55,11 @@ public class CloseParams extends BasicTaskParamsBase {
         return slippage;
     }
 
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.CLOSE;
+    }
+
     public static Builder withOrder(final IOrder order) {
         checkNotNull(order);
 
@@ -99,10 +104,5 @@ public class CloseParams extends BasicTaskParamsBase {
         public CloseParams build() {
             return new CloseParams(this);
         }
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.CLOSE;
     }
 }

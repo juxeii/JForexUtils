@@ -13,6 +13,7 @@ import com.dukascopy.api.OfferSide;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.SetSLTPMode;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.SetSLParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
@@ -96,6 +97,7 @@ public class SetSLParamsTest extends CommonParamsForTest {
 
         consumerForEvent = setSLParams.consumerForEvent();
 
+        assertThat(setSLParams.type(), equalTo(TaskParamsType.SETSL));
         assertThat(consumerForEvent.size(), equalTo(2));
         assertEventConsumer(OrderEventType.CHANGED_SL, changedSLConsumerMock);
         assertEventConsumer(OrderEventType.CHANGE_SL_REJECTED, changeRejectConsumerMock);

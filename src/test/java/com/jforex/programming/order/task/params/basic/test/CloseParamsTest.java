@@ -11,6 +11,7 @@ import org.mockito.Mock;
 
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
@@ -48,6 +49,7 @@ public class CloseParamsTest extends CommonParamsForTest {
             .withOrder(buyOrderEURUSD)
             .build();
 
+        assertThat(closeParams.type(), equalTo(TaskParamsType.CLOSE));
         assertThat(closeParams.order(), equalTo(buyOrderEURUSD));
         assertThat(closeParams.partialCloseAmount(), equalTo(0.0));
         assertFalse(closeParams.maybePrice().isPresent());

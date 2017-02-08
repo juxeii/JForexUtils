@@ -16,6 +16,7 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.RetryParams;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.position.CloseAllPositionsParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
@@ -84,6 +85,7 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
             .newBuilder(paramsFactoryMock)
             .build();
 
+        assertThat(closeAllPositionsParams.type(), equalTo(TaskParamsType.CLOSEALLPOSITIONS));
         assertThat(closeAllPositionsParams.paramsForInstrument(instrumentEURUSD), equalTo(closePositionParamsMock));
     }
 

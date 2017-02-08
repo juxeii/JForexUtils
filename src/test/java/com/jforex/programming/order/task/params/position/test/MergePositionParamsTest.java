@@ -19,6 +19,7 @@ import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CancelSLTPMode;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.position.PositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
@@ -114,6 +115,7 @@ public class MergePositionParamsTest extends CommonParamsForTest {
             .newBuilder(instrumentEURUSD, mergeOrderLabel)
             .build();
 
+        assertThat(mergePositionParams.type(), equalTo(TaskParamsType.MERGEPOSITION));
         assertThat(mergePositionParams.instrument(), equalTo(instrumentEURUSD));
         assertThat(mergePositionParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
         assertThat(mergePositionParams.mergeExecutionMode(), equalTo(CancelSLTPMode.MergeCancelSLAndTP));
@@ -166,7 +168,7 @@ public class MergePositionParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertMergeValues() {
-        assertThat(mergePositionParams.composeData(), equalTo(composeData));
+        assertThat(mergePositionParams.mergeComposeParams(), equalTo(composeData));
     }
 
     @Test

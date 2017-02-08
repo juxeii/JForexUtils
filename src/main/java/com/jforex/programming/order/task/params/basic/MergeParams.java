@@ -31,6 +31,11 @@ public class MergeParams extends BasicTaskParamsBase {
         return toMergeOrders;
     }
 
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.MERGE;
+    }
+
     public static Builder mergeWith(final String mergeOrderLabel,
                                     final Collection<IOrder> toMergeOrders) {
         checkNotNull(mergeOrderLabel);
@@ -65,10 +70,5 @@ public class MergeParams extends BasicTaskParamsBase {
         public MergeParams build() {
             return new MergeParams(this);
         }
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.MERGE;
     }
 }

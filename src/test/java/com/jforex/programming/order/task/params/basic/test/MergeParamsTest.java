@@ -13,6 +13,7 @@ import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.MergeParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
@@ -35,6 +36,7 @@ public class MergeParamsTest extends CommonParamsForTest {
             .mergeWith(mergeOrderLabel, toMergeOrders)
             .build();
 
+        assertThat(mergeParams.type(), equalTo(TaskParamsType.MERGE));
         assertThat(mergeParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
         assertThat(mergeParams.toMergeOrders(), equalTo(toMergeOrders));
     }

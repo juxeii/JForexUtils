@@ -37,6 +37,11 @@ public class SetTPParams extends BasicTaskParamsBase {
         return setSLTPMode;
     }
 
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SETTP;
+    }
+
     public static Builder setTPAtPrice(final IOrder order,
                                        final double newTP) {
         checkNotNull(order);
@@ -80,10 +85,5 @@ public class SetTPParams extends BasicTaskParamsBase {
         public SetTPParams build() {
             return new SetTPParams(this);
         }
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.SETTP;
     }
 }

@@ -30,6 +30,11 @@ public class SetAmountParams extends BasicTaskParamsBase {
         return newAmount;
     }
 
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SETAMOUNT;
+    }
+
     public static Builder setAmountWith(final IOrder order,
                                         final double newAmount) {
         checkNotNull(order);
@@ -59,10 +64,5 @@ public class SetAmountParams extends BasicTaskParamsBase {
         public SetAmountParams build() {
             return new SetAmountParams(this);
         }
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.SETAMOUNT;
     }
 }

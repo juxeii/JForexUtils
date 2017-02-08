@@ -30,6 +30,11 @@ public class SetLabelParams extends BasicTaskParamsBase {
         return newLabel;
     }
 
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SETLABEL;
+    }
+
     public static Builder setLabelWith(final IOrder order,
                                        final String newLabel) {
         checkNotNull(order);
@@ -60,10 +65,5 @@ public class SetLabelParams extends BasicTaskParamsBase {
         public SetLabelParams build() {
             return new SetLabelParams(this);
         }
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.SETLABEL;
     }
 }

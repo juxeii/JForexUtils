@@ -16,6 +16,7 @@ import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.RetryParams;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.position.MergeAllPositionsParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
@@ -84,6 +85,7 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
             .newBuilder(paramsFactoryMock)
             .build();
 
+        assertThat(mergeAllPositionsParams.type(), equalTo(TaskParamsType.MERGEALLPOSITIONS));
         assertThat(mergeAllPositionsParams.paramsForInstrument(instrumentEURUSD),
                    equalTo(mergePositionParamsMock));
     }

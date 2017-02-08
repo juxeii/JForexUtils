@@ -11,6 +11,7 @@ import org.mockito.Mock;
 
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.SubmitParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
@@ -47,6 +48,7 @@ public class SubmitParamsTest extends CommonParamsForTest {
     public void handlersAreCorrect() {
         assertThat(submitParams.orderParams(), equalTo(buyParamsEURUSD));
 
+        assertThat(submitParams.type(), equalTo(TaskParamsType.SUBMIT));
         assertThat(consumerForEvent.size(), equalTo(5));
         assertEventConsumer(OrderEventType.SUBMIT_OK, submitConsumerMock);
         assertEventConsumer(OrderEventType.PARTIAL_FILL_OK, partialFillConsumerMock);

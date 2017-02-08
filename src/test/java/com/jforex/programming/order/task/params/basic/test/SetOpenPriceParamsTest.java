@@ -11,6 +11,7 @@ import org.mockito.Mock;
 
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.SetOpenPriceParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
@@ -37,6 +38,7 @@ public class SetOpenPriceParamsTest extends CommonParamsForTest {
 
     @Test
     public void handlersAreCorrect() {
+        assertThat(setOpenPriceParams.type(), equalTo(TaskParamsType.SETOPENPRICE));
         assertThat(setOpenPriceParams.order(), equalTo(buyOrderEURUSD));
         assertThat(setOpenPriceParams.newOpenPrice(), equalTo(newOpenPrice));
 

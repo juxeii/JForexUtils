@@ -30,6 +30,11 @@ public class SetOpenPriceParams extends BasicTaskParamsBase {
         return newOpenPrice;
     }
 
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SETOPENPRICE;
+    }
+
     public static Builder setOpenPriceWith(final IOrder order,
                                            final double newOpenPrice) {
         checkNotNull(order);
@@ -59,10 +64,5 @@ public class SetOpenPriceParams extends BasicTaskParamsBase {
         public SetOpenPriceParams build() {
             return new SetOpenPriceParams(this);
         }
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.SETOPENPRICE;
     }
 }

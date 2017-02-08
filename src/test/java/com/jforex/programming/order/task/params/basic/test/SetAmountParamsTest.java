@@ -11,6 +11,7 @@ import org.mockito.Mock;
 
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.SetAmountParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
@@ -37,6 +38,7 @@ public class SetAmountParamsTest extends CommonParamsForTest {
 
     @Test
     public void handlersAreCorrect() {
+        assertThat(setAmountParams.type(), equalTo(TaskParamsType.SETAMOUNT));
         assertThat(setAmountParams.order(), equalTo(buyOrderEURUSD));
         assertThat(setAmountParams.newAmount(), equalTo(newAmount));
 

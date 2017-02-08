@@ -21,6 +21,7 @@ import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
 import com.jforex.programming.order.task.params.RetryParams;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
@@ -104,8 +105,6 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
 
     private void assertRetries(final RetryParams retryParams) {
         assertThat(retryParams.noOfRetries(), equalTo(noOfRetries));
-        // assertThat(retryParams.delayFunction().apply(0).delay(),
-        // equalTo(delayInMillis));
     }
 
     private void assertEventHandler(final OrderEventType type) {
@@ -118,6 +117,7 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
             .newBuilder(mergePositionParamsMock, closeParamsFactoryMock)
             .build();
 
+        assertThat(closePositionParams.type(), equalTo(TaskParamsType.CLOSEPOSITION));
         assertThat(closePositionParams.instrument(), equalTo(instrumentEURUSD));
         assertThat(closePositionParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
         assertThat(closePositionParams.closeExecutionMode(), equalTo(CloseExecutionMode.CloseAll));

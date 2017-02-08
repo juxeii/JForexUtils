@@ -24,6 +24,11 @@ public class CancelTPParams extends BasicTaskParamsBase {
         return order;
     }
 
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.CANCELTP;
+    }
+
     public static Builder withOrder(final IOrder order) {
         checkNotNull(order);
 
@@ -49,10 +54,5 @@ public class CancelTPParams extends BasicTaskParamsBase {
         public CancelTPParams build() {
             return new CancelTPParams(this);
         }
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.CANCELTP;
     }
 }

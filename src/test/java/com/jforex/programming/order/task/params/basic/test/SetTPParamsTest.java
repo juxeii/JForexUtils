@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.params.SetSLTPMode;
+import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.SetTPParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
@@ -59,6 +60,7 @@ public class SetTPParamsTest extends CommonParamsForTest {
 
         consumerForEvent = setTPParams.consumerForEvent();
 
+        assertThat(setTPParams.type(), equalTo(TaskParamsType.SETTP));
         assertThat(consumerForEvent.size(), equalTo(2));
         assertEventConsumer(OrderEventType.CHANGED_TP, changedTPConsumerMock);
         assertEventConsumer(OrderEventType.CHANGE_TP_REJECTED, changeRejectConsumerMock);

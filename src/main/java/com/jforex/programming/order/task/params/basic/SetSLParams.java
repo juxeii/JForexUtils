@@ -61,6 +61,11 @@ public class SetSLParams extends BasicTaskParamsBase {
         return trailingStep;
     }
 
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SETSL;
+    }
+
     public static Builder setSLAtPrice(final IOrder order,
                                        final double newSL) {
         checkNotNull(order);
@@ -118,10 +123,5 @@ public class SetSLParams extends BasicTaskParamsBase {
         public SetSLParams build() {
             return new SetSLParams(this);
         }
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.SETSL;
     }
 }

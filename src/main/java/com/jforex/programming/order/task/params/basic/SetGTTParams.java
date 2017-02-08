@@ -30,6 +30,11 @@ public class SetGTTParams extends BasicTaskParamsBase {
         return newGTT;
     }
 
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.SETGTT;
+    }
+
     public static Builder setGTTWith(final IOrder order,
                                      final long newGTT) {
         checkNotNull(order);
@@ -59,10 +64,5 @@ public class SetGTTParams extends BasicTaskParamsBase {
         public SetGTTParams build() {
             return new SetGTTParams(this);
         }
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.SETGTT;
     }
 }
