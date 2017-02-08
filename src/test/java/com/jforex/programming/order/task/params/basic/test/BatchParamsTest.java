@@ -9,7 +9,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.jforex.programming.order.task.params.BasicTaskParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.basic.BatchParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
@@ -17,7 +17,7 @@ public class BatchParamsTest extends CommonParamsForTest {
 
     private BatchParams batchParams;
 
-    private final List<BasicTaskParamsBase> paramsList = new ArrayList<>();
+    private final List<TaskParamsBase> paramsList = new ArrayList<>();
 
     @Before
     public void setUp() {

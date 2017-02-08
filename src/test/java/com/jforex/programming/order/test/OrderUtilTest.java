@@ -17,9 +17,9 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.MergePositionTask;
-import com.jforex.programming.order.task.params.BasicTaskParamsBase;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
+import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.BatchParams;
@@ -241,7 +241,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final Subject<OrderEvent> closeSubject = PublishSubject.create();
         when(basicTaskMock.close(closeParamsMock)).thenReturn(closeSubject);
 
-        final List<BasicTaskParamsBase> paramsList = new ArrayList<>();
+        final List<TaskParamsBase> paramsList = new ArrayList<>();
         paramsList.add(submitParamsMock);
         paramsList.add(closeParamsMock);
         final BatchParams batchParamsMock = mock(BatchParams.class);
