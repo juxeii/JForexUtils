@@ -11,8 +11,6 @@ public enum TaskParamsType {
     SETOPENPRICE,
     SETSL,
     SETTP,
-    CANCELSL,
-    CANCELTP,
     MERGEPOSITION,
     MERGEALLPOSITIONS,
     CLOSEPOSITION,

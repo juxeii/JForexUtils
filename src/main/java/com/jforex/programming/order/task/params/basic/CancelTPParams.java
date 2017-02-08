@@ -7,10 +7,9 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.BasicTaskParamsBase;
-import com.jforex.programming.order.task.params.TaskParamsType;
+import com.jforex.programming.order.task.params.TaskComposeAndEventMapData;
 
-public class CancelTPParams extends BasicTaskParamsBase {
+public class CancelTPParams extends TaskComposeAndEventMapData {
 
     private final IOrder order;
 
@@ -22,11 +21,6 @@ public class CancelTPParams extends BasicTaskParamsBase {
 
     public IOrder order() {
         return order;
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.CANCELTP;
     }
 
     public static Builder withOrder(final IOrder order) {

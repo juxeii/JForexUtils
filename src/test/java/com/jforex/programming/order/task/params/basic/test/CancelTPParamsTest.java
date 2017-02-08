@@ -11,7 +11,6 @@ import org.mockito.Mock;
 
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.CancelTPParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
@@ -37,7 +36,6 @@ public class CancelTPParamsTest extends CommonParamsForTest {
 
     @Test
     public void handlersAreCorrect() {
-        assertThat(cancelTPParams.type(), equalTo(TaskParamsType.CANCELTP));
         assertThat(cancelTPParams.order(), equalTo(buyOrderEURUSD));
         assertThat(consumerForEvent.size(), equalTo(2));
         assertEventConsumer(OrderEventType.CHANGED_TP, cancelledTPConsumerMock);
