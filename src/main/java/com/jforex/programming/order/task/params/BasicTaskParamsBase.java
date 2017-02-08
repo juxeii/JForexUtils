@@ -9,16 +9,10 @@ import com.jforex.programming.order.task.params.basic.BasicParamsBuilder;
 
 public abstract class BasicTaskParamsBase implements TaskParamsBase {
 
-    protected ComposeData composeData;
-    protected Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
+    protected TaskComposeAndEventMapData taskComposeAndEventMapData;
 
     protected BasicTaskParamsBase(final BasicParamsBuilder<?> builder) {
-        composeData = builder.composeParams;
-        consumerForEvent = builder.consumerForEvent;
-    }
-
-    public Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent() {
-        return consumerForEvent;
+        taskComposeAndEventMapData = new TaskComposeAndEventMapData(builder);
     }
 
     @Override
@@ -26,6 +20,10 @@ public abstract class BasicTaskParamsBase implements TaskParamsBase {
 
     @Override
     public ComposeData composeData() {
-        return composeData;
+        return taskComposeAndEventMapData.composeData();
+    }
+
+    public Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent() {
+        return taskComposeAndEventMapData.consumerForEvent();
     }
 }

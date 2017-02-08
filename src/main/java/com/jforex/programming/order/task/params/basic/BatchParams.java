@@ -5,9 +5,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 
 import com.jforex.programming.order.task.params.BasicTaskParamsBase;
-import com.jforex.programming.order.task.params.TaskParamsType;
+import com.jforex.programming.order.task.params.TaskComposeAndEventMapData;
 
-public class BatchParams extends BasicTaskParamsBase {
+public class BatchParams extends TaskComposeAndEventMapData {
 
     private final Collection<BasicTaskParamsBase> paramsCollection;
 
@@ -21,7 +21,7 @@ public class BatchParams extends BasicTaskParamsBase {
         return paramsCollection;
     }
 
-    public static Builder setBatchWith(Collection<BasicTaskParamsBase> paramsCollection) {
+    public static Builder setBatchWith(final Collection<BasicTaskParamsBase> paramsCollection) {
         checkNotNull(paramsCollection);
 
         return new Builder(paramsCollection);
@@ -31,17 +31,12 @@ public class BatchParams extends BasicTaskParamsBase {
 
         private final Collection<BasicTaskParamsBase> paramsCollection;
 
-        public Builder(Collection<BasicTaskParamsBase> paramsCollection) {
+        public Builder(final Collection<BasicTaskParamsBase> paramsCollection) {
             this.paramsCollection = paramsCollection;
         }
 
         public BatchParams build() {
             return new BatchParams(this);
         }
-    }
-
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.BATCH;
     }
 }

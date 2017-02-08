@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.jforex.programming.order.task.params.BasicTaskParamsBase;
-import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.BatchParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
@@ -18,7 +17,7 @@ public class BatchParamsTest extends CommonParamsForTest {
 
     private BatchParams batchParams;
 
-    private List<BasicTaskParamsBase> paramsList = new ArrayList<>();
+    private final List<BasicTaskParamsBase> paramsList = new ArrayList<>();
 
     @Before
     public void setUp() {
@@ -29,7 +28,6 @@ public class BatchParamsTest extends CommonParamsForTest {
 
     @Test
     public void valuesAreCorrect() {
-        assertThat(batchParams.type(), equalTo(TaskParamsType.BATCH));
         assertThat(batchParams.paramsCollection(), equalTo(paramsList));
     }
 }
