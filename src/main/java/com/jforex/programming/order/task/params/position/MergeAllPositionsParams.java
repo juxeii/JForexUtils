@@ -11,16 +11,16 @@ import com.jforex.programming.order.task.params.TaskParamsWithType;
 
 public class MergeAllPositionsParams extends TaskParamsWithType {
 
-    private final Function<Instrument, MergePositionParams> paramsFactory;
+    private final Function<Instrument, MergePositionParams> mergeParamsFactory;
 
     private MergeAllPositionsParams(final Builder builder) {
         super(builder);
 
-        paramsFactory = builder.paramsFactory;
+        mergeParamsFactory = builder.mergeParamsFactory;
     }
 
-    public MergePositionParams paramsForInstrument(final Instrument instrument) {
-        return paramsFactory.apply(instrument);
+    public MergePositionParams createMergePositionParams(final Instrument instrument) {
+        return mergeParamsFactory.apply(instrument);
     }
 
     @Override
@@ -28,18 +28,18 @@ public class MergeAllPositionsParams extends TaskParamsWithType {
         return TaskParamsType.MERGEALLPOSITIONS;
     }
 
-    public static Builder newBuilder(final Function<Instrument, MergePositionParams> paramsFactory) {
-        checkNotNull(paramsFactory);
+    public static Builder withMergeParamsFactory(final Function<Instrument, MergePositionParams> mergeParamsFactory) {
+        checkNotNull(mergeParamsFactory);
 
-        return new Builder(paramsFactory);
+        return new Builder(mergeParamsFactory);
     }
 
     public static class Builder extends TaskParamsBase.Builder<Builder> {
 
-        private final Function<Instrument, MergePositionParams> paramsFactory;
+        private final Function<Instrument, MergePositionParams> mergeParamsFactory;
 
-        public Builder(final Function<Instrument, MergePositionParams> paramsFactory) {
-            this.paramsFactory = paramsFactory;
+        public Builder(final Function<Instrument, MergePositionParams> mergeParamsFactory) {
+            this.mergeParamsFactory = mergeParamsFactory;
         }
 
         public MergeAllPositionsParams build() {

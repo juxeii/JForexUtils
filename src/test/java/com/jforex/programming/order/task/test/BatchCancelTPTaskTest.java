@@ -12,7 +12,7 @@ import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BatchCancelTPTask;
 import com.jforex.programming.order.task.BatchChangeTask;
-import com.jforex.programming.order.task.params.ComposeParams;
+import com.jforex.programming.order.task.params.ComposeDataImpl;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -34,7 +34,7 @@ public class BatchCancelTPTaskTest extends InstrumentUtilForTest {
     private TaskParamsUtil taskParamsUtilMock;
     private TestObserver<OrderEvent> testObserver;
     private final Set<IOrder> toCancelTPTPOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
-    private final ComposeParams composeParams = new ComposeParams();
+    private final ComposeDataImpl composeParams = new ComposeDataImpl();
     private final Observable<OrderEvent> observableFromBatch = eventObservable(changedTPEvent);
     private final Observable<OrderEvent> observableFromTaskParamsUtil = eventObservable(changedRejectEvent);
 
@@ -44,7 +44,7 @@ public class BatchCancelTPTaskTest extends InstrumentUtilForTest {
             .thenReturn(observableFromBatch);
         when(taskParamsUtilMock.composeParams(observableFromBatch, composeParams))
             .thenReturn(observableFromTaskParamsUtil);
-        when(mergePositionParamsMock.batchCancelTPComposeParams())
+        when(mergePositionParamsMock.batchCancelTPComposeData())
             .thenReturn(composeParams);
 
         batchCancelTPTask = new BatchCancelTPTask(batchChangeTaskMock, taskParamsUtilMock);

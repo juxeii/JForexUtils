@@ -135,7 +135,7 @@ public class ClosePositionTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void verifyThatCloseCommandsAreMerged() throws Exception {
-            when(closeAllPositionsParamsMock.paramsForInstrument(instrumentEURUSD))
+            when(closeAllPositionsParamsMock.createClosePositionParams(instrumentEURUSD))
                 .thenReturn(closePositionParamsMock);
 
             setUpPositionUtilObservables(neverObservable(), eventObservable(event));

@@ -17,7 +17,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
-import com.jforex.programming.order.task.params.ComposeParams;
+import com.jforex.programming.order.task.params.ComposeDataImpl;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
@@ -42,7 +42,7 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     private TestObserver<OrderEvent> testObserver;
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
-    private final ComposeParams composeParams = new ComposeParams();
+    private final ComposeDataImpl composeParams = new ComposeDataImpl();
     private static final String mergeOrderLabel = "mergeOrderLabel";
 
     @Before
@@ -57,7 +57,7 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     private void setUpMocks() {
         when(mergePositionParamsMock.mergeOrderLabel())
             .thenReturn(mergeOrderLabel);
-        when(mergePositionParamsMock.cancelSLTPComposeParams())
+        when(mergePositionParamsMock.cancelSLTPComposeData())
             .thenReturn(composeParams);
         when(mergePositionParamsMock.composeData())
             .thenReturn(composeParams);

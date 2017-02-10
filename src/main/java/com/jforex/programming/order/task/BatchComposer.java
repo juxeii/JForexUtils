@@ -24,7 +24,7 @@ public class BatchComposer {
 
     public Function<IOrder, Observable<OrderEvent>> composeClose(final ClosePositionParams closePositionParams) {
         return order -> {
-            final CloseParams closeParams = closePositionParams.closeParamsFactory(order);
+            final CloseParams closeParams = closePositionParams.createCloseParams(order);
             return taskParamsUtil.composeParamsWithEvents(basicTaskForBatch.forClose(closeParams),
                                                           closeParams.composeData(),
                                                           closeParams.consumerForEvent());
@@ -33,13 +33,13 @@ public class BatchComposer {
 
     public Function<IOrder, Observable<OrderEvent>> composeCancelSL(final MergePositionParams mergePositionParams) {
         return order -> taskParamsUtil.composeParamsWithEvents(basicTaskForBatch.forCancelSL(order),
-                                                               mergePositionParams.cancelSLComposeParams(order),
+                                                               mergePositionParams.cancelSLComposeData(order),
                                                                mergePositionParams.consumerForEvent());
     }
 
     public Function<IOrder, Observable<OrderEvent>> composeCancelTP(final MergePositionParams mergePositionParams) {
         return order -> taskParamsUtil.composeParamsWithEvents(basicTaskForBatch.forCancelTP(order),
-                                                               mergePositionParams.cancelTPComposeParams(order),
+                                                               mergePositionParams.cancelTPComposeData(order),
                                                                mergePositionParams.consumerForEvent());
     }
 }

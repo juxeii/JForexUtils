@@ -11,7 +11,7 @@ import org.mockito.Mock;
 
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.ComposeParams;
+import com.jforex.programming.order.task.params.ComposeDataImpl;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
@@ -115,7 +115,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
 
     public class ComposeParamsTests {
 
-        private final ComposeParams composeParams = new ComposeParams();
+        private final ComposeDataImpl composeParams = new ComposeDataImpl();
         private TestObserver<OrderEvent> testObserver;
 
         @Before
@@ -159,7 +159,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
 
     public class ComposeParamsForOrderTests {
 
-        private final ComposeParams composeParams = new ComposeParams();
+        private final ComposeDataImpl composeParams = new ComposeDataImpl();
         private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
         private TestObserver<OrderEvent> testObserver;
 

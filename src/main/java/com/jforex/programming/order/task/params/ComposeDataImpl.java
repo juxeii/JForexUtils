@@ -7,7 +7,7 @@ import com.jforex.programming.rx.RetryDelay;
 
 import io.reactivex.functions.Action;
 
-public class ComposeParams implements ComposeData {
+public class ComposeDataImpl implements ComposeData {
 
     private Action startAction = () -> {};
     private Action completeAction = () -> {};

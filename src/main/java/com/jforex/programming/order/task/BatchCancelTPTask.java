@@ -26,7 +26,7 @@ public class BatchCancelTPTask {
             final Observable<OrderEvent> batchCancelTP =
                     batchChangeTask.cancelTP(toCancelTPOrders, mergePositionParams);
             return taskParamsUtil.composeParams(batchCancelTP,
-                                                mergePositionParams.batchCancelTPComposeParams());
+                                                mergePositionParams.batchCancelTPComposeData());
         });
     }
 }

@@ -2,7 +2,6 @@ package com.jforex.programming.order.task.params.position;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -22,15 +21,14 @@ public class MergePositionParams extends TaskParamsWithType {
 
     private final Instrument instrument;
     private final String mergeOrderLabel;
-    private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
 
-    private final TaskParamsBase mergePositionComposeParams;
-    private final TaskParamsBase cancelSLTPComposeParams;
-    private final TaskParamsBase batchCancelSLComposeParams;
-    private final TaskParamsBase batchCancelTPComposeParams;
-    private final TaskParamsBase mergeComposeParams;
-    private final Function<IOrder, TaskParamsBase> cancelSLComposeParams;
-    private final Function<IOrder, TaskParamsBase> cancelTPComposeParams;
+    private final TaskParamsBase mergePositionComposeData;
+    private final TaskParamsBase cancelSLTPComposeData;
+    private final TaskParamsBase batchCancelSLComposeData;
+    private final TaskParamsBase batchCancelTPComposeData;
+    private final TaskParamsBase mergeComposeData;
+    private final Function<IOrder, TaskParamsBase> cancelSLComposeData;
+    private final Function<IOrder, TaskParamsBase> cancelTPComposeData;
 
     private final CancelSLTPMode mergeExecutionMode;
     private final BatchMode batchCancelSLMode;
@@ -41,15 +39,14 @@ public class MergePositionParams extends TaskParamsWithType {
 
         instrument = builder.instrument;
         mergeOrderLabel = builder.mergeOrderLabel;
-        consumerForEvent = builder.consumerForEvent;
 
-        mergePositionComposeParams = builder.mergePositionComposeParams;
-        cancelSLTPComposeParams = builder.cancelSLTPComposeParams;
-        batchCancelSLComposeParams = builder.batchCancelSLComposeParams;
-        batchCancelTPComposeParams = builder.batchCancelTPComposeParams;
-        cancelSLComposeParams = builder.cancelSLComposeParams;
-        cancelTPComposeParams = builder.cancelTPComposeParams;
-        mergeComposeParams = builder.mergeComposeParams;
+        mergePositionComposeData = builder.mergePositionComposeData;
+        cancelSLTPComposeData = builder.cancelSLTPComposeData;
+        batchCancelSLComposeData = builder.batchCancelSLComposeData;
+        batchCancelTPComposeData = builder.batchCancelTPComposeData;
+        cancelSLComposeData = builder.cancelSLComposeData;
+        cancelTPComposeData = builder.cancelTPComposeData;
+        mergeComposeData = builder.mergeComposeData;
 
         mergeExecutionMode = builder.mergeExecutionMode;
         batchCancelSLMode = builder.batchCancelSLMode;
@@ -64,34 +61,30 @@ public class MergePositionParams extends TaskParamsWithType {
         return mergeOrderLabel;
     }
 
-    public Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent() {
-        return consumerForEvent;
+    public ComposeData mergeComposeData() {
+        return mergeComposeData.composeData();
     }
 
-    public ComposeData mergeComposeParams() {
-        return mergeComposeParams.composeData();
+    public ComposeData cancelSLTPComposeData() {
+        return cancelSLTPComposeData.composeData();
     }
 
-    public ComposeData cancelSLTPComposeParams() {
-        return cancelSLTPComposeParams.composeData();
+    public ComposeData batchCancelSLComposeData() {
+        return batchCancelSLComposeData.composeData();
     }
 
-    public ComposeData batchCancelSLComposeParams() {
-        return batchCancelSLComposeParams.composeData();
+    public ComposeData batchCancelTPComposeData() {
+        return batchCancelTPComposeData.composeData();
     }
 
-    public ComposeData batchCancelTPComposeParams() {
-        return batchCancelTPComposeParams.composeData();
-    }
-
-    public ComposeData cancelSLComposeParams(final IOrder order) {
-        return cancelSLComposeParams
+    public ComposeData cancelSLComposeData(final IOrder order) {
+        return cancelSLComposeData
             .apply(order)
             .composeData();
     }
 
-    public ComposeData cancelTPComposeParams(final IOrder order) {
-        return cancelTPComposeParams
+    public ComposeData cancelTPComposeData(final IOrder order) {
+        return cancelTPComposeData
             .apply(order)
             .composeData();
     }
@@ -115,7 +108,7 @@ public class MergePositionParams extends TaskParamsWithType {
 
     @Override
     public ComposeData composeData() {
-        return mergePositionComposeParams.composeData();
+        return mergePositionComposeData.composeData();
     }
 
     public static Builder newBuilder(final Instrument instrument,
@@ -131,14 +124,14 @@ public class MergePositionParams extends TaskParamsWithType {
         private final Instrument instrument;
         private final String mergeOrderLabel;
 
-        private TaskParamsBase mergePositionComposeParams = EmptyTaskParams.newBuilder().build();
-        private TaskParamsBase cancelSLTPComposeParams = EmptyTaskParams.newBuilder().build();
-        private TaskParamsBase batchCancelSLComposeParams = EmptyTaskParams.newBuilder().build();
-        private TaskParamsBase batchCancelTPComposeParams = EmptyTaskParams.newBuilder().build();
-        private TaskParamsBase mergeComposeParams = EmptyTaskParams.newBuilder().build();
-        private Function<IOrder, TaskParamsBase> cancelSLComposeParams =
+        private TaskParamsBase mergePositionComposeData = EmptyTaskParams.newBuilder().build();
+        private TaskParamsBase cancelSLTPComposeData = EmptyTaskParams.newBuilder().build();
+        private TaskParamsBase batchCancelSLComposeData = EmptyTaskParams.newBuilder().build();
+        private TaskParamsBase batchCancelTPComposeData = EmptyTaskParams.newBuilder().build();
+        private TaskParamsBase mergeComposeData = EmptyTaskParams.newBuilder().build();
+        private Function<IOrder, TaskParamsBase> cancelSLComposeData =
                 order -> EmptyTaskParams.newBuilder().build();
-        private Function<IOrder, TaskParamsBase> cancelTPComposeParams =
+        private Function<IOrder, TaskParamsBase> cancelTPComposeData =
                 order -> EmptyTaskParams.newBuilder().build();
         private CancelSLTPMode mergeExecutionMode = CancelSLTPMode.MergeCancelSLAndTP;
         private BatchMode batchCancelSLMode = BatchMode.MERGE;
@@ -171,52 +164,52 @@ public class MergePositionParams extends TaskParamsWithType {
             return getThis();
         }
 
-        public Builder withMergePositonParams(final TaskParamsBase mergePositionComposeParams) {
-            checkNotNull(mergePositionComposeParams);
+        public Builder withMergePositonParams(final TaskParamsBase mergePositionComposeData) {
+            checkNotNull(mergePositionComposeData);
 
-            this.mergePositionComposeParams = mergePositionComposeParams;
+            this.mergePositionComposeData = mergePositionComposeData;
             return getThis();
         }
 
-        public Builder withCancelSLTPParams(final TaskParamsBase cancelSLTPComposeParams) {
-            checkNotNull(cancelSLTPComposeParams);
+        public Builder withCancelSLTPParams(final TaskParamsBase cancelSLTPComposeData) {
+            checkNotNull(cancelSLTPComposeData);
 
-            this.cancelSLTPComposeParams = cancelSLTPComposeParams;
+            this.cancelSLTPComposeData = cancelSLTPComposeData;
             return getThis();
         }
 
-        public Builder withBatchCancelSLParams(final TaskParamsBase batchCancelSLComposeParams) {
-            checkNotNull(batchCancelSLComposeParams);
+        public Builder withBatchCancelSLParams(final TaskParamsBase batchCancelSLComposeData) {
+            checkNotNull(batchCancelSLComposeData);
 
-            this.batchCancelSLComposeParams = batchCancelSLComposeParams;
+            this.batchCancelSLComposeData = batchCancelSLComposeData;
             return getThis();
         }
 
-        public Builder withBatchCancelTPParams(final TaskParamsBase batchCancelTPComposeParams) {
-            checkNotNull(batchCancelTPComposeParams);
+        public Builder withBatchCancelTPParams(final TaskParamsBase batchCancelTPComposeData) {
+            checkNotNull(batchCancelTPComposeData);
 
-            this.batchCancelTPComposeParams = batchCancelTPComposeParams;
+            this.batchCancelTPComposeData = batchCancelTPComposeData;
             return getThis();
         }
 
-        public Builder withCancelSLParams(final Function<IOrder, TaskParamsBase> cancelSLComposeParams) {
-            checkNotNull(cancelSLComposeParams);
+        public Builder withCancelSLParams(final Function<IOrder, TaskParamsBase> cancelSLComposeData) {
+            checkNotNull(cancelSLComposeData);
 
-            this.cancelSLComposeParams = cancelSLComposeParams;
+            this.cancelSLComposeData = cancelSLComposeData;
             return getThis();
         }
 
-        public Builder withCancelTPParams(final Function<IOrder, TaskParamsBase> cancelTPComposeParams) {
-            checkNotNull(cancelTPComposeParams);
+        public Builder withCancelTPParams(final Function<IOrder, TaskParamsBase> cancelTPComposeData) {
+            checkNotNull(cancelTPComposeData);
 
-            this.cancelTPComposeParams = cancelTPComposeParams;
+            this.cancelTPComposeData = cancelTPComposeData;
             return getThis();
         }
 
-        public Builder withMergeParams(final TaskParamsBase mergeComposeParams) {
-            checkNotNull(mergeComposeParams);
+        public Builder withMergeParams(final TaskParamsBase mergeComposeData) {
+            checkNotNull(mergeComposeData);
 
-            this.mergeComposeParams = mergeComposeParams;
+            this.mergeComposeData = mergeComposeData;
             return getThis();
         }
 

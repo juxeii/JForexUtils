@@ -45,7 +45,7 @@ public class SubmitParamsTest extends CommonParamsForTest {
     }
 
     @Test
-    public void handlersAreCorrect() {
+    public void assertBuilderValues() {
         assertThat(submitParams.orderParams(), equalTo(buyParamsEURUSD));
 
         assertThat(submitParams.type(), equalTo(TaskParamsType.SUBMIT));

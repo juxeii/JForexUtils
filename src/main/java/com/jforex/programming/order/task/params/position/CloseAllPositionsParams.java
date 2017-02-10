@@ -11,16 +11,16 @@ import com.jforex.programming.order.task.params.TaskParamsWithType;
 
 public class CloseAllPositionsParams extends TaskParamsWithType {
 
-    private final Function<Instrument, ClosePositionParams> paramsFactory;
+    private final Function<Instrument, ClosePositionParams> closeParamsFactory;
 
     private CloseAllPositionsParams(final Builder builder) {
         super(builder);
 
-        paramsFactory = builder.paramsFactory;
+        closeParamsFactory = builder.closeParamsFactory;
     }
 
-    public ClosePositionParams paramsForInstrument(final Instrument instrument) {
-        return paramsFactory.apply(instrument);
+    public ClosePositionParams createClosePositionParams(final Instrument instrument) {
+        return closeParamsFactory.apply(instrument);
     }
 
     @Override
@@ -28,18 +28,18 @@ public class CloseAllPositionsParams extends TaskParamsWithType {
         return TaskParamsType.CLOSEALLPOSITIONS;
     }
 
-    public static Builder newBuilder(final Function<Instrument, ClosePositionParams> paramsFactory) {
-        checkNotNull(paramsFactory);
+    public static Builder newBuilder(final Function<Instrument, ClosePositionParams> closeParamsFactory) {
+        checkNotNull(closeParamsFactory);
 
-        return new Builder(paramsFactory);
+        return new Builder(closeParamsFactory);
     }
 
     public static class Builder extends TaskParamsBase.Builder<Builder> {
 
-        private final Function<Instrument, ClosePositionParams> paramsFactory;
+        private final Function<Instrument, ClosePositionParams> closeParamsFactory;
 
-        public Builder(final Function<Instrument, ClosePositionParams> paramsFactory) {
-            this.paramsFactory = paramsFactory;
+        public Builder(final Function<Instrument, ClosePositionParams> closeParamsFactory) {
+            this.closeParamsFactory = closeParamsFactory;
         }
 
         public CloseAllPositionsParams build() {

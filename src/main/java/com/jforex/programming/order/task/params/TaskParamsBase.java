@@ -18,7 +18,7 @@ public abstract class TaskParamsBase {
 
     @SuppressWarnings("unchecked")
     protected TaskParamsBase(final Builder builder) {
-        composeData = builder.composeParams;
+        composeData = builder.composeDataImpl;
         consumerForEvent = builder.consumerForEvent;
     }
 
@@ -32,37 +32,40 @@ public abstract class TaskParamsBase {
 
     public abstract static class Builder<T extends Builder<T>> {
 
-        public ComposeParams composeParams = new ComposeParams();
-        public Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
+        private final ComposeDataImpl composeDataImpl = new ComposeDataImpl();
+        private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
 
         public T doOnStart(final Action startAction) {
             checkNotNull(startAction);
 
-            composeParams.setStartAction(startAction);
+            composeDataImpl.setStartAction(startAction);
             return getThis();
         }
 
         public T doOnComplete(final Action completeAction) {
             checkNotNull(completeAction);
 
-            composeParams.setCompleteAction(completeAction);
+            composeDataImpl.setCompleteAction(completeAction);
             return getThis();
         }
 
         public T doOnError(final Consumer<Throwable> errorConsumer) {
             checkNotNull(errorConsumer);
 
-            composeParams.setErrorConsumer(errorConsumer);
+            composeDataImpl.setErrorConsumer(errorConsumer);
             return getThis();
         }
 
         public T retryOnReject(final RetryParams retryParams) {
-            composeParams.setRetryParams(retryParams);
+            checkNotNull(retryParams);
+
+            composeDataImpl.setRetryParams(retryParams);
             return getThis();
         }
 
         protected T setEventConsumer(final OrderEventType orderEventType,
                                      final Consumer<OrderEvent> consumer) {
+            checkNotNull(orderEventType);
             checkNotNull(consumer);
 
             consumerForEvent.put(orderEventType, consumer);

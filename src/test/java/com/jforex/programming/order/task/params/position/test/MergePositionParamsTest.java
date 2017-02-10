@@ -13,12 +13,11 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
-import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CancelSLTPMode;
 import com.jforex.programming.order.task.params.ComposeData;
-import com.jforex.programming.order.task.params.ComposeParams;
+import com.jforex.programming.order.task.params.ComposeDataImpl;
 import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
@@ -49,18 +48,12 @@ public class MergePositionParamsTest extends CommonParamsForTest {
     @Mock
     private TaskParamsBase mergeComposeParamsMock;
     @Mock
-    private Action actionMock;
-    @Mock
     private Function<IOrder, Action> actionConsumerMock;
     @Mock
     private Consumer<Throwable> errorConsumerMock;
     @Mock
     private BiConsumer<Throwable, IOrder> biErrorConsumerMock;
-    @Mock
-    private Consumer<OrderEvent> eventConsumerMock;
-    private final ComposeData composeData = new ComposeParams();
-    private final IOrder orderForTest = buyOrderEURUSD;
-    private static final String mergeOrderLabel = "mergeOrderLabel";
+    private final ComposeData composeData = new ComposeDataImpl();
 
     @Before
     public void setUp() {
@@ -123,8 +116,8 @@ public class MergePositionParamsTest extends CommonParamsForTest {
         assertThat(mergePositionParams.batchCancelTPMode(), equalTo(BatchMode.MERGE));
         assertThat(mergePositionParams.consumerForEvent().size(), equalTo(0));
 
-        assertNotNull(mergePositionParams.cancelSLComposeParams(orderForTest));
-        assertNotNull(mergePositionParams.cancelTPComposeParams(orderForTest));
+        assertNotNull(mergePositionParams.cancelSLComposeData(orderForTest));
+        assertNotNull(mergePositionParams.cancelTPComposeData(orderForTest));
     }
 
     @Test
@@ -143,32 +136,32 @@ public class MergePositionParamsTest extends CommonParamsForTest {
 
     @Test
     public void assertCancelSLTPValues() {
-        assertThat(mergePositionParams.cancelSLTPComposeParams(), equalTo(composeData));
+        assertThat(mergePositionParams.cancelSLTPComposeData(), equalTo(composeData));
     }
 
     @Test
     public void assertBatchCancelSLValues() {
-        assertThat(mergePositionParams.batchCancelSLComposeParams(), equalTo(composeData));
+        assertThat(mergePositionParams.batchCancelSLComposeData(), equalTo(composeData));
     }
 
     @Test
     public void assertBatchCancelTPValues() {
-        assertThat(mergePositionParams.batchCancelTPComposeParams(), equalTo(composeData));
+        assertThat(mergePositionParams.batchCancelTPComposeData(), equalTo(composeData));
     }
 
     @Test
     public void assertCancelSLValues() throws Exception {
-        assertThat(mergePositionParams.cancelSLComposeParams(orderForTest), equalTo(composeData));
+        assertThat(mergePositionParams.cancelSLComposeData(orderForTest), equalTo(composeData));
     }
 
     @Test
     public void assertCancelTPValues() throws Exception {
-        assertThat(mergePositionParams.cancelTPComposeParams(orderForTest), equalTo(composeData));
+        assertThat(mergePositionParams.cancelTPComposeData(orderForTest), equalTo(composeData));
     }
 
     @Test
     public void assertMergeValues() {
-        assertThat(mergePositionParams.mergeComposeParams(), equalTo(composeData));
+        assertThat(mergePositionParams.mergeComposeData(), equalTo(composeData));
     }
 
     @Test

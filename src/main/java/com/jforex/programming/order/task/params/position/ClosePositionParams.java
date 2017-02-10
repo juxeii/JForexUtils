@@ -2,14 +2,10 @@ package com.jforex.programming.order.task.params.position;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.TaskParamsBase;
@@ -20,8 +16,6 @@ import com.jforex.programming.order.task.params.basic.CloseParams;
 public class ClosePositionParams extends TaskParamsWithType {
 
     private final Instrument instrument;
-    private final String mergeOrderLabel;
-    private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
     private final MergePositionParams mergePositionParams;
     private final Function<IOrder, CloseParams> closeParamsFactory;
     private final CloseExecutionMode closeExecutionMode;
@@ -31,21 +25,14 @@ public class ClosePositionParams extends TaskParamsWithType {
         super(builder);
 
         instrument = builder.instrument;
-        mergeOrderLabel = builder.mergeOrderLabel;
         closeExecutionMode = builder.closeExecutionMode;
         closeBatchMode = builder.closeBatchMode;
         mergePositionParams = builder.mergePositionParams;
         closeParamsFactory = builder.closeParamsFactory;
-        consumerForEvent = builder.consumerForEvent;
-        consumerForEvent.putAll(mergePositionParams.consumerForEvent());
     }
 
     public Instrument instrument() {
         return instrument;
-    }
-
-    public String mergeOrderLabel() {
-        return mergeOrderLabel;
     }
 
     public CloseExecutionMode closeExecutionMode() {
@@ -60,7 +47,7 @@ public class ClosePositionParams extends TaskParamsWithType {
         return mergePositionParams;
     }
 
-    public CloseParams closeParamsFactory(final IOrder order) {
+    public CloseParams createCloseParams(final IOrder order) {
         return closeParamsFactory.apply(order);
     }
 
@@ -80,7 +67,6 @@ public class ClosePositionParams extends TaskParamsWithType {
     public static class Builder extends TaskParamsBase.Builder<Builder> {
 
         private final Instrument instrument;
-        private final String mergeOrderLabel;
         private final MergePositionParams mergePositionParams;
         private final Function<IOrder, CloseParams> closeParamsFactory;
         private CloseExecutionMode closeExecutionMode = CloseExecutionMode.CloseAll;
@@ -90,7 +76,6 @@ public class ClosePositionParams extends TaskParamsWithType {
                        final Function<IOrder, CloseParams> closeParamsFactory) {
             this.mergePositionParams = mergePositionParams;
             this.instrument = mergePositionParams.instrument();
-            this.mergeOrderLabel = mergePositionParams.mergeOrderLabel();
             this.closeParamsFactory = closeParamsFactory;
         }
 

@@ -18,7 +18,7 @@ import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.ComposeData;
-import com.jforex.programming.order.task.params.ComposeParams;
+import com.jforex.programming.order.task.params.ComposeDataImpl;
 import com.jforex.programming.order.task.params.TaskParams;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
@@ -60,7 +60,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     @Mock
     private TaskParamsUtil taskParamsUtilMock;
     @Mock
-    private ComposeParams composeParamsMock;
+    private ComposeDataImpl composeParamsMock;
     @Captor
     private ArgumentCaptor<Observable<OrderEvent>> mergeCaptor;
 
