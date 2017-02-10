@@ -8,10 +8,11 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.BasicTaskParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
+import com.jforex.programming.order.task.params.TaskParamsWithType;
 
-public class MergeParams extends BasicTaskParamsBase {
+public class MergeParams extends TaskParamsWithType {
 
     private final String mergeOrderLabel;
     private final Collection<IOrder> toMergeOrders;
@@ -44,7 +45,7 @@ public class MergeParams extends BasicTaskParamsBase {
         return new Builder(mergeOrderLabel, toMergeOrders);
     }
 
-    public static class Builder extends BasicParamsBuilder<Builder> {
+    public static class Builder extends TaskParamsBase.Builder<Builder> {
 
         private final String mergeOrderLabel;
         private final Collection<IOrder> toMergeOrders;
@@ -69,6 +70,11 @@ public class MergeParams extends BasicTaskParamsBase {
 
         public MergeParams build() {
             return new MergeParams(this);
+        }
+
+        @Override
+        public Builder getThis() {
+            return this;
         }
     }
 }

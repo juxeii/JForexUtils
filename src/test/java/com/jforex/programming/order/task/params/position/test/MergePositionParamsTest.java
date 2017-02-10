@@ -19,9 +19,9 @@ import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CancelSLTPMode;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.ComposeParams;
+import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
-import com.jforex.programming.order.task.params.position.PositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
 import io.reactivex.functions.Action;
@@ -31,23 +31,23 @@ public class MergePositionParamsTest extends CommonParamsForTest {
     private MergePositionParams mergePositionParams;
 
     @Mock
-    private PositionParams mergePositionComposeParamsMock;
+    private TaskParamsBase mergePositionComposeParamsMock;
     @Mock
-    private PositionParams cancelSLTPComposeParamsMock;
+    private TaskParamsBase cancelSLTPComposeParamsMock;
     @Mock
-    private PositionParams batchCancelSLComposeParamsMock;
+    private TaskParamsBase batchCancelSLComposeParamsMock;
     @Mock
-    private PositionParams batchCancelTPComposeParamsMock;
+    private TaskParamsBase batchCancelTPComposeParamsMock;
     @Mock
-    private Function<IOrder, PositionParams> cancelSLComposeParamsMock;
+    private Function<IOrder, TaskParamsBase> cancelSLComposeParamsMock;
     @Mock
-    private PositionParams cancelSLComposeMock;
+    private TaskParamsBase cancelSLComposeMock;
     @Mock
-    private Function<IOrder, PositionParams> cancelTPComposeParamsMock;
+    private Function<IOrder, TaskParamsBase> cancelTPComposeParamsMock;
     @Mock
-    private PositionParams cancelTPComposeMock;
+    private TaskParamsBase cancelTPComposeMock;
     @Mock
-    private PositionParams mergeComposeParamsMock;
+    private TaskParamsBase mergeComposeParamsMock;
     @Mock
     private Action actionMock;
     @Mock

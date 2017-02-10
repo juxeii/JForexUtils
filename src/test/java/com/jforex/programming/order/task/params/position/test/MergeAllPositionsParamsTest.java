@@ -42,7 +42,7 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
     @Mock
     private Function<Instrument, MergePositionParams> paramsFactoryMock;
     private final IOrder orderForTest = buyOrderEURUSD;
-    private static final int noOfRetries = 3;
+    private static final int noOfRetries = 2;
 
     @Before
     public void setUp() {
@@ -51,12 +51,10 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
 
         mergeAllPositionsParams = MergeAllPositionsParams
             .newBuilder(paramsFactoryMock)
-
-            .doOnMergeAllPositionsStart(actionMock)
-            .doOnMergeAllPositionsComplete(actionMock)
-            .doOnMergeAllPositionsError(errorConsumerMock)
-            .retryOnMergeAllPositionsReject(noOfRetries, retryDelayFunction)
-
+            .doOnStart(actionMock)
+            .doOnComplete(actionMock)
+            .doOnError(errorConsumerMock)
+            .retryOnReject(retryParams)
             .build();
     }
 

@@ -15,7 +15,7 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.MergePositionTask;
-import com.jforex.programming.order.task.params.BasicTaskParamsBase;
+import com.jforex.programming.order.task.params.TaskParams;
 import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
@@ -42,7 +42,7 @@ public class OrderUtil {
 
     private final PositionUtil positionUtil;
     private final TaskParamsUtil taskParamsUtil;
-    private final Map<TaskParamsType, Function<TaskParamsBase, Observable<OrderEvent>>> paramsMapper;
+    private final Map<TaskParamsType, Function<TaskParams, Observable<OrderEvent>>> paramsMapper;
     private final ImmutableSet<TaskParamsType> basicTaskTypes =
             Sets.immutableEnumSet(TaskParamsType.SUBMIT,
                                   TaskParamsType.MERGE,
@@ -62,7 +62,7 @@ public class OrderUtil {
         this.positionUtil = positionUtil;
         this.taskParamsUtil = taskParamsUtil;
 
-        paramsMapper = ImmutableMap.<TaskParamsType, Function<TaskParamsBase, Observable<OrderEvent>>> builder()
+        paramsMapper = ImmutableMap.<TaskParamsType, Function<TaskParams, Observable<OrderEvent>>> builder()
             .put(TaskParamsType.SUBMIT,
                  params -> basicTask.submitOrder((SubmitParams) params))
             .put(TaskParamsType.MERGE,
@@ -92,14 +92,14 @@ public class OrderUtil {
             .build();
     }
 
-    public void execute(final TaskParamsBase params) {
+    public void execute(final TaskParams params) {
         checkNotNull(params);
 
         final Observable<OrderEvent> observable = paramsToObservable(params);
         final TaskParamsType taskParamsType = params.type();
 
         if (basicTaskTypes.contains(taskParamsType))
-            taskParamsUtil.subscribeBasicParams(observable, (BasicTaskParamsBase) params);
+            taskParamsUtil.subscribeBasicParams(observable, (TaskParamsBase) params);
         else
             taskParamsUtil.subscribeComposeData(observable, params.composeData());
     }
@@ -116,7 +116,7 @@ public class OrderUtil {
         taskParamsUtil.subscribeComposeData(Observable.merge(observables), batchParams.composeData());
     }
 
-    private final Observable<OrderEvent> paramsToObservable(final TaskParamsBase taskParamsBase) {
+    private final Observable<OrderEvent> paramsToObservable(final TaskParams taskParamsBase) {
         final Observable<OrderEvent> observable = paramsMapper
             .get(taskParamsBase.type())
             .apply(taskParamsBase);

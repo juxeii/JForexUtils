@@ -7,10 +7,11 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.BasicTaskParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
+import com.jforex.programming.order.task.params.TaskParamsWithType;
 
-public class SetOpenPriceParams extends BasicTaskParamsBase {
+public class SetOpenPriceParams extends TaskParamsWithType {
 
     private final IOrder order;
     private final double newOpenPrice;
@@ -42,7 +43,7 @@ public class SetOpenPriceParams extends BasicTaskParamsBase {
         return new Builder(order, newOpenPrice);
     }
 
-    public static class Builder extends BasicParamsBuilder<Builder> {
+    public static class Builder extends TaskParamsBase.Builder<Builder> {
 
         private final IOrder order;
         private final double newOpenPrice;
@@ -63,6 +64,11 @@ public class SetOpenPriceParams extends BasicTaskParamsBase {
 
         public SetOpenPriceParams build() {
             return new SetOpenPriceParams(this);
+        }
+
+        @Override
+        public Builder getThis() {
+            return this;
         }
     }
 }

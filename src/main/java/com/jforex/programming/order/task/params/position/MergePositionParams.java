@@ -12,30 +12,33 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CancelSLTPMode;
-import com.jforex.programming.order.task.params.CommonParamsBuilder;
 import com.jforex.programming.order.task.params.ComposeData;
+import com.jforex.programming.order.task.params.EmptyTaskParams;
 import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
+import com.jforex.programming.order.task.params.TaskParamsWithType;
 
-public class MergePositionParams implements TaskParamsBase {
+public class MergePositionParams extends TaskParamsWithType {
 
     private final Instrument instrument;
     private final String mergeOrderLabel;
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
 
-    private final PositionParams mergePositionComposeParams;
-    private final PositionParams cancelSLTPComposeParams;
-    private final PositionParams batchCancelSLComposeParams;
-    private final PositionParams batchCancelTPComposeParams;
-    private final PositionParams mergeComposeParams;
-    private final Function<IOrder, PositionParams> cancelSLComposeParams;
-    private final Function<IOrder, PositionParams> cancelTPComposeParams;
+    private final TaskParamsBase mergePositionComposeParams;
+    private final TaskParamsBase cancelSLTPComposeParams;
+    private final TaskParamsBase batchCancelSLComposeParams;
+    private final TaskParamsBase batchCancelTPComposeParams;
+    private final TaskParamsBase mergeComposeParams;
+    private final Function<IOrder, TaskParamsBase> cancelSLComposeParams;
+    private final Function<IOrder, TaskParamsBase> cancelTPComposeParams;
 
     private final CancelSLTPMode mergeExecutionMode;
     private final BatchMode batchCancelSLMode;
     private final BatchMode batchCancelTPMode;
 
     private MergePositionParams(final Builder builder) {
+        super(builder);
+
         instrument = builder.instrument;
         mergeOrderLabel = builder.mergeOrderLabel;
         consumerForEvent = builder.consumerForEvent;
@@ -123,20 +126,20 @@ public class MergePositionParams implements TaskParamsBase {
         return new Builder(instrument, mergeOrderLabel);
     }
 
-    public static class Builder extends CommonParamsBuilder<Builder> {
+    public static class Builder extends TaskParamsBase.Builder<Builder> {
 
         private final Instrument instrument;
         private final String mergeOrderLabel;
 
-        private PositionParams mergePositionComposeParams = PositionParams.newBuilder().build();
-        private PositionParams cancelSLTPComposeParams = PositionParams.newBuilder().build();
-        private PositionParams batchCancelSLComposeParams = PositionParams.newBuilder().build();
-        private PositionParams batchCancelTPComposeParams = PositionParams.newBuilder().build();
-        private PositionParams mergeComposeParams = PositionParams.newBuilder().build();
-        private Function<IOrder, PositionParams> cancelSLComposeParams =
-                order -> PositionParams.newBuilder().build();
-        private Function<IOrder, PositionParams> cancelTPComposeParams =
-                order -> PositionParams.newBuilder().build();
+        private TaskParamsBase mergePositionComposeParams = EmptyTaskParams.newBuilder().build();
+        private TaskParamsBase cancelSLTPComposeParams = EmptyTaskParams.newBuilder().build();
+        private TaskParamsBase batchCancelSLComposeParams = EmptyTaskParams.newBuilder().build();
+        private TaskParamsBase batchCancelTPComposeParams = EmptyTaskParams.newBuilder().build();
+        private TaskParamsBase mergeComposeParams = EmptyTaskParams.newBuilder().build();
+        private Function<IOrder, TaskParamsBase> cancelSLComposeParams =
+                order -> EmptyTaskParams.newBuilder().build();
+        private Function<IOrder, TaskParamsBase> cancelTPComposeParams =
+                order -> EmptyTaskParams.newBuilder().build();
         private CancelSLTPMode mergeExecutionMode = CancelSLTPMode.MergeCancelSLAndTP;
         private BatchMode batchCancelSLMode = BatchMode.MERGE;
         private BatchMode batchCancelTPMode = BatchMode.MERGE;
@@ -151,70 +154,70 @@ public class MergePositionParams implements TaskParamsBase {
             checkNotNull(mergeExecutionMode);
 
             this.mergeExecutionMode = mergeExecutionMode;
-            return this;
+            return getThis();
         }
 
         public Builder withBatchCancelSLMode(final BatchMode batchCancelSLMode) {
             checkNotNull(batchCancelSLMode);
 
             this.batchCancelSLMode = batchCancelSLMode;
-            return this;
+            return getThis();
         }
 
         public Builder withBatchCancelTPMode(final BatchMode batchCancelTPMode) {
             checkNotNull(batchCancelTPMode);
 
             this.batchCancelTPMode = batchCancelTPMode;
-            return this;
+            return getThis();
         }
 
-        public Builder withMergePositonParams(final PositionParams mergePositionComposeParams) {
+        public Builder withMergePositonParams(final TaskParamsBase mergePositionComposeParams) {
             checkNotNull(mergePositionComposeParams);
 
             this.mergePositionComposeParams = mergePositionComposeParams;
-            return this;
+            return getThis();
         }
 
-        public Builder withCancelSLTPParams(final PositionParams cancelSLTPComposeParams) {
+        public Builder withCancelSLTPParams(final TaskParamsBase cancelSLTPComposeParams) {
             checkNotNull(cancelSLTPComposeParams);
 
             this.cancelSLTPComposeParams = cancelSLTPComposeParams;
-            return this;
+            return getThis();
         }
 
-        public Builder withBatchCancelSLParams(final PositionParams batchCancelSLComposeParams) {
+        public Builder withBatchCancelSLParams(final TaskParamsBase batchCancelSLComposeParams) {
             checkNotNull(batchCancelSLComposeParams);
 
             this.batchCancelSLComposeParams = batchCancelSLComposeParams;
-            return this;
+            return getThis();
         }
 
-        public Builder withBatchCancelTPParams(final PositionParams batchCancelTPComposeParams) {
+        public Builder withBatchCancelTPParams(final TaskParamsBase batchCancelTPComposeParams) {
             checkNotNull(batchCancelTPComposeParams);
 
             this.batchCancelTPComposeParams = batchCancelTPComposeParams;
-            return this;
+            return getThis();
         }
 
-        public Builder withCancelSLParams(final Function<IOrder, PositionParams> cancelSLComposeParams) {
+        public Builder withCancelSLParams(final Function<IOrder, TaskParamsBase> cancelSLComposeParams) {
             checkNotNull(cancelSLComposeParams);
 
             this.cancelSLComposeParams = cancelSLComposeParams;
-            return this;
+            return getThis();
         }
 
-        public Builder withCancelTPParams(final Function<IOrder, PositionParams> cancelTPComposeParams) {
+        public Builder withCancelTPParams(final Function<IOrder, TaskParamsBase> cancelTPComposeParams) {
             checkNotNull(cancelTPComposeParams);
 
             this.cancelTPComposeParams = cancelTPComposeParams;
-            return this;
+            return getThis();
         }
 
-        public Builder withMergeParams(final PositionParams mergeComposeParams) {
+        public Builder withMergeParams(final TaskParamsBase mergeComposeParams) {
             checkNotNull(mergeComposeParams);
 
             this.mergeComposeParams = mergeComposeParams;
-            return this;
+            return getThis();
         }
 
         public Builder doOnMerge(final Consumer<OrderEvent> mergeConsumer) {
@@ -247,6 +250,11 @@ public class MergePositionParams implements TaskParamsBase {
 
         public MergePositionParams build() {
             return new MergePositionParams(this);
+        }
+
+        @Override
+        public Builder getThis() {
+            return this;
         }
     }
 }

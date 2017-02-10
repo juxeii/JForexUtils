@@ -9,11 +9,12 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.OfferSide;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.BasicTaskParamsBase;
 import com.jforex.programming.order.task.params.SetSLTPMode;
+import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
+import com.jforex.programming.order.task.params.TaskParamsWithType;
 
-public class SetSLParams extends BasicTaskParamsBase {
+public class SetSLParams extends TaskParamsWithType {
 
     private final IOrder order;
     private final double priceOrPips;
@@ -84,7 +85,7 @@ public class SetSLParams extends BasicTaskParamsBase {
                            SetSLTPMode.PIPS);
     }
 
-    public static class Builder extends BasicParamsBuilder<Builder> {
+    public static class Builder extends TaskParamsBase.Builder<Builder> {
 
         private final IOrder order;
         private final double priceOrPips;
@@ -122,6 +123,11 @@ public class SetSLParams extends BasicTaskParamsBase {
 
         public SetSLParams build() {
             return new SetSLParams(this);
+        }
+
+        @Override
+        public Builder getThis() {
+            return this;
         }
     }
 }

@@ -12,31 +12,30 @@ import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
-import com.jforex.programming.order.task.params.CommonParamsBuilder;
-import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
+import com.jforex.programming.order.task.params.TaskParamsWithType;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 
-public class ClosePositionParams implements TaskParamsBase {
+public class ClosePositionParams extends TaskParamsWithType {
 
     private final Instrument instrument;
     private final String mergeOrderLabel;
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
     private final MergePositionParams mergePositionParams;
     private final Function<IOrder, CloseParams> closeParamsFactory;
-    private final PositionParams closePositionComposeParams;
     private final CloseExecutionMode closeExecutionMode;
     private final BatchMode closeBatchMode;
 
     private ClosePositionParams(final Builder builder) {
+        super(builder);
+
         instrument = builder.instrument;
         mergeOrderLabel = builder.mergeOrderLabel;
         closeExecutionMode = builder.closeExecutionMode;
         closeBatchMode = builder.closeBatchMode;
         mergePositionParams = builder.mergePositionParams;
         closeParamsFactory = builder.closeParamsFactory;
-        closePositionComposeParams = builder.closePositionComposeParams;
         consumerForEvent = builder.consumerForEvent;
         consumerForEvent.putAll(mergePositionParams.consumerForEvent());
     }
@@ -47,10 +46,6 @@ public class ClosePositionParams implements TaskParamsBase {
 
     public String mergeOrderLabel() {
         return mergeOrderLabel;
-    }
-
-    public Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent() {
-        return consumerForEvent;
     }
 
     public CloseExecutionMode closeExecutionMode() {
@@ -74,11 +69,6 @@ public class ClosePositionParams implements TaskParamsBase {
         return TaskParamsType.CLOSEPOSITION;
     }
 
-    @Override
-    public ComposeData composeData() {
-        return closePositionComposeParams.composeData();
-    }
-
     public static Builder newBuilder(final MergePositionParams mergePositionParams,
                                      final Function<IOrder, CloseParams> closeParamsFactory) {
         checkNotNull(mergePositionParams);
@@ -87,13 +77,12 @@ public class ClosePositionParams implements TaskParamsBase {
         return new Builder(mergePositionParams, closeParamsFactory);
     }
 
-    public static class Builder extends CommonParamsBuilder<Builder> {
+    public static class Builder extends TaskParamsBase.Builder<Builder> {
 
         private final Instrument instrument;
         private final String mergeOrderLabel;
         private final MergePositionParams mergePositionParams;
         private final Function<IOrder, CloseParams> closeParamsFactory;
-        private PositionParams closePositionComposeParams = PositionParams.newBuilder().build();
         private CloseExecutionMode closeExecutionMode = CloseExecutionMode.CloseAll;
         private final BatchMode closeBatchMode = BatchMode.MERGE;
 
@@ -109,18 +98,16 @@ public class ClosePositionParams implements TaskParamsBase {
             checkNotNull(closeExecutionMode);
 
             this.closeExecutionMode = closeExecutionMode;
-            return this;
-        }
-
-        public Builder withClosePositonParams(final PositionParams closePositionComposeParams) {
-            checkNotNull(closePositionComposeParams);
-
-            this.closePositionComposeParams = closePositionComposeParams;
-            return this;
+            return getThis();
         }
 
         public ClosePositionParams build() {
             return new ClosePositionParams(this);
+        }
+
+        @Override
+        public Builder getThis() {
+            return this;
         }
     }
 }

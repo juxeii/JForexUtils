@@ -8,11 +8,12 @@ import java.util.function.Consumer;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
-import com.jforex.programming.order.task.params.BasicTaskParamsBase;
+import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
+import com.jforex.programming.order.task.params.TaskParamsWithType;
 import com.jforex.programming.strategy.StrategyUtil;
 
-public class CloseParams extends BasicTaskParamsBase {
+public class CloseParams extends TaskParamsWithType {
 
     private final IOrder order;
     private final double partialCloseAmount;
@@ -39,6 +40,11 @@ public class CloseParams extends BasicTaskParamsBase {
                 : builderSlippage;
     }
 
+    @Override
+    public TaskParamsType type() {
+        return TaskParamsType.CLOSE;
+    }
+
     public IOrder order() {
         return order;
     }
@@ -55,18 +61,13 @@ public class CloseParams extends BasicTaskParamsBase {
         return slippage;
     }
 
-    @Override
-    public TaskParamsType type() {
-        return TaskParamsType.CLOSE;
-    }
-
     public static Builder withOrder(final IOrder order) {
         checkNotNull(order);
 
         return new Builder(order);
     }
 
-    public static class Builder extends BasicParamsBuilder<Builder> {
+    public static class Builder extends TaskParamsBase.Builder<Builder> {
 
         private final IOrder order;
         private double partialCloseAmount;
@@ -79,14 +80,14 @@ public class CloseParams extends BasicTaskParamsBase {
 
         public Builder closePartial(final double partialCloseAmount) {
             this.partialCloseAmount = partialCloseAmount;
-            return this;
+            return getThis();
         }
 
         public Builder atPrice(final double price,
                                final double slippage) {
             maybePrice = Optional.of(price);
             this.slippage = slippage;
-            return this;
+            return getThis();
         }
 
         public Builder doOnClose(final Consumer<OrderEvent> closeConsumer) {
@@ -103,6 +104,11 @@ public class CloseParams extends BasicTaskParamsBase {
 
         public CloseParams build() {
             return new CloseParams(this);
+        }
+
+        @Override
+        public Builder getThis() {
+            return this;
         }
     }
 }
