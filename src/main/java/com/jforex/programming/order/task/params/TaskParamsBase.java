@@ -17,7 +17,7 @@ public class TaskParamsBase {
     private final ComposeData composeData;
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
 
-    protected TaskParamsBase(final Builder builder) {
+    protected TaskParamsBase(final Builder<?> builder) {
         composeData = builder.composeDataImpl;
         consumerForEvent = builder.consumerForEvent;
     }

@@ -119,6 +119,7 @@ public class MergePositionParams extends TaskParamsWithType {
             cancelTPParamsFactory = order -> emptyParams();
         }
 
+        @SuppressWarnings("rawtypes")
         private TaskParamsBase emptyParams() {
             return new TaskParamsBase.Builder().build();
         }
@@ -179,6 +180,7 @@ public class MergePositionParams extends TaskParamsWithType {
             return this;
         }
 
+        @Override
         public MergePositionParams build() {
             return new MergePositionParams(this);
         }

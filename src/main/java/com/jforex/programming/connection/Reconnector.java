@@ -45,18 +45,18 @@ public class Reconnector {
             .andThen(userCompletableWithError(transformer));
         composeReconnectStrategy();
     }
-    
+
     private Completable userCompletableWithError(final UserConnectionStateTransformer transformer) {
         return observeUserConnectionStateWithError()
             .takeUntil(this::isConnected)
             .compose(transformer)
             .ignoreElements();
     }
-    
+
     private void composeReconnectStrategy() {
-    	reconnectStrategy = lightReconnector
+        reconnectStrategy = lightReconnector
             .onErrorResumeNext(err -> loginReconnector)
-            .doAfterTerminate(() -> monitorConnection());
+            .doAfterTerminate(this::monitorConnection);
     }
 
     private void monitorConnection() {
@@ -76,7 +76,7 @@ public class Reconnector {
     }
 
     private void startRetryStrategy() {
-    	reconnectStrategy.subscribe(() -> {}, err -> {});
+        reconnectStrategy.subscribe(() -> {}, err -> {});
     }
 
     private final Observable<UserConnectionState> observeUserConnectionStateWithError() {
