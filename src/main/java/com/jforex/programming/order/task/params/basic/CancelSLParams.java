@@ -39,21 +39,16 @@ public class CancelSLParams extends TaskParamsBase {
 
         public Builder doOnCancelSL(final Consumer<OrderEvent> cancelSLConsumer) {
             setEventConsumer(OrderEventType.CHANGED_SL, cancelSLConsumer);
-            return getThis();
+            return this;
         }
 
         public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
             setEventConsumer(OrderEventType.CHANGE_SL_REJECTED, changeRejectConsumer);
-            return getThis();
+            return this;
         }
 
         public CancelSLParams build() {
             return new CancelSLParams(this);
-        }
-
-        @Override
-        protected Builder getThis() {
-            return this;
         }
     }
 }

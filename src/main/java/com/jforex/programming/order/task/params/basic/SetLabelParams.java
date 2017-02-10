@@ -57,21 +57,16 @@ public class SetLabelParams extends TaskParamsWithType {
 
         public Builder doOnChangedLabel(final Consumer<OrderEvent> changedLabelConsumer) {
             setEventConsumer(OrderEventType.CHANGED_LABEL, changedLabelConsumer);
-            return getThis();
+            return this;
         }
 
         public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
             setEventConsumer(OrderEventType.CHANGE_LABEL_REJECTED, changeRejectConsumer);
-            return getThis();
+            return this;
         }
 
         public SetLabelParams build() {
             return new SetLabelParams(this);
-        }
-
-        @Override
-        protected Builder getThis() {
-            return this;
         }
     }
 }

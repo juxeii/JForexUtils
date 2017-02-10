@@ -58,26 +58,21 @@ public class MergeParams extends TaskParamsWithType {
 
         public Builder doOnMerge(final Consumer<OrderEvent> mergeConsumer) {
             setEventConsumer(OrderEventType.MERGE_OK, mergeConsumer);
-            return getThis();
+            return this;
         }
 
         public Builder doOnMergeClose(final Consumer<OrderEvent> mergeCloseConsumer) {
             setEventConsumer(OrderEventType.MERGE_CLOSE_OK, mergeCloseConsumer);
-            return getThis();
+            return this;
         }
 
         public Builder doOnReject(final Consumer<OrderEvent> rejectConsumer) {
             setEventConsumer(OrderEventType.MERGE_REJECTED, rejectConsumer);
-            return getThis();
+            return this;
         }
 
         public MergeParams build() {
             return new MergeParams(this);
-        }
-
-        @Override
-        protected Builder getThis() {
-            return this;
         }
     }
 }

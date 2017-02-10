@@ -14,7 +14,6 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CancelSLTPMode;
-import com.jforex.programming.order.task.params.EmptyTaskParams;
 import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.CancelSLParams;
@@ -76,7 +75,7 @@ public class MergePositionParamsTest extends CommonParamsForTest {
         }
 
         private void assertEmptyParamsType(final TaskParamsBase taskParams) {
-            assertTrue(taskParams instanceof EmptyTaskParams);
+            assertTrue(taskParams instanceof TaskParamsBase);
         }
 
         @Test

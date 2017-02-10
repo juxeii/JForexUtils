@@ -80,38 +80,33 @@ public class CloseParams extends TaskParamsWithType {
 
         public Builder closePartial(final double partialCloseAmount) {
             this.partialCloseAmount = partialCloseAmount;
-            return getThis();
+            return this;
         }
 
         public Builder atPrice(final double price,
                                final double slippage) {
             maybePrice = Optional.of(price);
             this.slippage = slippage;
-            return getThis();
+            return this;
         }
 
         public Builder doOnClose(final Consumer<OrderEvent> closeConsumer) {
             setEventConsumer(OrderEventType.CLOSE_OK, closeConsumer);
-            return getThis();
+            return this;
         }
 
         public Builder doOnPartialClose(final Consumer<OrderEvent> partialCloseConsumer) {
             setEventConsumer(OrderEventType.PARTIAL_CLOSE_OK, partialCloseConsumer);
-            return getThis();
+            return this;
         }
 
         public Builder doOnReject(final Consumer<OrderEvent> rejectConsumer) {
             setEventConsumer(OrderEventType.CLOSE_REJECTED, rejectConsumer);
-            return getThis();
+            return this;
         }
 
         public CloseParams build() {
             return new CloseParams(this);
-        }
-
-        @Override
-        protected Builder getThis() {
-            return this;
         }
     }
 }

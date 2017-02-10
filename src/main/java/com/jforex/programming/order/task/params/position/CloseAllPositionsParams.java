@@ -45,10 +45,5 @@ public class CloseAllPositionsParams extends TaskParamsWithType {
         public CloseAllPositionsParams build() {
             return new CloseAllPositionsParams(this);
         }
-
-        @Override
-        protected Builder getThis() {
-            return this;
-        }
     }
 }

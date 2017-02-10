@@ -8,7 +8,6 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CancelSLTPMode;
-import com.jforex.programming.order.task.params.EmptyTaskParams;
 import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.TaskParamsWithType;
@@ -120,75 +119,68 @@ public class MergePositionParams extends TaskParamsWithType {
             cancelTPParamsFactory = order -> emptyParams();
         }
 
-        private EmptyTaskParams emptyParams() {
-            return EmptyTaskParams
-                .newBuilder()
-                .build();
+        private TaskParamsBase emptyParams() {
+            return new TaskParamsBase.Builder().build();
         }
 
         public Builder withMergeExecutionMode(final CancelSLTPMode mergeExecutionMode) {
             checkNotNull(mergeExecutionMode);
 
             this.mergeExecutionMode = mergeExecutionMode;
-            return getThis();
+            return this;
         }
 
         public Builder withBatchCancelSLMode(final BatchMode batchCancelSLMode) {
             checkNotNull(batchCancelSLMode);
 
             this.batchCancelSLMode = batchCancelSLMode;
-            return getThis();
+            return this;
         }
 
         public Builder withBatchCancelTPMode(final BatchMode batchCancelTPMode) {
             checkNotNull(batchCancelTPMode);
 
             this.batchCancelTPMode = batchCancelTPMode;
-            return getThis();
+            return this;
         }
 
         public Builder withCancelSLTPParams(final TaskParamsBase cancelSLTPParams) {
             checkNotNull(cancelSLTPParams);
 
             this.cancelSLTPParams = cancelSLTPParams;
-            return getThis();
+            return this;
         }
 
         public Builder withBatchCancelSLParams(final TaskParamsBase batchCancelSLParams) {
             checkNotNull(batchCancelSLParams);
 
             this.batchCancelSLParams = batchCancelSLParams;
-            return getThis();
+            return this;
         }
 
         public Builder withBatchCancelTPParams(final TaskParamsBase batchCancelTPParams) {
             checkNotNull(batchCancelTPParams);
 
             this.batchCancelTPParams = batchCancelTPParams;
-            return getThis();
+            return this;
         }
 
         public Builder withCancelSLParamsFactory(final Function<IOrder, TaskParamsBase> cancelSLParamsFactory) {
             checkNotNull(cancelSLParamsFactory);
 
             this.cancelSLParamsFactory = cancelSLParamsFactory;
-            return getThis();
+            return this;
         }
 
         public Builder withCancelTPParamsFactory(final Function<IOrder, TaskParamsBase> cancelTPParamsFactory) {
             checkNotNull(cancelTPParamsFactory);
 
             this.cancelTPParamsFactory = cancelTPParamsFactory;
-            return getThis();
+            return this;
         }
 
         public MergePositionParams build() {
             return new MergePositionParams(this);
-        }
-
-        @Override
-        protected Builder getThis() {
-            return this;
         }
     }
 }

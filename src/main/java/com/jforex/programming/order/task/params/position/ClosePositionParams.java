@@ -83,16 +83,11 @@ public class ClosePositionParams extends TaskParamsWithType {
             checkNotNull(closeExecutionMode);
 
             this.closeExecutionMode = closeExecutionMode;
-            return getThis();
+            return this;
         }
 
         public ClosePositionParams build() {
             return new ClosePositionParams(this);
-        }
-
-        @Override
-        protected Builder getThis() {
-            return this;
         }
     }
 }

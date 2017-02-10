@@ -38,10 +38,5 @@ public class BatchParams extends TaskParamsBase {
         public BatchParams build() {
             return new BatchParams(this);
         }
-
-        @Override
-        protected Builder getThis() {
-            return this;
-        }
     }
 }

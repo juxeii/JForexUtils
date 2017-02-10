@@ -56,21 +56,16 @@ public class SetGTTParams extends TaskParamsWithType {
 
         public Builder doOnChangedGTT(final Consumer<OrderEvent> changedGTTConsumer) {
             setEventConsumer(OrderEventType.CHANGED_GTT, changedGTTConsumer);
-            return getThis();
+            return this;
         }
 
         public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
             setEventConsumer(OrderEventType.CHANGE_GTT_REJECTED, changeRejectConsumer);
-            return getThis();
+            return this;
         }
 
         public SetGTTParams build() {
             return new SetGTTParams(this);
-        }
-
-        @Override
-        protected Builder getThis() {
-            return this;
         }
     }
 }

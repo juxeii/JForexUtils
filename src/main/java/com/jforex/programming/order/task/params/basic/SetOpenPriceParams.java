@@ -56,21 +56,16 @@ public class SetOpenPriceParams extends TaskParamsWithType {
 
         public Builder doOnChangedOpenPrice(final Consumer<OrderEvent> changedOpenPriceConsumer) {
             setEventConsumer(OrderEventType.CHANGED_PRICE, changedOpenPriceConsumer);
-            return getThis();
+            return this;
         }
 
         public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
             setEventConsumer(OrderEventType.CHANGE_PRICE_REJECTED, changeRejectConsumer);
-            return getThis();
+            return this;
         }
 
         public SetOpenPriceParams build() {
             return new SetOpenPriceParams(this);
-        }
-
-        @Override
-        protected Builder getThis() {
-            return this;
         }
     }
 }

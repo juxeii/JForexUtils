@@ -11,12 +11,12 @@ import com.jforex.programming.order.event.OrderEventType;
 
 import io.reactivex.functions.Action;
 
-public abstract class TaskParamsBase {
+@SuppressWarnings("unchecked")
+public class TaskParamsBase {
 
     private final ComposeData composeData;
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
 
-    @SuppressWarnings("unchecked")
     protected TaskParamsBase(final Builder builder) {
         composeData = builder.composeDataImpl;
         consumerForEvent = builder.consumerForEvent;
@@ -30,7 +30,7 @@ public abstract class TaskParamsBase {
         return consumerForEvent;
     }
 
-    public abstract static class Builder<T extends Builder<T>> {
+    public static class Builder<T extends Builder<T>> {
 
         private final ComposeDataImpl composeDataImpl = new ComposeDataImpl();
         private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
@@ -39,28 +39,32 @@ public abstract class TaskParamsBase {
             checkNotNull(startAction);
 
             composeDataImpl.setStartAction(startAction);
-            return getThis();
+            return (T) this;
         }
 
         public T doOnComplete(final Action completeAction) {
             checkNotNull(completeAction);
 
             composeDataImpl.setCompleteAction(completeAction);
-            return getThis();
+            return (T) this;
         }
 
         public T doOnError(final Consumer<Throwable> errorConsumer) {
             checkNotNull(errorConsumer);
 
             composeDataImpl.setErrorConsumer(errorConsumer);
-            return getThis();
+            return (T) this;
         }
 
         public T retryOnReject(final RetryParams retryParams) {
             checkNotNull(retryParams);
 
             composeDataImpl.setRetryParams(retryParams);
-            return getThis();
+            return (T) this;
+        }
+
+        public TaskParamsBase build() {
+            return new TaskParamsBase(this);
         }
 
         protected void setEventConsumer(final OrderEventType orderEventType,
@@ -70,7 +74,5 @@ public abstract class TaskParamsBase {
 
             consumerForEvent.put(orderEventType, consumer);
         }
-
-        protected abstract T getThis();
     }
 }
