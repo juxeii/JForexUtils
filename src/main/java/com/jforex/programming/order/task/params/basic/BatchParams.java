@@ -40,7 +40,7 @@ public class BatchParams extends TaskParamsBase {
         }
 
         @Override
-        public Builder getThis() {
+        protected Builder getThis() {
             return this;
         }
     }

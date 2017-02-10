@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 
@@ -25,13 +26,18 @@ public class CancelSLTPAndMergeTask {
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toMergeOrders,
                                           final MergePositionParams mergePositionParams) {
+        final ComposeData composeData = mergePositionParams
+            .cancelSLTPParams()
+            .composeData();
         final Observable<OrderEvent> cancelSLTP =
                 taskParamsUtil.composeParams(cancelSLTPTask.observe(toMergeOrders, mergePositionParams),
-                                             mergePositionParams.cancelSLTPComposeData());
+                                             composeData);
 
+        final String mergeOrderLabel = mergePositionParams
+            .mergeParamsForPosition()
+            .mergeOrderLabel();
         final Observable<OrderEvent> merge =
-                taskParamsUtil.composeParamsWithEvents(basicTask.mergeOrders(mergePositionParams.mergeOrderLabel(),
-                                                                             toMergeOrders),
+                taskParamsUtil.composeParamsWithEvents(basicTask.mergeOrders(mergeOrderLabel, toMergeOrders),
                                                        mergePositionParams.composeData(),
                                                        mergePositionParams.consumerForEvent());
 

@@ -3,6 +3,7 @@ package com.jforex.programming.order.task.test;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BasicTaskForBatch;
 import com.jforex.programming.order.task.BatchComposer;
 import com.jforex.programming.order.task.params.ComposeData;
+import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
@@ -42,6 +44,13 @@ public class BatchComposerTest extends InstrumentUtilForTest {
     private ComposeData composeDataMock;
     @Mock
     private CloseParams closeParamsMock;
+    @Mock
+    private TaskParamsBase composeParamsMock;
+    @Mock
+    private Function<IOrder, TaskParamsBase> cancelSLParamsFactoryMock;
+    @Mock
+    private Function<IOrder, TaskParamsBase> cancelTPParamsFactoryMock;
+
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
     private final IOrder orderForTest = buyOrderEURUSD;
     private TestObserver<OrderEvent> testObserver;
@@ -116,8 +125,14 @@ public class BatchComposerTest extends InstrumentUtilForTest {
         public void setUp() {
             when(basicTaskForBatchMock.forCancelSL(orderForTest))
                 .thenReturn(basicObservable);
-            when(mergePositionParamsMock.createCancelSLComposeData(orderForTest))
+            when(mergePositionParamsMock.cancelSLParamsFactory())
+                .thenReturn(cancelSLParamsFactoryMock);
+
+            when(cancelSLParamsFactoryMock.apply(orderForTest))
+                .thenReturn(composeParamsMock);
+            when(composeParamsMock.composeData())
                 .thenReturn(composeDataMock);
+
             when(mergePositionParamsMock.consumerForEvent())
                 .thenReturn(consumerForEvent);
             setupTaskParamsUtil(basicObservable, changedRejectEvent);
@@ -152,8 +167,14 @@ public class BatchComposerTest extends InstrumentUtilForTest {
         public void setUp() {
             when(basicTaskForBatchMock.forCancelTP(orderForTest))
                 .thenReturn(basicObservable);
-            when(mergePositionParamsMock.createCancelTPComposeData(orderForTest))
+            when(mergePositionParamsMock.cancelTPParamsFactory())
+                .thenReturn(cancelTPParamsFactoryMock);
+
+            when(cancelTPParamsFactoryMock.apply(orderForTest))
+                .thenReturn(composeParamsMock);
+            when(composeParamsMock.composeData())
                 .thenReturn(composeDataMock);
+
             when(mergePositionParamsMock.consumerForEvent())
                 .thenReturn(consumerForEvent);
             setupTaskParamsUtil(basicObservable, changedRejectEvent);

@@ -102,11 +102,13 @@ public class SetSLParams extends TaskParamsWithType {
         }
 
         public Builder doOnChangedSL(final Consumer<OrderEvent> changedSLConsumer) {
-            return setEventConsumer(OrderEventType.CHANGED_SL, changedSLConsumer);
+            setEventConsumer(OrderEventType.CHANGED_SL, changedSLConsumer);
+            return getThis();
         }
 
         public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
-            return setEventConsumer(OrderEventType.CHANGE_SL_REJECTED, changeRejectConsumer);
+            setEventConsumer(OrderEventType.CHANGE_SL_REJECTED, changeRejectConsumer);
+            return getThis();
         }
 
         public Builder withOfferSide(final OfferSide offerSide) {
@@ -126,7 +128,7 @@ public class SetSLParams extends TaskParamsWithType {
         }
 
         @Override
-        public Builder getThis() {
+        protected Builder getThis() {
             return this;
         }
     }

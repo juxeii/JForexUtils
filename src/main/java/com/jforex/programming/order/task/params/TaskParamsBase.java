@@ -63,15 +63,14 @@ public abstract class TaskParamsBase {
             return getThis();
         }
 
-        protected T setEventConsumer(final OrderEventType orderEventType,
-                                     final Consumer<OrderEvent> consumer) {
+        protected void setEventConsumer(final OrderEventType orderEventType,
+                                        final Consumer<OrderEvent> consumer) {
             checkNotNull(orderEventType);
             checkNotNull(consumer);
 
             consumerForEvent.put(orderEventType, consumer);
-            return getThis();
         }
 
-        public abstract T getThis();
+        protected abstract T getThis();
     }
 }

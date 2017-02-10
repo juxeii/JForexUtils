@@ -55,11 +55,13 @@ public class SetAmountParams extends TaskParamsWithType {
         }
 
         public Builder doOnChangedAmount(final Consumer<OrderEvent> changedAmountConsumer) {
-            return setEventConsumer(OrderEventType.CHANGED_AMOUNT, changedAmountConsumer);
+            setEventConsumer(OrderEventType.CHANGED_AMOUNT, changedAmountConsumer);
+            return getThis();
         }
 
         public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
-            return setEventConsumer(OrderEventType.CHANGE_AMOUNT_REJECTED, changeRejectConsumer);
+            setEventConsumer(OrderEventType.CHANGE_AMOUNT_REJECTED, changeRejectConsumer);
+            return getThis();
         }
 
         public SetAmountParams build() {
@@ -67,7 +69,7 @@ public class SetAmountParams extends TaskParamsWithType {
         }
 
         @Override
-        public Builder getThis() {
+        protected Builder getThis() {
             return this;
         }
     }

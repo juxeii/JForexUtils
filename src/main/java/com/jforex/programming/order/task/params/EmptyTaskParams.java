@@ -17,7 +17,7 @@ public class EmptyTaskParams extends TaskParamsBase {
         }
 
         @Override
-        public Builder getThis() {
+        protected Builder getThis() {
             return this;
         }
     }

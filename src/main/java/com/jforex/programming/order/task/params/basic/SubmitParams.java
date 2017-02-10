@@ -45,23 +45,28 @@ public class SubmitParams extends TaskParamsWithType {
         }
 
         public Builder doOnSubmit(final Consumer<OrderEvent> submitConsumer) {
-            return setEventConsumer(OrderEventType.SUBMIT_OK, submitConsumer);
+            setEventConsumer(OrderEventType.SUBMIT_OK, submitConsumer);
+            return getThis();
         }
 
         public Builder doOnPartialFill(final Consumer<OrderEvent> partialFillConsumer) {
-            return setEventConsumer(OrderEventType.PARTIAL_FILL_OK, partialFillConsumer);
+            setEventConsumer(OrderEventType.PARTIAL_FILL_OK, partialFillConsumer);
+            return getThis();
         }
 
         public Builder doOnFullFill(final Consumer<OrderEvent> fullFillConsumer) {
-            return setEventConsumer(OrderEventType.FULLY_FILLED, fullFillConsumer);
+            setEventConsumer(OrderEventType.FULLY_FILLED, fullFillConsumer);
+            return getThis();
         }
 
         public Builder doOnSubmitReject(final Consumer<OrderEvent> submitRejectConsumer) {
-            return setEventConsumer(OrderEventType.SUBMIT_REJECTED, submitRejectConsumer);
+            setEventConsumer(OrderEventType.SUBMIT_REJECTED, submitRejectConsumer);
+            return getThis();
         }
 
         public Builder doOnFillReject(final Consumer<OrderEvent> fillRejectConsumer) {
-            return setEventConsumer(OrderEventType.FILL_REJECTED, fillRejectConsumer);
+            setEventConsumer(OrderEventType.FILL_REJECTED, fillRejectConsumer);
+            return getThis();
         }
 
         public SubmitParams build() {
@@ -69,7 +74,7 @@ public class SubmitParams extends TaskParamsWithType {
         }
 
         @Override
-        public Builder getThis() {
+        protected Builder getThis() {
             return this;
         }
     }

@@ -76,11 +76,13 @@ public class SetTPParams extends TaskParamsWithType {
         }
 
         public Builder doOnChangedTP(final Consumer<OrderEvent> changedTPConsumer) {
-            return setEventConsumer(OrderEventType.CHANGED_TP, changedTPConsumer);
+            setEventConsumer(OrderEventType.CHANGED_TP, changedTPConsumer);
+            return getThis();
         }
 
         public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
-            return setEventConsumer(OrderEventType.CHANGE_TP_REJECTED, changeRejectConsumer);
+            setEventConsumer(OrderEventType.CHANGE_TP_REJECTED, changeRejectConsumer);
+            return getThis();
         }
 
         public SetTPParams build() {
@@ -88,7 +90,7 @@ public class SetTPParams extends TaskParamsWithType {
         }
 
         @Override
-        public Builder getThis() {
+        protected Builder getThis() {
             return this;
         }
     }

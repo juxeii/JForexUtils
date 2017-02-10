@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 
@@ -25,8 +26,10 @@ public class BatchCancelTPTask {
         return Observable.defer(() -> {
             final Observable<OrderEvent> batchCancelTP =
                     batchChangeTask.cancelTP(toCancelTPOrders, mergePositionParams);
-            return taskParamsUtil.composeParams(batchCancelTP,
-                                                mergePositionParams.batchCancelTPComposeData());
+            final ComposeData composeData = mergePositionParams
+                .batchCancelTPParams()
+                .composeData();
+            return taskParamsUtil.composeParams(batchCancelTP, composeData);
         });
     }
 }

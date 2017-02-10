@@ -38,11 +38,13 @@ public class CancelTPParams extends TaskParamsBase {
         }
 
         public Builder doOnCancelTP(final Consumer<OrderEvent> cancelTPConsumer) {
-            return setEventConsumer(OrderEventType.CHANGED_TP, cancelTPConsumer);
+            setEventConsumer(OrderEventType.CHANGED_TP, cancelTPConsumer);
+            return getThis();
         }
 
         public Builder doOnReject(final Consumer<OrderEvent> changeRejectConsumer) {
-            return setEventConsumer(OrderEventType.CHANGE_TP_REJECTED, changeRejectConsumer);
+            setEventConsumer(OrderEventType.CHANGE_TP_REJECTED, changeRejectConsumer);
+            return getThis();
         }
 
         public CancelTPParams build() {
@@ -50,7 +52,7 @@ public class CancelTPParams extends TaskParamsBase {
         }
 
         @Override
-        public Builder getThis() {
+        protected Builder getThis() {
             return this;
         }
     }

@@ -47,7 +47,7 @@ public class MergeAllPositionsParams extends TaskParamsWithType {
         }
 
         @Override
-        public Builder getThis() {
+        protected Builder getThis() {
             return this;
         }
     }

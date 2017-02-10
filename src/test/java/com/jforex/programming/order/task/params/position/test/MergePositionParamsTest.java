@@ -1,136 +1,194 @@
 package com.jforex.programming.order.task.params.position.test;
 
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CancelSLTPMode;
-import com.jforex.programming.order.task.params.ComposeData;
-import com.jforex.programming.order.task.params.ComposeDataImpl;
+import com.jforex.programming.order.task.params.EmptyTaskParams;
 import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.CancelSLParams;
 import com.jforex.programming.order.task.params.basic.CancelTPParams;
-import com.jforex.programming.order.task.params.basic.MergeParams;
+import com.jforex.programming.order.task.params.basic.MergeParamsForPosition;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
+import de.bechte.junit.runners.context.HierarchicalContextRunner;
+
+@RunWith(HierarchicalContextRunner.class)
 public class MergePositionParamsTest extends CommonParamsForTest {
 
     private MergePositionParams mergePositionParams;
 
     @Mock
-    private TaskParamsBase mergePositionComposeParamsMock;
+    private MergeParamsForPosition mergeParamsForPositionMock;
     @Mock
-    private TaskParamsBase cancelSLTPComposeParamsMock;
+    private TaskParamsBase cancelSLTPParamsMock;
     @Mock
-    private TaskParamsBase batchCancelSLComposeParamsMock;
+    private TaskParamsBase batchCancelSLParamsMock;
     @Mock
-    private TaskParamsBase batchCancelTPComposeParamsMock;
-    @Mock
-    private Function<IOrder, TaskParamsBase> cancelSLComposeParamsMock;
+    private TaskParamsBase batchCancelTPParamsMock;
     @Mock
     private CancelSLParams cancelSLParamsMock;
     @Mock
-    private Function<IOrder, TaskParamsBase> cancelTPComposeParamsMock;
-    @Mock
     private CancelTPParams cancelTPParamsMock;
     @Mock
-    private MergeParams mergeParamsMock;
-    private final ComposeData composeData = new ComposeDataImpl();
+    private Function<IOrder, TaskParamsBase> cancelSLParamsFactoryMock;
+    @Mock
+    private Function<IOrder, TaskParamsBase> cancelTPParamsFactoryMock;
 
-    @Before
-    public void setUp() {
-        when(mergePositionComposeParamsMock.composeData()).thenReturn(composeData);
-        when(cancelSLTPComposeParamsMock.composeData()).thenReturn(composeData);
-        when(batchCancelSLComposeParamsMock.composeData()).thenReturn(composeData);
-        when(batchCancelTPComposeParamsMock.composeData()).thenReturn(composeData);
-        when(mergeParamsMock.composeData()).thenReturn(composeData);
+    public class DefaultTests {
 
-        when(cancelSLComposeParamsMock.apply(orderForTest)).thenReturn(cancelSLParamsMock);
-        when(cancelTPComposeParamsMock.apply(orderForTest)).thenReturn(cancelTPParamsMock);
-        when(cancelSLParamsMock.composeData()).thenReturn(composeData);
-        when(cancelTPParamsMock.composeData()).thenReturn(composeData);
+        @Before
+        public void setUp() {
+            mergePositionParams = MergePositionParams
+                .newBuilder(instrumentEURUSD, mergeParamsForPositionMock)
+                .build();
+        }
 
-        mergePositionParams = MergePositionParams
-            .newBuilder(instrumentEURUSD, mergeOrderLabel)
+        @Test
+        public void instrumentIsCorrect() {
+            assertThat(mergePositionParams.instrument(), equalTo(instrumentEURUSD));
+        }
 
-            .withMergeExecutionMode(CancelSLTPMode.ConcatCancelSLAndTP)
-            .withBatchCancelSLMode(BatchMode.CONCAT)
-            .withBatchCancelTPMode(BatchMode.CONCAT)
+        @Test
+        public void mergeParamsForPositionIsCorrect() {
+            assertThat(mergePositionParams.mergeParamsForPosition(), equalTo(mergeParamsForPositionMock));
+        }
 
-            .withCancelSLTPParams(cancelSLTPComposeParamsMock)
-            .withBatchCancelSLParams(batchCancelSLComposeParamsMock)
-            .withBatchCancelTPParams(batchCancelTPComposeParamsMock)
-            .withCancelSLParams(cancelSLComposeParamsMock)
-            .withCancelTPParams(cancelTPComposeParamsMock)
-            .withMergeParams(mergeParamsMock)
+        @Test
+        public void cancelSLTPParamsIsOfTypeEmptyTaskParams() {
+            assertEmptyParamsType(mergePositionParams.cancelSLTPParams());
+        }
 
-            .build();
+        private void assertDefaultFactoryIsCorrect(final Function<IOrder, TaskParamsBase> factory) {
+            assertEmptyParamsType(factory.apply(orderForTest));
+        }
+
+        private void assertEmptyParamsType(final TaskParamsBase taskParams) {
+            assertTrue(taskParams instanceof EmptyTaskParams);
+        }
+
+        @Test
+        public void batchCancelSLParamsIsOfTypeEmptyTaskParams() {
+            assertEmptyParamsType(mergePositionParams.batchCancelSLParams());
+        }
+
+        @Test
+        public void batchCancelTPParamsIsOfTypeEmptyTaskParams() {
+            assertEmptyParamsType(mergePositionParams.batchCancelTPParams());
+        }
+
+        @Test
+        public void cancelSLParamsFactoryProducesTypeOfEmptyTaskParams() {
+            assertDefaultFactoryIsCorrect(mergePositionParams.cancelSLParamsFactory());
+        }
+
+        @Test
+        public void cancelTPParamsFactoryProducesTypeOfEmptyTaskParams() {
+            assertDefaultFactoryIsCorrect(mergePositionParams.cancelTPParamsFactory());
+        }
+
+        @Test
+        public void mergeExecutionModeIsOfTypeMergeCancelSLAndTP() {
+            assertThat(mergePositionParams.mergeExecutionMode(), equalTo(CancelSLTPMode.MergeCancelSLAndTP));
+        }
+
+        @Test
+        public void batchCancelSLModeIsOfTypeMerge() {
+            assertThat(mergePositionParams.batchCancelSLMode(), equalTo(BatchMode.MERGE));
+        }
+
+        @Test
+        public void batchCancelTPModeIsOfTypeMerge() {
+            assertThat(mergePositionParams.batchCancelTPMode(), equalTo(BatchMode.MERGE));
+        }
+
+        @Test
+        public void typeIsMERGEPOSITION() {
+            assertThat(mergePositionParams.type(), equalTo(TaskParamsType.MERGEPOSITION));
+        }
+
+        @Test
+        public void noConsumersForEvents() {
+            assertTrue(mergePositionParams.consumerForEvent().isEmpty());
+        }
     }
 
-    @Test
-    public void defaultValuesAreCorrect() {
-        mergePositionParams = MergePositionParams
-            .newBuilder(instrumentEURUSD, mergeOrderLabel)
-            .build();
+    public class FullConfigureTests {
 
-        assertThat(mergePositionParams.type(), equalTo(TaskParamsType.MERGEPOSITION));
-        assertThat(mergePositionParams.instrument(), equalTo(instrumentEURUSD));
-        assertThat(mergePositionParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
-        assertThat(mergePositionParams.mergeExecutionMode(), equalTo(CancelSLTPMode.MergeCancelSLAndTP));
-        assertThat(mergePositionParams.batchCancelSLMode(), equalTo(BatchMode.MERGE));
-        assertThat(mergePositionParams.batchCancelTPMode(), equalTo(BatchMode.MERGE));
-        assertThat(mergePositionParams.consumerForEvent().size(), equalTo(0));
+        @Before
+        public void setUp() {
+            mergePositionParams = MergePositionParams
+                .newBuilder(instrumentEURUSD, mergeParamsForPositionMock)
+                .withMergeExecutionMode(CancelSLTPMode.ConcatCancelSLAndTP)
+                .withBatchCancelSLMode(BatchMode.CONCAT)
+                .withBatchCancelTPMode(BatchMode.CONCAT)
+                .withCancelSLTPParams(cancelSLTPParamsMock)
+                .withBatchCancelSLParams(batchCancelSLParamsMock)
+                .withBatchCancelTPParams(batchCancelTPParamsMock)
+                .withCancelSLParamsFactory(cancelSLParamsFactoryMock)
+                .withCancelTPParamsFactory(cancelTPParamsFactoryMock)
+                .doOnStart(actionMock)
+                .doOnComplete(actionMock)
+                .doOnError(errorConsumerMock)
+                .retryOnReject(retryParams)
+                .build();
+        }
 
-        assertNotNull(mergePositionParams.createCancelSLComposeData(orderForTest));
-        assertNotNull(mergePositionParams.createCancelTPComposeData(orderForTest));
-    }
+        @Test
+        public void cancelSLTPParamsIsCorrect() {
+            assertThat(mergePositionParams.cancelSLTPParams(), equalTo(cancelSLTPParamsMock));
+        }
 
-    @Test
-    public void assertSpecifiedValues() {
-        assertThat(mergePositionParams.instrument(), equalTo(instrumentEURUSD));
-        assertThat(mergePositionParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
-        assertThat(mergePositionParams.mergeExecutionMode(), equalTo(CancelSLTPMode.ConcatCancelSLAndTP));
-        assertThat(mergePositionParams.batchCancelSLMode(), equalTo(BatchMode.CONCAT));
-        assertThat(mergePositionParams.batchCancelTPMode(), equalTo(BatchMode.CONCAT));
-    }
+        @Test
+        public void batchCancelSLParamsIsCorrect() {
+            assertThat(mergePositionParams.batchCancelSLParams(), equalTo(batchCancelSLParamsMock));
+        }
 
-    @Test
-    public void assertCancelSLTPValues() {
-        assertThat(mergePositionParams.cancelSLTPComposeData(), equalTo(composeData));
-    }
+        @Test
+        public void batchCancelTPParamsIsCorrect() {
+            assertThat(mergePositionParams.batchCancelTPParams(), equalTo(batchCancelTPParamsMock));
+        }
 
-    @Test
-    public void assertBatchCancelSLValues() {
-        assertThat(mergePositionParams.batchCancelSLComposeData(), equalTo(composeData));
-    }
+        @Test
+        public void cancelSLParamsFactoryIsCorrect() {
+            assertThat(mergePositionParams.cancelSLParamsFactory(), equalTo(cancelSLParamsFactoryMock));
+        }
 
-    @Test
-    public void assertBatchCancelTPValues() {
-        assertThat(mergePositionParams.batchCancelTPComposeData(), equalTo(composeData));
-    }
+        @Test
+        public void cancelTPParamsFactoryIsCorrect() {
+            assertThat(mergePositionParams.cancelTPParamsFactory(), equalTo(cancelTPParamsFactoryMock));
+        }
 
-    @Test
-    public void assertCancelSLValues() throws Exception {
-        assertThat(mergePositionParams.createCancelSLComposeData(orderForTest), equalTo(composeData));
-    }
+        @Test
+        public void mergeExecutionModeIsOfTypeConcatCancelSLAndTP() {
+            assertThat(mergePositionParams.mergeExecutionMode(), equalTo(CancelSLTPMode.ConcatCancelSLAndTP));
+        }
 
-    @Test
-    public void assertCancelTPValues() throws Exception {
-        assertThat(mergePositionParams.createCancelTPComposeData(orderForTest), equalTo(composeData));
-    }
+        @Test
+        public void batchCancelSLModeIsOfTypeCONCAT() {
+            assertThat(mergePositionParams.batchCancelSLMode(), equalTo(BatchMode.CONCAT));
+        }
 
-    @Test
-    public void assertMergeValues() {
-        assertThat(mergePositionParams.mergeComposeData(), equalTo(composeData));
+        @Test
+        public void batchCancelTPModeIsOfTypeCONCAT() {
+            assertThat(mergePositionParams.batchCancelTPMode(), equalTo(BatchMode.CONCAT));
+        }
+
+        @Test
+        public void assertComposeDataAreCorrect() {
+            assertComposeData(mergePositionParams.composeData());
+        }
     }
 }

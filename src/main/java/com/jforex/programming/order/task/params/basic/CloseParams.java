@@ -91,15 +91,18 @@ public class CloseParams extends TaskParamsWithType {
         }
 
         public Builder doOnClose(final Consumer<OrderEvent> closeConsumer) {
-            return setEventConsumer(OrderEventType.CLOSE_OK, closeConsumer);
+            setEventConsumer(OrderEventType.CLOSE_OK, closeConsumer);
+            return getThis();
         }
 
         public Builder doOnPartialClose(final Consumer<OrderEvent> partialCloseConsumer) {
-            return setEventConsumer(OrderEventType.PARTIAL_CLOSE_OK, partialCloseConsumer);
+            setEventConsumer(OrderEventType.PARTIAL_CLOSE_OK, partialCloseConsumer);
+            return getThis();
         }
 
         public Builder doOnReject(final Consumer<OrderEvent> rejectConsumer) {
-            return setEventConsumer(OrderEventType.CLOSE_REJECTED, rejectConsumer);
+            setEventConsumer(OrderEventType.CLOSE_REJECTED, rejectConsumer);
+            return getThis();
         }
 
         public CloseParams build() {
@@ -107,7 +110,7 @@ public class CloseParams extends TaskParamsWithType {
         }
 
         @Override
-        public Builder getThis() {
+        protected Builder getThis() {
             return this;
         }
     }

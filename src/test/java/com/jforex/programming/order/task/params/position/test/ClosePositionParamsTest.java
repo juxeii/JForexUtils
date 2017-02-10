@@ -16,6 +16,7 @@ import com.jforex.programming.order.task.CloseExecutionMode;
 import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.CloseParams;
+import com.jforex.programming.order.task.params.basic.MergeParamsForPosition;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
@@ -29,6 +30,8 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
     @Mock
     private MergePositionParams mergePositionParamsMock;
     @Mock
+    private MergeParamsForPosition mergeParamsForPositionMock;
+    @Mock
     private Function<IOrder, Action> actionConsumerMock;
     @Mock
     private CloseParams closeParamsMock;
@@ -39,7 +42,8 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
     public void setUp() {
         when(actionConsumerMock.apply(orderForTest)).thenReturn(actionMock);
         when(mergePositionParamsMock.instrument()).thenReturn(instrumentEURUSD);
-        when(mergePositionParamsMock.mergeOrderLabel()).thenReturn(mergeOrderLabel);
+        when(mergePositionParamsMock.mergeParamsForPosition()).thenReturn(mergeParamsForPositionMock);
+        when(mergeParamsForPositionMock.mergeOrderLabel()).thenReturn(mergeOrderLabel);
         when(closeParamsFactoryMock.apply(orderForTest)).thenReturn(closeParamsMock);
 
         closePositionParams = ClosePositionParams
