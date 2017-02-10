@@ -42,7 +42,7 @@ public class MergePositionTaskTest extends InstrumentUtilForTest {
     @Mock
     private MergeAllPositionsParams mergeAllPositionsParamsMock;
     @Mock
-    private Function<Instrument, MergePositionParams> factoryMock;
+    private Function<Instrument, MergePositionParams> mergePositionParamsFactoryMock;
     @Captor
     private ArgumentCaptor<Function<Instrument, Observable<OrderEvent>>> factoryCaptor;
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
@@ -188,8 +188,8 @@ public class MergePositionTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void verifyThatMergeCommandsAreMerged() {
-            when(mergeAllPositionsParamsMock.createMergePositionParams(instrumentEURUSD))
-                .thenReturn(mergePositionParamsMock);
+            when(mergeAllPositionsParamsMock.mergePositionParamsFactory())
+                .thenReturn(mergePositionParamsFactoryMock);
 
             setUpPositionUtilObservables(neverObservable(),
                                          eventObservable(testEvent));

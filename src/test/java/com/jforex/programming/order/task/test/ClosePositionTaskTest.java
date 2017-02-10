@@ -39,7 +39,7 @@ public class ClosePositionTaskTest extends InstrumentUtilForTest {
     @Mock
     private CloseAllPositionsParams closeAllPositionsParamsMock;
     @Mock
-    private Function<Instrument, ClosePositionParams> factoryMock;
+    private Function<Instrument, ClosePositionParams> closePositonParamsFactoryMock;
     @Captor
     private ArgumentCaptor<Function<Instrument, Observable<OrderEvent>>> factoryCaptor;
     private final OrderEvent event = closeEvent;
@@ -135,8 +135,8 @@ public class ClosePositionTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void verifyThatCloseCommandsAreMerged() throws Exception {
-            when(closeAllPositionsParamsMock.createClosePositionParams(instrumentEURUSD))
-                .thenReturn(closePositionParamsMock);
+            when(closeAllPositionsParamsMock.closePositonParamsFactory())
+                .thenReturn(closePositonParamsFactoryMock);
 
             setUpPositionUtilObservables(neverObservable(), eventObservable(event));
 

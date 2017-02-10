@@ -11,16 +11,16 @@ import com.jforex.programming.order.task.params.TaskParamsWithType;
 
 public class CloseAllPositionsParams extends TaskParamsWithType {
 
-    private final Function<Instrument, ClosePositionParams> closeParamsFactory;
+    private final Function<Instrument, ClosePositionParams> closePositonParamsFactory;
 
     private CloseAllPositionsParams(final Builder builder) {
         super(builder);
 
-        closeParamsFactory = builder.closeParamsFactory;
+        closePositonParamsFactory = builder.closePositonParamsFactory;
     }
 
-    public ClosePositionParams createClosePositionParams(final Instrument instrument) {
-        return closeParamsFactory.apply(instrument);
+    public Function<Instrument, ClosePositionParams> closePositonParamsFactory() {
+        return closePositonParamsFactory;
     }
 
     @Override
@@ -28,20 +28,21 @@ public class CloseAllPositionsParams extends TaskParamsWithType {
         return TaskParamsType.CLOSEALLPOSITIONS;
     }
 
-    public static Builder newBuilder(final Function<Instrument, ClosePositionParams> closeParamsFactory) {
-        checkNotNull(closeParamsFactory);
+    public static Builder newBuilder(final Function<Instrument, ClosePositionParams> closePositonParamsFactory) {
+        checkNotNull(closePositonParamsFactory);
 
-        return new Builder(closeParamsFactory);
+        return new Builder(closePositonParamsFactory);
     }
 
     public static class Builder extends TaskParamsBase.Builder<Builder> {
 
-        private final Function<Instrument, ClosePositionParams> closeParamsFactory;
+        private final Function<Instrument, ClosePositionParams> closePositonParamsFactory;
 
-        public Builder(final Function<Instrument, ClosePositionParams> closeParamsFactory) {
-            this.closeParamsFactory = closeParamsFactory;
+        public Builder(final Function<Instrument, ClosePositionParams> closePositonParamsFactory) {
+            this.closePositonParamsFactory = closePositonParamsFactory;
         }
 
+        @Override
         public CloseAllPositionsParams build() {
             return new CloseAllPositionsParams(this);
         }

@@ -11,16 +11,16 @@ import com.jforex.programming.order.task.params.TaskParamsWithType;
 
 public class MergeAllPositionsParams extends TaskParamsWithType {
 
-    private final Function<Instrument, MergePositionParams> mergeParamsFactory;
+    private final Function<Instrument, MergePositionParams> mergePositionParamsFactory;
 
     private MergeAllPositionsParams(final Builder builder) {
         super(builder);
 
-        mergeParamsFactory = builder.mergeParamsFactory;
+        mergePositionParamsFactory = builder.mergePositionParamsFactory;
     }
 
-    public MergePositionParams createMergePositionParams(final Instrument instrument) {
-        return mergeParamsFactory.apply(instrument);
+    public Function<Instrument, MergePositionParams> mergePositionParamsFactory() {
+        return mergePositionParamsFactory;
     }
 
     @Override
@@ -28,20 +28,22 @@ public class MergeAllPositionsParams extends TaskParamsWithType {
         return TaskParamsType.MERGEALLPOSITIONS;
     }
 
-    public static Builder withMergeParamsFactory(final Function<Instrument, MergePositionParams> mergeParamsFactory) {
-        checkNotNull(mergeParamsFactory);
+    public static Builder
+           withMergeParamsFactory(final Function<Instrument, MergePositionParams> mergePositionParamsFactory) {
+        checkNotNull(mergePositionParamsFactory);
 
-        return new Builder(mergeParamsFactory);
+        return new Builder(mergePositionParamsFactory);
     }
 
     public static class Builder extends TaskParamsBase.Builder<Builder> {
 
-        private final Function<Instrument, MergePositionParams> mergeParamsFactory;
+        private final Function<Instrument, MergePositionParams> mergePositionParamsFactory;
 
-        public Builder(final Function<Instrument, MergePositionParams> mergeParamsFactory) {
-            this.mergeParamsFactory = mergeParamsFactory;
+        public Builder(final Function<Instrument, MergePositionParams> mergePositionParamsFactory) {
+            this.mergePositionParamsFactory = mergePositionParamsFactory;
         }
 
+        @Override
         public MergeAllPositionsParams build() {
             return new MergeAllPositionsParams(this);
         }

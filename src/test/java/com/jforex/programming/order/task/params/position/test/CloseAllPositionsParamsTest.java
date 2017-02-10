@@ -21,16 +21,12 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
     private CloseAllPositionsParams closeAllPositionsParams;
 
     @Mock
-    private ClosePositionParams closePositionParamsMock;
-    @Mock
-    private Function<Instrument, ClosePositionParams> closeParamsFactoryMock;
+    private Function<Instrument, ClosePositionParams> closePositonParamsFactoryMock;
 
     @Before
     public void setUp() {
-        when(closeParamsFactoryMock.apply(instrumentEURUSD)).thenReturn(closePositionParamsMock);
-
         closeAllPositionsParams = CloseAllPositionsParams
-            .newBuilder(closeParamsFactoryMock)
+            .newBuilder(closePositonParamsFactoryMock)
             .doOnStart(actionMock)
             .doOnComplete(actionMock)
             .doOnError(errorConsumerMock)
@@ -39,14 +35,9 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
     }
 
     @Test
-    public void typeIsCLOSEALLPOSITIONS() {
-        assertThat(closeAllPositionsParams.type(), equalTo(TaskParamsType.CLOSEALLPOSITIONS));
-    }
-
-    @Test
     public void createClosePositionParamsCreatesCorrectInstance() {
-        assertThat(closeAllPositionsParams.createClosePositionParams(instrumentEURUSD),
-                   equalTo(closePositionParamsMock));
+        assertThat(closeAllPositionsParams.closePositonParamsFactory(),
+                   equalTo(closePositonParamsFactoryMock));
     }
 
     @Test
@@ -57,5 +48,10 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
     @Test
     public void assertComposeDataAreCorrect() {
         assertComposeData(closeAllPositionsParams.composeData());
+    }
+
+    @Test
+    public void typeIsCLOSEALLPOSITIONS() {
+        assertThat(closeAllPositionsParams.type(), equalTo(TaskParamsType.CLOSEALLPOSITIONS));
     }
 }

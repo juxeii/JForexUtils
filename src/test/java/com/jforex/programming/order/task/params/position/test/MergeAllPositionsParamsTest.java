@@ -21,16 +21,12 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
     private MergeAllPositionsParams mergeAllPositionsParams;
 
     @Mock
-    private MergePositionParams mergePositionParamsMock;
-    @Mock
-    private Function<Instrument, MergePositionParams> mergeParamsFactoryMock;
+    private Function<Instrument, MergePositionParams> mergePositionParamsFactoryMock;
 
     @Before
     public void setUp() {
-        when(mergeParamsFactoryMock.apply(instrumentEURUSD)).thenReturn(mergePositionParamsMock);
-
         mergeAllPositionsParams = MergeAllPositionsParams
-            .withMergeParamsFactory(mergeParamsFactoryMock)
+            .withMergeParamsFactory(mergePositionParamsFactoryMock)
             .doOnStart(actionMock)
             .doOnComplete(actionMock)
             .doOnError(errorConsumerMock)
@@ -39,14 +35,9 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
     }
 
     @Test
-    public void typeIsMERGEALLPOSITIONS() {
-        assertThat(mergeAllPositionsParams.type(), equalTo(TaskParamsType.MERGEALLPOSITIONS));
-    }
-
-    @Test
-    public void createMergePositionParamsCreatesCorrectInstance() {
-        assertThat(mergeAllPositionsParams.createMergePositionParams(instrumentEURUSD),
-                   equalTo(mergePositionParamsMock));
+    public void cmergePositionParamsFactoryIsCorrect() {
+        assertThat(mergeAllPositionsParams.mergePositionParamsFactory(),
+                   equalTo(mergePositionParamsFactoryMock));
     }
 
     @Test
@@ -57,5 +48,10 @@ public class MergeAllPositionsParamsTest extends CommonParamsForTest {
     @Test
     public void assertComposeDataAreCorrect() {
         assertComposeData(mergeAllPositionsParams.composeData());
+    }
+
+    @Test
+    public void typeIsMERGEALLPOSITIONS() {
+        assertThat(mergeAllPositionsParams.type(), equalTo(TaskParamsType.MERGEALLPOSITIONS));
     }
 }

@@ -35,7 +35,7 @@ public class ClosePositionTask {
     public Observable<OrderEvent> closeAll(final CloseAllPositionsParams closeAllPositionParams) {
         return Observable.defer(() -> {
             final Function<Instrument, Observable<OrderEvent>> observablesForParams =
-                    instrument -> close(closeAllPositionParams.createClosePositionParams(instrument));
+                    instrument -> close(closeAllPositionParams.closePositonParamsFactory().apply(instrument));
             return Observable.merge(positionUtil.observablesFromFactory(observablesForParams));
         });
     }
