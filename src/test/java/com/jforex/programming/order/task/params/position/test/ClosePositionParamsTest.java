@@ -8,21 +8,21 @@ import java.util.function.Function;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.task.BatchMode;
 import com.jforex.programming.order.task.CloseExecutionMode;
-import com.jforex.programming.order.task.params.ComposeData;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.basic.CloseParams;
-import com.jforex.programming.order.task.params.basic.MergeParamsForPosition;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
 import com.jforex.programming.order.task.params.test.CommonParamsForTest;
 
-import io.reactivex.functions.Action;
+import de.bechte.junit.runners.context.HierarchicalContextRunner;
 
+@RunWith(HierarchicalContextRunner.class)
 public class ClosePositionParamsTest extends CommonParamsForTest {
 
     private ClosePositionParams closePositionParams;
@@ -30,67 +30,88 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
     @Mock
     private MergePositionParams mergePositionParamsMock;
     @Mock
-    private MergeParamsForPosition mergeParamsForPositionMock;
-    @Mock
-    private Function<IOrder, Action> actionConsumerMock;
-    @Mock
     private CloseParams closeParamsMock;
     @Mock
     private Function<IOrder, CloseParams> closeParamsFactoryMock;
 
     @Before
     public void setUp() {
-        when(actionConsumerMock.apply(orderForTest)).thenReturn(actionMock);
         when(mergePositionParamsMock.instrument()).thenReturn(instrumentEURUSD);
-        when(mergePositionParamsMock.mergeParamsForPosition()).thenReturn(mergeParamsForPositionMock);
-        when(mergeParamsForPositionMock.mergeOrderLabel()).thenReturn(mergeOrderLabel);
-        when(closeParamsFactoryMock.apply(orderForTest)).thenReturn(closeParamsMock);
-
-        closePositionParams = ClosePositionParams
-            .newBuilder(mergePositionParamsMock, closeParamsFactoryMock)
-            .withCloseExecutionMode(CloseExecutionMode.CloseFilled)
-            .doOnStart(actionMock)
-            .doOnComplete(actionMock)
-            .doOnError(errorConsumerMock)
-            .retryOnReject(retryParams)
-            .build();
     }
 
-    private void assertComposeParams(final ComposeData composeData) {
-        assertActions(composeData);
-        assertErrorConsumer(composeData.errorConsumer());
-        assertRetries(composeData.retryParams());
+    public class DefaultTests {
+
+        @Before
+        public void setUp() {
+            closePositionParams = ClosePositionParams
+                .newBuilder(mergePositionParamsMock, closeParamsFactoryMock)
+                .build();
+        }
+
+        @Test
+        public void mergePositionParamsIsCorrect() {
+            assertThat(closePositionParams.mergePositionParams(), equalTo(mergePositionParamsMock));
+        }
+
+        @Test
+        public void closeParamsFactoryIsCorrect() {
+            assertThat(closePositionParams.closeParamsFactory(), equalTo(closeParamsFactoryMock));
+        }
+
+        @Test
+        public void instrumentIsCorrect() {
+            assertThat(closePositionParams.instrument(), equalTo(instrumentEURUSD));
+        }
+
+        @Test
+        public void closeExecutionModeIsCorrect() {
+            assertThat(closePositionParams.closeExecutionMode(), equalTo(CloseExecutionMode.CloseAll));
+        }
+
+        @Test
+        public void closeBatchModeIsCorrect() {
+            assertThat(closePositionParams.closeBatchMode(), equalTo(BatchMode.MERGE));
+        }
+
+        @Test
+        public void typeIsCLOSEPOSITION() {
+            assertThat(closePositionParams.type(), equalTo(TaskParamsType.CLOSEPOSITION));
+        }
+
+        @Test
+        public void noConsumersForEvents() {
+            assertTrue(closePositionParams.consumerForEvent().isEmpty());
+        }
     }
 
-    @Test
-    public void defaultValuesAreCorrect() {
-        closePositionParams = ClosePositionParams
-            .newBuilder(mergePositionParamsMock, closeParamsFactoryMock)
-            .build();
+    public class FullConfigureTests {
 
-        assertThat(closePositionParams.type(), equalTo(TaskParamsType.CLOSEPOSITION));
-        assertThat(closePositionParams.instrument(), equalTo(instrumentEURUSD));
-        assertThat(closePositionParams.closeExecutionMode(), equalTo(CloseExecutionMode.CloseAll));
-        assertThat(closePositionParams.closeBatchMode(), equalTo(BatchMode.MERGE));
-        assertThat(closePositionParams.mergePositionParams(), equalTo(mergePositionParamsMock));
-    }
+        @Before
+        public void setUp() {
+            closePositionParams = ClosePositionParams
+                .newBuilder(mergePositionParamsMock, closeParamsFactoryMock)
+                .withCloseExecutionMode(CloseExecutionMode.CloseFilled)
+                .withCloseBatchMode(BatchMode.CONCAT)
+                .doOnStart(actionMock)
+                .doOnComplete(actionMock)
+                .doOnError(errorConsumerMock)
+                .retryOnReject(retryParams)
+                .build();
+        }
 
-    @Test
-    public void assertSpecifiedValues() {
-        assertThat(closePositionParams.instrument(), equalTo(instrumentEURUSD));
-        assertThat(closePositionParams.closeExecutionMode(), equalTo(CloseExecutionMode.CloseFilled));
-    }
+        @Test
+        public void closeExecutionModeIsCorrect() {
+            assertThat(closePositionParams.closeExecutionMode(), equalTo(CloseExecutionMode.CloseFilled));
+        }
 
-    @Test
-    public void assertComposeValues() throws Exception {
-        final ComposeData composeData = closePositionParams.composeData();
-        assertComposeParams(composeData);
-        assertTrue(closePositionParams.consumerForEvent().isEmpty());
-    }
+        @Test
+        public void closeBatchModeIsCorrect() {
+            assertThat(closePositionParams.closeBatchMode(), equalTo(BatchMode.CONCAT));
+        }
 
-    @Test
-    public void closeParamsFactoryIsCalled() {
-        final CloseParams returnedCloseParams = closePositionParams.createCloseParams(orderForTest);
-        assertThat(returnedCloseParams, equalTo(closeParamsMock));
+        @Test
+        public void assertComposeDataAreCorrect() {
+            assertComposeData(closePositionParams.composeData());
+        }
     }
 }

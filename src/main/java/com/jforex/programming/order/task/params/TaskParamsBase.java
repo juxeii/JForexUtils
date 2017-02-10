@@ -30,6 +30,10 @@ public class TaskParamsBase {
         return consumerForEvent;
     }
 
+    public static Builder<?> create() {
+        return new Builder<>();
+    }
+
     public static class Builder<T extends Builder<T>> {
 
         private final ComposeDataImpl composeDataImpl = new ComposeDataImpl();

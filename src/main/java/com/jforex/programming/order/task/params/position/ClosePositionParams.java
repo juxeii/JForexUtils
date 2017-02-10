@@ -24,11 +24,19 @@ public class ClosePositionParams extends TaskParamsWithType {
     private ClosePositionParams(final Builder builder) {
         super(builder);
 
+        mergePositionParams = builder.mergePositionParams;
+        closeParamsFactory = builder.closeParamsFactory;
         instrument = builder.instrument;
         closeExecutionMode = builder.closeExecutionMode;
         closeBatchMode = builder.closeBatchMode;
-        mergePositionParams = builder.mergePositionParams;
-        closeParamsFactory = builder.closeParamsFactory;
+    }
+
+    public MergePositionParams mergePositionParams() {
+        return mergePositionParams;
+    }
+
+    public Function<IOrder, CloseParams> closeParamsFactory() {
+        return closeParamsFactory;
     }
 
     public Instrument instrument() {
@@ -41,14 +49,6 @@ public class ClosePositionParams extends TaskParamsWithType {
 
     public BatchMode closeBatchMode() {
         return closeBatchMode;
-    }
-
-    public MergePositionParams mergePositionParams() {
-        return mergePositionParams;
-    }
-
-    public CloseParams createCloseParams(final IOrder order) {
-        return closeParamsFactory.apply(order);
     }
 
     @Override
@@ -66,17 +66,17 @@ public class ClosePositionParams extends TaskParamsWithType {
 
     public static class Builder extends TaskParamsBase.Builder<Builder> {
 
-        private final Instrument instrument;
         private final MergePositionParams mergePositionParams;
         private final Function<IOrder, CloseParams> closeParamsFactory;
         private CloseExecutionMode closeExecutionMode = CloseExecutionMode.CloseAll;
-        private final BatchMode closeBatchMode = BatchMode.MERGE;
+        private BatchMode closeBatchMode = BatchMode.MERGE;
+        private final Instrument instrument;
 
         public Builder(final MergePositionParams mergePositionParams,
                        final Function<IOrder, CloseParams> closeParamsFactory) {
             this.mergePositionParams = mergePositionParams;
-            this.instrument = mergePositionParams.instrument();
             this.closeParamsFactory = closeParamsFactory;
+            this.instrument = mergePositionParams.instrument();
         }
 
         public Builder withCloseExecutionMode(final CloseExecutionMode closeExecutionMode) {
@@ -86,6 +86,14 @@ public class ClosePositionParams extends TaskParamsWithType {
             return this;
         }
 
+        public Builder withCloseBatchMode(final BatchMode closeBatchMode) {
+            checkNotNull(closeBatchMode);
+
+            this.closeBatchMode = closeBatchMode;
+            return this;
+        }
+
+        @Override
         public ClosePositionParams build() {
             return new ClosePositionParams(this);
         }

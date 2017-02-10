@@ -50,6 +50,8 @@ public class BatchComposerTest extends InstrumentUtilForTest {
     private Function<IOrder, TaskParamsBase> cancelSLParamsFactoryMock;
     @Mock
     private Function<IOrder, TaskParamsBase> cancelTPParamsFactoryMock;
+    @Mock
+    private Function<IOrder, CloseParams> closeParamsFactoryMock;
 
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
     private final IOrder orderForTest = buyOrderEURUSD;
@@ -91,7 +93,9 @@ public class BatchComposerTest extends InstrumentUtilForTest {
                 .thenReturn(basicObservable);
             when(closePositionParamsMock.consumerForEvent())
                 .thenReturn(consumerForEvent);
-            when(closePositionParamsMock.createCloseParams(orderForTest))
+            when(closePositionParamsMock.closeParamsFactory())
+                .thenReturn(closeParamsFactoryMock);
+            when(closeParamsFactoryMock.apply(orderForTest))
                 .thenReturn(closeParamsMock);
             setupTaskParamsUtil(basicObservable, closeRejectEvent);
 

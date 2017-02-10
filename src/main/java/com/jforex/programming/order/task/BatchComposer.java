@@ -25,7 +25,9 @@ public class BatchComposer {
 
     public Function<IOrder, Observable<OrderEvent>> composeClose(final ClosePositionParams closePositionParams) {
         return order -> {
-            final CloseParams closeParams = closePositionParams.createCloseParams(order);
+            final CloseParams closeParams = closePositionParams
+                .closeParamsFactory()
+                .apply(order);
             return taskParamsUtil.composeParamsWithEvents(basicTaskForBatch.forClose(closeParams),
                                                           closeParams.composeData(),
                                                           closeParams.consumerForEvent());

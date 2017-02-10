@@ -119,9 +119,10 @@ public class MergePositionParams extends TaskParamsWithType {
             cancelTPParamsFactory = order -> emptyParams();
         }
 
-        @SuppressWarnings("rawtypes")
         private TaskParamsBase emptyParams() {
-            return new TaskParamsBase.Builder().build();
+            return TaskParamsBase
+                .create()
+                .build();
         }
 
         public Builder withMergeExecutionMode(final CancelSLTPMode mergeExecutionMode) {
