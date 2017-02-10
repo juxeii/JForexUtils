@@ -28,6 +28,6 @@ public class BatchParamsTest extends CommonParamsForTest {
 
     @Test
     public void valuesAreCorrect() {
-        assertThat(batchParams.paramsCollection(), equalTo(paramsList));
+        assertThat(batchParams.taskParams(), equalTo(paramsList));
     }
 }

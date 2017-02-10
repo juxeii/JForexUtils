@@ -116,7 +116,7 @@ public class BatchComposerTest extends InstrumentUtilForTest {
         public void setUp() {
             when(basicTaskForBatchMock.forCancelSL(orderForTest))
                 .thenReturn(basicObservable);
-            when(mergePositionParamsMock.cancelSLComposeData(orderForTest))
+            when(mergePositionParamsMock.createCancelSLComposeData(orderForTest))
                 .thenReturn(composeDataMock);
             when(mergePositionParamsMock.consumerForEvent())
                 .thenReturn(consumerForEvent);
@@ -152,7 +152,7 @@ public class BatchComposerTest extends InstrumentUtilForTest {
         public void setUp() {
             when(basicTaskForBatchMock.forCancelTP(orderForTest))
                 .thenReturn(basicObservable);
-            when(mergePositionParamsMock.cancelTPComposeData(orderForTest))
+            when(mergePositionParamsMock.createCancelTPComposeData(orderForTest))
                 .thenReturn(composeDataMock);
             when(mergePositionParamsMock.consumerForEvent())
                 .thenReturn(consumerForEvent);

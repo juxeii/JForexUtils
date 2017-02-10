@@ -9,30 +9,30 @@ import com.jforex.programming.order.task.params.TaskParamsBase;
 
 public class BatchParams extends TaskParamsBase {
 
-    private final Collection<TaskParams> paramsCollection;
+    private final Collection<TaskParams> taskParams;
 
     private BatchParams(final Builder builder) {
         super(builder);
 
-        this.paramsCollection = builder.paramsCollection;
+        this.taskParams = builder.taskParams;
     }
 
-    public Collection<TaskParams> paramsCollection() {
-        return paramsCollection;
+    public Collection<TaskParams> taskParams() {
+        return taskParams;
     }
 
-    public static Builder setBatchWith(final Collection<TaskParams> paramsCollection) {
-        checkNotNull(paramsCollection);
+    public static Builder setBatchWith(final Collection<TaskParams> taskParams) {
+        checkNotNull(taskParams);
 
-        return new Builder(paramsCollection);
+        return new Builder(taskParams);
     }
 
     public static class Builder extends TaskParamsBase.Builder<Builder> {
 
-        private final Collection<TaskParams> paramsCollection;
+        private final Collection<TaskParams> taskParams;
 
-        public Builder(final Collection<TaskParams> paramsCollection) {
-            this.paramsCollection = paramsCollection;
+        public Builder(final Collection<TaskParams> taskParams) {
+            this.taskParams = taskParams;
         }
 
         public BatchParams build() {

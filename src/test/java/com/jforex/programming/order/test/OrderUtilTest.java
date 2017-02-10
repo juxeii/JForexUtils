@@ -245,7 +245,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         paramsList.add(submitParamsMock);
         paramsList.add(closeParamsMock);
         final BatchParams batchParamsMock = mock(BatchParams.class);
-        when(batchParamsMock.paramsCollection()).thenReturn(paramsList);
+        when(batchParamsMock.taskParams()).thenReturn(paramsList);
         final ComposeData composeDataMock = mock(ComposeData.class);
         when(batchParamsMock.composeData()).thenReturn(composeDataMock);
 

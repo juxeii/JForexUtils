@@ -108,7 +108,7 @@ public class OrderUtil {
         checkNotNull(batchParams);
 
         final List<Observable<OrderEvent>> observables = batchParams
-            .paramsCollection()
+            .taskParams()
             .stream()
             .map(this::paramsToObservable)
             .collect(Collectors.toList());
