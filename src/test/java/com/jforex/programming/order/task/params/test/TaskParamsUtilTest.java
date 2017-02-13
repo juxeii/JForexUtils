@@ -41,15 +41,13 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
     @Mock
     private ClosePositionParams closePositionParamsMock;
     private final Subject<OrderEvent> orderEventSubject = PublishSubject.create();
-    private final ComposeDataImpl composeParams = new ComposeDataImpl();
+    private final ComposeDataImpl composeDataImpl = new ComposeDataImpl();
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
 
     @Before
     public void setUp() {
         when(closePositionParamsMock.composeData())
-            .thenReturn(composeParams);
-        when(closePositionParamsMock.consumerForEvent())
-            .thenReturn(consumerForEvent);
+            .thenReturn(composeDataImpl);
 
         taskParamsUtil = spy(new TaskParamsUtil());
     }
@@ -116,20 +114,17 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
 
     public class ComposeParamsTests {
 
-        private final ComposeDataImpl composeParams = new ComposeDataImpl();
         private TestObserver<OrderEvent> testObserver;
 
         @Before
         public void setUp() {
-            composeParams.setStartAction(startActionMock);
-            composeParams.setCompleteAction(completeActionMock);
-            composeParams.setErrorConsumer(errorConsumerMock);
-            composeParams.setRetryParams(retryParams);
+            composeDataImpl.setStartAction(startActionMock);
+            composeDataImpl.setCompleteAction(completeActionMock);
+            composeDataImpl.setErrorConsumer(errorConsumerMock);
+            composeDataImpl.setRetryParams(retryParams);
 
             when(closePositionParamsMock.composeData())
-                .thenReturn(composeParams);
-            when(closePositionParamsMock.consumerForEvent())
-                .thenReturn(consumerForEvent);
+                .thenReturn(composeDataImpl);
 
             testObserver = taskParamsUtil
                 .compose(orderEventSubject, closePositionParamsMock)
@@ -164,15 +159,13 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
         @Before
         public void setUp() {
             consumerForEvent.put(OrderEventType.CLOSE_OK, consumerMockA);
-            composeParams.setStartAction(startActionMock);
-            composeParams.setCompleteAction(completeActionMock);
-            composeParams.setErrorConsumer(errorConsumerMock);
-            composeParams.setRetryParams(retryParams);
+            composeDataImpl.setStartAction(startActionMock);
+            composeDataImpl.setCompleteAction(completeActionMock);
+            composeDataImpl.setErrorConsumer(errorConsumerMock);
+            composeDataImpl.setRetryParams(retryParams);
 
             when(closePositionParamsMock.composeData())
-                .thenReturn(composeParams);
-            when(closePositionParamsMock.consumerForEvent())
-                .thenReturn(consumerForEvent);
+                .thenReturn(composeDataImpl);
 
             testObserver = taskParamsUtil
                 .compose(orderEventSubject, closePositionParamsMock)

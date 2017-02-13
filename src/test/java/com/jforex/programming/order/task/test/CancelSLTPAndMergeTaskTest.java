@@ -1,9 +1,6 @@
 package com.jforex.programming.order.task.test;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +10,6 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.CancelSLTPAndMergeTask;
 import com.jforex.programming.order.task.CancelSLTPTask;
@@ -46,7 +42,6 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     @Mock
     private TaskParamsBase cancelSLTPParamsMock;
     private TestObserver<OrderEvent> testObserver;
-    private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
     private final Set<IOrder> toMergeOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final ComposeDataImpl composeData = new ComposeDataImpl();
     private static final String mergeOrderLabel = "mergeOrderLabel";
@@ -67,20 +62,13 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
             .thenReturn(mergeOrderLabel);
         when(mergeParamsForPositionMock.composeData())
             .thenReturn(composeData);
-        when(mergeParamsForPositionMock.consumerForEvent())
-            .thenReturn(consumerForEvent);
 
         when(mergePositionParamsMock.cancelSLTPParams())
             .thenReturn(cancelSLTPParamsMock);
         when(cancelSLTPParamsMock.composeData())
             .thenReturn(composeData);
-        when(cancelSLTPParamsMock.consumerForEvent())
-            .thenReturn(consumerForEvent);
-
         when(mergePositionParamsMock.composeData())
             .thenReturn(composeData);
-        when(mergePositionParamsMock.consumerForEvent())
-            .thenReturn(consumerForEvent);
     }
 
     private void subscribeWithEvents(final Observable<OrderEvent> cancelSLTPObservable,

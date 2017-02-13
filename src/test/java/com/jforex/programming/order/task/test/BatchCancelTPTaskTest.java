@@ -1,9 +1,6 @@
 package com.jforex.programming.order.task.test;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +10,6 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchCancelTPTask;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.params.ComposeData;
@@ -44,7 +40,6 @@ public class BatchCancelTPTaskTest extends InstrumentUtilForTest {
     private final Set<IOrder> toCancelTPTPOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final Observable<OrderEvent> observableFromBatch = eventObservable(changedTPEvent);
     private final Observable<OrderEvent> observableFromTaskParamsUtil = eventObservable(changedRejectEvent);
-    private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
     private final ComposeData composeData = new ComposeDataImpl();
 
     @Before
@@ -55,8 +50,6 @@ public class BatchCancelTPTaskTest extends InstrumentUtilForTest {
             .thenReturn(composeParamsMock);
         when(composeParamsMock.composeData())
             .thenReturn(composeData);
-        when(composeParamsMock.consumerForEvent())
-            .thenReturn(consumerForEvent);
 
         when(taskParamsUtilMock.compose(observableFromBatch,
                                         composeParamsMock))

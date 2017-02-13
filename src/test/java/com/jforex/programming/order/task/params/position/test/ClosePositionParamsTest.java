@@ -80,7 +80,10 @@ public class ClosePositionParamsTest extends CommonParamsForTest {
 
         @Test
         public void noConsumersForEvents() {
-            assertTrue(closePositionParams.consumerForEvent().isEmpty());
+            assertTrue(closePositionParams
+                .composeData()
+                .consumerByEventType()
+                .isEmpty());
         }
     }
 

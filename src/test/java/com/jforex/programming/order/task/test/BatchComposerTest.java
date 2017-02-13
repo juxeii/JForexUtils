@@ -1,8 +1,5 @@
 package com.jforex.programming.order.task.test;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.junit.Before;
@@ -12,10 +9,10 @@ import org.mockito.Mock;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BasicTaskForBatch;
 import com.jforex.programming.order.task.BatchComposer;
 import com.jforex.programming.order.task.params.ComposeData;
+import com.jforex.programming.order.task.params.ComposeDataImpl;
 import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
@@ -41,8 +38,6 @@ public class BatchComposerTest extends InstrumentUtilForTest {
     @Mock
     private MergePositionParams mergePositionParamsMock;
     @Mock
-    private ComposeData composeDataMock;
-    @Mock
     private CloseParams closeParamsMock;
     @Mock
     private TaskParamsBase composeParamsMock;
@@ -52,7 +47,7 @@ public class BatchComposerTest extends InstrumentUtilForTest {
     private Function<IOrder, TaskParamsBase> cancelTPParamsFactoryMock;
     @Mock
     private Function<IOrder, CloseParams> closeParamsFactoryMock;
-    private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
+    private final ComposeData composeData = new ComposeDataImpl();
     private final IOrder orderForTest = buyOrderEURUSD;
     private TestObserver<OrderEvent> testObserver;
 
@@ -85,19 +80,15 @@ public class BatchComposerTest extends InstrumentUtilForTest {
         @Before
         public void setUp() {
             when(closeParamsMock.composeData())
-                .thenReturn(composeDataMock);
+                .thenReturn(composeData);
             when(basicTaskForBatchMock.forClose(closeParamsMock))
                 .thenReturn(basicObservable);
-            when(closePositionParamsMock.consumerForEvent())
-                .thenReturn(consumerForEvent);
             when(closePositionParamsMock.closeParamsFactory())
                 .thenReturn(closeParamsFactoryMock);
             when(closeParamsFactoryMock.apply(orderForTest))
                 .thenReturn(closeParamsMock);
             when(closeParamsMock.composeData())
-                .thenReturn(composeDataMock);
-            when(closeParamsMock.consumerForEvent())
-                .thenReturn(consumerForEvent);
+                .thenReturn(composeData);
 
             setupTaskParamsUtil(basicObservable,
                                 closeRejectEvent,
@@ -139,9 +130,7 @@ public class BatchComposerTest extends InstrumentUtilForTest {
             when(cancelSLParamsFactoryMock.apply(orderForTest))
                 .thenReturn(composeParamsMock);
             when(composeParamsMock.composeData())
-                .thenReturn(composeDataMock);
-            when(composeParamsMock.consumerForEvent())
-                .thenReturn(consumerForEvent);
+                .thenReturn(composeData);
 
             setupTaskParamsUtil(basicObservable,
                                 changedRejectEvent,
@@ -183,9 +172,7 @@ public class BatchComposerTest extends InstrumentUtilForTest {
             when(cancelTPParamsFactoryMock.apply(orderForTest))
                 .thenReturn(composeParamsMock);
             when(composeParamsMock.composeData())
-                .thenReturn(composeDataMock);
-            when(composeParamsMock.consumerForEvent())
-                .thenReturn(consumerForEvent);
+                .thenReturn(composeData);
 
             setupTaskParamsUtil(basicObservable,
                                 changedRejectEvent,

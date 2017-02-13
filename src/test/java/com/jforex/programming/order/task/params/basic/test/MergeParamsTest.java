@@ -61,7 +61,9 @@ public class MergeParamsTest extends CommonParamsForTest {
 
     @Test
     public void handlersAreCorrect() {
-        consumerForEvent = mergeParams.consumerForEvent();
+        consumerForEvent = mergeParams
+            .composeData()
+            .consumerByEventType();
 
         assertThat(consumerForEvent.size(), equalTo(3));
         assertEventConsumer(OrderEventType.MERGE_OK, mergeConsumerMock);

@@ -33,7 +33,9 @@ public class SetGTTParamsTest extends CommonParamsForTest {
             .doOnReject(changeRejectConsumerMock)
             .build();
 
-        consumerForEvent = setGTTParams.consumerForEvent();
+        consumerForEvent = setGTTParams
+            .composeData()
+            .consumerByEventType();
     }
 
     @Test

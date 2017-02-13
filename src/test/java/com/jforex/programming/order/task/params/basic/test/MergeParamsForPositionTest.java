@@ -52,7 +52,9 @@ public class MergeParamsForPositionTest extends CommonParamsForTest {
 
     @Test
     public void handlersAreCorrect() {
-        consumerForEvent = mergeParamsForPosition.consumerForEvent();
+        consumerForEvent = mergeParamsForPosition
+            .composeData()
+            .consumerByEventType();
 
         assertThat(consumerForEvent.size(), equalTo(3));
         assertEventConsumer(OrderEventType.MERGE_OK, mergeConsumerMock);

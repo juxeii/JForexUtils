@@ -31,7 +31,9 @@ public class CancelTPParamsTest extends CommonParamsForTest {
             .doOnReject(cancelTPRejectConsumerMock)
             .build();
 
-        consumerForEvent = cancelTPParams.consumerForEvent();
+        consumerForEvent = cancelTPParams
+            .composeData()
+            .consumerByEventType();
     }
 
     @Test

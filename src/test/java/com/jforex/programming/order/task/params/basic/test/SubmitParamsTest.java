@@ -41,7 +41,9 @@ public class SubmitParamsTest extends CommonParamsForTest {
             .doOnFillReject(fillRejectConsumerMock)
             .build();
 
-        consumerForEvent = submitParams.consumerForEvent();
+        consumerForEvent = submitParams
+            .composeData()
+            .consumerByEventType();
     }
 
     @Test

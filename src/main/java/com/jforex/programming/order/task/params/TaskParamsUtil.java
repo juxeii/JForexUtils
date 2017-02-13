@@ -13,8 +13,8 @@ public class TaskParamsUtil {
 
     public void composeAndSubscribe(final Observable<OrderEvent> observable,
                                     final TaskParamsBase taskParams) {
-        final Observable<OrderEvent> composedObservable = composeEvents(observable, taskParams.consumerForEvent());
         final ComposeData composeData = taskParams.composeData();
+        final Observable<OrderEvent> composedObservable = composeEvents(observable, composeData.consumerByEventType());
         composeRetry(composedObservable, composeData.retryParams())
             .doOnSubscribe(d -> composeData.startAction().run())
             .subscribe(orderEvent -> {},
@@ -45,7 +45,7 @@ public class TaskParamsUtil {
     public Observable<OrderEvent> compose(final Observable<OrderEvent> observable,
                                           final TaskParamsBase taskParams) {
         final ComposeData composeData = taskParams.composeData();
-        final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = taskParams.consumerForEvent();
+        final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = composeData.consumerByEventType();
         final Observable<OrderEvent> composedObservable = composeEvents(observable, consumerForEvent);
         return composeRetry(composedObservable, composeData.retryParams())
             .doOnSubscribe(d -> composeData.startAction().run())

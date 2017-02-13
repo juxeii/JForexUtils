@@ -42,7 +42,10 @@ public class CloseAllPositionsParamsTest extends CommonParamsForTest {
 
     @Test
     public void noConsumerForEventsArePresent() {
-        assertTrue(closeAllPositionsParams.consumerForEvent().isEmpty());
+        assertTrue(closeAllPositionsParams
+            .composeData()
+            .consumerByEventType()
+            .isEmpty());
     }
 
     @Test

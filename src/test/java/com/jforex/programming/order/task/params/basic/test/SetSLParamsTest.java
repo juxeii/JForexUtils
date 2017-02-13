@@ -95,7 +95,9 @@ public class SetSLParamsTest extends CommonParamsForTest {
             .doOnReject(changeRejectConsumerMock)
             .build();
 
-        consumerForEvent = setSLParams.consumerForEvent();
+        consumerForEvent = setSLParams
+            .composeData()
+            .consumerByEventType();
 
         assertThat(setSLParams.type(), equalTo(TaskParamsType.SETSL));
         assertThat(consumerForEvent.size(), equalTo(2));

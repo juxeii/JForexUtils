@@ -2,8 +2,6 @@ package com.jforex.programming.order.task.params;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import com.jforex.programming.order.event.OrderEvent;
@@ -15,19 +13,13 @@ import io.reactivex.functions.Action;
 public class TaskParamsBase {
 
     private final ComposeData composeData;
-    private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent;
 
     protected TaskParamsBase(final Builder<?> builder) {
         composeData = builder.composeDataImpl;
-        consumerForEvent = builder.consumerForEvent;
     }
 
     public ComposeData composeData() {
         return composeData;
-    }
-
-    public Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent() {
-        return consumerForEvent;
     }
 
     public static Builder<?> create() {
@@ -37,7 +29,6 @@ public class TaskParamsBase {
     public static class Builder<T extends Builder<T>> {
 
         private final ComposeDataImpl composeDataImpl = new ComposeDataImpl();
-        private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
 
         public T doOnStart(final Action startAction) {
             checkNotNull(startAction);
@@ -67,16 +58,16 @@ public class TaskParamsBase {
             return (T) this;
         }
 
-        public TaskParamsBase build() {
-            return new TaskParamsBase(this);
-        }
-
         protected void setEventConsumer(final OrderEventType orderEventType,
                                         final Consumer<OrderEvent> consumer) {
             checkNotNull(orderEventType);
             checkNotNull(consumer);
 
-            consumerForEvent.put(orderEventType, consumer);
+            composeDataImpl.setEventConsumer(orderEventType, consumer);
+        }
+
+        public TaskParamsBase build() {
+            return new TaskParamsBase(this);
         }
     }
 }

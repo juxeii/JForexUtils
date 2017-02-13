@@ -120,7 +120,10 @@ public class MergePositionParamsTest extends CommonParamsForTest {
 
         @Test
         public void noConsumersForEvents() {
-            assertTrue(mergePositionParams.consumerForEvent().isEmpty());
+            assertTrue(mergePositionParams
+                .composeData()
+                .consumerByEventType()
+                .isEmpty());
         }
     }
 

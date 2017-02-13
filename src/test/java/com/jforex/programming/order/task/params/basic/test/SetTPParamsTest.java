@@ -58,7 +58,9 @@ public class SetTPParamsTest extends CommonParamsForTest {
             .doOnReject(changeRejectConsumerMock)
             .build();
 
-        consumerForEvent = setTPParams.consumerForEvent();
+        consumerForEvent = setTPParams
+            .composeData()
+            .consumerByEventType();
 
         assertThat(setTPParams.type(), equalTo(TaskParamsType.SETTP));
         assertThat(consumerForEvent.size(), equalTo(2));

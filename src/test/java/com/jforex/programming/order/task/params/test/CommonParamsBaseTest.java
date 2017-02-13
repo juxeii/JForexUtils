@@ -29,8 +29,14 @@ public class CommonParamsBaseTest extends InstrumentUtilForTest {
             .retryOnReject(retryParams)
             .build();
 
-        assertThat(closeParams.consumerForEvent().size(), equalTo(1));
-        assertThat(closeParams.consumerForEvent().get(OrderEventType.CLOSE_OK), equalTo(consumer));
+        assertThat(closeParams
+            .composeData()
+            .consumerByEventType()
+            .size(), equalTo(1));
+        assertThat(closeParams
+            .composeData()
+            .consumerByEventType()
+            .get(OrderEventType.CLOSE_OK), equalTo(consumer));
         assertNotNull(closeParams.composeData());
     }
 }

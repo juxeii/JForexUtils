@@ -35,7 +35,9 @@ public class CloseParamsTest extends CommonParamsForTest {
             .doOnReject(rejectConsumerMock)
             .build();
 
-        consumerForEvent = closeParams.consumerForEvent();
+        consumerForEvent = closeParams
+            .composeData()
+            .consumerByEventType();
 
         assertThat(consumerForEvent.size(), equalTo(3));
         assertEventConsumer(OrderEventType.CLOSE_OK, closeConsumerMock);

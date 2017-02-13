@@ -33,7 +33,9 @@ public class SetLabelParamsTest extends CommonParamsForTest {
             .doOnReject(changeRejectConsumerMock)
             .build();
 
-        consumerForEvent = setLabelParams.consumerForEvent();
+        consumerForEvent = setLabelParams
+            .composeData()
+            .consumerByEventType();
     }
 
     @Test

@@ -33,7 +33,9 @@ public class SetAmountParamsTest extends CommonParamsForTest {
             .doOnReject(changeRejectConsumerMock)
             .build();
 
-        consumerForEvent = setAmountParams.consumerForEvent();
+        consumerForEvent = setAmountParams
+            .composeData()
+            .consumerByEventType();
     }
 
     @Test

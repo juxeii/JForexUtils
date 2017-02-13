@@ -31,7 +31,9 @@ public class CancelSLParamsTest extends CommonParamsForTest {
             .doOnReject(cancelSLRejectConsumerMock)
             .build();
 
-        consumerForEvent = cancelSLParams.consumerForEvent();
+        consumerForEvent = cancelSLParams
+            .composeData()
+            .consumerByEventType();
     }
 
     @Test

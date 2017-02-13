@@ -33,7 +33,9 @@ public class SetOpenPriceParamsTest extends CommonParamsForTest {
             .doOnReject(changeRejectConsumerMock)
             .build();
 
-        consumerForEvent = setOpenPriceParams.consumerForEvent();
+        consumerForEvent = setOpenPriceParams
+            .composeData()
+            .consumerByEventType();
     }
 
     @Test
