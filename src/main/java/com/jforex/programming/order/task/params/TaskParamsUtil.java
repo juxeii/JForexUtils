@@ -11,14 +11,14 @@ import io.reactivex.Observable;
 
 public class TaskParamsUtil {
 
-    public void subscribeBasicParams(final Observable<OrderEvent> observable,
-                                     final TaskParams taskParams) {
-        subscribeComposeData(composeEvents(observable, taskParams.consumerForEvent()),
-                             taskParams.composeData());
+    public void subscribeToTaskParams(final Observable<OrderEvent> observable,
+                                      final TaskParams taskParams) {
+        composeAndSubscribe(composeEvents(observable, taskParams.consumerForEvent()),
+                            taskParams.composeData());
     }
 
-    public void subscribeComposeData(final Observable<OrderEvent> observable,
-                                     final ComposeData composeData) {
+    public void composeAndSubscribe(final Observable<OrderEvent> observable,
+                                    final ComposeData composeData) {
         composeRetry(observable, composeData.retryParams())
             .doOnSubscribe(d -> composeData.startAction().run())
             .subscribe(orderEvent -> {},

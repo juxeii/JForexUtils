@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
@@ -41,7 +39,6 @@ public class OrderUtil {
 
     private final PositionUtil positionUtil;
     private final TaskParamsUtil taskParamsUtil;
-    private final ImmutableSet<TaskParamsType> basicTaskTypes;
     private final Map<TaskParamsType, Function<TaskParams, Observable<OrderEvent>>> taskParamsMapper;
 
     public OrderUtil(final BasicTask basicTask,
@@ -51,16 +48,6 @@ public class OrderUtil {
                      final TaskParamsUtil taskParamsUtil) {
         this.positionUtil = positionUtil;
         this.taskParamsUtil = taskParamsUtil;
-
-        basicTaskTypes = Sets.immutableEnumSet(TaskParamsType.SUBMIT,
-                                               TaskParamsType.MERGE,
-                                               TaskParamsType.CLOSE,
-                                               TaskParamsType.SETLABEL,
-                                               TaskParamsType.SETGTT,
-                                               TaskParamsType.SETAMOUNT,
-                                               TaskParamsType.SETOPENPRICE,
-                                               TaskParamsType.SETSL,
-                                               TaskParamsType.SETTP);
 
         taskParamsMapper = ImmutableMap.<TaskParamsType, Function<TaskParams, Observable<OrderEvent>>> builder()
             .put(TaskParamsType.SUBMIT,
@@ -96,15 +83,7 @@ public class OrderUtil {
         checkNotNull(taskParams);
 
         final Observable<OrderEvent> observable = taskParamsToObservable(taskParams);
-        if (basicTaskTypes.contains(taskParams.type()))
-            taskParamsUtil.subscribeBasicParams(observable, taskParams);
-        else {
-            final Observable<OrderEvent> observableWithEvents =
-                    taskParamsUtil.composeParamsWithEvents(observable,
-                                                           taskParams.composeData(),
-                                                           taskParams.consumerForEvent());
-            taskParamsUtil.subscribeComposeData(observableWithEvents, taskParams.composeData());
-        }
+        taskParamsUtil.subscribeToTaskParams(observable, taskParams);
     }
 
     public void executeBatch(final BatchParams batchParams) {
@@ -118,7 +97,7 @@ public class OrderUtil {
                                                                   params.consumerForEvent()))
             .collect(Collectors.toList());
 
-        taskParamsUtil.subscribeComposeData(Observable.merge(observables), batchParams.composeData());
+        taskParamsUtil.composeAndSubscribe(Observable.merge(observables), batchParams.composeData());
     }
 
     private final Observable<OrderEvent> taskParamsToObservable(final TaskParams taskParams) {

@@ -54,7 +54,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             .doOnStart(startActionMock)
             .build();
 
-        taskParamsUtil.subscribeBasicParams(orderEventSubject, closeParams);
+        taskParamsUtil.subscribeToTaskParams(orderEventSubject, closeParams);
         orderEventSubject.onNext(closeRejectEvent);
 
         verify(startActionMock).run();
@@ -66,7 +66,10 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
         public void setUp() {
             final CloseParams closeParams = CloseParams
                 .withOrder(buyOrderEURUSD)
-                .doOnStart(startActionMock)
+                .doOnStart(() -> {
+                    logger.info("STAAAAAAAAARTING!!!");
+                    startActionMock.run();
+                })
                 .doOnComplete(completeActionMock)
                 .doOnError(errorConsumerMock)
                 .doOnClose(consumerMockA)
@@ -74,7 +77,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
                 .retryOnReject(retryParams)
                 .build();
 
-            taskParamsUtil.subscribeBasicParams(orderEventSubject, closeParams);
+            taskParamsUtil.subscribeToTaskParams(orderEventSubject, closeParams);
         }
 
         @Test
@@ -104,12 +107,6 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
         public void rejectEventIsDispatched() {
             orderEventSubject.onNext(closeRejectEvent);
             verify(consumerMockB).accept(closeRejectEvent);
-        }
-
-        @Test
-        public void retryIsEstablished() throws Exception {
-            orderEventSubject.onNext(closeRejectEvent);
-            verify(startActionMock, timeout(2)).run();
         }
     }
 
@@ -148,12 +145,6 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             orderEventSubject.onError(jfException);
             verify(errorConsumerMock).accept(jfException);
             testObserver.assertError(jfException);
-        }
-
-        @Test
-        public void retryIsEstablished() throws Exception {
-            orderEventSubject.onNext(closeRejectEvent);
-            verify(startActionMock, timeout(2)).run();
         }
     }
 
@@ -198,12 +189,6 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             orderEventSubject.onError(jfException);
             verify(errorConsumerMock).accept(jfException);
             testObserver.assertError(jfException);
-        }
-
-        @Test
-        public void retryIsEstablished() throws Exception {
-            orderEventSubject.onNext(closeRejectEvent);
-            verify(startActionMock, timeout(2)).run();
         }
     }
 }
