@@ -30,15 +30,13 @@ public class CancelSLTPAndMergeTask {
         final TaskParamsBase cancelSLTPParams = mergePositionParams.cancelSLTPParams();
         final Observable<OrderEvent> cancelSLTP =
                 taskParamsUtil.compose(cancelSLTPTask.observe(toMergeOrders, mergePositionParams),
-                                       cancelSLTPParams.composeData(),
-                                       cancelSLTPParams.consumerForEvent());
+                                       cancelSLTPParams);
 
         final MergeParamsForPosition mergeParamsForPosition = mergePositionParams.mergeParamsForPosition();
         final String mergeOrderLabel = mergeParamsForPosition.mergeOrderLabel();
         final Observable<OrderEvent> merge =
                 taskParamsUtil.compose(basicTask.mergeOrders(mergeOrderLabel, toMergeOrders),
-                                       mergeParamsForPosition.composeData(),
-                                       mergeParamsForPosition.consumerForEvent());
+                                       mergeParamsForPosition);
 
         return cancelSLTP.concatWith(merge);
     }

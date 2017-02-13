@@ -43,8 +43,9 @@ public class TaskParamsUtil {
     }
 
     public Observable<OrderEvent> compose(final Observable<OrderEvent> observable,
-                                          final ComposeData composeData,
-                                          final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent) {
+                                          final TaskParamsBase taskParams) {
+        final ComposeData composeData = taskParams.composeData();
+        final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = taskParams.consumerForEvent();
         final Observable<OrderEvent> composedObservable = composeEvents(observable, consumerForEvent);
         return composeRetry(composedObservable, composeData.retryParams())
             .doOnSubscribe(d -> composeData.startAction().run())

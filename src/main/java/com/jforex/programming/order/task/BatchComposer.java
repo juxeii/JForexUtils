@@ -4,7 +4,7 @@ import java.util.function.Function;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.params.ComposeData;
+import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.CloseParams;
 import com.jforex.programming.order.task.params.position.ClosePositionParams;
@@ -28,31 +28,25 @@ public class BatchComposer {
             final CloseParams closeParams = closePositionParams
                 .closeParamsFactory()
                 .apply(order);
-            return taskParamsUtil.compose(basicTaskForBatch.forClose(closeParams),
-                                                          closeParams.composeData(),
-                                                          closeParams.consumerForEvent());
+            return taskParamsUtil.compose(basicTaskForBatch.forClose(closeParams), closeParams);
         };
     }
 
     public Function<IOrder, Observable<OrderEvent>> composeCancelSL(final MergePositionParams mergePositionParams) {
         return order -> {
-            final ComposeData composeData = mergePositionParams
+            final TaskParamsBase cancelSLParams = mergePositionParams
                 .cancelSLParamsFactory()
-                .apply(order).composeData();
-            return taskParamsUtil.compose(basicTaskForBatch.forCancelSL(order),
-                                                          composeData,
-                                                          mergePositionParams.consumerForEvent());
+                .apply(order);
+            return taskParamsUtil.compose(basicTaskForBatch.forCancelSL(order), cancelSLParams);
         };
     }
 
     public Function<IOrder, Observable<OrderEvent>> composeCancelTP(final MergePositionParams mergePositionParams) {
         return order -> {
-            final ComposeData composeData = mergePositionParams
+            final TaskParamsBase cancelTPParams = mergePositionParams
                 .cancelTPParamsFactory()
-                .apply(order).composeData();
-            return taskParamsUtil.compose(basicTaskForBatch.forCancelTP(order),
-                                                          composeData,
-                                                          mergePositionParams.consumerForEvent());
+                .apply(order);
+            return taskParamsUtil.compose(basicTaskForBatch.forCancelTP(order), cancelTPParams);
         };
     }
 }

@@ -52,7 +52,6 @@ public class BatchComposerTest extends InstrumentUtilForTest {
     private Function<IOrder, TaskParamsBase> cancelTPParamsFactoryMock;
     @Mock
     private Function<IOrder, CloseParams> closeParamsFactoryMock;
-
     private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
     private final IOrder orderForTest = buyOrderEURUSD;
     private TestObserver<OrderEvent> testObserver;
@@ -63,17 +62,15 @@ public class BatchComposerTest extends InstrumentUtilForTest {
     }
 
     private void setupTaskParamsUtil(final Observable<OrderEvent> basicObservable,
-                                     final OrderEvent orderEvent) {
-        when(taskParamsUtilMock.compose(basicObservable,
-                                                        composeDataMock,
-                                                        consumerForEvent))
-                                                            .thenReturn(eventObservable(orderEvent));
+                                     final OrderEvent orderEvent,
+                                     final TaskParamsBase taskparams) {
+        when(taskParamsUtilMock.compose(basicObservable, taskparams))
+            .thenReturn(eventObservable(orderEvent));
     }
 
-    private void verifyTaskParamsUtilCall(final Observable<OrderEvent> basicObservable) {
-        verify(taskParamsUtilMock).compose(basicObservable,
-                                                           composeDataMock,
-                                                           consumerForEvent);
+    private void verifyTaskParamsUtilCall(final Observable<OrderEvent> basicObservable,
+                                          final TaskParamsBase taskparams) {
+        verify(taskParamsUtilMock).compose(basicObservable, taskparams);
     }
 
     private void verifyReturnedObservable(final OrderEvent orderEvent) {
@@ -97,7 +94,14 @@ public class BatchComposerTest extends InstrumentUtilForTest {
                 .thenReturn(closeParamsFactoryMock);
             when(closeParamsFactoryMock.apply(orderForTest))
                 .thenReturn(closeParamsMock);
-            setupTaskParamsUtil(basicObservable, closeRejectEvent);
+            when(closeParamsMock.composeData())
+                .thenReturn(composeDataMock);
+            when(closeParamsMock.consumerForEvent())
+                .thenReturn(consumerForEvent);
+
+            setupTaskParamsUtil(basicObservable,
+                                closeRejectEvent,
+                                closeParamsMock);
 
             testObserver = batchComposer
                 .composeClose(closePositionParamsMock)
@@ -112,7 +116,7 @@ public class BatchComposerTest extends InstrumentUtilForTest {
 
         @Test
         public void taskParamsUtilIsCalled() {
-            verifyTaskParamsUtilCall(basicObservable);
+            verifyTaskParamsUtilCall(basicObservable, closeParamsMock);
         }
 
         @Test
@@ -136,10 +140,12 @@ public class BatchComposerTest extends InstrumentUtilForTest {
                 .thenReturn(composeParamsMock);
             when(composeParamsMock.composeData())
                 .thenReturn(composeDataMock);
-
-            when(mergePositionParamsMock.consumerForEvent())
+            when(composeParamsMock.consumerForEvent())
                 .thenReturn(consumerForEvent);
-            setupTaskParamsUtil(basicObservable, changedRejectEvent);
+
+            setupTaskParamsUtil(basicObservable,
+                                changedRejectEvent,
+                                composeParamsMock);
 
             testObserver = batchComposer
                 .composeCancelSL(mergePositionParamsMock)
@@ -154,7 +160,7 @@ public class BatchComposerTest extends InstrumentUtilForTest {
 
         @Test
         public void taskParamsUtilIsCalled() {
-            verifyTaskParamsUtilCall(basicObservable);
+            verifyTaskParamsUtilCall(basicObservable, composeParamsMock);
         }
 
         @Test
@@ -178,10 +184,12 @@ public class BatchComposerTest extends InstrumentUtilForTest {
                 .thenReturn(composeParamsMock);
             when(composeParamsMock.composeData())
                 .thenReturn(composeDataMock);
-
-            when(mergePositionParamsMock.consumerForEvent())
+            when(composeParamsMock.consumerForEvent())
                 .thenReturn(consumerForEvent);
-            setupTaskParamsUtil(basicObservable, changedRejectEvent);
+
+            setupTaskParamsUtil(basicObservable,
+                                changedRejectEvent,
+                                composeParamsMock);
 
             testObserver = batchComposer
                 .composeCancelTP(mergePositionParamsMock)
@@ -196,11 +204,12 @@ public class BatchComposerTest extends InstrumentUtilForTest {
 
         @Test
         public void taskParamsUtilIsCalled() {
-            verifyTaskParamsUtilCall(basicObservable);
+            verifyTaskParamsUtilCall(basicObservable, composeParamsMock);
         }
 
         @Test
         public void returnedObservableIsCorrect() {
+            logger.info("REEEEE");
             verifyReturnedObservable(changedRejectEvent);
         }
     }

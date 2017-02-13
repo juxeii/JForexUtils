@@ -51,14 +51,16 @@ public class BatchCancelTPTaskTest extends InstrumentUtilForTest {
     public void setUp() {
         when(batchChangeTaskMock.cancelTP(toCancelTPTPOrders, mergePositionParamsMock))
             .thenReturn(observableFromBatch);
-        when(taskParamsUtilMock.compose(observableFromBatch,
-                                        composeData,
-                                        consumerForEvent))
-                                            .thenReturn(observableFromTaskParamsUtil);
         when(mergePositionParamsMock.batchCancelTPParams())
             .thenReturn(composeParamsMock);
         when(composeParamsMock.composeData())
             .thenReturn(composeData);
+        when(composeParamsMock.consumerForEvent())
+            .thenReturn(consumerForEvent);
+
+        when(taskParamsUtilMock.compose(observableFromBatch,
+                                        composeParamsMock))
+                                            .thenReturn(observableFromTaskParamsUtil);
 
         batchCancelTPTask = new BatchCancelTPTask(batchChangeTaskMock, taskParamsUtilMock);
     }
@@ -86,9 +88,7 @@ public class BatchCancelTPTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void composeOnTaskParamsIsCalled() {
-            verify(taskParamsUtilMock).compose(any(),
-                                               eq(composeData),
-                                               eq(consumerForEvent));
+            verify(taskParamsUtilMock).compose(any(), eq(composeParamsMock));
         }
 
         @Test

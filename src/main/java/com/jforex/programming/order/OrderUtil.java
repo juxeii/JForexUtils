@@ -93,9 +93,7 @@ public class OrderUtil {
         final List<Observable<OrderEvent>> observables = batchParams
             .taskParams()
             .stream()
-            .map(params -> taskParamsUtil.compose(taskParamsToObservable(params),
-                                                                  params.composeData(),
-                                                                  params.consumerForEvent()))
+            .map(params -> taskParamsUtil.compose(taskParamsToObservable(params), (TaskParamsBase) params))
             .collect(Collectors.toList());
 
         taskParamsUtil.composeAndSubscribe(Observable.merge(observables), batchParams);

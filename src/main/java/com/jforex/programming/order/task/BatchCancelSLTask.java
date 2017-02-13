@@ -27,9 +27,7 @@ public class BatchCancelSLTask {
             final Observable<OrderEvent> batchCancelSL =
                     batchChangeTask.cancelSL(toCancelSLOrders, mergePositionParams);
             final TaskParamsBase batchCancelSLParams = mergePositionParams.batchCancelSLParams();
-            return taskParamsUtil.compose(batchCancelSL,
-                                          batchCancelSLParams.composeData(),
-                                          batchCancelSLParams.consumerForEvent());
+            return taskParamsUtil.compose(batchCancelSL, batchCancelSLParams);
         });
     }
 }

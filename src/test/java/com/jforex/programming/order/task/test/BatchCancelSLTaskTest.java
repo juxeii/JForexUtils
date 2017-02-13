@@ -51,14 +51,16 @@ public class BatchCancelSLTaskTest extends InstrumentUtilForTest {
     public void setUp() {
         when(batchChangeTaskMock.cancelSL(toCancelSLTPOrders, mergePositionParamsMock))
             .thenReturn(observableFromBatch);
-        when(taskParamsUtilMock.compose(observableFromBatch,
-                                        composeData,
-                                        consumerForEvent))
-                                            .thenReturn(observableFromTaskParamsUtil);
         when(mergePositionParamsMock.batchCancelSLParams())
             .thenReturn(composeParamsMock);
         when(composeParamsMock.composeData())
             .thenReturn(composeData);
+        when(composeParamsMock.consumerForEvent())
+            .thenReturn(consumerForEvent);
+
+        when(taskParamsUtilMock.compose(observableFromBatch,
+                                        composeParamsMock))
+                                            .thenReturn(observableFromTaskParamsUtil);
 
         batchCancelSLTask = new BatchCancelSLTask(batchChangeTaskMock, taskParamsUtilMock);
     }
@@ -86,9 +88,7 @@ public class BatchCancelSLTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void composeOnTaskParamsIsCalled() {
-            verify(taskParamsUtilMock).compose(any(),
-                                               eq(composeData),
-                                               eq(consumerForEvent));
+            verify(taskParamsUtilMock).compose(any(), eq(composeParamsMock));
         }
 
         @Test

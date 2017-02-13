@@ -247,23 +247,15 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         final ComposeData composeDataMock = mock(ComposeData.class);
         when(batchParamsMock.composeData()).thenReturn(composeDataMock);
 
-        when(taskParamsUtilMock.compose(submitSubject,
-                                                        submitParamsMock.composeData(),
-                                                        submitParamsMock.consumerForEvent()))
-                                                            .thenReturn(submitSubject);
-        when(taskParamsUtilMock.compose(closeSubject,
-                                                        closeParamsMock.composeData(),
-                                                        closeParamsMock.consumerForEvent()))
-                                                            .thenReturn(closeSubject);
+        when(taskParamsUtilMock.compose(submitSubject, submitParamsMock))
+            .thenReturn(submitSubject);
+        when(taskParamsUtilMock.compose(closeSubject, closeParamsMock))
+            .thenReturn(closeSubject);
 
         orderUtil.executeBatch(batchParamsMock);
 
-        verify(taskParamsUtilMock).compose(submitSubject,
-                                                           submitParamsMock.composeData(),
-                                                           submitParamsMock.consumerForEvent());
-        verify(taskParamsUtilMock).compose(closeSubject,
-                                                           closeParamsMock.composeData(),
-                                                           closeParamsMock.consumerForEvent());
+        verify(taskParamsUtilMock).compose(submitSubject, submitParamsMock);
+        verify(taskParamsUtilMock).compose(closeSubject, closeParamsMock);
 
         verify(taskParamsUtilMock).composeAndSubscribe(mergeCaptor.capture(), eq(batchParamsMock));
         final Observable<OrderEvent> mergedObservables = mergeCaptor.getValue();
@@ -273,11 +265,11 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         closeSubject.onNext(closeEvent);
         testObserver.assertValues(submitEvent, closeEvent);
 //
-//        submitSubject.onComplete();
-//        testObserver.assertNotComplete();
-//
-//        closeSubject.onComplete();
-//        testObserver.assertComplete();
+        submitSubject.onComplete();
+        testObserver.assertNotComplete();
+
+        closeSubject.onComplete();
+        testObserver.assertComplete();
     }
 
     @Test
