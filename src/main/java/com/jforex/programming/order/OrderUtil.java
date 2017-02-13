@@ -14,6 +14,7 @@ import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.TaskParams;
+import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.BatchParams;
@@ -83,7 +84,7 @@ public class OrderUtil {
         checkNotNull(taskParams);
 
         final Observable<OrderEvent> observable = taskParamsToObservable(taskParams);
-        taskParamsUtil.subscribeToTaskParams(observable, taskParams);
+        taskParamsUtil.composeAndSubscribe(observable, (TaskParamsBase) taskParams);
     }
 
     public void executeBatch(final BatchParams batchParams) {
@@ -92,12 +93,12 @@ public class OrderUtil {
         final List<Observable<OrderEvent>> observables = batchParams
             .taskParams()
             .stream()
-            .map(params -> taskParamsUtil.composeParamsWithEvents(taskParamsToObservable(params),
+            .map(params -> taskParamsUtil.compose(taskParamsToObservable(params),
                                                                   params.composeData(),
                                                                   params.consumerForEvent()))
             .collect(Collectors.toList());
 
-        taskParamsUtil.composeAndSubscribe(Observable.merge(observables), batchParams.composeData());
+        taskParamsUtil.composeAndSubscribe(Observable.merge(observables), batchParams);
     }
 
     private final Observable<OrderEvent> taskParamsToObservable(final TaskParams taskParams) {

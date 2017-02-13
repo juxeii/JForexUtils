@@ -85,16 +85,17 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
                                      final Observable<OrderEvent> mergeObservable) {
         when(cancelSLTPTaskMock.observe(toMergeOrders, mergePositionParamsMock))
             .thenReturn(cancelSLTPObservable);
-        when(taskParamsUtilMock.composeParams(cancelSLTPObservable,
-                                              composeData))
-                                                  .thenReturn(cancelSLTPObservable);
+        when(taskParamsUtilMock.compose(cancelSLTPObservable,
+                                        composeData,
+                                        consumerForEvent))
+                                            .thenReturn(cancelSLTPObservable);
 
         when(basicTaskMock.mergeOrders(mergeOrderLabel, toMergeOrders))
             .thenReturn(mergeObservable);
-        when(taskParamsUtilMock.composeParamsWithEvents(mergeObservable,
-                                                        composeData,
-                                                        mergePositionParamsMock.consumerForEvent()))
-                                                            .thenReturn(mergeObservable);
+        when(taskParamsUtilMock.compose(mergeObservable,
+                                        composeData,
+                                        mergePositionParamsMock.consumerForEvent()))
+                                            .thenReturn(mergeObservable);
 
         testObserver = cancelSLTPAndMergeTask
             .observe(toMergeOrders, mergePositionParamsMock)

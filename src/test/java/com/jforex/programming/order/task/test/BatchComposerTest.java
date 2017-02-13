@@ -64,14 +64,14 @@ public class BatchComposerTest extends InstrumentUtilForTest {
 
     private void setupTaskParamsUtil(final Observable<OrderEvent> basicObservable,
                                      final OrderEvent orderEvent) {
-        when(taskParamsUtilMock.composeParamsWithEvents(basicObservable,
+        when(taskParamsUtilMock.compose(basicObservable,
                                                         composeDataMock,
                                                         consumerForEvent))
                                                             .thenReturn(eventObservable(orderEvent));
     }
 
     private void verifyTaskParamsUtilCall(final Observable<OrderEvent> basicObservable) {
-        verify(taskParamsUtilMock).composeParamsWithEvents(basicObservable,
+        verify(taskParamsUtilMock).compose(basicObservable,
                                                            composeDataMock,
                                                            consumerForEvent);
     }

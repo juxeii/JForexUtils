@@ -1,6 +1,9 @@
 package com.jforex.programming.order.task.test;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +13,7 @@ import org.mockito.Mock;
 import com.dukascopy.api.IOrder;
 import com.google.common.collect.Sets;
 import com.jforex.programming.order.event.OrderEvent;
+import com.jforex.programming.order.event.OrderEventType;
 import com.jforex.programming.order.task.BatchCancelSLTask;
 import com.jforex.programming.order.task.BatchChangeTask;
 import com.jforex.programming.order.task.params.ComposeData;
@@ -40,14 +44,17 @@ public class BatchCancelSLTaskTest extends InstrumentUtilForTest {
     private final Set<IOrder> toCancelSLTPOrders = Sets.newHashSet(buyOrderEURUSD, sellOrderEURUSD);
     private final Observable<OrderEvent> observableFromBatch = eventObservable(changedSLEvent);
     private final Observable<OrderEvent> observableFromTaskParamsUtil = eventObservable(changedRejectEvent);
+    private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
     private final ComposeData composeData = new ComposeDataImpl();
 
     @Before
     public void setUp() {
         when(batchChangeTaskMock.cancelSL(toCancelSLTPOrders, mergePositionParamsMock))
             .thenReturn(observableFromBatch);
-        when(taskParamsUtilMock.composeParams(observableFromBatch, composeData))
-            .thenReturn(observableFromTaskParamsUtil);
+        when(taskParamsUtilMock.compose(observableFromBatch,
+                                        composeData,
+                                        consumerForEvent))
+                                            .thenReturn(observableFromTaskParamsUtil);
         when(mergePositionParamsMock.batchCancelSLParams())
             .thenReturn(composeParamsMock);
         when(composeParamsMock.composeData())
@@ -79,7 +86,9 @@ public class BatchCancelSLTaskTest extends InstrumentUtilForTest {
 
         @Test
         public void composeOnTaskParamsIsCalled() {
-            verify(taskParamsUtilMock).composeParams(any(), eq(composeData));
+            verify(taskParamsUtilMock).compose(any(),
+                                               eq(composeData),
+                                               eq(consumerForEvent));
         }
 
         @Test

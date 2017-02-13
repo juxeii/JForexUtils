@@ -28,7 +28,7 @@ public class BatchComposer {
             final CloseParams closeParams = closePositionParams
                 .closeParamsFactory()
                 .apply(order);
-            return taskParamsUtil.composeParamsWithEvents(basicTaskForBatch.forClose(closeParams),
+            return taskParamsUtil.compose(basicTaskForBatch.forClose(closeParams),
                                                           closeParams.composeData(),
                                                           closeParams.consumerForEvent());
         };
@@ -39,7 +39,7 @@ public class BatchComposer {
             final ComposeData composeData = mergePositionParams
                 .cancelSLParamsFactory()
                 .apply(order).composeData();
-            return taskParamsUtil.composeParamsWithEvents(basicTaskForBatch.forCancelSL(order),
+            return taskParamsUtil.compose(basicTaskForBatch.forCancelSL(order),
                                                           composeData,
                                                           mergePositionParams.consumerForEvent());
         };
@@ -50,7 +50,7 @@ public class BatchComposer {
             final ComposeData composeData = mergePositionParams
                 .cancelTPParamsFactory()
                 .apply(order).composeData();
-            return taskParamsUtil.composeParamsWithEvents(basicTaskForBatch.forCancelTP(order),
+            return taskParamsUtil.compose(basicTaskForBatch.forCancelTP(order),
                                                           composeData,
                                                           mergePositionParams.consumerForEvent());
         };

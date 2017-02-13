@@ -11,28 +11,24 @@ import io.reactivex.Observable;
 
 public class TaskParamsUtil {
 
-    public void subscribeToTaskParams(final Observable<OrderEvent> observable,
-                                      final TaskParams taskParams) {
-        composeAndSubscribe(composeEvents(observable, taskParams.consumerForEvent()),
-                            taskParams.composeData());
-    }
-
     public void composeAndSubscribe(final Observable<OrderEvent> observable,
-                                    final ComposeData composeData) {
-        composeRetry(observable, composeData.retryParams())
+                                    final TaskParamsBase taskParams) {
+        final Observable<OrderEvent> composedObservable = composeEvents(observable, taskParams.consumerForEvent());
+        final ComposeData composeData = taskParams.composeData();
+        composeRetry(composedObservable, composeData.retryParams())
             .doOnSubscribe(d -> composeData.startAction().run())
             .subscribe(orderEvent -> {},
                        composeData.errorConsumer()::accept,
                        composeData.completeAction());
     }
 
-    public Observable<OrderEvent> composeEvents(final Observable<OrderEvent> observable,
-                                                final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent) {
+    private Observable<OrderEvent> composeEvents(final Observable<OrderEvent> observable,
+                                                 final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent) {
         return observable.doOnNext(orderEvent -> handlerOrderEvent(orderEvent, consumerForEvent));
     }
 
-    public Observable<OrderEvent> composeRetry(final Observable<OrderEvent> observable,
-                                               final RetryParams retryParams) {
+    private Observable<OrderEvent> composeRetry(final Observable<OrderEvent> observable,
+                                                final RetryParams retryParams) {
         final int noOfRetries = retryParams.noOfRetries();
         return noOfRetries > 0
                 ? TaskRetry.rejectObservable(observable, retryParams)
@@ -46,19 +42,13 @@ public class TaskParamsUtil {
             consumerForEvent.get(type).accept(orderEvent);
     }
 
-    public Observable<OrderEvent> composeParams(final Observable<OrderEvent> observable,
-                                                final ComposeData composeData) {
-        return composeRetry(observable, composeData.retryParams())
+    public Observable<OrderEvent> compose(final Observable<OrderEvent> observable,
+                                          final ComposeData composeData,
+                                          final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent) {
+        final Observable<OrderEvent> composedObservable = composeEvents(observable, consumerForEvent);
+        return composeRetry(composedObservable, composeData.retryParams())
             .doOnSubscribe(d -> composeData.startAction().run())
             .doOnComplete(composeData.completeAction()::run)
             .doOnError(composeData.errorConsumer()::accept);
-    }
-
-    public Observable<OrderEvent> composeParamsWithEvents(final Observable<OrderEvent> observable,
-                                                          final ComposeData composeData,
-                                                          final Map<OrderEventType,
-                                                                    Consumer<OrderEvent>> consumerForEvent) {
-        return composeParams(composeEvents(observable, consumerForEvent),
-                             composeData);
     }
 }

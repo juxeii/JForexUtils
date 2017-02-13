@@ -41,6 +41,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
     @Mock
     private ClosePositionParams closePositionParamsMock;
     private final Subject<OrderEvent> orderEventSubject = PublishSubject.create();
+    private final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = new HashMap<>();
 
     @Before
     public void setUp() {
@@ -54,7 +55,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             .doOnStart(startActionMock)
             .build();
 
-        taskParamsUtil.subscribeToTaskParams(orderEventSubject, closeParams);
+        taskParamsUtil.composeAndSubscribe(orderEventSubject, closeParams);
         orderEventSubject.onNext(closeRejectEvent);
 
         verify(startActionMock).run();
@@ -77,7 +78,7 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
                 .retryOnReject(retryParams)
                 .build();
 
-            taskParamsUtil.subscribeToTaskParams(orderEventSubject, closeParams);
+            taskParamsUtil.composeAndSubscribe(orderEventSubject, closeParams);
         }
 
         @Test
@@ -123,7 +124,9 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             composeParams.setRetryParams(retryParams);
 
             testObserver = taskParamsUtil
-                .composeParams(orderEventSubject, composeParams)
+                .compose(orderEventSubject,
+                         composeParams,
+                         consumerForEvent)
                 .test();
         }
 
@@ -164,9 +167,9 @@ public class TaskParamsUtilTest extends InstrumentUtilForTest {
             composeParams.setRetryParams(retryParams);
 
             testObserver = taskParamsUtil
-                .composeParamsWithEvents(orderEventSubject,
-                                         composeParams,
-                                         consumerForEvent)
+                .compose(orderEventSubject,
+                         composeParams,
+                         consumerForEvent)
 
                 .test();
         }

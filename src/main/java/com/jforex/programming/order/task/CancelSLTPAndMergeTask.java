@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.event.OrderEvent;
-import com.jforex.programming.order.task.params.ComposeData;
+import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.MergeParamsForPosition;
 import com.jforex.programming.order.task.params.position.MergePositionParams;
@@ -27,20 +27,18 @@ public class CancelSLTPAndMergeTask {
 
     public Observable<OrderEvent> observe(final Collection<IOrder> toMergeOrders,
                                           final MergePositionParams mergePositionParams) {
-        final ComposeData composeData = mergePositionParams
-            .cancelSLTPParams()
-            .composeData();
+        final TaskParamsBase cancelSLTPParams = mergePositionParams.cancelSLTPParams();
         final Observable<OrderEvent> cancelSLTP =
-                taskParamsUtil.composeParams(cancelSLTPTask.observe(toMergeOrders, mergePositionParams),
-                                             composeData);
+                taskParamsUtil.compose(cancelSLTPTask.observe(toMergeOrders, mergePositionParams),
+                                       cancelSLTPParams.composeData(),
+                                       cancelSLTPParams.consumerForEvent());
 
         final MergeParamsForPosition mergeParamsForPosition = mergePositionParams.mergeParamsForPosition();
         final String mergeOrderLabel = mergeParamsForPosition.mergeOrderLabel();
-
         final Observable<OrderEvent> merge =
-                taskParamsUtil.composeParamsWithEvents(basicTask.mergeOrders(mergeOrderLabel, toMergeOrders),
-                                                       mergeParamsForPosition.composeData(),
-                                                       mergeParamsForPosition.consumerForEvent());
+                taskParamsUtil.compose(basicTask.mergeOrders(mergeOrderLabel, toMergeOrders),
+                                       mergeParamsForPosition.composeData(),
+                                       mergeParamsForPosition.consumerForEvent());
 
         return cancelSLTP.concatWith(merge);
     }
