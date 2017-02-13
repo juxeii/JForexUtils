@@ -14,8 +14,7 @@ public class TaskParamsUtil {
     public void composeAndSubscribe(final Observable<OrderEvent> observable,
                                     final TaskParamsBase taskParams) {
         final ComposeData composeData = taskParams.composeData();
-        final Observable<OrderEvent> composedObservable = composeEvents(observable, composeData.consumerByEventType());
-        composeRetry(composedObservable, composeData.retryParams())
+        composeRetry(composeEvents(observable, taskParams), composeData.retryParams())
             .doOnSubscribe(d -> composeData.startAction().run())
             .subscribe(orderEvent -> {},
                        composeData.errorConsumer()::accept,
@@ -23,7 +22,10 @@ public class TaskParamsUtil {
     }
 
     private Observable<OrderEvent> composeEvents(final Observable<OrderEvent> observable,
-                                                 final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent) {
+                                                 final TaskParamsBase taskParams) {
+        final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = taskParams
+            .composeData()
+            .consumerByEventType();
         return observable.doOnNext(orderEvent -> handlerOrderEvent(orderEvent, consumerForEvent));
     }
 
@@ -45,9 +47,7 @@ public class TaskParamsUtil {
     public Observable<OrderEvent> compose(final Observable<OrderEvent> observable,
                                           final TaskParamsBase taskParams) {
         final ComposeData composeData = taskParams.composeData();
-        final Map<OrderEventType, Consumer<OrderEvent>> consumerForEvent = composeData.consumerByEventType();
-        final Observable<OrderEvent> composedObservable = composeEvents(observable, consumerForEvent);
-        return composeRetry(composedObservable, composeData.retryParams())
+        return composeRetry(composeEvents(observable, taskParams), composeData.retryParams())
             .doOnSubscribe(d -> composeData.startAction().run())
             .doOnComplete(composeData.completeAction()::run)
             .doOnError(composeData.errorConsumer()::accept);
