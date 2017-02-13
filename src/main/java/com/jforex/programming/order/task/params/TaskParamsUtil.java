@@ -12,9 +12,9 @@ import io.reactivex.Observable;
 public class TaskParamsUtil {
 
     public void subscribeBasicParams(final Observable<OrderEvent> observable,
-                                     final TaskParamsBase taskParamsBase) {
-        subscribeComposeData(composeEvents(observable, taskParamsBase.consumerForEvent()),
-                             taskParamsBase.composeData());
+                                     final TaskParams taskParams) {
+        subscribeComposeData(composeEvents(observable, taskParams.consumerForEvent()),
+                             taskParams.composeData());
     }
 
     public void subscribeComposeData(final Observable<OrderEvent> observable,

@@ -77,10 +77,13 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     public void submitOrderCallsSubscribeOnTaskParams() {
         final SubmitParams submitParamsMock = mock(SubmitParams.class);
         when(submitParamsMock.type()).thenReturn(TaskParamsType.SUBMIT);
+        final Observable<OrderEvent> submitObservable = eventObservable(submitEvent);
+        when(basicTaskMock.submitOrder(submitParamsMock))
+            .thenReturn(submitObservable);
 
         orderUtil.execute(submitParamsMock);
 
-        verify(taskParamsUtilMock).subscribeBasicParams(basicTaskMock.submitOrder(submitParamsMock),
+        verify(taskParamsUtilMock).subscribeBasicParams(submitObservable,
                                                         submitParamsMock);
     }
 

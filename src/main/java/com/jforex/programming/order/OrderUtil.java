@@ -16,7 +16,6 @@ import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
 import com.jforex.programming.order.task.MergePositionTask;
 import com.jforex.programming.order.task.params.TaskParams;
-import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.TaskParamsUtil;
 import com.jforex.programming.order.task.params.basic.BatchParams;
@@ -98,9 +97,14 @@ public class OrderUtil {
 
         final Observable<OrderEvent> observable = taskParamsToObservable(taskParams);
         if (basicTaskTypes.contains(taskParams.type()))
-            taskParamsUtil.subscribeBasicParams(observable, (TaskParamsBase) taskParams);
-        else
-            taskParamsUtil.subscribeComposeData(observable, taskParams.composeData());
+            taskParamsUtil.subscribeBasicParams(observable, taskParams);
+        else {
+            final Observable<OrderEvent> observableWithEvents =
+                    taskParamsUtil.composeParamsWithEvents(observable,
+                                                           taskParams.composeData(),
+                                                           taskParams.consumerForEvent());
+            taskParamsUtil.subscribeComposeData(observableWithEvents, taskParams.composeData());
+        }
     }
 
     public void executeBatch(final BatchParams batchParams) {
@@ -109,20 +113,18 @@ public class OrderUtil {
         final List<Observable<OrderEvent>> observables = batchParams
             .taskParams()
             .stream()
-            .map(this::taskParamsToObservable)
+            .map(params -> taskParamsUtil.composeParamsWithEvents(taskParamsToObservable(params),
+                                                                  params.composeData(),
+                                                                  params.consumerForEvent()))
             .collect(Collectors.toList());
 
         taskParamsUtil.subscribeComposeData(Observable.merge(observables), batchParams.composeData());
     }
 
     private final Observable<OrderEvent> taskParamsToObservable(final TaskParams taskParams) {
-        final Observable<OrderEvent> observable = taskParamsMapper
+        return taskParamsMapper
             .get(taskParams.type())
             .apply(taskParams);
-
-        return taskParamsUtil.composeParamsWithEvents(observable,
-                                                      taskParams.composeData(),
-                                                      taskParams.consumerForEvent());
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
