@@ -97,7 +97,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         when(taskParamsUtilMock.compose(submitObservable, submitParamsMock))
             .thenReturn(submitObservable);
 
-        final Observable observable = orderUtil.paramsToObservable(submitParamsMock);
+        final Observable<OrderEvent> observable = orderUtil.paramsToObservable(submitParamsMock);
 
         assertThat(observable, equalTo(submitObservable));
         verify(taskParamsUtilMock).compose(submitObservable, submitParamsMock);

@@ -9,10 +9,10 @@ import org.apache.logging.log4j.Logger;
 
 import com.dukascopy.api.system.IClient;
 import com.jforex.programming.connection.Authentification;
-import com.jforex.programming.connection.UserConnection;
 import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.connection.Reconnector;
+import com.jforex.programming.connection.UserConnection;
 import com.jforex.programming.rx.JFHotPublisher;
 
 import io.reactivex.Observable;
@@ -50,6 +50,10 @@ public final class ClientUtil {
         final File cacheDirectoryFile = new File(cacheDirectoryPath);
         client.setCacheDirectory(cacheDirectoryFile);
         logger.debug("Setting of cache directory " + cacheDirectoryPath + " done.");
+    }
+
+    public IClient client() {
+        return client;
     }
 
     public Observable<ConnectionState> observeConnectionState() {

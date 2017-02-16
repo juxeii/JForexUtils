@@ -1,6 +1,8 @@
 package com.jforex.programming.client.test;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +46,11 @@ public class ClientUtilTest extends CommonUtilForTest {
         runDataSubscriber
             .assertNoErrors()
             .assertValue(new StrategyRunData(processID, strategyRunState));
+    }
+
+    @Test
+    public void clientReturnsCorrectInstance() {
+        assertThat(clientUtil.client(), equalTo(clientMock));
     }
 
     @Test
