@@ -80,6 +80,13 @@ public class OrderUtil {
             .build();
     }
 
+    public Observable<OrderEvent> paramsToObservable(final TaskParams taskParams) {
+        checkNotNull(taskParams);
+
+        final Observable<OrderEvent> observable = taskParamsToObservable(taskParams);
+        return taskParamsUtil.compose(observable, (TaskParamsBase) taskParams);
+    }
+
     public void execute(final TaskParams taskParams) {
         checkNotNull(taskParams);
 

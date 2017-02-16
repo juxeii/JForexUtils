@@ -74,7 +74,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void submitOrderCallsSubscribeOnTaskParams() {
+    public void executeForSubmitParamsIsCorrect() {
         final SubmitParams submitParamsMock = mock(SubmitParams.class);
         when(submitParamsMock.type()).thenReturn(TaskParamsType.SUBMIT);
         final Observable<OrderEvent> submitObservable = eventObservable(submitEvent);
@@ -85,6 +85,22 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
         verify(taskParamsUtilMock).composeAndSubscribe(submitObservable,
                                                        submitParamsMock);
+    }
+
+    @Test
+    public void asObservableForSubmitParamsIsCorrect() {
+        final SubmitParams submitParamsMock = mock(SubmitParams.class);
+        when(submitParamsMock.type()).thenReturn(TaskParamsType.SUBMIT);
+        final Observable<OrderEvent> submitObservable = eventObservable(submitEvent);
+        when(basicTaskMock.submitOrder(submitParamsMock))
+            .thenReturn(submitObservable);
+        when(taskParamsUtilMock.compose(submitObservable, submitParamsMock))
+            .thenReturn(submitObservable);
+
+        final Observable observable = orderUtil.paramsToObservable(submitParamsMock);
+
+        assertThat(observable, equalTo(submitObservable));
+        verify(taskParamsUtilMock).compose(submitObservable, submitParamsMock);
     }
 
     @Test
@@ -264,7 +280,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
         submitSubject.onNext(submitEvent);
         closeSubject.onNext(closeEvent);
         testObserver.assertValues(submitEvent, closeEvent);
-//
+
         submitSubject.onComplete();
         testObserver.assertNotComplete();
 
