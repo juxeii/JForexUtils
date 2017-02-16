@@ -36,7 +36,9 @@ public final class ClientUtil {
 
         this.client = client;
         pinCaptcha = new PinCaptcha(client);
-        authentification = new Authentification(client, loginStatePublisher);
+        authentification = new Authentification(client,
+                                                observeConnectionState(),
+                                                loginStatePublisher);
 
         initCacheDirectory(cacheDirectory);
         client.setSystemListener(jfSystemListener);

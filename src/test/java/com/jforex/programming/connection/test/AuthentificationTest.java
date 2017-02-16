@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.jforex.programming.connection.Authentification;
+import com.jforex.programming.connection.ConnectionLostException;
+import com.jforex.programming.connection.ConnectionState;
 import com.jforex.programming.connection.LoginCredentials;
 import com.jforex.programming.connection.LoginState;
 import com.jforex.programming.rx.JFHotPublisher;
@@ -12,6 +14,8 @@ import com.jforex.programming.test.common.CommonUtilForTest;
 
 import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 
 @RunWith(HierarchicalContextRunner.class)
 public class AuthentificationTest extends CommonUtilForTest {
@@ -19,18 +23,37 @@ public class AuthentificationTest extends CommonUtilForTest {
     private Authentification authentification;
 
     private final JFHotPublisher<LoginState> loginStatePublisher = new JFHotPublisher<>();
+    private final Subject<ConnectionState> connectionStateSubject = PublishSubject.create();
     private TestObserver<LoginState> loginStateSubscriber;
 
     @Before
     public void setUp() {
-        authentification = new Authentification(clientMock, loginStatePublisher);
+        authentification = new Authentification(clientMock,
+                                                connectionStateSubject,
+                                                loginStatePublisher);
     }
 
-    private void login(final LoginCredentials credentials) {
+    private void loginWithConnectState(final LoginCredentials credentials) {
         authentification
             .login(credentials)
             .subscribe(() -> {},
                        t -> {});
+        connectionStateSubject.onNext(ConnectionState.CONNECTED);
+    }
+
+    @Test
+    public void connectionLostExceptionWhenStateIsNotConnected() {
+        loginStateSubscriber = loginStatePublisher
+            .observable()
+            .test();
+
+        final TestObserver<Void> testObserver = authentification
+            .login(loginCredentials)
+            .test();
+        connectionStateSubject.onNext(ConnectionState.DISCONNECTED);
+
+        testObserver.assertError(ConnectionLostException.class);
+        loginStateSubscriber.assertNoValues();
     }
 
     @Test
@@ -42,7 +65,7 @@ public class AuthentificationTest extends CommonUtilForTest {
 
     @Test
     public void loginWithPinCallsConnectClientWithPin() throws Exception {
-        login(loginCredentialsWithPin);
+        loginWithConnectState(loginCredentialsWithPin);
 
         verify(clientMock).connect(loginCredentialsWithPin.jnlpAddress(),
                                    loginCredentialsWithPin.username(),
@@ -62,7 +85,7 @@ public class AuthentificationTest extends CommonUtilForTest {
             .observable()
             .test();
 
-        login(loginCredentialsWithPin);
+        loginWithConnectState(loginCredentialsWithPin);
 
         loginStateSubscriber.assertNoValues();
     }
@@ -75,7 +98,7 @@ public class AuthentificationTest extends CommonUtilForTest {
                 .observable()
                 .test();
 
-            login(loginCredentials);
+            loginWithConnectState(loginCredentials);
         }
 
         @Test
