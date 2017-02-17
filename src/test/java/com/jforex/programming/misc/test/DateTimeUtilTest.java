@@ -55,7 +55,7 @@ public class DateTimeUtilTest extends CommonUtilForTest {
 
     @Test
     public void millisToStringIsCorrect() {
-        final String dateTimeString = DateTimeUtil.millisToString(localTestMillis);
+        final String dateTimeString = DateTimeUtil.formatMillis(localTestMillis);
 
         assertThat(dateTimeString, equalTo(testDateTimeString));
     }

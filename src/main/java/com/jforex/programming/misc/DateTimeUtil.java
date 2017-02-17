@@ -53,7 +53,7 @@ public final class DateTimeUtil {
         return localDateTime.format(defaultformatter);
     }
 
-    public static final String millisToString(final long millis) {
+    public static final String formatMillis(final long millis) {
         return dateTimeFromMillis(millis).format(defaultformatter);
     }
 }
