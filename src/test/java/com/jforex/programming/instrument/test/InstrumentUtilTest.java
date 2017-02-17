@@ -83,7 +83,7 @@ public class InstrumentUtilTest extends QuoteProviderForTest {
 
     @Test
     public void testSpreadCalculationIsCorrect() {
-        final double expectedSpread = askEURUSD - bidEURUSD;
+        final double expectedSpread = MathUtil.roundPrice(askEURUSD - bidEURUSD, instrumentEURUSD);
 
         assertThat(instrumentUtil.spread(), equalTo(expectedSpread));
     }

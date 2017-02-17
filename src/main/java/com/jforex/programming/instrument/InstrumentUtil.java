@@ -81,7 +81,7 @@ public final class InstrumentUtil {
     }
 
     public final double spread() {
-        return askQuote() - bidQuote();
+        return roundPrice(askQuote() - bidQuote(), instrument);
     }
 
     public final Currency baseJavaCurrency() {
