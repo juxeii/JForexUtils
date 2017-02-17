@@ -3,6 +3,7 @@ package com.jforex.programming.quote.test;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -83,6 +84,17 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
                 verifyNoMoreInteractions(historyMock);
 
                 assertThat(tickQuoteRepository.get(instrumentAUDUSD),
+                           equalTo(tickQuoteAUDUSD));
+            }
+
+            @Test
+            public void getAllIsCorrect() {
+                final Map<Instrument, TickQuote> tickMap = tickQuoteRepository.getAll();
+
+                assertThat(tickMap.size(), equalTo(2));
+                assertThat(tickMap.get(instrumentEURUSD),
+                           equalTo(tickQuoteEURUSD));
+                assertThat(tickMap.get(instrumentAUDUSD),
                            equalTo(tickQuoteAUDUSD));
             }
         }

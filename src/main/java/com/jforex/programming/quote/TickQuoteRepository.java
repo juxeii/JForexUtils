@@ -1,5 +1,6 @@
 package com.jforex.programming.quote;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,5 +30,9 @@ public class TickQuoteRepository {
 
     public TickQuote get(final Instrument instrument) {
         return quotesByInstrument.get(instrument);
+    }
+
+    public Map<Instrument, TickQuote> getAll() {
+        return Collections.unmodifiableMap(quotesByInstrument);
     }
 }

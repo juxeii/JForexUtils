@@ -61,4 +61,8 @@ public class TickQuoteProvider {
         return tickQuoteObservable
             .filter(tickQuote -> instruments.contains(tickQuote.instrument()));
     }
+
+    public TickQuoteRepository repository() {
+        return tickQuoteRepository;
+    }
 }

@@ -109,4 +109,10 @@ public class TickQuoteProviderTest extends QuoteProviderForTest {
         quoteGBPAUDSubscriber.assertNoErrors();
         quoteGBPAUDSubscriber.assertValueCount(0);
     }
+
+    @Test
+    public void getRepositoryIsCorrect() {
+        final TickQuoteRepository repository = tickQuoteProvider.repository();
+        assertThat(repository, equalTo(tickQuoteRepositoryMock));
+    }
 }
