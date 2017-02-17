@@ -17,7 +17,7 @@ import com.jforex.programming.rx.JFHotPublisher;
 
 import io.reactivex.Observable;
 
-public final class ClientUtil {
+public class ClientUtil {
 
     private final IClient client;
     private final Authentification authentification;
@@ -70,11 +70,11 @@ public final class ClientUtil {
         return reconnector;
     }
 
-    public final Authentification authentification() {
+    public Authentification authentification() {
         return authentification;
     }
 
-    public final PinCaptcha pinCaptcha() {
+    public PinCaptcha pinCaptcha() {
         return pinCaptcha;
     }
 }
