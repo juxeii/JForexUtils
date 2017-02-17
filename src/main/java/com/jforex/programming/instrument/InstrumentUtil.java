@@ -76,8 +76,12 @@ public final class InstrumentUtil {
         return barQuoteProvider.bar(barParams);
     }
 
-    public final double spread() {
+    public final double spreadInPips() {
         return pipDistanceOfPrices(askQuote(), bidQuote());
+    }
+
+    public final double spread() {
+        return askQuote() - bidQuote();
     }
 
     public final Currency baseJavaCurrency() {
@@ -96,6 +100,7 @@ public final class InstrumentUtil {
         return toStringNoSeparator;
     }
 
+    @Override
     public final String toString() {
         return toString;
     }
