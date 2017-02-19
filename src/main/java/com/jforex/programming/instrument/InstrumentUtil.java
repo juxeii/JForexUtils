@@ -22,7 +22,7 @@ import com.jforex.programming.quote.BarParams;
 import com.jforex.programming.quote.BarQuoteProvider;
 import com.jforex.programming.quote.TickQuoteProvider;
 
-public final class InstrumentUtil {
+public class InstrumentUtil {
 
     private final Instrument instrument;
     private final TickQuoteProvider tickQuoteProvider;
@@ -58,54 +58,54 @@ public final class InstrumentUtil {
         currencies = CurrencyFactory.fromInstrument(instrument);
     }
 
-    public final ITick tickQuote() {
+    public ITick tickQuote() {
         return tickQuoteProvider.tick(instrument);
     }
 
-    public final double askQuote() {
+    public double askQuote() {
         return tickQuoteProvider.ask(instrument);
     }
 
-    public final double bidQuote() {
+    public double bidQuote() {
         return tickQuoteProvider.bid(instrument);
     }
 
-    public final IBar barQuote(final BarParams barParams) {
+    public IBar barQuote(final BarParams barParams) {
         checkNotNull(barParams);
 
         return barQuoteProvider.bar(barParams);
     }
 
-    public final double spreadInPips() {
+    public double spreadInPips() {
         return pipDistanceOfPrices(askQuote(), bidQuote());
     }
 
-    public final double spread() {
+    public double spread() {
         return roundPrice(askQuote() - bidQuote(), instrument);
     }
 
-    public final Currency baseJavaCurrency() {
+    public Currency baseJavaCurrency() {
         return baseJavaCurrency;
     }
 
-    public final Currency quoteJavaCurrency() {
+    public Currency quoteJavaCurrency() {
         return quoteJavaCurrency;
     }
 
-    public final int numberOfDigits() {
+    public int numberOfDigits() {
         return numberOfDigits;
     }
 
-    public final String toStringNoSeparator() {
+    public String toStringNoSeparator() {
         return toStringNoSeparator;
     }
 
     @Override
-    public final String toString() {
+    public String toString() {
         return toString;
     }
 
-    public final Set<ICurrency> currencies() {
+    public Set<ICurrency> currencies() {
         return currencies;
     }
 
@@ -155,13 +155,13 @@ public final class InstrumentUtil {
                                                   offerSide);
     }
 
-    public final boolean containsCurrency(final ICurrency currency) {
+    public boolean containsCurrency(final ICurrency currency) {
         checkNotNull(currency);
 
         return CurrencyUtil.isInInstrument(currency, instrument);
     }
 
-    public final boolean containsCurrencyCode(final CurrencyCode currencyCode) {
+    public boolean containsCurrencyCode(final CurrencyCode currencyCode) {
         checkNotNull(currencyCode);
 
         return CurrencyUtil.isInInstrument(currencyCode.toString(), instrument);
