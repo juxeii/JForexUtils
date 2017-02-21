@@ -30,7 +30,6 @@ public class Exposure {
 
     public double get(final Instrument instrument) {
         final double exposure = getFromOrders(instrument);
-        logger.debug("Exposure for " + instrument + " is " + exposure);
         return exposure;
     }
 
@@ -56,11 +55,7 @@ public class Exposure {
 
         final double rawAmount = orders
             .stream()
-            .mapToDouble(order -> {
-                final double samount = OrderStaticUtil.signedAmount(order);
-                logger.info("samount " + samount);
-                return OrderStaticUtil.signedAmount(order);
-            })
+            .mapToDouble(OrderStaticUtil::signedAmount)
             .sum();
 
         return MathUtil.roundAmount(rawAmount);
