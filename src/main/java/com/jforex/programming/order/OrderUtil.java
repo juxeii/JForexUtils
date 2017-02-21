@@ -101,10 +101,11 @@ public class OrderUtil {
 
     private Observable<OrderEvent> closeWithExposureCheck(final CloseParams closeParams) {
         final IOrder order = closeParams.order();
+        final double orderAmount = order.getAmount();
         final double partialCloseAmount = closeParams.partialCloseAmount();
         final double signedAmount = partialCloseAmount > 0
                 ? -OrderStaticUtil.signedAmount(partialCloseAmount, order.getOrderCommand())
-                : OrderStaticUtil.signedAmount(order);
+                : -OrderStaticUtil.signedAmount(orderAmount, order.getOrderCommand());
         final Instrument instrument = order.getInstrument();
 
         final boolean wouldExceedAmount = exposure.wouldExceed(instrument, signedAmount);

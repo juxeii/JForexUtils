@@ -55,7 +55,7 @@ public class Exposure {
 
         final double rawAmount = orders
             .stream()
-            .mapToDouble(OrderStaticUtil::signedAmount)
+            .mapToDouble(order -> OrderStaticUtil.signedAmount(order))
             .sum();
 
         return MathUtil.roundAmount(rawAmount);
