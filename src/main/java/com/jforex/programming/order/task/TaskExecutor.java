@@ -80,9 +80,11 @@ public class TaskExecutor {
                                         final double newSL,
                                         final OfferSide offerSide,
                                         final double trailingStep) {
-        return completable(() -> order.setStopLossPrice(newSL,
-                                                        offerSide,
-                                                        trailingStep));
+        return trailingStep < 0
+                ? completable(() -> order.setStopLossPrice(newSL, offerSide))
+                : completable(() -> order.setStopLossPrice(newSL,
+                                                           offerSide,
+                                                           trailingStep));
     }
 
     public Completable setTakeProfitPrice(final IOrder order,

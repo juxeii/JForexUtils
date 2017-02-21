@@ -308,6 +308,26 @@ public class TaskExecutorTest extends CommonUtilForTest {
         }
     }
 
+    public class APIWorkaroundTrailingstep {
+
+        private final double newSL = 1.1234;
+        private final double trailingStep = -1;
+
+        @Before
+        public void setUp() {
+            taskExecutor.setStopLossPrice(orderForTest,
+                                          newSL,
+                                          OfferSide.ASK,
+                                          trailingStep);
+        }
+
+        @Test
+        public void taskExecutorIsCalledWithoutTrailingStep() throws Exception {
+            captureAndRunAction();
+            verify(orderForTest).setStopLossPrice(newSL, OfferSide.ASK);
+        }
+    }
+
     public class SetTakeProfitSetup {
 
         private final double newTP = 1.1234;
