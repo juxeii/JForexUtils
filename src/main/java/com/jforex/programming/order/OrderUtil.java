@@ -11,6 +11,7 @@ import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.JFException;
 import com.google.common.collect.ImmutableMap;
+import com.jforex.programming.misc.Exposure;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
@@ -43,16 +44,19 @@ public class OrderUtil {
     private final BasicTask basicTask;
     private final PositionUtil positionUtil;
     private final TaskParamsUtil taskParamsUtil;
+    private final Exposure exposure;
     private final Map<TaskParamsType, Function<TaskParams, Observable<OrderEvent>>> taskParamsMapper;
 
     public OrderUtil(final BasicTask basicTask,
                      final MergePositionTask mergePositionTask,
                      final ClosePositionTask closePositionTask,
                      final PositionUtil positionUtil,
-                     final TaskParamsUtil taskParamsUtil) {
+                     final TaskParamsUtil taskParamsUtil,
+                     final Exposure exposure) {
         this.basicTask = basicTask;
         this.positionUtil = positionUtil;
         this.taskParamsUtil = taskParamsUtil;
+        this.exposure = exposure;
 
         taskParamsMapper = ImmutableMap.<TaskParamsType, Function<TaskParams, Observable<OrderEvent>>> builder()
             .put(TaskParamsType.SUBMIT,
@@ -89,7 +93,7 @@ public class OrderUtil {
         final double signedAmount = OrderStaticUtil.signedAmount(orderParams);
         final Instrument instrument = orderParams.instrument();
 
-        final boolean wouldExceedAmount = positionOrders(instrument).wouldExceedExposure(signedAmount);
+        final boolean wouldExceedAmount = exposure.wouldExceed(instrument, signedAmount);
         return wouldExceedAmount
                 ? Observable.error(maxExposureException(instrument))
                 : basicTask.submitOrder(submitParams);
@@ -103,7 +107,7 @@ public class OrderUtil {
                 : OrderStaticUtil.signedAmount(order);
         final Instrument instrument = order.getInstrument();
 
-        final boolean wouldExceedAmount = positionOrders(instrument).wouldExceedExposure(signedAmount);
+        final boolean wouldExceedAmount = exposure.wouldExceed(instrument, signedAmount);
         return wouldExceedAmount
                 ? Observable.error(maxExposureException(instrument))
                 : basicTask.close(closeParams);

@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.jforex.programming.order.OrderStaticUtil;
-import com.jforex.programming.strategy.StrategyUtil;
 
 public interface PositionOrders {
 
@@ -32,17 +31,6 @@ public interface PositionOrders {
             .stream()
             .mapToDouble(OrderStaticUtil::signedAmount)
             .sum();
-    }
-
-    default boolean wouldExceedExposure(final double signedAmount) {
-        final double signedExposure = signedExposure();
-        final double maxExposure = StrategyUtil.platformSettings.maxExposure();
-        final double resultingExposure = Math.abs(signedExposure + signedAmount);
-        System.out.println("signedExposure " + signedExposure
-                + " maxExposure " + maxExposure
-                + " resultingExposure " + resultingExposure);
-
-        return resultingExposure > maxExposure;
     }
 
     default double plInAccountCurrency() {
