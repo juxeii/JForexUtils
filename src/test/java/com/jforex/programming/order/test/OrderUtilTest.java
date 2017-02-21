@@ -275,7 +275,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 orderUtil.execute(closeParamsMock);
 
-                verify(exposureMock).wouldExceed(instrumentEURUSD, buyOrderEURUSD.getAmount());
+                verify(exposureMock).wouldExceed(instrumentEURUSD, -buyOrderEURUSD.getAmount());
                 verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
                                                                eq(closeParamsMock));
                 final Observable<OrderEvent> observable = observableCaptor.getValue();
@@ -290,7 +290,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 orderUtil.execute(closeParamsMock);
 
-                verify(exposureMock).wouldExceed(instrumentEURUSD, -sellOrderEURUSD.getAmount());
+                verify(exposureMock).wouldExceed(instrumentEURUSD, sellOrderEURUSD.getAmount());
                 verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
                                                                eq(closeParamsMock));
                 final Observable<OrderEvent> observable = observableCaptor.getValue();
