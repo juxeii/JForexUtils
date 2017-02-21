@@ -8,10 +8,12 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import com.dukascopy.api.JFException;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
@@ -40,11 +42,13 @@ import com.jforex.programming.position.PositionOrders;
 import com.jforex.programming.position.PositionUtil;
 import com.jforex.programming.test.common.InstrumentUtilForTest;
 
+import de.bechte.junit.runners.context.HierarchicalContextRunner;
 import io.reactivex.Observable;
 import io.reactivex.observers.TestObserver;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
+@RunWith(HierarchicalContextRunner.class)
 public class OrderUtilTest extends InstrumentUtilForTest {
 
     private OrderUtil orderUtil;
@@ -61,11 +65,16 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private TaskParamsUtil taskParamsUtilMock;
     @Mock
     private ComposeDataImpl composeParamsMock;
+    @Mock
+    private PositionOrders positionOrdersMock;
     @Captor
-    private ArgumentCaptor<Observable<OrderEvent>> mergeCaptor;
+    private ArgumentCaptor<Observable<OrderEvent>> observableCaptor;
 
     @Before
     public void setUp() {
+        when(positionUtilMock.positionOrders(instrumentEURUSD))
+            .thenReturn(positionOrdersMock);
+
         orderUtil = new OrderUtil(basicTaskMock,
                                   mergePositionTaskMock,
                                   closePositionTaskMock,
@@ -73,34 +82,136 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                                   taskParamsUtilMock);
     }
 
-    @Test
-    public void executeForSubmitParamsIsCorrect() {
-        final SubmitParams submitParamsMock = mock(SubmitParams.class);
-        when(submitParamsMock.type()).thenReturn(TaskParamsType.SUBMIT);
-        final Observable<OrderEvent> submitObservable = eventObservable(submitEvent);
-        when(basicTaskMock.submitOrder(submitParamsMock))
-            .thenReturn(submitObservable);
+    public class SubmitOrder {
 
-        orderUtil.execute(submitParamsMock);
+        private SubmitParams submitParamsMock;
 
-        verify(taskParamsUtilMock).composeAndSubscribe(submitObservable,
-                                                       submitParamsMock);
-    }
+        @Before
+        public void setUp() {
+            submitParamsMock = mock(SubmitParams.class);
 
-    @Test
-    public void asObservableForSubmitParamsIsCorrect() {
-        final SubmitParams submitParamsMock = mock(SubmitParams.class);
-        when(submitParamsMock.type()).thenReturn(TaskParamsType.SUBMIT);
-        final Observable<OrderEvent> submitObservable = eventObservable(submitEvent);
-        when(basicTaskMock.submitOrder(submitParamsMock))
-            .thenReturn(submitObservable);
-        when(taskParamsUtilMock.compose(submitObservable, submitParamsMock))
-            .thenReturn(submitObservable);
+            when(submitParamsMock.type()).thenReturn(TaskParamsType.SUBMIT);
+        }
 
-        final Observable<OrderEvent> observable = orderUtil.paramsToObservable(submitParamsMock);
+        public class ExposureNotExceeded {
 
-        assertThat(observable, equalTo(submitObservable));
-        verify(taskParamsUtilMock).compose(submitObservable, submitParamsMock);
+            @Before
+            public void setUp() {
+                when(submitParamsMock.orderParams()).thenReturn(buyParamsEURUSD);
+
+                when(positionOrdersMock.wouldExceedExposure(anyDouble()))
+                    .thenReturn(false);
+            }
+
+            @Test
+            public void executeForSubmitParamsIsCorrect() {
+                final Observable<OrderEvent> submitObservable = eventObservable(submitEvent);
+                when(basicTaskMock.submitOrder(submitParamsMock))
+                    .thenReturn(submitObservable);
+
+                orderUtil.execute(submitParamsMock);
+
+                verify(taskParamsUtilMock).composeAndSubscribe(submitObservable,
+                                                               submitParamsMock);
+            }
+
+            @Test
+            public void asObservableForSubmitParamsIsCorrect() {
+                final Observable<OrderEvent> submitObservable = eventObservable(submitEvent);
+                when(basicTaskMock.submitOrder(submitParamsMock))
+                    .thenReturn(submitObservable);
+                when(taskParamsUtilMock.compose(submitObservable, submitParamsMock))
+                    .thenReturn(submitObservable);
+
+                final Observable<OrderEvent> observable = orderUtil.paramsToObservable(submitParamsMock);
+
+                assertThat(observable, equalTo(submitObservable));
+                verify(taskParamsUtilMock).compose(submitObservable, submitParamsMock);
+            }
+
+            @Test
+            public void executeBatchSubscribesCorrect() {
+                final Subject<OrderEvent> submitSubject = PublishSubject.create();
+                when(basicTaskMock.submitOrder(submitParamsMock)).thenReturn(submitSubject);
+
+                final CloseParams closeParamsMock = mock(CloseParams.class);
+                when(closeParamsMock.type()).thenReturn(TaskParamsType.CLOSE);
+                when(closeParamsMock.order()).thenReturn(buyOrderEURUSD);
+                final Subject<OrderEvent> closeSubject = PublishSubject.create();
+                when(basicTaskMock.close(closeParamsMock)).thenReturn(closeSubject);
+
+                final List<TaskParams> paramsList = new ArrayList<>();
+                paramsList.add(submitParamsMock);
+                paramsList.add(closeParamsMock);
+                final BatchParams batchParamsMock = mock(BatchParams.class);
+                when(batchParamsMock.taskParams()).thenReturn(paramsList);
+                final ComposeData composeDataMock = mock(ComposeData.class);
+                when(batchParamsMock.composeData()).thenReturn(composeDataMock);
+
+                when(taskParamsUtilMock.compose(submitSubject, submitParamsMock))
+                    .thenReturn(submitSubject);
+                when(taskParamsUtilMock.compose(closeSubject, closeParamsMock))
+                    .thenReturn(closeSubject);
+
+                orderUtil.executeBatch(batchParamsMock);
+
+                verify(taskParamsUtilMock).compose(submitSubject, submitParamsMock);
+                verify(taskParamsUtilMock).compose(closeSubject, closeParamsMock);
+
+                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(), eq(batchParamsMock));
+                final Observable<OrderEvent> mergedObservables = observableCaptor.getValue();
+                final TestObserver<OrderEvent> testObserver = mergedObservables.test();
+
+                submitSubject.onNext(submitEvent);
+                closeSubject.onNext(closeEvent);
+                testObserver.assertValues(submitEvent, closeEvent);
+
+                submitSubject.onComplete();
+                testObserver.assertNotComplete();
+
+                closeSubject.onComplete();
+                testObserver.assertComplete();
+            }
+        }
+
+        public class ExposureExceeded {
+
+            @Before
+            public void setUp() {
+                when(positionOrdersMock.wouldExceedExposure(anyDouble()))
+                    .thenReturn(true);
+            }
+
+            @Test
+            public void errorObservableIsCreatedForBuy() {
+                when(submitParamsMock.orderParams()).thenReturn(buyParamsEURUSD);
+
+                orderUtil.execute(submitParamsMock);
+
+                verify(positionOrdersMock).wouldExceedExposure(buyParamsEURUSD.amount());
+                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
+                                                               eq(submitParamsMock));
+                final Observable<OrderEvent> observable = observableCaptor.getValue();
+                observable
+                    .test()
+                    .assertError(JFException.class);
+            }
+
+            @Test
+            public void errorObservableIsCreatedForSell() {
+                when(submitParamsMock.orderParams()).thenReturn(sellParamsEURUSD);
+
+                orderUtil.execute(submitParamsMock);
+
+                verify(positionOrdersMock).wouldExceedExposure(-sellParamsEURUSD.amount());
+                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
+                                                               eq(submitParamsMock));
+                final Observable<OrderEvent> observable = observableCaptor.getValue();
+                observable
+                    .test()
+                    .assertError(JFException.class);
+            }
+        }
     }
 
     @Test
@@ -114,15 +225,120 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                                                        mergeParamsMock);
     }
 
-    @Test
-    public void closeCallsSubscribeOnTaskParams() {
-        final CloseParams closeParamsMock = mock(CloseParams.class);
-        when(closeParamsMock.type()).thenReturn(TaskParamsType.CLOSE);
+    public class OrderClose {
 
-        orderUtil.execute(closeParamsMock);
+        private CloseParams closeParamsMock;
 
-        verify(taskParamsUtilMock).composeAndSubscribe(basicTaskMock.close(closeParamsMock),
-                                                       closeParamsMock);
+        @Before
+        public void setUp() {
+            closeParamsMock = mock(CloseParams.class);
+            when(closeParamsMock.type()).thenReturn(TaskParamsType.CLOSE);
+        }
+
+        public class ExposureNotExceeded {
+
+            @Before
+            public void setUp() {
+                when(closeParamsMock.order()).thenReturn(buyOrderEURUSD);
+
+                when(positionOrdersMock.wouldExceedExposure(anyDouble()))
+                    .thenReturn(false);
+            }
+
+            @Test
+            public void closeCallsSubscribeOnTaskParams() {
+                orderUtil.execute(closeParamsMock);
+
+                verify(taskParamsUtilMock).composeAndSubscribe(basicTaskMock.close(closeParamsMock),
+                                                               closeParamsMock);
+            }
+        }
+
+        public class ExposureExceededForFullClose {
+
+            @Before
+            public void setUp() {
+                when(positionOrdersMock.wouldExceedExposure(anyDouble()))
+                    .thenReturn(true);
+
+                when(closeParamsMock.partialCloseAmount())
+                    .thenReturn(0.0);
+            }
+
+            @Test
+            public void errorObservableIsCreatedForBuyOrder() {
+                when(closeParamsMock.order()).thenReturn(buyOrderEURUSD);
+
+                orderUtil.execute(closeParamsMock);
+
+                verify(positionOrdersMock).wouldExceedExposure(buyOrderEURUSD.getAmount());
+                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
+                                                               eq(closeParamsMock));
+                final Observable<OrderEvent> observable = observableCaptor.getValue();
+                observable
+                    .test()
+                    .assertError(JFException.class);
+            }
+
+            @Test
+            public void errorObservableIsCreatedForSellOrder() {
+                when(closeParamsMock.order()).thenReturn(sellOrderEURUSD);
+
+                orderUtil.execute(closeParamsMock);
+
+                verify(positionOrdersMock).wouldExceedExposure(-sellOrderEURUSD.getAmount());
+                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
+                                                               eq(closeParamsMock));
+                final Observable<OrderEvent> observable = observableCaptor.getValue();
+                observable
+                    .test()
+                    .assertError(JFException.class);
+            }
+        }
+
+        public class ExposureExceededForPartialClose {
+
+            private final double partialCloseAmount = 0.12;
+
+            @Before
+            public void setUp() {
+                when(positionOrdersMock.wouldExceedExposure(anyDouble()))
+                    .thenReturn(true);
+
+                when(closeParamsMock.partialCloseAmount())
+                    .thenReturn(partialCloseAmount);
+            }
+
+            @Test
+            public void errorObservableIsCreatedForBuyOrder() {
+                when(closeParamsMock.order()).thenReturn(buyOrderEURUSD);
+
+                orderUtil.execute(closeParamsMock);
+
+                verify(positionOrdersMock).wouldExceedExposure(-partialCloseAmount);
+                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
+                                                               eq(closeParamsMock));
+                final Observable<OrderEvent> observable = observableCaptor.getValue();
+                observable
+                    .test()
+                    .assertError(JFException.class);
+            }
+
+            @Test
+            public void errorObservableIsCreatedForSellOrder() {
+                when(closeParamsMock.order()).thenReturn(sellOrderEURUSD);
+
+                orderUtil.execute(closeParamsMock);
+
+                verify(positionOrdersMock).wouldExceedExposure(partialCloseAmount);
+                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
+                                                               eq(closeParamsMock));
+                final Observable<OrderEvent> observable = observableCaptor.getValue();
+                observable
+                    .test()
+                    .assertError(JFException.class);
+            }
+        }
     }
 
     @Test
@@ -244,59 +460,10 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
-    public void executeBatchSubscribesCorrect() {
-        final SubmitParams submitParamsMock = mock(SubmitParams.class);
-        when(submitParamsMock.type()).thenReturn(TaskParamsType.SUBMIT);
-        final Subject<OrderEvent> submitSubject = PublishSubject.create();
-        when(basicTaskMock.submitOrder(submitParamsMock)).thenReturn(submitSubject);
-
-        final CloseParams closeParamsMock = mock(CloseParams.class);
-        when(closeParamsMock.type()).thenReturn(TaskParamsType.CLOSE);
-        final Subject<OrderEvent> closeSubject = PublishSubject.create();
-        when(basicTaskMock.close(closeParamsMock)).thenReturn(closeSubject);
-
-        final List<TaskParams> paramsList = new ArrayList<>();
-        paramsList.add(submitParamsMock);
-        paramsList.add(closeParamsMock);
-        final BatchParams batchParamsMock = mock(BatchParams.class);
-        when(batchParamsMock.taskParams()).thenReturn(paramsList);
-        final ComposeData composeDataMock = mock(ComposeData.class);
-        when(batchParamsMock.composeData()).thenReturn(composeDataMock);
-
-        when(taskParamsUtilMock.compose(submitSubject, submitParamsMock))
-            .thenReturn(submitSubject);
-        when(taskParamsUtilMock.compose(closeSubject, closeParamsMock))
-            .thenReturn(closeSubject);
-
-        orderUtil.executeBatch(batchParamsMock);
-
-        verify(taskParamsUtilMock).compose(submitSubject, submitParamsMock);
-        verify(taskParamsUtilMock).compose(closeSubject, closeParamsMock);
-
-        verify(taskParamsUtilMock).composeAndSubscribe(mergeCaptor.capture(), eq(batchParamsMock));
-        final Observable<OrderEvent> mergedObservables = mergeCaptor.getValue();
-        final TestObserver<OrderEvent> testObserver = mergedObservables.test();
-
-        submitSubject.onNext(submitEvent);
-        closeSubject.onNext(closeEvent);
-        testObserver.assertValues(submitEvent, closeEvent);
-
-        submitSubject.onComplete();
-        testObserver.assertNotComplete();
-
-        closeSubject.onComplete();
-        testObserver.assertComplete();
-    }
-
-    @Test
     public void positionOrdersDelegatesToPositionTask() {
-        final PositionOrders positionOrders = mock(PositionOrders.class);
-        when(positionUtilMock.positionOrders(instrumentEURUSD))
-            .thenReturn(positionOrders);
-
         final PositionOrders actualPositionOrders = orderUtil.positionOrders(instrumentEURUSD);
 
         verify(positionUtilMock).positionOrders(instrumentEURUSD);
-        assertThat(actualPositionOrders, equalTo(positionOrders));
+        assertThat(actualPositionOrders, equalTo(positionOrdersMock));
     }
 }

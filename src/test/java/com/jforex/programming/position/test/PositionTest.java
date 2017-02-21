@@ -13,7 +13,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
+import com.dukascopy.api.Instrument;
+import com.jforex.programming.order.OrderParams;
 import com.jforex.programming.order.OrderStaticUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.event.OrderEventType;
@@ -77,6 +80,42 @@ public class PositionTest extends InstrumentUtilForTest {
     public void orderOfOtherPositionAreNotAdded() {
         orderEventSubject.onNext(submitEvent);
         assertFalse(position.contains(buyOrderAUDUSD));
+    }
+
+    @Test
+    public void wouldExceedExposureIsCorrectForBuy() {
+        final OrderParams orderParams = OrderParams
+            .forInstrument(Instrument.EURUSD)
+            .withOrderCommand(OrderCommand.BUY)
+            .withAmount(25.0)
+            .withLabel("ExceededExposure")
+            .build();
+
+        final IOrder orderSpy = orderUtilForTest.spyFromParams(orderParams);
+        sendOrderEvent(orderSpy, OrderEventType.SUBMIT_OK);
+        orderUtilForTest.setState(orderSpy, IOrder.State.FILLED);
+
+        assertFalse(position.wouldExceedExposure(0.0));
+        assertTrue(position.wouldExceedExposure(0.01));
+        assertFalse(position.wouldExceedExposure(-0.1));
+    }
+
+    @Test
+    public void wouldExceedExposureIsCorrectForSell() {
+        final OrderParams orderParams = OrderParams
+            .forInstrument(Instrument.EURUSD)
+            .withOrderCommand(OrderCommand.SELL)
+            .withAmount(25.0)
+            .withLabel("ExceededExposure")
+            .build();
+
+        final IOrder orderSpy = orderUtilForTest.spyFromParams(orderParams);
+        sendOrderEvent(orderSpy, OrderEventType.SUBMIT_OK);
+        orderUtilForTest.setState(orderSpy, IOrder.State.FILLED);
+
+        assertFalse(position.wouldExceedExposure(0.0));
+        assertTrue(position.wouldExceedExposure(-0.01));
+        assertFalse(position.wouldExceedExposure(0.1));
     }
 
     public class AddingBuyOrder {

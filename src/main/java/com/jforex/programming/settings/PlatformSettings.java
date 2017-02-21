@@ -38,6 +38,10 @@ public interface PlatformSettings extends Config {
     @DefaultValue("1000000.0")
     public double baseAmount();
 
+    @Key("env.maxexposure")
+    @DefaultValue("25")
+    public double maxExposure();
+
     @Key("math.amountprecision")
     @DefaultValue("6")
     public int amountPrecision();
