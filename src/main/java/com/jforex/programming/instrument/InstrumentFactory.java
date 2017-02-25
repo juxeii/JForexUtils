@@ -22,15 +22,26 @@ public final class InstrumentFactory {
     private InstrumentFactory() {
     }
 
+    private static final Map<String, Instrument> instrumentByName = new ConcurrentHashMap<>();
     private static final Map<MultiKey<Object>, Instrument> instrumentByCurrencies = new ConcurrentHashMap<>();
 
     public static final Optional<Instrument> maybeFromName(final String instrumentName) {
         checkNotNull(instrumentName);
 
         final String upperCaseName = instrumentName.toUpperCase();
-        return Instrument.isInverted(upperCaseName)
-                ? Optional.of(Instrument.fromInvertedString(upperCaseName))
-                : Optional.ofNullable(Instrument.fromString(upperCaseName));
+        return instrumentByName.containsKey(upperCaseName)
+                ? Optional.of(instrumentByName.get(upperCaseName))
+                : maybeFromNewName(upperCaseName);
+    }
+
+    private static final Optional<Instrument> maybeFromNewName(final String newInstrumentName) {
+        final Optional<Instrument> maybeInstrument = Instrument.isInverted(newInstrumentName)
+                ? Optional.of(Instrument.fromInvertedString(newInstrumentName))
+                : Optional.ofNullable(Instrument.fromString(newInstrumentName));
+
+        if (maybeInstrument.isPresent())
+            instrumentByName.put(newInstrumentName, maybeInstrument.get());
+        return maybeInstrument;
     }
 
     public static final Optional<Instrument> maybeFromCurrencies(final ICurrency firstCurrency,
