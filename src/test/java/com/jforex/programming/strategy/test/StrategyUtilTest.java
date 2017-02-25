@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.dukascopy.api.IBar;
 import com.dukascopy.api.IMessage;
 import com.dukascopy.api.JFException;
 import com.google.common.collect.Lists;
@@ -161,7 +160,6 @@ public class StrategyUtilTest extends QuoteProviderForTest {
     public class AfterBarPushed {
 
         private BarQuoteProvider barQuoteProvider;
-        private InstrumentUtil instrumentUtil;
         private final TestObserver<BarQuote> subscriber = TestObserver.create();
         private Runnable pushBar;
 
@@ -171,7 +169,6 @@ public class StrategyUtilTest extends QuoteProviderForTest {
             barQuoteProvider
                 .observable()
                 .subscribe(subscriber);
-            instrumentUtil = strategyUtil.instrumentUtil(instrumentEURUSD);
             pushBar = () -> strategyUtil.onBar(instrumentEURUSD,
                                                barQuotePeriod,
                                                askBarEURUSD,
@@ -188,18 +185,6 @@ public class StrategyUtilTest extends QuoteProviderForTest {
                        equalTo(askBarQuoteEURUSD));
             assertThat(getOnNextEvent(subscriber, 1),
                        equalTo(bidBarQuoteEURUSD));
-        }
-
-        @Test
-        public void instrumentUtilHasAskBar() {
-            final IBar bar = instrumentUtil.barQuote(askBarEURUSDParams);
-
-            assertThat(bar, equalTo(askBarEURUSD));
-        }
-
-        @Test
-        public void instrumentUtilHasBidBar() {
-            assertThat(instrumentUtil.barQuote(bidBarEURUSDParams), equalTo(bidBarEURUSD));
         }
 
         @Test

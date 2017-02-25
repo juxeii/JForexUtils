@@ -43,7 +43,7 @@ public class HistoryUtil {
             .flatMap(this::tickQuoteObservable);
     }
 
-    private Observable<TickQuote> tickQuoteObservable(final Instrument instrument) {
+    public Observable<TickQuote> tickQuoteObservable(final Instrument instrument) {
         return lastestTickObservable(instrument)
             .flatMap(tick -> Observable.just(new TickQuote(instrument, tick)));
     }
@@ -51,8 +51,7 @@ public class HistoryUtil {
     public Observable<ITick> lastestTickObservable(final Instrument instrument) {
         return Observable
             .fromCallable(() -> latestHistoryTick(instrument))
-            .doOnError(e -> logger.error(e.getMessage()
-                    + "! Will retry latest tick from history now..."))
+            .doOnError(e -> logger.error(e.getMessage() + "Will retry latest tick from history now..."))
             .retryWhen(RxUtil.retryWithDelay(retryParams()));
     }
 
@@ -63,9 +62,11 @@ public class HistoryUtil {
 
     private ITick latestHistoryTick(final Instrument instrument) throws JFException {
         final ITick tick = history.getLastTick(instrument);
-        if (tick == null)
-            throw new QuoteException("Latest tick from history for " + instrument
-                    + " returned null!");
+        if (tick == null) {
+            final String errorMsg = "Latest tick from history for " + instrument + " returned null!";
+            logger.error(errorMsg);
+            throw new QuoteException(errorMsg);
+        }
         return tick;
     }
 
@@ -76,8 +77,7 @@ public class HistoryUtil {
 
         return Observable
             .fromCallable(() -> latestHistoryBar(instrument, period, offerSide))
-            .doOnError(e -> logger.error(e.getMessage()
-                    + "! Will retry latest bar from history now..."))
+            .doOnError(e -> logger.error(e.getMessage() + "Will retry latest bar from history now..."))
             .retryWhen(RxUtil.retryWithDelay(retryParams()));
     }
 
@@ -88,9 +88,12 @@ public class HistoryUtil {
                                         period,
                                         offerSide,
                                         1);
-        if (bar == null)
-            throw new QuoteException("Latest bar from history for " + instrument
-                    + " " + period + " " + offerSide + " returned null!");
+        if (bar == null) {
+            final String errorMsg = "Latest bar from history for " + instrument
+                    + " " + period + " " + offerSide + " returned null!";
+            logger.error(errorMsg);
+            throw new QuoteException(errorMsg);
+        }
         return bar;
     }
 }

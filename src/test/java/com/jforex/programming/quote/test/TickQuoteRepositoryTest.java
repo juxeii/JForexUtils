@@ -1,6 +1,7 @@
 package com.jforex.programming.quote.test;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.junit.runner.RunWith;
 
 import com.dukascopy.api.Instrument;
 import com.google.common.collect.Sets;
+import com.jforex.programming.quote.QuoteException;
 import com.jforex.programming.quote.TickQuote;
 import com.jforex.programming.quote.TickQuoteRepository;
 import com.jforex.programming.test.common.QuoteProviderForTest;
@@ -96,6 +98,43 @@ public class TickQuoteRepositoryTest extends QuoteProviderForTest {
                            equalTo(tickQuoteEURUSD));
                 assertThat(tickMap.get(instrumentAUDUSD),
                            equalTo(tickQuoteAUDUSD));
+            }
+        }
+    }
+
+    public class ForInstrumentNotSubscribed {
+
+        private final Instrument testInstrument = instrumentUSDJPY;
+
+        public class WhenHistoryFails {
+
+            @Before
+            public void setUp() {
+                when(historyUtilMock.tickQuoteObservable(testInstrument))
+                    .thenThrow(new QuoteException(""));
+            }
+
+            @Test
+            public void quoteIsSavedInCache() {
+                assertNull(tickQuoteRepository.get(testInstrument));
+            }
+        }
+
+        public class WhenHistoryHasQuote {
+
+            @Before
+            public void setUp() {
+                when(historyUtilMock.tickQuoteObservable(testInstrument))
+                    .thenReturn(Observable.just(tickQuoteUSDJPY));
+
+                tickQuoteRepository.get(testInstrument);
+            }
+
+            @Test
+            public void quoteIsSavedInCache() {
+                tickQuoteRepository.get(testInstrument);
+
+                verify(historyUtilMock).tickQuoteObservable(testInstrument);
             }
         }
     }
