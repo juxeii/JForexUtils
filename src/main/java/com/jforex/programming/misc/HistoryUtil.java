@@ -51,7 +51,7 @@ public class HistoryUtil {
     public Observable<ITick> lastestTickObservable(final Instrument instrument) {
         return Observable
             .fromCallable(() -> latestHistoryTick(instrument))
-            .doOnError(e -> logger.error(e.getMessage() + "Will retry latest tick from history now..."))
+            .doOnError(e -> logger.error(e.getMessage() + " Will retry latest tick from history now..."))
             .retryWhen(RxUtil.retryWithDelay(retryParams()));
     }
 
@@ -77,7 +77,7 @@ public class HistoryUtil {
 
         return Observable
             .fromCallable(() -> latestHistoryBar(instrument, period, offerSide))
-            .doOnError(e -> logger.error(e.getMessage() + "Will retry latest bar from history now..."))
+            .doOnError(e -> logger.error(e.getMessage() + " Will retry latest bar from history now..."))
             .retryWhen(RxUtil.retryWithDelay(retryParams()));
     }
 
