@@ -27,10 +27,7 @@ public class TickQuoteRepository {
 
         historyUtil
             .tickQuotesObservable(subscribedInstruments)
-            .blockingSubscribe(quote -> {
-                onTickQuote(quote);
-                logger.info("Quote for " + quote.instrument() + " on startup fetched.");
-            });
+            .subscribe(this::onTickQuote);
         tickQuoteObservable.subscribe(this::onTickQuote);
     }
 
