@@ -58,6 +58,13 @@ public class PositionUtilTest extends InstrumentUtilForTest {
     }
 
     @Test
+    public void createIsCorrect() {
+        positionUtil.create(instrumentEURUSD);
+
+        verify(positionFactoryMock).forInstrument(instrumentEURUSD);
+    }
+
+    @Test
     public void positionOrdersIsCorrect() {
         assertThat(positionUtil.positionOrders(instrumentEURUSD), equalTo(positionEURUSDMock));
     }
