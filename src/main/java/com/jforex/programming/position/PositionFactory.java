@@ -22,7 +22,7 @@ public class PositionFactory {
         return positionByInstrument.values();
     }
 
-    public Position createForInstrument(final Instrument instrument) {
+    public Position forInstrument(final Instrument instrument) {
         return positionByInstrument.computeIfAbsent(instrument, this::createNew);
     }
 

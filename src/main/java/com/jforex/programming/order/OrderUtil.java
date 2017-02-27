@@ -92,6 +92,7 @@ public class OrderUtil {
         final OrderParams orderParams = submitParams.orderParams();
         final double signedAmount = OrderStaticUtil.signedAmount(orderParams);
         final Instrument instrument = orderParams.instrument();
+        positionUtil.create(instrument);
 
         final boolean wouldExceedAmount = exposure.wouldExceed(instrument, signedAmount);
         return wouldExceedAmount

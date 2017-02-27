@@ -22,7 +22,11 @@ public class PositionUtil {
     }
 
     public PositionOrders positionOrders(final Instrument instrument) {
-        return positionFactory.createForInstrument(instrument);
+        return positionFactory.forInstrument(instrument);
+    }
+
+    public void create(final Instrument instrument) {
+        positionFactory.forInstrument(instrument);
     }
 
     public Collection<IOrder> filledOrders(final Instrument instrument) {

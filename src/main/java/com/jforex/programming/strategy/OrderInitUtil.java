@@ -123,7 +123,7 @@ public class OrderInitUtil {
             .fromCallable(() -> engine.getOrders())
             .flatMap(Observable::fromIterable)
             .doOnNext(order -> {
-                positionFactory.createForInstrument(order.getInstrument());
+                positionFactory.forInstrument(order.getInstrument());
                 orderEventGateway.importOrder(order);
             })
             .ignoreElements();
