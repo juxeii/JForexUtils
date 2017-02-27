@@ -33,7 +33,7 @@ public class CancelSLTPAndMergeTask {
                                        cancelSLTPParams);
 
         final MergeParamsForPosition mergeParamsForPosition = mergePositionParams.mergeParamsForPosition();
-        final String mergeOrderLabel = mergeParamsForPosition.mergeOrderLabel();
+        final String mergeOrderLabel = mergePositionParams.mergeOrderLabel();
         final Observable<OrderEvent> merge =
                 taskParamsUtil.compose(basicTask.mergeOrders(mergeOrderLabel, toMergeOrders),
                                        mergeParamsForPosition);

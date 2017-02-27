@@ -28,8 +28,8 @@ public class MergeAllPositionsParams extends TaskParamsWithType {
         return TaskParamsType.MERGEALLPOSITIONS;
     }
 
-    public static Builder
-           withMergeParamsFactory(final Function<Instrument, MergePositionParams> mergePositionParamsFactory) {
+    public static Builder withMergeParamsFactory(final Function<Instrument,
+                                                                MergePositionParams> mergePositionParamsFactory) {
         checkNotNull(mergePositionParamsFactory);
 
         return new Builder(mergePositionParamsFactory);

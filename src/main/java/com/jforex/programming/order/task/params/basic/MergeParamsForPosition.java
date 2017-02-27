@@ -1,7 +1,5 @@
 package com.jforex.programming.order.task.params.basic;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.function.Consumer;
 
 import com.jforex.programming.order.event.OrderEvent;
@@ -12,16 +10,8 @@ import com.jforex.programming.order.task.params.TaskParamsWithType;
 
 public class MergeParamsForPosition extends TaskParamsWithType {
 
-    private final String mergeOrderLabel;
-
     private MergeParamsForPosition(final Builder builder) {
         super(builder);
-
-        this.mergeOrderLabel = builder.mergeOrderLabel;
-    }
-
-    public String mergeOrderLabel() {
-        return mergeOrderLabel;
     }
 
     @Override
@@ -29,19 +19,11 @@ public class MergeParamsForPosition extends TaskParamsWithType {
         return TaskParamsType.MERGE;
     }
 
-    public static Builder withLabel(final String mergeOrderLabel) {
-        checkNotNull(mergeOrderLabel);
-
-        return new Builder(mergeOrderLabel);
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static class Builder extends TaskParamsBase.Builder<Builder> {
-
-        private final String mergeOrderLabel;
-
-        public Builder(final String mergeOrderLabel) {
-            this.mergeOrderLabel = mergeOrderLabel;
-        }
 
         public Builder doOnMerge(final Consumer<OrderEvent> mergeConsumer) {
             setEventConsumer(OrderEventType.MERGE_OK, mergeConsumer);

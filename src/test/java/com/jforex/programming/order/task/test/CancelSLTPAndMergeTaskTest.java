@@ -58,7 +58,7 @@ public class CancelSLTPAndMergeTaskTest extends InstrumentUtilForTest {
     private void setUpMocks() {
         when(mergePositionParamsMock.mergeParamsForPosition())
             .thenReturn(mergeParamsForPositionMock);
-        when(mergeParamsForPositionMock.mergeOrderLabel())
+        when(mergePositionParamsMock.mergeOrderLabel())
             .thenReturn(mergeOrderLabel);
         when(mergeParamsForPositionMock.composeData())
             .thenReturn(composeData);

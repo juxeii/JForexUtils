@@ -42,16 +42,16 @@ public class MergePositionParamsTest extends CommonParamsForTest {
     @Mock
     private CancelTPParams cancelTPParamsMock;
     @Mock
-    private Function<IOrder, TaskParamsBase> cancelSLParamsFactoryMock;
+    private Function<IOrder, CancelSLParams> cancelSLParamsFactoryMock;
     @Mock
-    private Function<IOrder, TaskParamsBase> cancelTPParamsFactoryMock;
+    private Function<IOrder, CancelTPParams> cancelTPParamsFactoryMock;
 
     public class DefaultTests {
 
         @Before
         public void setUp() {
             mergePositionParams = MergePositionParams
-                .newBuilder(instrumentEURUSD, mergeParamsForPositionMock)
+                .newBuilder(instrumentEURUSD, mergeOrderLabel)
                 .build();
         }
 
@@ -61,17 +61,13 @@ public class MergePositionParamsTest extends CommonParamsForTest {
         }
 
         @Test
-        public void mergeParamsForPositionIsCorrect() {
-            assertThat(mergePositionParams.mergeParamsForPosition(), equalTo(mergeParamsForPositionMock));
+        public void mergeOrderLabelIsCorrect() {
+            assertThat(mergePositionParams.mergeOrderLabel(), equalTo(mergeOrderLabel));
         }
 
         @Test
         public void cancelSLTPParamsIsOfTypeEmptyTaskParams() {
             assertEmptyParamsType(mergePositionParams.cancelSLTPParams());
-        }
-
-        private void assertDefaultFactoryIsCorrect(final Function<IOrder, TaskParamsBase> factory) {
-            assertEmptyParamsType(factory.apply(orderForTest));
         }
 
         private void assertEmptyParamsType(final TaskParamsBase taskParams) {
@@ -90,12 +86,12 @@ public class MergePositionParamsTest extends CommonParamsForTest {
 
         @Test
         public void cancelSLParamsFactoryProducesTypeOfEmptyTaskParams() {
-            assertDefaultFactoryIsCorrect(mergePositionParams.cancelSLParamsFactory());
+            assertEmptyParamsType(mergePositionParams.cancelSLParamsFactory().apply(orderForTest));
         }
 
         @Test
         public void cancelTPParamsFactoryProducesTypeOfEmptyTaskParams() {
-            assertDefaultFactoryIsCorrect(mergePositionParams.cancelTPParamsFactory());
+            assertEmptyParamsType(mergePositionParams.cancelTPParamsFactory().apply(orderForTest));
         }
 
         @Test
@@ -132,7 +128,7 @@ public class MergePositionParamsTest extends CommonParamsForTest {
         @Before
         public void setUp() {
             mergePositionParams = MergePositionParams
-                .newBuilder(instrumentEURUSD, mergeParamsForPositionMock)
+                .newBuilder(instrumentEURUSD, mergeOrderLabel)
                 .withMergeExecutionMode(CancelSLTPMode.ConcatCancelSLAndTP)
                 .withBatchCancelSLMode(BatchMode.CONCAT)
                 .withBatchCancelTPMode(BatchMode.CONCAT)
@@ -141,6 +137,7 @@ public class MergePositionParamsTest extends CommonParamsForTest {
                 .withBatchCancelTPParams(batchCancelTPParamsMock)
                 .withCancelSLParamsFactory(cancelSLParamsFactoryMock)
                 .withCancelTPParamsFactory(cancelTPParamsFactoryMock)
+                .withMergeParamsForPosition(mergeParamsForPositionMock)
                 .doOnStart(actionMock)
                 .doOnComplete(actionMock)
                 .doOnError(errorConsumerMock)
@@ -171,6 +168,11 @@ public class MergePositionParamsTest extends CommonParamsForTest {
         @Test
         public void cancelTPParamsFactoryIsCorrect() {
             assertThat(mergePositionParams.cancelTPParamsFactory(), equalTo(cancelTPParamsFactoryMock));
+        }
+
+        @Test
+        public void mergeParamsForPositionIsCorrect() {
+            assertThat(mergePositionParams.mergeParamsForPosition(), equalTo(mergeParamsForPositionMock));
         }
 
         @Test

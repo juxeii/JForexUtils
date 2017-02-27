@@ -11,11 +11,14 @@ import com.jforex.programming.order.task.CancelSLTPMode;
 import com.jforex.programming.order.task.params.TaskParamsBase;
 import com.jforex.programming.order.task.params.TaskParamsType;
 import com.jforex.programming.order.task.params.TaskParamsWithType;
+import com.jforex.programming.order.task.params.basic.CancelSLParams;
+import com.jforex.programming.order.task.params.basic.CancelTPParams;
 import com.jforex.programming.order.task.params.basic.MergeParamsForPosition;
 
 public class MergePositionParams extends TaskParamsWithType {
 
     private final Instrument instrument;
+    private final String mergeOrderLabel;
     private final MergeParamsForPosition mergeParamsForPosition;
     private final CancelSLTPMode mergeExecutionMode;
     private final BatchMode batchCancelSLMode;
@@ -23,13 +26,14 @@ public class MergePositionParams extends TaskParamsWithType {
     private final TaskParamsBase cancelSLTPParams;
     private final TaskParamsBase batchCancelSLParams;
     private final TaskParamsBase batchCancelTPParams;
-    private final Function<IOrder, TaskParamsBase> cancelSLParamsFactory;
-    private final Function<IOrder, TaskParamsBase> cancelTPParamsFactory;
+    private final Function<IOrder, CancelSLParams> cancelSLParamsFactory;
+    private final Function<IOrder, CancelTPParams> cancelTPParamsFactory;
 
     private MergePositionParams(final Builder builder) {
         super(builder);
 
         instrument = builder.instrument;
+        mergeOrderLabel = builder.mergeOrderLabel;
         mergeParamsForPosition = builder.mergeParamsForPosition;
         mergeExecutionMode = builder.mergeExecutionMode;
         batchCancelSLMode = builder.batchCancelSLMode;
@@ -43,6 +47,10 @@ public class MergePositionParams extends TaskParamsWithType {
 
     public Instrument instrument() {
         return instrument;
+    }
+
+    public String mergeOrderLabel() {
+        return mergeOrderLabel;
     }
 
     public MergeParamsForPosition mergeParamsForPosition() {
@@ -61,11 +69,11 @@ public class MergePositionParams extends TaskParamsWithType {
         return batchCancelTPParams;
     }
 
-    public Function<IOrder, TaskParamsBase> cancelSLParamsFactory() {
+    public Function<IOrder, CancelSLParams> cancelSLParamsFactory() {
         return cancelSLParamsFactory;
     }
 
-    public Function<IOrder, TaskParamsBase> cancelTPParamsFactory() {
+    public Function<IOrder, CancelTPParams> cancelTPParamsFactory() {
         return cancelTPParamsFactory;
     }
 
@@ -87,36 +95,44 @@ public class MergePositionParams extends TaskParamsWithType {
     }
 
     public static Builder newBuilder(final Instrument instrument,
-                                     final MergeParamsForPosition mergeParamsForPosition) {
+                                     final String mergeOrderLabel) {
         checkNotNull(instrument);
-        checkNotNull(mergeParamsForPosition);
+        checkNotNull(mergeOrderLabel);
 
-        return new Builder(instrument, mergeParamsForPosition);
+        return new Builder(instrument, mergeOrderLabel);
     }
 
     public static class Builder extends TaskParamsBase.Builder<Builder> {
 
         private final Instrument instrument;
-        private final MergeParamsForPosition mergeParamsForPosition;
+        private final String mergeOrderLabel;
+        private MergeParamsForPosition mergeParamsForPosition;
         private CancelSLTPMode mergeExecutionMode = CancelSLTPMode.MergeCancelSLAndTP;
         private BatchMode batchCancelSLMode = BatchMode.MERGE;
         private BatchMode batchCancelTPMode = BatchMode.MERGE;
         private TaskParamsBase cancelSLTPParams;
         private TaskParamsBase batchCancelSLParams;
         private TaskParamsBase batchCancelTPParams;
-        private Function<IOrder, TaskParamsBase> cancelSLParamsFactory;
-        private Function<IOrder, TaskParamsBase> cancelTPParamsFactory;
+        private Function<IOrder, CancelSLParams> cancelSLParamsFactory;
+        private Function<IOrder, CancelTPParams> cancelTPParamsFactory;
 
         public Builder(final Instrument instrument,
-                       final MergeParamsForPosition mergeParamsForPosition) {
+                       final String mergeOrderLabel) {
             this.instrument = instrument;
-            this.mergeParamsForPosition = mergeParamsForPosition;
+            this.mergeOrderLabel = mergeOrderLabel;
 
             cancelSLTPParams = emptyParams();
             batchCancelSLParams = emptyParams();
             batchCancelTPParams = emptyParams();
-            cancelSLParamsFactory = order -> emptyParams();
-            cancelTPParamsFactory = order -> emptyParams();
+            cancelSLParamsFactory = order -> CancelSLParams
+                .withOrder(order)
+                .build();
+            cancelTPParamsFactory = order -> CancelTPParams
+                .withOrder(order)
+                .build();
+            mergeParamsForPosition = MergeParamsForPosition
+                .newBuilder()
+                .build();
         }
 
         private TaskParamsBase emptyParams() {
@@ -167,17 +183,24 @@ public class MergePositionParams extends TaskParamsWithType {
             return this;
         }
 
-        public Builder withCancelSLParamsFactory(final Function<IOrder, TaskParamsBase> cancelSLParamsFactory) {
+        public Builder withCancelSLParamsFactory(final Function<IOrder, CancelSLParams> cancelSLParamsFactory) {
             checkNotNull(cancelSLParamsFactory);
 
             this.cancelSLParamsFactory = cancelSLParamsFactory;
             return this;
         }
 
-        public Builder withCancelTPParamsFactory(final Function<IOrder, TaskParamsBase> cancelTPParamsFactory) {
+        public Builder withCancelTPParamsFactory(final Function<IOrder, CancelTPParams> cancelTPParamsFactory) {
             checkNotNull(cancelTPParamsFactory);
 
             this.cancelTPParamsFactory = cancelTPParamsFactory;
+            return this;
+        }
+
+        public Builder withMergeParamsForPosition(final MergeParamsForPosition mergeParamsForPosition) {
+            checkNotNull(mergeParamsForPosition);
+
+            this.mergeParamsForPosition = mergeParamsForPosition;
             return this;
         }
 

@@ -29,7 +29,7 @@ public class MergeParamsForPositionTest extends CommonParamsForTest {
     @Before
     public void setUp() {
         mergeParamsForPosition = MergeParamsForPosition
-            .withLabel(mergeOrderLabel)
+            .newBuilder()
             .doOnStart(actionMock)
             .doOnComplete(actionMock)
             .doOnError(errorConsumerMock)
@@ -38,11 +38,6 @@ public class MergeParamsForPositionTest extends CommonParamsForTest {
             .doOnMergeClose(mergeCloseConsumerMock)
             .doOnReject(rejectConsumerMock)
             .build();
-    }
-
-    @Test
-    public void mergeOrderLabelIsCorrect() {
-        assertThat(mergeParamsForPosition.mergeOrderLabel(), equalTo(mergeOrderLabel));
     }
 
     @Test
