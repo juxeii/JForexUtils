@@ -49,7 +49,7 @@ publishing {
 }
 
 dependencies {
-   compile 'io.reactivex.rxjava2:rxjava:2.0.5'
+   compile 'io.reactivex.rxjava2:rxjava:2.0.6'
    compile 'com.dukascopy.api:JForex-API:2.13.30'
    compile 'com.google.guava:guava:20.0'
    compile 'org.apache.logging.log4j:log4j-api:2.5'
