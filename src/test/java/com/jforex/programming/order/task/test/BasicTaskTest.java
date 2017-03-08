@@ -653,7 +653,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
             public void setUp() {
                 when(calculationUtilMock.slPriceForPips(orderForTest, pips))
                     .thenReturn(newSL);
-                when(orderTaskExecutorMock.setStopLossPrice(orderForTest, newSL, OfferSide.ASK, -1.0))
+                when(orderTaskExecutorMock.setStopLossPrice(orderForTest, newSL, OfferSide.ASK, 0.0))
                     .thenReturn(emptyCompletable());
 
                 observable = basicTask.setStopLossPrice(SetSLParams
@@ -700,7 +700,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
                     verify(orderTaskExecutorMock).setStopLossPrice(orderForTest,
                                                                    newSL,
                                                                    OfferSide.ASK,
-                                                                   -1);
+                                                                   0.0);
                 }
             }
         }

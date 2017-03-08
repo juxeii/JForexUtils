@@ -39,7 +39,7 @@ public class SetSLParams extends TaskParamsWithType {
     }
 
     private double evalTrailingStep(final Optional<Double> maybeTrailingStep) {
-        return maybeTrailingStep.orElse(-1.0);
+        return maybeTrailingStep.orElse(0.0);
     }
 
     public final IOrder order() {
@@ -123,6 +123,7 @@ public class SetSLParams extends TaskParamsWithType {
             return this;
         }
 
+        @Override
         public SetSLParams build() {
             return new SetSLParams(this);
         }

@@ -50,12 +50,12 @@ public class SetSLParamsTest extends CommonParamsForTest {
     }
 
     @Test
-    public void trailingStepIsNegativeWhenNotSpecified() {
+    public void trailingStepIsZeroWhenNotSpecified() {
         setSLParams = SetSLParams
             .setSLAtPrice(buyOrderEURUSD, newSL)
             .build();
 
-        assertThat(setSLParams.trailingStep(), equalTo(-1.0));
+        assertThat(setSLParams.trailingStep(), equalTo(0.0));
     }
 
     @Test
