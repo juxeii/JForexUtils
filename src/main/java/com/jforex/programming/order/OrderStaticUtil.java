@@ -13,6 +13,7 @@ import com.dukascopy.api.OfferSide;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.jforex.programming.math.MathUtil;
 import com.jforex.programming.settings.PlatformSettings;
 import com.jforex.programming.strategy.StrategyUtil;
 
@@ -181,5 +182,18 @@ public final class OrderStaticUtil {
             .withOrderCommand(directionToCommand(orderDirection))
             .withAmount(Math.abs(signedAmount))
             .build();
+    }
+
+    public static final double signedAmountForReplace(final double currentSignedAmount,
+                                                      final double targedSignedAmount) {
+        return MathUtil.roundAmount(targedSignedAmount - currentSignedAmount);
+    }
+
+    public static final double signedAmountForReplace(final IOrder order,
+                                                      final double targedSignedAmount) {
+        checkNotNull(order);
+
+        final double signedOrderAmount = signedAmount(order);
+        return signedAmountForReplace(signedOrderAmount, targedSignedAmount);
     }
 }

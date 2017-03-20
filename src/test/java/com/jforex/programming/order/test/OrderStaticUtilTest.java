@@ -27,6 +27,7 @@ import static com.jforex.programming.order.OrderStaticUtil.offerSideForOrderComm
 import static com.jforex.programming.order.OrderStaticUtil.openPricePredicate;
 import static com.jforex.programming.order.OrderStaticUtil.sellOrderCommands;
 import static com.jforex.programming.order.OrderStaticUtil.signedAmount;
+import static com.jforex.programming.order.OrderStaticUtil.signedAmountForReplace;
 import static com.jforex.programming.order.OrderStaticUtil.slPredicate;
 import static com.jforex.programming.order.OrderStaticUtil.statePredicate;
 import static com.jforex.programming.order.OrderStaticUtil.switchCommand;
@@ -556,5 +557,52 @@ public class OrderStaticUtilTest extends InstrumentUtilForTest {
 
             assertAdaptedOrderParams(OrderCommand.SELL, 0.12);
         }
+    }
+
+    @Test
+    public void signedAmountForReplaceIsCorrectWhenCurrentAmountIsZero() {
+        assertThat(signedAmountForReplace(0.0, -0.12), equalTo(-0.12));
+        assertThat(signedAmountForReplace(0.0, 0.0), equalTo(0.0));
+        assertThat(signedAmountForReplace(0.0, 0.04123), equalTo(0.04123));
+    }
+
+    @Test
+    public void signedAmountForReplaceIsCorrectWhenCurrentAmountIsPositive() {
+        assertThat(signedAmountForReplace(0.023, 0.12), equalTo(0.097));
+        assertThat(signedAmountForReplace(0.044, 0.012), equalTo(-0.032));
+
+        assertThat(signedAmountForReplace(0.023, -0.12), equalTo(-0.143));
+        assertThat(signedAmountForReplace(0.044, -0.012), equalTo(-0.056));
+    }
+
+    @Test
+    public void signedAmountForReplaceIsCorrectWhenCurrentAmountIsNegative() {
+        assertThat(signedAmountForReplace(-0.023, 0.12), equalTo(0.143));
+        assertThat(signedAmountForReplace(-0.044, 0.012), equalTo(0.056));
+
+        assertThat(signedAmountForReplace(-0.023, -0.12), equalTo(-0.097));
+        assertThat(signedAmountForReplace(-0.044, -0.012), equalTo(0.032));
+    }
+
+    @Test
+    public void signedAmountForReplaceOrderIsCorrectWhenCurrentAmountIsPositive() {
+        orderUtilForTest.setAmount(buyOrderEURUSD, 0.023);
+        assertThat(signedAmountForReplace(buyOrderEURUSD, 0.12), equalTo(0.097));
+        assertThat(signedAmountForReplace(buyOrderEURUSD, -0.12), equalTo(-0.143));
+
+        orderUtilForTest.setAmount(buyOrderEURUSD, 0.044);
+        assertThat(signedAmountForReplace(buyOrderEURUSD, 0.012), equalTo(-0.032));
+        assertThat(signedAmountForReplace(buyOrderEURUSD, -0.012), equalTo(-0.056));
+    }
+
+    @Test
+    public void signedAmountForReplaceOrderIsCorrectWhenCurrentAmountIsNegative() {
+        orderUtilForTest.setAmount(sellOrderEURUSD, 0.023);
+        assertThat(signedAmountForReplace(sellOrderEURUSD, 0.12), equalTo(0.143));
+        assertThat(signedAmountForReplace(sellOrderEURUSD, -0.12), equalTo(-0.097));
+
+        orderUtilForTest.setAmount(sellOrderEURUSD, 0.044);
+        assertThat(signedAmountForReplace(sellOrderEURUSD, 0.012), equalTo(0.056));
+        assertThat(signedAmountForReplace(sellOrderEURUSD, -0.012), equalTo(0.032));
     }
 }
