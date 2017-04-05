@@ -23,7 +23,7 @@ apply plugin: 'com.github.kt3k.coveralls'
 apply plugin: 'jacoco'
 
 group= 'com.jforex.programming'
-version = '0.9.812'
+version = '0.9.813'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
