@@ -137,6 +137,22 @@ public class OrderEventTypeDataFactoryTest extends CommonUtilForTest {
     }
 
     @Test
+    public void partialCloseEventTypeDataIsCorrect() {
+        typeData = orderEventTypeDataFactory.forCallReason(OrderCallReason.PARTIAL_CLOSE);
+
+        assertDoneEventTypes(EnumSet.of(PARTIAL_CLOSE_OK, CLOSE_OK));
+        assertRejectEventTypes(EnumSet.of(CLOSE_REJECTED));
+        assertInfoEventTypes(EnumSet.of(NOTIFICATION));
+        assertFinishEventTypes(EnumSet.of(PARTIAL_CLOSE_OK,
+                                          CLOSE_OK,
+                                          CLOSE_REJECTED));
+        assertAllEventTypes(EnumSet.of(NOTIFICATION,
+                                       CLOSE_OK,
+                                       CLOSE_REJECTED,
+                                       PARTIAL_CLOSE_OK));
+    }
+
+    @Test
     public void setLabelEventTypeDataIsCorrect() {
         typeData = orderEventTypeDataFactory.forCallReason(OrderCallReason.CHANGE_LABEL);
 

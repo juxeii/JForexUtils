@@ -13,6 +13,8 @@ public enum OrderCallReason {
     MERGE,
     /** A request for closing an order. */
     CLOSE,
+    /** A request for partial closing an order. */
+    PARTIAL_CLOSE,
     /** A request for changing the stop loss price of an order. */
     CHANGE_SL,
     /** A request for changing the take profit price of an order. */

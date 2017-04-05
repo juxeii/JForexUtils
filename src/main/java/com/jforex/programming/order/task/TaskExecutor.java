@@ -3,6 +3,9 @@ package com.jforex.programming.order.task;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.OfferSide;
@@ -17,6 +20,8 @@ public class TaskExecutor {
 
     private final StrategyThreadRunner strategyThreadRunner;
     private final IEngine engine;
+
+    private final static Logger logger = LogManager.getLogger(TaskExecutor.class);
 
     public TaskExecutor(final StrategyThreadRunner strategyThreadRunner,
                         final IEngine engine) {
@@ -44,6 +49,7 @@ public class TaskExecutor {
 
     public Completable close(final IOrder order,
                              final double amount) {
+        logger.info("Called normal close");
         return completable(() -> order.close(amount));
     }
 
@@ -51,6 +57,7 @@ public class TaskExecutor {
                              final double amount,
                              final double price,
                              final double slippage) {
+        logger.info("Called complex close");
         return completable(() -> order.close(amount,
                                              price,
                                              slippage));

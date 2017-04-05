@@ -9,6 +9,9 @@ import static com.jforex.programming.order.OrderStaticUtil.isTPSetTo;
 
 import java.util.Collection;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.math.CalculationUtil;
 import com.jforex.programming.order.OrderParams;
@@ -35,6 +38,8 @@ public class BasicTask {
     private final TaskExecutor taskExecutor;
     private final OrderUtilHandler orderUtilHandler;
     private final CalculationUtil calculationUtil;
+
+    private final static Logger logger = LogManager.getLogger(BasicTask.class);
 
     public BasicTask(final TaskExecutor taskExecutor,
                      final OrderUtilHandler orderUtilHandler,
@@ -75,15 +80,26 @@ public class BasicTask {
     }
 
     public Observable<OrderEvent> close(final CloseParams closeParams) {
+        logger.info("Called close");
         return Observable
             .just(closeParams.order())
             .filter(order -> !OrderStaticUtil.isClosed.test(order))
             .flatMap(order -> evalCloseParmas(order, closeParams)
-                .andThen(orderUtilObservable(order, OrderCallReason.CLOSE)));
+                .andThen(orderUtilObservable(order, callReasonForClose(closeParams, order))));
+    }
+
+    private OrderCallReason callReasonForClose(final CloseParams closeParams,
+                                               final IOrder orderToClose) {
+        final double closeAmount = closeParams.partialCloseAmount();
+        final double orderAmount = orderToClose.getAmount();
+        return closeAmount > 0 && closeAmount < orderAmount
+                ? OrderCallReason.PARTIAL_CLOSE
+                : OrderCallReason.CLOSE;
     }
 
     private Completable evalCloseParmas(final IOrder orderToClose,
                                         final CloseParams closeParams) {
+        logger.info("Called evalCloseParmas");
         return closeParams.maybePrice().isPresent()
                 ? taskExecutor
                     .close(orderToClose,
@@ -176,6 +192,7 @@ public class BasicTask {
 
     private final Observable<OrderEvent> orderUtilObservable(final IOrder order,
                                                              final OrderCallReason orderCallReason) {
+        logger.info("Called orderUtilObservable");
         return orderUtilHandler.callObservable(order, orderCallReason);
     }
 }

@@ -52,6 +52,10 @@ public class OrderEventTypeDataFactory {
             new OrderEventTypeData(EnumSet.of(CLOSE_OK),
                                    EnumSet.of(CLOSE_REJECTED),
                                    EnumSet.of(NOTIFICATION, PARTIAL_CLOSE_OK));
+    private static final OrderEventTypeData partialCloseData =
+            new OrderEventTypeData(EnumSet.of(CLOSE_OK, PARTIAL_CLOSE_OK),
+                                   EnumSet.of(CLOSE_REJECTED),
+                                   EnumSet.of(NOTIFICATION));
     private static final OrderEventTypeData setLabelData =
             new OrderEventTypeData(EnumSet.of(CHANGED_LABEL),
                                    EnumSet.of(CHANGE_LABEL_REJECTED),
@@ -84,6 +88,7 @@ public class OrderEventTypeDataFactory {
                     .put(OrderCallReason.SUBMIT_CONDITIONAL, submitConditionalData)
                     .put(OrderCallReason.MERGE, mergeData)
                     .put(OrderCallReason.CLOSE, closeData)
+                    .put(OrderCallReason.PARTIAL_CLOSE, partialCloseData)
                     .put(OrderCallReason.CHANGE_LABEL, setLabelData)
                     .put(OrderCallReason.CHANGE_GTT, setGTTData)
                     .put(OrderCallReason.CHANGE_AMOUNT, setAmountData)

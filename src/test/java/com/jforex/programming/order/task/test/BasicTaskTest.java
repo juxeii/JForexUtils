@@ -323,7 +323,7 @@ public class BasicTaskTest extends InstrumentUtilForTest {
 
         public class WithPriceSetup {
 
-            private final double closeAmount = 0.12;
+            private final double closeAmount = 0.05;
             private final double closePrice = 1.1234;
             private final double closeSlippage = 5.5;
 
@@ -360,14 +360,14 @@ public class BasicTaskTest extends InstrumentUtilForTest {
                 @Before
                 public void setUp() {
                     orderUtilForTest.setState(orderForTest, IOrder.State.FILLED);
-                    setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.CLOSE);
+                    setUpOrderUtilHandlerMock(emptyObservable(), OrderCallReason.PARTIAL_CLOSE);
 
                     testObserver = observable.test();
                 }
 
                 @Test
                 public void orderUtilHandlerIsCalled() {
-                    verifyOrderUtilHandlerMockCall(OrderCallReason.CLOSE);
+                    verifyOrderUtilHandlerMockCall(OrderCallReason.PARTIAL_CLOSE);
                 }
 
                 @Test

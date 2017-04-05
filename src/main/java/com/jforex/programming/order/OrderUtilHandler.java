@@ -1,5 +1,8 @@
 package com.jforex.programming.order;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.dukascopy.api.IOrder;
 import com.jforex.programming.order.call.OrderCallReason;
 import com.jforex.programming.order.call.OrderCallRequest;
@@ -17,6 +20,8 @@ public class OrderUtilHandler {
     private final OrderEventTypeDataFactory orderEventTypeDataFactory;
     private final JFHotPublisher<OrderCallRequest> callRequestPublisher;
 
+    private final static Logger logger = LogManager.getLogger(OrderUtilHandler.class);
+
     public OrderUtilHandler(final OrderEventGateway orderEventGateway,
                             final OrderEventTypeDataFactory orderEventTypeDataFactory,
                             final JFHotPublisher<OrderCallRequest> callRequestPublisher) {
@@ -27,6 +32,7 @@ public class OrderUtilHandler {
 
     public Observable<OrderEvent> callObservable(final IOrder orderOfCall,
                                                  final OrderCallReason callReason) {
+        logger.info("Called callObservable");
         return Observable
             .just(orderOfCall)
             .doOnSubscribe(d -> callRequestPublisher.onNext(new OrderCallRequest(orderOfCall, callReason)))
