@@ -49,7 +49,7 @@ publishing {
 }
 
 dependencies {
-   compile 'io.reactivex.rxjava2:rxjava:2.0.8'
+   compile 'io.reactivex.rxjava2:rxjava:2.1.0'
    compile 'com.dukascopy.api:JForex-API:2.13.34'
    compile 'com.google.guava:guava:20.0'
    compile 'org.apache.logging.log4j:log4j-api:2.5'
@@ -57,7 +57,7 @@ dependencies {
    compile 'org.apache.commons:commons-collections4:4.1'
    compile 'org.apache.commons:commons-lang3:3.4'
    compile 'org.aeonbits.owner:owner:1.0.9'
-   compile 'com.github.dpaukov:combinatoricslib3:3.1.1'
+   compile 'com.github.dpaukov:combinatoricslib3:3.2.0'
    
    testCompile 'de.bechte.junit:junit-hierarchicalcontextrunner:4.12.1'
    testCompile 'org.hamcrest:java-hamcrest:2.0.0.0'
