@@ -106,12 +106,12 @@ public class CalculationUtil {
                                              final OrderCommand orderCommand,
                                              final double pips) {
         return InstrumentUtil.addPipsToPrice(instrument,
-                                             currentQuoteForSLTP(instrument, orderCommand),
+                                             currentQuoteForOrderCommand(instrument, orderCommand),
                                              orderCommand == OrderCommand.BUY ? -pips : pips);
     }
 
-    private final double currentQuoteForSLTP(final Instrument instrument,
-                                             final OrderCommand orderCommand) {
+    public double currentQuoteForOrderCommand(final Instrument instrument,
+                                              final OrderCommand orderCommand) {
         return orderCommand == OrderCommand.BUY
                 ? tickQuoteProvider.bid(instrument)
                 : tickQuoteProvider.ask(instrument);
