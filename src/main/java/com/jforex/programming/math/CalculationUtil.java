@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.jforex.programming.math.MathUtil.roundAmount;
 
 import com.dukascopy.api.ICurrency;
+import com.dukascopy.api.IEngine.OrderCommand;
 import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
 import com.dukascopy.api.OfferSide;
@@ -65,30 +66,53 @@ public class CalculationUtil {
         return roundAmount(pipValueAmount);
     }
 
+    public double slPriceForPips(final Instrument instrument,
+                                 final OrderCommand orderCommand,
+                                 final double pips) {
+        checkNotNull(instrument);
+        checkNotNull(orderCommand);
+
+        return addPipsToPriceForSL(instrument,
+                                   orderCommand,
+                                   pips);
+    }
+
     public double slPriceForPips(final IOrder order,
                                  final double pips) {
-        checkNotNull(order);
+        return slPriceForPips(order.getInstrument(),
+                              order.getOrderCommand(),
+                              pips);
+    }
 
-        return addPipsToPriceForSL(order, pips);
+    public double tpPriceForPips(final Instrument instrument,
+                                 final OrderCommand orderCommand,
+                                 final double pips) {
+        checkNotNull(instrument);
+        checkNotNull(orderCommand);
+
+        return addPipsToPriceForSL(instrument,
+                                   orderCommand,
+                                   -pips);
     }
 
     public double tpPriceForPips(final IOrder order,
                                  final double pips) {
-        checkNotNull(order);
-
-        return addPipsToPriceForSL(order, -pips);
+        return tpPriceForPips(order.getInstrument(),
+                              order.getOrderCommand(),
+                              pips);
     }
 
-    private final double addPipsToPriceForSL(final IOrder order,
+    private final double addPipsToPriceForSL(final Instrument instrument,
+                                             final OrderCommand orderCommand,
                                              final double pips) {
-        return InstrumentUtil.addPipsToPrice(order.getInstrument(),
-                                             currentQuoteForSLTP(order),
-                                             order.isLong() ? -pips : pips);
+        return InstrumentUtil.addPipsToPrice(instrument,
+                                             currentQuoteForSLTP(instrument, orderCommand),
+                                             orderCommand == OrderCommand.BUY ? -pips : pips);
     }
 
-    private final double currentQuoteForSLTP(final IOrder order) {
-        final Instrument instrument = order.getInstrument();
-        return order.isLong()
+    private final double currentQuoteForSLTP(final Instrument instrument,
+                                             final OrderCommand orderCommand) {
+        return orderCommand == OrderCommand.BUY
                 ? tickQuoteProvider.bid(instrument)
                 : tickQuoteProvider.ask(instrument);
     }
