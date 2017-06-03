@@ -3,7 +3,6 @@ package com.jforex.programming.strategy;
 import com.dukascopy.api.IEngine;
 import com.dukascopy.api.IMessage;
 import com.jforex.programming.math.CalculationUtil;
-import com.jforex.programming.misc.Exposure;
 import com.jforex.programming.misc.StrategyThreadRunner;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.OrderUtilHandler;
@@ -56,7 +55,6 @@ public class OrderInitUtil {
     private final BatchCancelSLTask cancelSLTask;
     private final BatchCancelTPTask cancelTPTask;
     private final CancelSLTPTask cancelSLTPTask;
-    private final Exposure exposure;
     private final OrderUtil orderUtil;
     private final OrderEventFactory orderEventFactory;
     private final OrderEventTypeDataFactory orderEventTypeDataFactory = new OrderEventTypeDataFactory();
@@ -93,13 +91,11 @@ public class OrderInitUtil {
                                                                   batchChangeTask,
                                                                   ordersForPositionClose);
         orderCloseTask = new ClosePositionTask(mergeAndClosePositionTask, positionUtil);
-        exposure = new Exposure(engine);
         orderUtil = new OrderUtil(orderBasicTask,
                                   orderMergeTask,
                                   orderCloseTask,
                                   positionUtil,
-                                  taskParamsUtil,
-                                  exposure);
+                                  taskParamsUtil);
     }
 
     public OrderUtil orderUtil() {

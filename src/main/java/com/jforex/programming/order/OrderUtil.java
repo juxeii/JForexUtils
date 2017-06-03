@@ -7,11 +7,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.dukascopy.api.IOrder;
 import com.dukascopy.api.Instrument;
-import com.dukascopy.api.JFException;
 import com.google.common.collect.ImmutableMap;
-import com.jforex.programming.misc.Exposure;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
 import com.jforex.programming.order.task.ClosePositionTask;
@@ -44,19 +41,16 @@ public class OrderUtil {
     private final BasicTask basicTask;
     private final PositionUtil positionUtil;
     private final TaskParamsUtil taskParamsUtil;
-    private final Exposure exposure;
     private final Map<TaskParamsType, Function<TaskParams, Observable<OrderEvent>>> taskParamsMapper;
 
     public OrderUtil(final BasicTask basicTask,
                      final MergePositionTask mergePositionTask,
                      final ClosePositionTask closePositionTask,
                      final PositionUtil positionUtil,
-                     final TaskParamsUtil taskParamsUtil,
-                     final Exposure exposure) {
+                     final TaskParamsUtil taskParamsUtil) {
         this.basicTask = basicTask;
         this.positionUtil = positionUtil;
         this.taskParamsUtil = taskParamsUtil;
-        this.exposure = exposure;
 
         taskParamsMapper = ImmutableMap.<TaskParamsType, Function<TaskParams, Observable<OrderEvent>>> builder()
             .put(TaskParamsType.SUBMIT,
@@ -64,7 +58,7 @@ public class OrderUtil {
             .put(TaskParamsType.MERGE,
                  params -> basicTask.mergeOrders((MergeParams) params))
             .put(TaskParamsType.CLOSE,
-                 params -> closeWithExposureCheck((CloseParams) params))
+                 params -> basicTask.close((CloseParams) params))
             .put(TaskParamsType.SETLABEL,
                  params -> basicTask.setLabel((SetLabelParams) params))
             .put(TaskParamsType.SETGTT,
@@ -90,33 +84,9 @@ public class OrderUtil {
 
     private Observable<OrderEvent> submitWithExposureCheck(final SubmitParams submitParams) {
         final OrderParams orderParams = submitParams.orderParams();
-        final double signedAmount = OrderStaticUtil.signedAmount(orderParams);
         final Instrument instrument = orderParams.instrument();
         positionUtil.create(instrument);
-
-        final boolean wouldExceedAmount = exposure.wouldExceed(instrument, signedAmount);
-        return wouldExceedAmount
-                ? Observable.error(maxExposureException(instrument))
-                : basicTask.submitOrder(submitParams);
-    }
-
-    private Observable<OrderEvent> closeWithExposureCheck(final CloseParams closeParams) {
-        final IOrder order = closeParams.order();
-        final double orderAmount = order.getAmount();
-        final double partialCloseAmount = closeParams.partialCloseAmount();
-        final double signedAmount = partialCloseAmount > 0
-                ? -OrderStaticUtil.signedAmount(partialCloseAmount, order.getOrderCommand())
-                : -OrderStaticUtil.signedAmount(orderAmount, order.getOrderCommand());
-        final Instrument instrument = order.getInstrument();
-
-        final boolean wouldExceedAmount = exposure.wouldExceed(instrument, signedAmount);
-        return wouldExceedAmount
-                ? Observable.error(maxExposureException(instrument))
-                : basicTask.close(closeParams);
-    }
-
-    private JFException maxExposureException(final Instrument instrument) {
-        return new JFException("Maximum exposure reached on " + instrument);
+        return basicTask.submitOrder(submitParams);
     }
 
     public Observable<OrderEvent> paramsToObservable(final TaskParams taskParams) {

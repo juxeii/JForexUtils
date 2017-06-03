@@ -13,8 +13,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import com.dukascopy.api.JFException;
-import com.jforex.programming.misc.Exposure;
 import com.jforex.programming.order.OrderUtil;
 import com.jforex.programming.order.event.OrderEvent;
 import com.jforex.programming.order.task.BasicTask;
@@ -68,8 +66,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
     private ComposeDataImpl composeParamsMock;
     @Mock
     private PositionOrders positionOrdersMock;
-    @Mock
-    private Exposure exposureMock;
     @Captor
     private ArgumentCaptor<Observable<OrderEvent>> observableCaptor;
 
@@ -82,8 +78,7 @@ public class OrderUtilTest extends InstrumentUtilForTest {
                                   mergePositionTaskMock,
                                   closePositionTaskMock,
                                   positionUtilMock,
-                                  taskParamsUtilMock,
-                                  exposureMock);
+                                  taskParamsUtilMock);
     }
 
     public class SubmitOrder {
@@ -102,9 +97,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 when(submitParamsMock.orderParams()).thenReturn(buyParamsEURUSD);
-
-                when(exposureMock.wouldExceed(eq(instrumentEURUSD), anyDouble()))
-                    .thenReturn(false);
             }
 
             @Test
@@ -178,44 +170,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             }
         }
 
-        public class ExposureExceeded {
-
-            @Before
-            public void setUp() {
-                when(exposureMock.wouldExceed(eq(instrumentEURUSD), anyDouble()))
-                    .thenReturn(true);
-            }
-
-            @Test
-            public void errorObservableIsCreatedForBuy() {
-                when(submitParamsMock.orderParams()).thenReturn(buyParamsEURUSD);
-
-                orderUtil.execute(submitParamsMock);
-
-                verify(exposureMock).wouldExceed(instrumentEURUSD, buyParamsEURUSD.amount());
-                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
-                                                               eq(submitParamsMock));
-                final Observable<OrderEvent> observable = observableCaptor.getValue();
-                observable
-                    .test()
-                    .assertError(JFException.class);
-            }
-
-            @Test
-            public void errorObservableIsCreatedForSell() {
-                when(submitParamsMock.orderParams()).thenReturn(sellParamsEURUSD);
-
-                orderUtil.execute(submitParamsMock);
-
-                verify(exposureMock).wouldExceed(instrumentEURUSD, -sellParamsEURUSD.amount());
-                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
-                                                               eq(submitParamsMock));
-                final Observable<OrderEvent> observable = observableCaptor.getValue();
-                observable
-                    .test()
-                    .assertError(JFException.class);
-            }
-        }
     }
 
     @Test
@@ -244,9 +198,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
             @Before
             public void setUp() {
                 when(closeParamsMock.order()).thenReturn(buyOrderEURUSD);
-
-                when(exposureMock.wouldExceed(eq(instrumentEURUSD), anyDouble()))
-                    .thenReturn(false);
             }
 
             @Test
@@ -255,92 +206,6 @@ public class OrderUtilTest extends InstrumentUtilForTest {
 
                 verify(taskParamsUtilMock).composeAndSubscribe(basicTaskMock.close(closeParamsMock),
                                                                closeParamsMock);
-            }
-        }
-
-        public class ExposureExceededForFullClose {
-
-            @Before
-            public void setUp() {
-                when(exposureMock.wouldExceed(eq(instrumentEURUSD), anyDouble()))
-                    .thenReturn(true);
-
-                when(closeParamsMock.partialCloseAmount())
-                    .thenReturn(0.0);
-            }
-
-            @Test
-            public void errorObservableIsCreatedForBuyOrder() {
-                when(closeParamsMock.order()).thenReturn(buyOrderEURUSD);
-
-                orderUtil.execute(closeParamsMock);
-
-                verify(exposureMock).wouldExceed(instrumentEURUSD, -buyOrderEURUSD.getAmount());
-                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
-                                                               eq(closeParamsMock));
-                final Observable<OrderEvent> observable = observableCaptor.getValue();
-                observable
-                    .test()
-                    .assertError(JFException.class);
-            }
-
-            @Test
-            public void errorObservableIsCreatedForSellOrder() {
-                when(closeParamsMock.order()).thenReturn(sellOrderEURUSD);
-
-                orderUtil.execute(closeParamsMock);
-
-                verify(exposureMock).wouldExceed(instrumentEURUSD, sellOrderEURUSD.getAmount());
-                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
-                                                               eq(closeParamsMock));
-                final Observable<OrderEvent> observable = observableCaptor.getValue();
-                observable
-                    .test()
-                    .assertError(JFException.class);
-            }
-        }
-
-        public class ExposureExceededForPartialClose {
-
-            private final double partialCloseAmount = 0.12;
-
-            @Before
-            public void setUp() {
-                when(exposureMock.wouldExceed(eq(instrumentEURUSD), anyDouble()))
-                    .thenReturn(true);
-
-                when(closeParamsMock.partialCloseAmount())
-                    .thenReturn(partialCloseAmount);
-            }
-
-            @Test
-            public void errorObservableIsCreatedForBuyOrder() {
-                when(closeParamsMock.order()).thenReturn(buyOrderEURUSD);
-
-                orderUtil.execute(closeParamsMock);
-
-                verify(exposureMock).wouldExceed(instrumentEURUSD, -partialCloseAmount);
-                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
-                                                               eq(closeParamsMock));
-                final Observable<OrderEvent> observable = observableCaptor.getValue();
-                observable
-                    .test()
-                    .assertError(JFException.class);
-            }
-
-            @Test
-            public void errorObservableIsCreatedForSellOrder() {
-                when(closeParamsMock.order()).thenReturn(sellOrderEURUSD);
-
-                orderUtil.execute(closeParamsMock);
-
-                verify(exposureMock).wouldExceed(instrumentEURUSD, partialCloseAmount);
-                verify(taskParamsUtilMock).composeAndSubscribe(observableCaptor.capture(),
-                                                               eq(closeParamsMock));
-                final Observable<OrderEvent> observable = observableCaptor.getValue();
-                observable
-                    .test()
-                    .assertError(JFException.class);
             }
         }
     }
