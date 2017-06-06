@@ -5,6 +5,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import com.dukascopy.api.IMessage;
 import com.dukascopy.api.IOrder;
 
 /**
@@ -16,13 +17,16 @@ import com.dukascopy.api.IOrder;
 public final class OrderEvent {
 
     private final IOrder order;
+    private final IMessage message;
     private final OrderEventType type;
     private final boolean isInternal;
 
     public OrderEvent(final IOrder order,
+                      final IMessage message,
                       final OrderEventType type,
                       final boolean isInternal) {
         this.order = order;
+        this.message = message;
         this.type = type;
         this.isInternal = isInternal;
     }
@@ -34,6 +38,15 @@ public final class OrderEvent {
      */
     public final IOrder order() {
         return order;
+    }
+
+    /**
+     * Returns the message instance of this event.
+     *
+     * @return the order
+     */
+    public final IMessage message() {
+        return message;
     }
 
     /**
@@ -61,6 +74,7 @@ public final class OrderEvent {
     public int hashCode() {
         final HashCodeBuilder builder = new HashCodeBuilder();
         builder.append(order);
+        builder.append(message);
         builder.append(type);
         builder.append(isInternal);
 
@@ -79,6 +93,7 @@ public final class OrderEvent {
         final OrderEvent other = (OrderEvent) obj;
         final EqualsBuilder builder = new EqualsBuilder();
         builder.append(order, other.order);
+        builder.append(message, other.message);
         builder.append(type, other.type);
         builder.append(isInternal, other.isInternal);
 

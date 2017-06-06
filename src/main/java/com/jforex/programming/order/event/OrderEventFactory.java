@@ -35,7 +35,9 @@ public class OrderEventFactory {
     public OrderEvent fromMessage(final IMessage message) {
         final IOrder order = message.getOrder();
         final OrderEventType orderEventType = calculateType(message);
-        final OrderEvent orderEvent = evaluateToOrderEvent(order, orderEventType);
+        final OrderEvent orderEvent = evaluateToOrderEvent(order,
+                                                           message,
+                                                           orderEventType);
         cleanUpRegisteredOrder(order);
 
         return orderEvent;
@@ -49,10 +51,15 @@ public class OrderEventFactory {
     }
 
     private final OrderEvent evaluateToOrderEvent(final IOrder order,
+                                                  final IMessage message,
                                                   final OrderEventType orderEventType) {
         return callReasonByOrder.keySet().contains(order)
-                ? eventForInternalOrder(order, orderEventType)
-                : eventForExternalOrder(order, orderEventType);
+                ? eventForInternalOrder(order,
+                                        message,
+                                        orderEventType)
+                : eventForExternalOrder(order,
+                                        message,
+                                        orderEventType);
     }
 
     private final void cleanUpRegisteredOrder(final IOrder order) {
@@ -64,19 +71,23 @@ public class OrderEventFactory {
     }
 
     private final OrderEvent eventForInternalOrder(final IOrder order,
+                                                   final IMessage message,
                                                    final OrderEventType rawOrderEventType) {
         final OrderEventType orderEventType = infoEvents.contains(rawOrderEventType)
                 ? rawOrderEventType
                 : eventTypeForDoneTrigger(order, rawOrderEventType);
 
         return new OrderEvent(order,
+                              message,
                               orderEventType,
                               true);
     }
 
     private final OrderEvent eventForExternalOrder(final IOrder order,
+                                                   final IMessage message,
                                                    final OrderEventType orderEventType) {
         return new OrderEvent(order,
+                              message,
                               orderEventType,
                               false);
     }

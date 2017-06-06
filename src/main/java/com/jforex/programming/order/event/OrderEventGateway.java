@@ -39,6 +39,7 @@ public class OrderEventGateway {
 
     public void importOrder(final IOrder order) {
         final OrderEvent orderEvent = new OrderEvent(order,
+                                                     null,
                                                      OrderEventType.SUBMIT_OK,
                                                      true);
         logger.debug("Importing order " + order.getLabel() + " for " + order.getInstrument());

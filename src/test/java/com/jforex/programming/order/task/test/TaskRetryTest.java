@@ -38,6 +38,7 @@ public class TaskRetryTest extends CommonUtilForTest {
 
     private OrderEvent sendEvent(final OrderEventType orderEventType) {
         final OrderEvent orderEvent = new OrderEvent(buyOrderEURUSD,
+                                                     messageMock,
                                                      orderEventType,
                                                      true);
         subject.onNext(orderEvent);

@@ -85,6 +85,7 @@ public class OrderUtilHandlerTest extends InstrumentUtilForTest {
     private OrderEvent sendOrderEvent(final IOrder order,
                                       final OrderEventType orderEventType) {
         final OrderEvent orderEvent = new OrderEvent(order,
+                                                     messageMock,
                                                      orderEventType,
                                                      true);
         orderEventSubject.onNext(orderEvent);

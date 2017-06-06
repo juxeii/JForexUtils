@@ -40,6 +40,7 @@ public class PositionTest extends InstrumentUtilForTest {
     private void sendOrderEvent(final IOrder order,
                                 final OrderEventType orderEventType) {
         final OrderEvent orderEvent = new OrderEvent(order,
+                                                     messageMock,
                                                      orderEventType,
                                                      true);
         orderEventSubject.onNext(orderEvent);
@@ -57,6 +58,7 @@ public class PositionTest extends InstrumentUtilForTest {
     public void createdOrdersAreNotAddedWhenNotInternal() {
         createEvents.forEach(eventType -> {
             orderEventSubject.onNext(new OrderEvent(buyOrderEURUSD,
+                                                    messageMock,
                                                     eventType,
                                                     false));
             assertFalse(position.contains(buyOrderEURUSD));
@@ -67,6 +69,7 @@ public class PositionTest extends InstrumentUtilForTest {
     public void externalOrdersAreNotAdded() {
         allEvents.forEach(eventType -> {
             orderEventSubject.onNext(new OrderEvent(buyOrderEURUSD,
+                                                    messageMock,
                                                     eventType,
                                                     false));
             assertFalse(position.contains(buyOrderEURUSD));

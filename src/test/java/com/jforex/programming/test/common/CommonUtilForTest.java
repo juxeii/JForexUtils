@@ -81,6 +81,8 @@ public class CommonUtilForTest extends BDDMockito {
     protected TickQuoteProvider tickQuoteHandlerMock;
     @Mock
     protected BarQuoteProvider barQuoteHandlerMock;
+    @Mock
+    protected IMessage messageMock;
 
     protected JFException jfException = new JFException("JFException for test");
 
@@ -230,6 +232,7 @@ public class CommonUtilForTest extends BDDMockito {
     protected final Observable<OrderEvent> eventObservable(final IOrder order,
                                                            final OrderEventType type) {
         final OrderEvent orderEvent = new OrderEvent(order,
+                                                     messageMock,
                                                      type,
                                                      true);
         return eventObservable(orderEvent);
@@ -251,6 +254,7 @@ public class CommonUtilForTest extends BDDMockito {
 
     protected OrderEvent createEvent(final OrderEventType type) {
         return new OrderEvent(buyOrderEURUSD,
+                              messageMock,
                               type,
                               true);
     }
