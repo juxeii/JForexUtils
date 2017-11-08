@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toSet;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Set;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
@@ -19,28 +20,22 @@ public class CrossInstrument {
     private final Instrument secondInstrument;
     private final Instrument instrument;
     private final ICurrency crossCurrency;
-    private final boolean isEmpty;
     private final boolean shouldDivide;
     private final int pipScale;
+    private final Set<Instrument> crossInstruments;
+    private final RoundingMode roundingMode = RoundingMode.HALF_UP;
 
     public CrossInstrument(final Instrument firstInstrument,
                            final Instrument secondInstrument) {
         this.firstInstrument = firstInstrument;
         this.secondInstrument = secondInstrument;
 
+        crossInstruments = Sets.newHashSet(firstInstrument, secondInstrument);
         final Maybe<Instrument> maybeCross = InstrumentFactory.maybeCross(firstInstrument, secondInstrument);
-
         instrument = maybeCross.blockingGet();
-        isEmpty = maybeCross
-            .isEmpty()
-            .blockingGet();
         crossCurrency = calcCrossCurrency();
         shouldDivide = shouldDivide();
         pipScale = instrument.getPipScale() + 1;
-    }
-
-    public boolean isValid() {
-        return !isEmpty;
     }
 
     public Instrument get() {
@@ -63,11 +58,11 @@ public class CrossInstrument {
         final double crossValue = shouldDivide
                 ? bdcFirst.divide(bdcSecond,
                                   pipScale,
-                                  RoundingMode.HALF_UP)
+                                  roundingMode)
                     .doubleValue()
                 : bdcFirst
                     .multiply(bdcSecond)
-                    .setScale(pipScale, RoundingMode.HALF_UP)
+                    .setScale(pipScale, roundingMode)
                     .doubleValue();
 
         return new FxRate(crossValue, instrument);
@@ -77,8 +72,7 @@ public class CrossInstrument {
         return CurrencyFactory
             .fromInstruments(firstInstrument, secondInstrument)
             .stream()
-            .filter(currency -> CurrencyUtil.isInAllInstruments(currency,
-                                                                Sets.newHashSet(firstInstrument, secondInstrument)))
+            .filter(currency -> CurrencyUtil.isInAllInstruments(currency, crossInstruments))
             .collect(toSet())
             .iterator()
             .next();

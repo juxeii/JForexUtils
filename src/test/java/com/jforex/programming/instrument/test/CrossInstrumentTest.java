@@ -2,7 +2,6 @@ package com.jforex.programming.instrument.test;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,14 +23,6 @@ public class CrossInstrumentTest extends CurrencyUtilForTest {
         crossInstrumentB = new CrossInstrument(instrumentEURGBP, instrumentGBPUSD);
         crossInstrumentC = new CrossInstrument(instrumentEURJPY, instrumentGBPJPY);
         crossInstrumentD = new CrossInstrument(instrumentEURGBP, instrumentGBPJPY);
-    }
-
-    @Test
-    public void instanceIsValid() {
-        assertTrue(crossInstrumentA.isValid());
-        assertTrue(crossInstrumentB.isValid());
-        assertTrue(crossInstrumentC.isValid());
-        assertTrue(crossInstrumentD.isValid());
     }
 
     @Test
