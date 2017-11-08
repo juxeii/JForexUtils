@@ -14,8 +14,11 @@ import org.apache.commons.collections4.keyvalue.MultiKey;
 
 import com.dukascopy.api.ICurrency;
 import com.dukascopy.api.Instrument;
+import com.jforex.programming.currency.CurrencyFactory;
 import com.jforex.programming.math.MathUtil;
 import com.jforex.programming.misc.StreamUtil;
+
+import io.reactivex.Maybe;
 
 public final class InstrumentFactory {
 
@@ -89,5 +92,22 @@ public final class InstrumentFactory {
             .map(partnerCurrency -> maybeFromCurrencies(anchorCurrency, partnerCurrency))
             .flatMap(StreamUtil::optionalToStream)
             .collect(toSet());
+    }
+
+    public static final Maybe<Instrument> maybeCrossInstrument(final Instrument firstInstrument,
+                                                               final Instrument secondInstrument) {
+        checkNotNull(firstInstrument);
+        checkNotNull(secondInstrument);
+
+        return Maybe
+            .just(CurrencyFactory.fromInstruments(firstInstrument, secondInstrument))
+            .filter(currencies -> currencies.size() == 3)
+            .map(InstrumentFactory::combineCurrencies)
+            .map(instruments -> {
+                instruments.remove(firstInstrument);
+                instruments.remove(secondInstrument);
+                return instruments;
+            })
+            .map(instruments -> instruments.iterator().next());
     }
 }

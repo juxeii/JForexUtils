@@ -2,6 +2,7 @@ package com.jforex.programming.instrument.test;
 
 import static com.jforex.programming.instrument.InstrumentFactory.combineCurrencies;
 import static com.jforex.programming.instrument.InstrumentFactory.combineWithAnchorCurrency;
+import static com.jforex.programming.instrument.InstrumentFactory.maybeCrossInstrument;
 import static com.jforex.programming.instrument.InstrumentFactory.maybeFromCurrencies;
 import static com.jforex.programming.instrument.InstrumentFactory.maybeFromName;
 import static org.hamcrest.Matchers.equalTo;
@@ -156,5 +157,24 @@ public class InstrumentFactoryTest extends CurrencyUtilForTest {
                                                                  currencyJPY);
 
         assertAnchorCurrencySet(partnerCurrencies, instrumentsForAnchorCurrencyTests);
+    }
+
+    @Test
+    public void testMaybeCrossInstrumentIsEmptyWhenInstrumentsFormNoCrossInstrument() {
+        maybeCrossInstrument(instrumentEURUSD, instrumentEURUSD)
+            .test()
+            .assertNoValues();
+
+        maybeCrossInstrument(instrumentEURUSD, instrumentGBPJPY)
+            .test()
+            .assertNoValues();
+    }
+
+    @Test
+    public void testMaybeCrossInstrumentIsCorrect() {
+        assertThat(maybeCrossInstrument(instrumentEURUSD, instrumentGBPUSD).blockingGet(), equalTo(instrumentEURGBP));
+        assertThat(maybeCrossInstrument(instrumentEURUSD, instrumentUSDJPY).blockingGet(), equalTo(instrumentEURJPY));
+        assertThat(maybeCrossInstrument(instrumentUSDJPY, instrumentGBPUSD).blockingGet(), equalTo(instrumentGBPJPY));
+        assertThat(maybeCrossInstrument(instrumentGBPAUD, instrumentAUDJPY).blockingGet(), equalTo(instrumentGBPJPY));
     }
 }
