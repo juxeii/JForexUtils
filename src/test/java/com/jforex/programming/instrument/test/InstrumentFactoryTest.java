@@ -2,7 +2,7 @@ package com.jforex.programming.instrument.test;
 
 import static com.jforex.programming.instrument.InstrumentFactory.combineCurrencies;
 import static com.jforex.programming.instrument.InstrumentFactory.combineWithAnchorCurrency;
-import static com.jforex.programming.instrument.InstrumentFactory.maybeCrossInstrument;
+import static com.jforex.programming.instrument.InstrumentFactory.maybeCross;
 import static com.jforex.programming.instrument.InstrumentFactory.maybeFromCurrencies;
 import static com.jforex.programming.instrument.InstrumentFactory.maybeFromName;
 import static org.hamcrest.Matchers.equalTo;
@@ -161,20 +161,20 @@ public class InstrumentFactoryTest extends CurrencyUtilForTest {
 
     @Test
     public void testMaybeCrossInstrumentIsEmptyWhenInstrumentsFormNoCrossInstrument() {
-        maybeCrossInstrument(instrumentEURUSD, instrumentEURUSD)
+        maybeCross(instrumentEURUSD, instrumentEURUSD)
             .test()
             .assertNoValues();
 
-        maybeCrossInstrument(instrumentEURUSD, instrumentGBPJPY)
+        maybeCross(instrumentEURUSD, instrumentGBPJPY)
             .test()
             .assertNoValues();
     }
 
     @Test
     public void testMaybeCrossInstrumentIsCorrect() {
-        assertThat(maybeCrossInstrument(instrumentEURUSD, instrumentGBPUSD).blockingGet(), equalTo(instrumentEURGBP));
-        assertThat(maybeCrossInstrument(instrumentEURUSD, instrumentUSDJPY).blockingGet(), equalTo(instrumentEURJPY));
-        assertThat(maybeCrossInstrument(instrumentUSDJPY, instrumentGBPUSD).blockingGet(), equalTo(instrumentGBPJPY));
-        assertThat(maybeCrossInstrument(instrumentGBPAUD, instrumentAUDJPY).blockingGet(), equalTo(instrumentGBPJPY));
+        assertThat(maybeCross(instrumentEURUSD, instrumentGBPUSD).blockingGet(), equalTo(instrumentEURGBP));
+        assertThat(maybeCross(instrumentEURUSD, instrumentUSDJPY).blockingGet(), equalTo(instrumentEURJPY));
+        assertThat(maybeCross(instrumentUSDJPY, instrumentGBPUSD).blockingGet(), equalTo(instrumentGBPJPY));
+        assertThat(maybeCross(instrumentGBPAUD, instrumentAUDJPY).blockingGet(), equalTo(instrumentGBPJPY));
     }
 }

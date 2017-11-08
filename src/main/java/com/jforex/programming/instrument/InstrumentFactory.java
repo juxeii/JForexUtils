@@ -94,8 +94,8 @@ public final class InstrumentFactory {
             .collect(toSet());
     }
 
-    public static final Maybe<Instrument> maybeCrossInstrument(final Instrument firstInstrument,
-                                                               final Instrument secondInstrument) {
+    public static final Maybe<Instrument> maybeCross(final Instrument firstInstrument,
+                                                     final Instrument secondInstrument) {
         checkNotNull(firstInstrument);
         checkNotNull(secondInstrument);
 

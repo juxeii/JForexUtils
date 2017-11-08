@@ -1,5 +1,6 @@
 package com.jforex.programming.currency.test;
 
+import static com.jforex.programming.currency.CurrencyUtil.isInAllInstruments;
 import static com.jforex.programming.currency.CurrencyUtil.isInInstrument;
 import static com.jforex.programming.currency.CurrencyUtil.isInInstruments;
 import static com.jforex.programming.currency.CurrencyUtil.isNameValid;
@@ -84,5 +85,20 @@ public class CurrencyUtilTest extends CurrencyUtilForTest {
     @Test
     public void testIsInInstrumentsIsFalseForNotContainingCurrency() {
         assertFalse(isInInstruments(currencyAUD, instrumentsForTest));
+    }
+
+    @Test
+    public void testIsInAllInstrumentsIsTrueForEmptyInstrumentCollection() {
+        assertTrue(isInAllInstruments(currencyUSD, Collections.emptySet()));
+    }
+
+    @Test
+    public void testIsInAllInstrumentsIsTrueForContainingCurrency() {
+        assertTrue(isInAllInstruments(currencyUSD, instrumentsForTest));
+    }
+
+    @Test
+    public void testIsInAllInstrumentsIsFalseForNotAllContainingCurrency() {
+        assertFalse(isInAllInstruments(currencyEUR, instrumentsForTest));
     }
 }

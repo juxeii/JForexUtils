@@ -50,4 +50,14 @@ public final class CurrencyUtil {
             .stream()
             .anyMatch(instrument -> isInInstrument(currency, instrument));
     }
+
+    public static final boolean isInAllInstruments(final ICurrency currency,
+                                                   final Collection<Instrument> instruments) {
+        checkNotNull(currency);
+        checkNotNull(instruments);
+
+        return instruments
+            .stream()
+            .allMatch(instrument -> isInInstrument(currency, instrument));
+    }
 }
