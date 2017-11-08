@@ -48,12 +48,16 @@ public class CrossInstrument {
 
     public FxRate rate(final FxRate rateA,
                        final FxRate rateB) {
-        final BigDecimal bdcFirst = rateA.instrument().equals(firstInstrument)
-                ? BigDecimal.valueOf(rateA.value())
-                : BigDecimal.valueOf(rateB.value());
-        final BigDecimal bdcSecond = rateB.instrument().equals(secondInstrument)
-                ? BigDecimal.valueOf(rateB.value())
-                : BigDecimal.valueOf(rateA.value());
+        final FxRate numeratorRate =
+                instrument
+                    .getPrimaryJFCurrency()
+                    .equals(rateB.instrument().getSecondaryJFCurrency())
+                        || instrument
+                            .getPrimaryJFCurrency()
+                            .equals(rateA.instrument().getPrimaryJFCurrency()) ? rateA : rateB;
+        final FxRate denominatorRate = numeratorRate == rateA ? rateB : rateA;
+        final BigDecimal bdcFirst = BigDecimal.valueOf(numeratorRate.value());
+        final BigDecimal bdcSecond = BigDecimal.valueOf(denominatorRate.value());
 
         final double crossValue = shouldDivide
                 ? bdcFirst.divide(bdcSecond,

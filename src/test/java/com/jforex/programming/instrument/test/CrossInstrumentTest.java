@@ -16,6 +16,7 @@ public class CrossInstrumentTest extends CurrencyUtilForTest {
     private CrossInstrument crossInstrumentB;
     private CrossInstrument crossInstrumentC;
     private CrossInstrument crossInstrumentD;
+    private CrossInstrument crossInstrumentE;
 
     @Before
     public void setUp() {
@@ -23,6 +24,7 @@ public class CrossInstrumentTest extends CurrencyUtilForTest {
         crossInstrumentB = new CrossInstrument(instrumentEURGBP, instrumentGBPUSD);
         crossInstrumentC = new CrossInstrument(instrumentEURJPY, instrumentGBPJPY);
         crossInstrumentD = new CrossInstrument(instrumentEURGBP, instrumentGBPJPY);
+        crossInstrumentE = new CrossInstrument(instrumentEURGBP, instrumentEURUSD);
     }
 
     @Test
@@ -31,6 +33,7 @@ public class CrossInstrumentTest extends CurrencyUtilForTest {
         assertThat(crossInstrumentB.get(), equalTo(instrumentEURUSD));
         assertThat(crossInstrumentC.get(), equalTo(instrumentEURGBP));
         assertThat(crossInstrumentD.get(), equalTo(instrumentEURJPY));
+        assertThat(crossInstrumentE.get(), equalTo(instrumentGBPUSD));
     }
 
     @Test
@@ -39,6 +42,7 @@ public class CrossInstrumentTest extends CurrencyUtilForTest {
         assertThat(crossInstrumentB.crossCurrency(), equalTo(currencyGBP));
         assertThat(crossInstrumentC.crossCurrency(), equalTo(currencyJPY));
         assertThat(crossInstrumentD.crossCurrency(), equalTo(currencyGBP));
+        assertThat(crossInstrumentE.crossCurrency(), equalTo(currencyEUR));
     }
 
     @Test
@@ -64,5 +68,10 @@ public class CrossInstrumentTest extends CurrencyUtilForTest {
         rateB = new FxRate(148.653, instrumentGBPJPY);
         assertThat(crossInstrumentD.rate(rateA, rateB).value(),
                    equalTo(131.452));
+
+        rateA = new FxRate(0.86347, instrumentEURGBP);
+        rateB = new FxRate(1.07829, instrumentEURUSD);
+        assertThat(crossInstrumentE.rate(rateA, rateB).value(),
+                   equalTo(1.24879));
     }
 }
