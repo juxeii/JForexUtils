@@ -3,6 +3,7 @@ package com.jforex.programming.math;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,7 +44,7 @@ public final class MathUtil {
                                            final int digitPrecision) {
         return BigDecimal
             .valueOf(rawValue)
-            .setScale(digitPrecision, BigDecimal.ROUND_HALF_UP)
+            .setScale(digitPrecision, RoundingMode.HALF_UP)
             .doubleValue();
     }
 

@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.dukascopy.api.OfferSide;
+import com.dukascopy.api.feed.IBarFeedListener;
 import com.jforex.programming.strategy.ContextUtil;
 import com.jforex.programming.strategy.QuoteUtil;
 import com.jforex.programming.test.common.QuoteProviderForTest;
@@ -26,6 +27,6 @@ public class QuoteUtilTest extends QuoteProviderForTest {
         verify(contextMock).subscribeToBarsFeed(eq(instrumentEURUSD),
                                                 eq(custom3MinutePeriod),
                                                 eq(OfferSide.ASK),
-                                                any());
+                                                any(IBarFeedListener.class));
     }
 }

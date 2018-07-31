@@ -23,7 +23,7 @@ public class StrategyThreadRunner {
     public Completable execute(final Action action) {
         checkNotNull(action);
 
-        return execute(RxUtil.actionToCallable(action)).toCompletable();
+        return execute(RxUtil.actionToCallable(action)).ignoreElement();
     }
 
     public <T> Single<T> execute(final Callable<T> callable) {
